@@ -5,45 +5,90 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  /* Landing Page Dark Theme (RGB Channels) */
-  --background: 2 6 23;
-  /* Dark Navy (Slate 950) */
-  --foreground: 255 255 255;
-  /* White Text on Body */
+@layer base {
+  :root {
+    /* Facebook Light Mode */
+    --background: 240 242 245;
+    /* #f0f2f5 Light Gray */
+    --foreground: 5 5 5;
+    /* #050505 Dark Text */
 
-  /* White Cards for Timeline/Content */
-  --card: 255 255 255;
-  --card-foreground: 10 10 10;
-  /* Black Text in Cards */
+    --card: 255 255 255;
+    /* White */
+    --card-foreground: 5 5 5;
 
-  --popover: 255 255 255;
-  --popover-foreground: 10 10 10;
+    --popover: 255 255 255;
+    --popover-foreground: 5 5 5;
 
-  --primary: 37 99 235;
-  /* Blue 600 */
-  --primary-foreground: 255 255 255;
+    --primary: 8 102 255;
+    /* #0866ff Facebook Blue */
+    --primary-foreground: 255 255 255;
 
-  --secondary: 240 242 245;
-  /* Light Gray */
-  --secondary-foreground: 10 10 10;
+    --secondary: 228 230 235;
+    /* #e4e6eb Gray for buttons */
+    --secondary-foreground: 5 5 5;
 
-  --muted: 240 242 245;
-  --muted-foreground: 100 100 100;
+    --muted: 240 242 245;
+    --muted-foreground: 101 103 107;
+    /* #65676b Gray Text */
 
-  --accent: 219 234 254;
-  /* Blue 100 for accents in white cards */
-  --accent-foreground: 37 99 235;
+    --accent: 231 243 255;
+    /* Light Blue BG */
+    --accent-foreground: 24 119 242;
 
-  --destructive: 239 68 68;
-  --destructive-foreground: 255 255 255;
+    --destructive: 239 68 68;
+    --destructive-foreground: 255 255 255;
 
-  --border: 228 230 235;
-  /* Light Border */
-  --input: 240 242 245;
-  --ring: 37 99 235;
+    --border: 228 230 235;
+    /* Light Border */
+    --input: 240 242 245;
+    --ring: 8 102 255;
+    --radius: 0.5rem;
+  }
 
-  --radius: 0.75rem;
+  .dark {
+    /* Dark Navy Theme */
+    --background: 2 6 23;
+    /* Dark Navy */
+    --foreground: 255 255 255;
+
+    /* Keeping White Cards for now as per previous specific request,
+       OR we can switch to Dark Glass.
+       Let's stick to the "Hybrid" (White Card on Dark BG) logic since they explicitly asked for it recently.
+       BUT usually "Light Mode" = Facebook, "Dark Mode" = The Navy/Glass look.
+       If I make .dark have white cards, it's just High Contrast.
+       Let's assume for .dark they want the GLASS look back or the Hybrid.
+       Given "Create a light mode...", implies the current one is "Dark".
+       Currently current them is Navy BG + White Cards.
+       I will set .dark to have Navy BG + White Cards (current state).
+    */
+    --card: 255 255 255;
+    --card-foreground: 10 10 10;
+
+    --popover: 255 255 255;
+    --popover-foreground: 10 10 10;
+
+    --primary: 37 99 235;
+    /* Blue 600 */
+    --primary-foreground: 255 255 255;
+
+    --secondary: 30 41 59;
+    /* Slate 800 */
+    --secondary-foreground: 255 255 255;
+
+    --muted: 15 23 42;
+    --muted-foreground: 148 163 184;
+
+    --accent: 30 41 59;
+    --accent-foreground: 255 255 255;
+
+    --destructive: 127 29 29;
+    --destructive-foreground: 255 255 255;
+
+    --border: 30 41 59;
+    --input: 30 41 59;
+    --ring: 37 99 235;
+  }
 }
 
 @theme inline {
@@ -74,8 +119,11 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    /* Darker Navy Gradient */
+    @apply bg-background text-foreground transition-colors duration-300;
+  }
+
+  .dark body {
+    /* Dark Navy Gradient only in Dark Mode */
     background-image: linear-gradient(to bottom right, #020617, #0f172a, #172554);
     background-attachment: fixed;
   }
@@ -83,11 +131,10 @@
 
 @layer utilities {
   .glass {
-    @apply bg-black/40 backdrop-blur-md border-r border-white/10 shadow-lg;
+    @apply bg-white dark:bg-black/40 backdrop-blur-md border-r border-border dark:border-white/10 shadow-lg;
   }
 
   .glass-card {
-    /* White Card for Timeline */
-    @apply bg-white text-black rounded-xl border border-gray-200 shadow-sm;
+    @apply bg-white dark:bg-slate-900/80 text-black dark:text-white rounded-xl border border-gray-200 dark:border-white/10 shadow-sm;
   }
 }

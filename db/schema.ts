@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, jsonb, serial, pgEnum, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, jsonb, serial, pgEnum, uuid, integer } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["admin", "member", "pending"]);
@@ -7,6 +7,8 @@ export const users = pgTable("users", {
     id: text("id").primaryKey(), // Clerk ID
     email: text("email").notNull().unique(),
     role: roleEnum("role").default("pending").notNull(),
+    birthday: text("birthday"), // Format: MM-DD
+    lastCelebratedYear: integer("last_celebrated_year"), // Tracks last year we made a post
     profileData: jsonb("profile_data"), // Bio, avatar url, etc.
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });

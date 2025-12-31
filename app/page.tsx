@@ -7,6 +7,8 @@ import { CreatePost } from "@/components/feed/create-post";
 import { FeedList } from "@/components/feed/feed-list";
 import { LandingPage } from "@/components/landing-page";
 
+import { BirthdayModal } from "@/components/birthdays/birthday-modal";
+
 export default async function Home() {
   const user = await currentUser();
 
@@ -31,7 +33,10 @@ export default async function Home() {
   return (
     <MainLayout>
       <div className="pb-8">
-        <h1 className="text-3xl font-bold mb-6 text-white">Welcome Home, {profile?.firstName || user.firstName}!</h1>
+        <h1 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-gray-400 animate-in fade-in slide-in-from-left-4 duration-700">
+          Welcome Home, {profile?.firstName || user.firstName}!
+        </h1>
+        <BirthdayModal hasBirthday={!!dbUser.birthday} />
         <CreatePost />
         <FeedList />
       </div>

@@ -4,6 +4,7 @@ import { users } from "@/db/schema";
 import { redirect } from "next/navigation";
 import { UserList } from "@/components/admin/user-list";
 import { MainLayout } from "@/components/layout/main-layout";
+import { BirthdayTrigger } from "@/components/admin/birthday-trigger";
 import { desc } from "drizzle-orm";
 
 export default async function AdminDashboard() {
@@ -21,6 +22,13 @@ export default async function AdminDashboard() {
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold">Admin Dashboard</h1>
                 </div>
+                <div className="bg-white rounded-lg shadow p-6 mb-6">
+                    <h2 className="text-xl font-semibold mb-4">Actions</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <BirthdayTrigger />
+                    </div>
+                </div>
+
                 <div className="bg-white rounded-lg shadow p-6">
                     <h2 className="text-xl font-semibold mb-4">User Management</h2>
                     <UserList users={allUsers} />

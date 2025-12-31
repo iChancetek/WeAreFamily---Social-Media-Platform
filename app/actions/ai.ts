@@ -1,6 +1,6 @@
-'use server'
+"use server";
 
-import OpenAI from 'openai';
+import OpenAI from "openai";
 
 // Helper to get client only when needed
 function getClient() {
@@ -59,5 +59,30 @@ export async function generateCommentSuggestion(postContext: string) {
     } catch (error) {
         console.error("OpenAI Error:", error);
         throw new Error("Failed to generate comment. Check API Key.");
+    }
+}
+
+export async function generateBirthdayWish(name: string) {
+    try {
+        const openai = getClient();
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a warm, loving family member writing a short, heartwarming birthday wish. Use emojis. keep it under 50 words. Be festive!"
+                },
+                {
+                    role: "user",
+                    content: `Write a birthday wish for ${name}.`
+                }
+            ],
+            temperature: 0.8,
+        });
+
+        return response.choices[0].message.content || `Happy Birthday ${name}! 🎂`;
+    } catch (error) {
+        console.error("AI Error:", error);
+        return `Happy Birthday ${name}! 🎂`; // Fallback
     }
 }
