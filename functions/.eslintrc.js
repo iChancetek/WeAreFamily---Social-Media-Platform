@@ -1,33 +1,24 @@
-module.exports = {
-  root: true,
-  env: {
-    es6: true,
-    node: true,
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+
+export default [
+  // Ignore build output & deps
+  {
+    ignores: ["lib/**", "node_modules/**"],
   },
-  extends: [
-    "eslint:recommended",
-    "plugin:import/errors",
-    "plugin:import/warnings",
-    "plugin:import/typescript",
-    "google",
-    "plugin:@typescript-eslint/recommended",
-  ],
-  parser: "@typescript-eslint/parser",
-  parserOptions: {
-    project: ["tsconfig.json", "tsconfig.dev.json"],
-    sourceType: "module",
+
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+
+  {
+    files: ["src/**/*.ts"],
+    rules: {
+      // Firebase / TS safety
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-require-imports": "off",
+
+      // 🚫 Disable Next.js pages check (NOT a Next app)
+      "@next/next/no-html-link-for-pages": "off",
+    },
   },
-  ignorePatterns: [
-    "/lib/**/*", // Ignore built files.
-    "/generated/**/*", // Ignore generated files.
-  ],
-  plugins: [
-    "@typescript-eslint",
-    "import",
-  ],
-  rules: {
-    "quotes": ["error", "double"],
-    "import/no-unresolved": 0,
-    "indent": ["error", 2],
-  },
-};
+];
