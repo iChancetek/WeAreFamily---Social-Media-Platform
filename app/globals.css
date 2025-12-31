@@ -6,44 +6,44 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Facebook Blue Palette */
-  --background: 240 242 245;
-  /* Facebook Light Gray Background */
-  --foreground: 5 5 5;
-  /* Nearly Black */
+  /* Landing Page Dark Theme (RGB Channels) */
+  --background: 2 6 23;
+  /* Dark Navy (Slate 950) */
+  --foreground: 255 255 255;
+  /* White Text on Body */
 
+  /* White Cards for Timeline/Content */
   --card: 255 255 255;
-  --card-foreground: 5 5 5;
+  --card-foreground: 10 10 10;
+  /* Black Text in Cards */
 
   --popover: 255 255 255;
-  --popover-foreground: 5 5 5;
+  --popover-foreground: 10 10 10;
 
-  --primary: 8 102 255;
-  /* Facebook Brand Blue */
+  --primary: 37 99 235;
+  /* Blue 600 */
   --primary-foreground: 255 255 255;
 
-  --secondary: 228 230 235;
-  /* Light Gray Button */
-  --secondary-foreground: 5 5 5;
+  --secondary: 240 242 245;
+  /* Light Gray */
+  --secondary-foreground: 10 10 10;
 
   --muted: 240 242 245;
-  --muted-foreground: 101 103 107;
-  /* Secondary Text */
+  --muted-foreground: 100 100 100;
 
-  --accent: 231 243 255;
-  /* Light Blue Accent */
-  --accent-foreground: 24 119 242;
+  --accent: 219 234 254;
+  /* Blue 100 for accents in white cards */
+  --accent-foreground: 37 99 235;
 
   --destructive: 239 68 68;
   --destructive-foreground: 255 255 255;
 
-  --border: 206 208 212;
-  /* Divider Gray */
-  --input: 206 208 212;
-  --ring: 24 119 242;
+  --border: 228 230 235;
+  /* Light Border */
+  --input: 240 242 245;
+  --ring: 37 99 235;
 
-  --radius: 0.5rem;
-  /* slightly tighter radius for FB look */
+  --radius: 0.75rem;
 }
 
 @theme inline {
@@ -75,18 +75,19 @@
 
   body {
     @apply bg-background text-foreground;
-    /* Remove the sunset gradient, keep it clean like FB */
-    background-image: none;
+    /* Darker Navy Gradient */
+    background-image: linear-gradient(to bottom right, #020617, #0f172a, #172554);
+    background-attachment: fixed;
   }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white border-r border-[#ced0d4] shadow-sm;
-    /* Simpler, opaque sidebar */
+    @apply bg-black/40 backdrop-blur-md border-r border-white/10 shadow-lg;
   }
 
   .glass-card {
-    @apply bg-white rounded-lg shadow-sm border border-[#ced0d4];
+    /* White Card for Timeline */
+    @apply bg-white text-black rounded-xl border border-gray-200 shadow-sm;
   }
 }

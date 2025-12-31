@@ -31,7 +31,7 @@ export default async function Home() {
   return (
     <MainLayout>
       <div className="pb-8">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Welcome Home, {profile?.firstName || user.firstName}!</h1>
+        <h1 className="text-3xl font-bold mb-6 text-white">Welcome Home, {profile?.firstName || user.firstName}!</h1>
         <CreatePost />
         <FeedList />
       </div>

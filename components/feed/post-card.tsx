@@ -147,8 +147,8 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                     <AvatarFallback className="bg-primary text-white font-bold">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col flex-1">
-                    <span className="font-semibold text-[#050505] text-[15px]">{name}</span>
-                    <span className="text-xs text-gray-500 font-normal hover:underline cursor-pointer">
+                    <span className="font-semibold text-card-foreground text-[15px]">{name}</span>
+                    <span className="text-xs text-muted-foreground font-normal hover:underline cursor-pointer">
                         {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                     </span>
                 </div>
@@ -156,11 +156,11 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                 {isAuthor && (
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Trash2 className="w-4 h-4" />
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent className="glass border-white/20">
+                        <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Delete Post?</AlertDialogTitle>
                                 <AlertDialogDescription>
@@ -178,21 +178,21 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                 )}
             </CardHeader>
             <CardContent className="px-4 py-2">
-                <p className="whitespace-pre-wrap text-[#050505] text-[15px] leading-normal">{post.content}</p>
+                <p className="whitespace-pre-wrap text-card-foreground text-[15px] leading-normal">{post.content}</p>
                 {post.mediaUrls && post.mediaUrls.length > 0 && (
                     <div className="mt-3 -mx-4">
                         {post.mediaUrls.map((url, idx) => (
-                            <img key={idx} src={url} alt="Post media" className="w-full h-auto object-cover max-h-[600px] border-t border-b border-gray-100" />
+                            <img key={idx} src={url} alt="Post media" className="w-full h-auto object-cover max-h-[600px] border-t border-b border-border" />
                         ))}
                     </div>
                 )}
 
                 {(likesCount > 0 || (post.comments && post.comments.length > 0)) && (
-                    <div className="flex justify-between text-xs text-gray-500 mt-3 px-1">
+                    <div className="flex justify-between text-xs text-muted-foreground mt-3 px-1">
                         {likesCount > 0 && (
                             <div className="flex items-center gap-1">
                                 <div className="bg-primary rounded-full p-1">
-                                    <Heart className="w-2 h-2 text-white fill-white" />
+                                    <Heart className="w-2 h-2 text-primary-foreground fill-primary-foreground" />
                                 </div>
                                 <span>{likesCount}</span>
                             </div>
@@ -205,12 +205,12 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                     </div>
                 )}
             </CardContent>
-            <CardFooter className="flex-col !items-stretch px-2 py-1 mx-2 mt-1 border-t border-gray-200">
-                <div className="flex justify-between items-center text-gray-500 w-full mb-1">
+            <CardFooter className="flex-col !items-stretch px-2 py-1 mx-2 mt-1 border-t border-border">
+                <div className="flex justify-between items-center text-muted-foreground w-full mb-1">
                     <Button
                         variant="ghost"
                         onClick={handleLike}
-                        className={`flex-1 gap-2 hover:bg-gray-100 h-9 font-medium rounded-md ${isLiked ? "text-primary" : "text-gray-600"}`}
+                        className={`flex-1 gap-2 hover:bg-muted h-9 font-medium rounded-md ${isLiked ? "text-primary" : "text-muted-foreground"}`}
                     >
                         <Heart className={`w-5 h-5 ${isLiked ? "fill-primary" : ""}`} />
                         <span className="text-[15px]">Like</span>
@@ -218,7 +218,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                     <Button
                         variant="ghost"
                         onClick={() => setShowComments(!showComments)}
-                        className="flex-1 gap-2 hover:bg-gray-100 text-gray-600 h-9 font-medium rounded-md"
+                        className="flex-1 gap-2 hover:bg-muted text-muted-foreground h-9 font-medium rounded-md"
                     >
                         <MessageCircle className="w-5 h-5" />
                         <span className="text-[15px]">Comment</span>
@@ -227,13 +227,13 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
-                                className="flex-1 gap-2 hover:bg-gray-100 text-gray-600 h-9 font-medium rounded-md"
+                                className="flex-1 gap-2 hover:bg-muted text-muted-foreground h-9 font-medium rounded-md"
                             >
                                 <Share2 className="w-5 h-5" />
                                 <span className="text-[15px]">Share</span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="glass border-white/20">
+                        <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={handleRepost} className="gap-2 cursor-pointer">
                                 <Repeat2 className="w-4 h-4" />
                                 Repost to Feed
@@ -247,18 +247,18 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                 </div>
 
                 {showComments && (
-                    <div className="w-full pt-2 border-t border-gray-100 animate-in slide-in-from-top-2">
+                    <div className="w-full pt-2 border-t border-border animate-in slide-in-from-top-2">
                         {post.comments?.map(comment => (
                             <div key={comment.id} className="flex gap-2 mb-3">
                                 <Avatar className="w-8 h-8">
                                     <AvatarImage src={(comment.author.profileData as any)?.imageUrl} />
                                     <AvatarFallback>U</AvatarFallback>
                                 </Avatar>
-                                <div className="bg-gray-100 rounded-2xl px-3 py-2">
-                                    <span className="font-semibold text-xs block text-gray-900">
+                                <div className="bg-muted rounded-2xl px-3 py-2">
+                                    <span className="font-semibold text-xs block text-card-foreground">
                                         {(comment.author.profileData as any)?.firstName || 'User'}
                                     </span>
-                                    <span className="text-sm text-gray-800">{comment.content}</span>
+                                    <span className="text-sm text-card-foreground">{comment.content}</span>
                                 </div>
                             </div>
                         ))}
@@ -266,12 +266,12 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         <div className="flex gap-2 mt-2 items-center">
                             <Avatar className="w-8 h-8">
                                 {/* Current user avatar would be nice here but we'll use placeholder or pass it down */}
-                                <AvatarFallback className="bg-gray-200 text-gray-500">Me</AvatarFallback>
+                                <AvatarFallback className="bg-muted text-muted-foreground">Me</AvatarFallback>
                             </Avatar>
                             <div className="relative flex-1">
                                 <Input
                                     placeholder="Write a comment..."
-                                    className="bg-gray-100 border-none rounded-full h-9 pl-4 pr-20"
+                                    className="bg-muted border-none rounded-full h-9 pl-4 pr-20 text-card-foreground placeholder:text-muted-foreground"
                                     value={commentText}
                                     onChange={(e) => setCommentText(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleComment()}
@@ -299,7 +299,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                     <Button
                                         size="icon"
                                         variant="ghost"
-                                        className="h-7 w-7 text-primary hover:bg-blue-100 rounded-full"
+                                        className="h-7 w-7 text-primary hover:bg-primary/10 rounded-full"
                                         onClick={handleComment}
                                         disabled={!commentText.trim()}
                                     >

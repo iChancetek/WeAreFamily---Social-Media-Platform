@@ -26,9 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" className="dark">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-[linear-gradient(to_bottom_right,#020617,#0f172a,#172554)] bg-fixed text-white`}
           suppressHydrationWarning
         >
           {children}

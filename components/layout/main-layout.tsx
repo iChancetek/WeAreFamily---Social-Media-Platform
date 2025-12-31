@@ -8,10 +8,10 @@ export async function MainLayout({ children }: { children: React.ReactNode }) {
     const isAdmin = user?.role === 'admin';
 
     return (
-        <div className="flex h-screen bg-gray-50/50">
-            <Sidebar className="hidden md:flex w-64 border-r bg-white" isAdmin={isAdmin} />
+        <div className="flex h-screen bg-transparent">
+            <Sidebar className="hidden md:flex w-64 border-r border-white/10" isAdmin={isAdmin} />
             <div className="flex-1 flex flex-col min-w-0">
-                <TopNav className="md:hidden border-b bg-white" />
+                <TopNav className="md:hidden border-b border-white/10" />
                 <main className="flex-1 overflow-y-auto p-4 md:p-8">
                     <div className="mx-auto max-w-2xl">
                         {children}

@@ -7,8 +7,8 @@ import { Sidebar } from "./sidebar";
 
 export function TopNav({ className }: { className?: string }) {
     return (
-        <header className={`flex items-center justify-between px-4 h-14 ${className}`}>
-            <div className="flex items-center gap-2 font-bold text-lg text-rose-500">
+        <header className={`flex items-center justify-between px-4 h-14 text-white ${className}`}>
+            <div className="flex items-center gap-2 font-bold text-lg text-primary">
                 <Heart className="w-5 h-5 fill-current" />
                 WeAreFamily
             </div>
