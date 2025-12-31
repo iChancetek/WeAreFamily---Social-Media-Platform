@@ -1,16 +1,26 @@
-import { Webhook } from 'svix'
-import { headers } from 'next/headers'
-import { WebhookEvent } from '@clerk/nextjs/server'
-import { db } from '@/db'
-import { users } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import { Webhook } from 'svix';
+import { headers } from 'next/headers';
+import { neon } from '@neondatabase/serverless';
+
+// Add these to force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
-    // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
-    const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
+    // Move database connection HERE (inside the function)
+    const DATABASE_URL = process.env.DATABASE_URL;
+
+    if (!DATABASE_URL) {
+        console.error('DATABASE_URL is not set');
+        return new Response('Database configuration error', { status: 500 });
+    }
+
+    const sql = neon(DATABASE_URL);
+
+    const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
 
     if (!WEBHOOK_SECRET) {
-        throw new Error('Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local')
+        throw new Error('CLERK_WEBHOOK_SECRET is not set');
     }
 
     // Get the headers
@@ -19,68 +29,47 @@ export async function POST(req: Request) {
     const svix_timestamp = headerPayload.get("svix-timestamp");
     const svix_signature = headerPayload.get("svix-signature");
 
-    // If there are no headers, error out
     if (!svix_id || !svix_timestamp || !svix_signature) {
-        return new Response('Error occured -- no svix headers', {
+        return new Response('Error: Missing svix headers', {
             status: 400
-        })
+        });
     }
 
     // Get the body
-    const payload = await req.json()
+    const payload = await req.json();
     const body = JSON.stringify(payload);
 
-    // Create a new Svix instance with your secret.
+    // Verify the webhook
     const wh = new Webhook(WEBHOOK_SECRET);
+    let evt: any;
 
-    let evt: WebhookEvent
-
-    // Verify the payload with the headers
     try {
         evt = wh.verify(body, {
             "svix-id": svix_id,
             "svix-timestamp": svix_timestamp,
             "svix-signature": svix_signature,
-        }) as WebhookEvent
+        }) as any;
     } catch (err) {
         console.error('Error verifying webhook:', err);
-        return new Response('Error occured', {
+        return new Response('Error: Invalid signature', {
             status: 400
-        })
+        });
     }
 
-    // Do something with the payload
-    // For this guide, you simply log the payload to the console
+    // Handle the webhook
     const eventType = evt.type;
+    console.log('Webhook event type:', eventType);
 
-    if (eventType === 'user.created') {
-        const { id, email_addresses, image_url, first_name, last_name } = evt.data;
+    if (eventType === 'user.created' || eventType === 'user.updated') {
+        const { id, email_addresses, first_name, last_name, image_url } = evt.data;
 
-        const email = email_addresses[0]?.email_address;
-        const profileData = {
-            firstName: first_name,
-            lastName: last_name,
-            imageUrl: image_url,
-        };
+        console.log('Processing user:', id);
 
-        if (email) {
-            // Check if user exists (idempotency)
-            const existingUser = await db.query.users.findFirst({
-                where: eq(users.email, email)
-            });
-
-            const role = email === 'Chancellor@ichancetek.com' ? 'admin' : 'pending';
-
-            if (!existingUser) {
-                await db.insert(users).values({
-                    id: id,
-                    email: email,
-                    role: role,
-                    profileData: profileData,
-                });
-            }
-        }
+        // Use sql here for database operations
+        // Example:
+        // await sql`INSERT INTO users (clerk_id, email, first_name, last_name, image_url) 
+        //           VALUES (${id}, ${email_addresses[0].email_address}, ${first_name}, ${last_name}, ${image_url})
+        //           ON CONFLICT (clerk_id) DO UPDATE SET ...`;
     }
 
-    return new Response('', { status: 200 })
-}
+    return new Response('Webhook processed successfully', { status: 200 });
