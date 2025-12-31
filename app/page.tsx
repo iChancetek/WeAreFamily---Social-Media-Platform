@@ -5,12 +5,13 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { CreatePost } from "@/components/feed/create-post";
 import { FeedList } from "@/components/feed/feed-list";
+import { LandingPage } from "@/components/landing-page";
 
 export default async function Home() {
   const user = await currentUser();
 
   if (!user) {
-    redirect("/sign-in");
+    return <LandingPage />;
   }
 
   const dbUser = await getUserProfile();

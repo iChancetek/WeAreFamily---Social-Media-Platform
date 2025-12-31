@@ -20,11 +20,31 @@ export const posts = pgTable("posts", {
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const comments = pgTable("comments", {
+    id: serial("id").primaryKey(),
+    postId: serial("post_id").references(() => posts.id).notNull(),
+    authorId: text("author_id").references(() => users.id).notNull(),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+    post: one(posts, {
+        fields: [comments.postId],
+        references: [posts.id],
+    }),
+    author: one(users, {
+        fields: [comments.authorId],
+        references: [users.id],
+    }),
+}));
+
 export const postsRelations = relations(posts, ({ one, many }) => ({
     author: one(users, {
         fields: [posts.authorId],
         references: [users.id],
     }),
+    comments: many(comments),
 }));
 
 export const events = pgTable("events", {

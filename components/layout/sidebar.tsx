@@ -24,33 +24,38 @@ export function Sidebar({ className, isAdmin }: SidebarProps) {
     ];
 
     return (
-        <div className={cn("flex flex-col h-full py-4", className)}>
-            <div className="px-6 py-2">
-                <h2 className="text-xl font-bold flex items-center gap-2 text-rose-500">
-                    <Heart className="w-6 h-6 fill-current" />
+        <div className={cn("flex flex-col h-full py-4 glass fixed left-0 top-0 bottom-0 w-64 z-50", className)}>
+            <div className="px-6 py-4">
+                <h2 className="text-2xl font-bold flex items-center gap-2 text-primary">
+                    <Heart className="w-8 h-8 fill-primary text-primary" />
                     WeAreFamily
                 </h2>
             </div>
-            <nav className="flex-1 px-4 mt-6 space-y-1">
+            <nav className="flex-1 px-2 mt-4 space-y-1">
                 {links.map((link) => {
                     const isActive = pathname === link.href;
                     return (
                         <Link key={link.href} href={link.href}>
                             <Button
-                                variant={isActive ? "secondary" : "ghost"}
-                                className={cn("w-full justify-start gap-3", isActive && "bg-rose-50 text-rose-600 hover:bg-rose-100")}
+                                variant="ghost"
+                                className={cn(
+                                    "w-full justify-start gap-4 text-base font-medium transition-colors h-12 rounded-lg px-4",
+                                    isActive
+                                        ? "bg-accent text-primary"
+                                        : "hover:bg-gray-100 text-gray-600"
+                                )}
                             >
-                                <link.icon className="w-5 h-5" />
+                                <link.icon className={cn("w-6 h-6", isActive ? "text-primary" : "text-gray-500")} />
                                 {link.label}
                             </Button>
                         </Link>
                     )
                 })}
             </nav>
-            <div className="px-4 mt-auto">
+            <div className="px-2 mt-auto mb-4">
                 <SignOutButton>
-                    <Button variant="ghost" className="w-full justify-start gap-3 text-gray-500 hover:text-red-600">
-                        <LogOut className="w-5 h-5" />
+                    <Button variant="ghost" className="w-full justify-start gap-4 text-gray-600 hover:bg-gray-100 px-4 h-12">
+                        <LogOut className="w-6 h-6" />
                         Sign Out
                     </Button>
                 </SignOutButton>

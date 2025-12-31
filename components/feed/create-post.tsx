@@ -1,27 +1,34 @@
 'use client'
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { createPost } from "@/app/actions/posts";
+import { generatePostContent } from "@/app/actions/ai";
+import { uploadFile } from "@/app/actions/upload";
 import { toast } from "sonner";
-import { ImageIcon, Loader2, Send } from "lucide-react";
+import { ImageIcon, Loader2, Send, Sparkles, X } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 
 export function CreatePost() {
     const { user } = useUser();
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleSubmit = async () => {
-        if (!content.trim()) return;
+        if (!content.trim() && mediaUrls.length === 0) return;
 
         setIsSubmitting(true);
         try {
-            await createPost(content);
+            await createPost(content, mediaUrls);
             setContent("");
+            setMediaUrls([]);
             toast.success("Moment shared successfully! ❤️");
         } catch {
             toast.error("Failed to share moment. Please try again.");
@@ -30,33 +37,111 @@ export function CreatePost() {
         }
     }
 
+    const handleMagic = async () => {
+        if (!content.trim()) {
+            toast.error("Please type a topic first!");
+            return;
+        }
+
+        setIsGenerating(true);
+        try {
+            const magicText = await generatePostContent(content);
+            setContent(magicText);
+            toast.success("Magic applied! ✨");
+        } catch {
+            toast.error("Magic failed. Try again!");
+        } finally {
+            setIsGenerating(false);
+        }
+    }
+
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setIsUploading(true);
+            try {
+                const formData = new FormData();
+                formData.append('file', e.target.files[0]);
+                const url = await uploadFile(formData);
+                setMediaUrls(prev => [...prev, url]);
+                toast.success("Photo uploaded! 📸");
+            } catch {
+                toast.error("Upload failed");
+            } finally {
+                setIsUploading(false);
+            }
+        }
+    }
+
     return (
-        <Card className="mb-8 border-rose-100 shadow-sm">
-            <CardContent className="p-4 pt-6">
-                <div className="flex gap-4">
-                    <Avatar className="w-10 h-10">
+        <Card className="mb-6 border-none glass-card rounded-lg">
+            <CardContent className="p-4">
+                <div className="flex gap-3">
+                    <Avatar className="w-10 h-10 border border-gray-200">
                         <AvatarImage src={user?.imageUrl} />
                         <AvatarFallback>{user?.firstName?.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 space-y-4">
+                    <div className="flex-1 space-y-3">
                         <Textarea
-                            placeholder="What's a happy memory you're thinking of?"
-                            className="min-h-[100px] bg-gray-50/50 border-gray-200 focus:border-rose-300 focus:ring-rose-200 resize-none"
+                            placeholder={`What's on your mind, ${user?.firstName || 'User'}?`}
+                            className="min-h-[80px] bg-gray-100 hover:bg-gray-200 focus:bg-white border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                         />
-                        <div className="flex justify-between items-center">
-                            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-rose-600 hover:bg-rose-50">
-                                <ImageIcon className="w-4 h-4 mr-2" />
-                                Photo/Video
-                            </Button>
+
+                        {mediaUrls.length > 0 && (
+                            <div className="flex gap-2 mb-2 overflow-x-auto">
+                                {mediaUrls.map((url, idx) => (
+                                    <div key={idx} className="relative w-20 h-20 rounded-md overflow-hidden group">
+                                        <img src={url} alt="Preview" className="w-full h-full object-cover" />
+                                        <button
+                                            onClick={() => setMediaUrls(urls => urls.filter((_, i) => i !== idx))}
+                                            className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                            <div className="flex gap-2">
+                                <input
+                                    type="file"
+                                    hidden
+                                    ref={fileInputRef}
+                                    accept="image/*,video/*"
+                                    onChange={handleFileSelect}
+                                />
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading}
+                                    className="text-gray-600 hover:bg-gray-100 gap-2"
+                                >
+                                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-green-500" /> : <ImageIcon className="w-6 h-6 text-green-500" />}
+                                    <span className="text-[15px] font-semibold text-gray-600">Photo/Video</span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleMagic}
+                                    disabled={isGenerating}
+                                    className="text-gray-600 hover:bg-gray-100 gap-2"
+                                >
+                                    {isGenerating ? <Loader2 className="w-5 h-5 animate-spin text-purple-500" /> : <Sparkles className="w-6 h-6 text-purple-500" />}
+                                    <span className="text-[15px] font-semibold text-gray-600">Magic AI</span>
+                                </Button>
+                            </div>
+
                             <Button
                                 onClick={handleSubmit}
-                                disabled={!content.trim() || isSubmitting}
-                                className="bg-rose-500 hover:bg-rose-600 text-white"
+                                disabled={(!content.trim() && mediaUrls.length === 0) || isSubmitting || isUploading}
+                                className="bg-primary hover:bg-blue-600 text-white font-semibold px-8"
                             >
                                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                                Share
+                                Post
                             </Button>
                         </div>
                     </div>
