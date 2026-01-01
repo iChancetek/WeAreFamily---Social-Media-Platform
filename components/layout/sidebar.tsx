@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Home, User, Calendar, MessageCircle, Settings, LogOut, Heart, ImageIcon } from "lucide-react";
+import { Home, User, Calendar, MessageCircle, Settings, LogOut, Heart, ImageIcon, Shield } from "lucide-react";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -18,11 +18,13 @@ export function Sidebar({ className, isAdmin }: SidebarProps) {
 
     const links = [
         { href: "/", label: "Home", icon: Home },
-        ...(isAdmin ? [{ href: "/admin", label: "Admin Console", icon: Settings }] : []),
+        ...(isAdmin ? [{ href: "/admin", label: "Admin Console", icon: Shield }] : []),
         { href: "/messages", label: "Messages", icon: MessageCircle },
         { href: "/gallery", label: "Gallery", icon: ImageIcon },
         { href: "/events", label: "Events", icon: Calendar },
+        { href: "/family", label: "Family", icon: Heart }, // Using Heart as placeholder, could be Users
         { href: user ? `/u/${user.id}` : "#", label: "Profile", icon: User },
+        { href: "/settings", label: "Settings", icon: Settings },
     ];
 
     return (

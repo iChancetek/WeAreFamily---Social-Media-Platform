@@ -7,6 +7,9 @@ import { ProfileHeader } from "@/components/profile/profile-header";
 import { PostCard } from "@/components/feed/post-card";
 import { getUserProfile } from "@/lib/auth";
 
+import { getFamilyStatus } from "@/app/actions/family";
+import { Lock } from "lucide-react";
+
 export default async function ProfilePage({ params }: { params: { userId: string } }) {
     const currentUser = await getUserProfile();
     if (!currentUser || currentUser.role === 'pending') {
@@ -22,20 +25,34 @@ export default async function ProfilePage({ params }: { params: { userId: string
         notFound();
     }
 
-    const userPosts = await db.query.posts.findMany({
+    const isOwnProfile = currentUser.id === userId;
+    const familyStatus = await getFamilyStatus(userId);
+    const hasAccess = isOwnProfile || familyStatus.status === 'accepted' || currentUser.role === 'admin';
+
+    const userPosts = hasAccess ? await db.query.posts.findMany({
         where: eq(posts.authorId, userId),
         orderBy: [desc(posts.createdAt)],
         with: {
             author: true
         }
-    });
+    }) : [];
 
     return (
         <MainLayout>
-            <ProfileHeader user={user} isOwnProfile={currentUser.id === userId} />
+            <ProfileHeader user={user} isOwnProfile={isOwnProfile} familyStatus={familyStatus} />
             <div className="mt-8">
                 <h2 className="text-xl font-bold mb-4">Personal Timeline</h2>
-                {userPosts.length === 0 ? (
+                {!hasAccess ? (
+                    <div className="flex flex-col items-center justify-center p-10 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
+                        <div className="bg-slate-200 dark:bg-slate-800 p-4 rounded-full mb-4">
+                            <Lock className="w-8 h-8 text-slate-500" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Private Profile</h3>
+                        <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-sm">
+                            You must be family to view {user.displayName || "this user"}'s posts and photos. Send a family request to connect!
+                        </p>
+                    </div>
+                ) : userPosts.length === 0 ? (
                     <p className="text-gray-500">No posts yet.</p>
                 ) : (
                     <div className="space-y-4">

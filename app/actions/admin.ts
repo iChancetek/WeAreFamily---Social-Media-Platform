@@ -50,3 +50,16 @@ export async function makeAdmin(userId: string) {
 
     revalidatePath('/admin')
 }
+
+export async function toggleUserStatus(userId: string, isActive: boolean) {
+    const admin = await getUserProfile()
+    if (admin?.role !== 'admin') {
+        throw new Error("Unauthorized")
+    }
+
+    await db.update(users)
+        .set({ isActive })
+        .where(eq(users.id, userId))
+
+    revalidatePath('/admin')
+}

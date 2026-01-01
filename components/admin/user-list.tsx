@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { approveUser, rejectUser, makeAdmin } from "@/app/actions/admin"
+import { approveUser, rejectUser, makeAdmin, toggleUserStatus } from "@/app/actions/admin"
 import { toast } from "sonner"
 import { MoreHorizontal, Check, X, Shield } from "lucide-react"
 import {
@@ -26,6 +26,9 @@ type User = {
     id: string
     email: string
     role: "admin" | "member" | "pending"
+    isActive: boolean
+    displayName: string | null
+    imageUrl: string | null
     profileData: unknown
     createdAt: Date
 }
@@ -58,12 +61,22 @@ export function UserList({ users }: { users: User[] }) {
         }
     }
 
+    const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+        try {
+            await toggleUserStatus(id, !currentStatus)
+            toast.success(`User ${!currentStatus ? 'enabled' : 'disabled'}`)
+        } catch {
+            toast.error("Failed to update status")
+        }
+    }
+
     return (
         <Table>
             <TableHeader>
                 <TableRow>
                     <TableHead>User</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -72,14 +85,14 @@ export function UserList({ users }: { users: User[] }) {
                 {users.map((user) => {
                     // Type assertion for profileData since it's jsonb
                     const profile = user.profileData as { firstName?: string, lastName?: string, imageUrl?: string } | null;
-                    const name = profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.email;
+                    const name = user.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.email);
                     const initials = name.slice(0, 2).toUpperCase();
 
                     return (
-                        <TableRow key={user.id}>
+                        <TableRow key={user.id} className={!user.isActive ? "opacity-50" : ""}>
                             <TableCell className="flex items-center gap-3">
                                 <Avatar>
-                                    <AvatarImage src={profile?.imageUrl} />
+                                    <AvatarImage src={user.imageUrl || profile?.imageUrl} />
                                     <AvatarFallback>{initials}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col">
@@ -90,6 +103,11 @@ export function UserList({ users }: { users: User[] }) {
                             <TableCell>
                                 <Badge variant={user.role === 'admin' ? 'default' : user.role === 'member' ? 'secondary' : 'outline'}>
                                     {user.role}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>
+                                <Badge variant={user.isActive ? 'outline' : 'destructive'}>
+                                    {user.isActive ? 'Active' : 'Disabled'}
                                 </Badge>
                             </TableCell>
                             <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
@@ -110,12 +128,18 @@ export function UserList({ users }: { users: User[] }) {
                                         )}
                                         {user.role !== 'pending' && user.role !== 'admin' && (
                                             <DropdownMenuItem onClick={() => handleReject(user.id)}>
-                                                <X className="mr-2 h-4 w-4 text-red-600" /> Revoke Access
+                                                <X className="mr-2 h-4 w-4 text-orange-600" /> Revoke Access (Pending)
                                             </DropdownMenuItem>
                                         )}
                                         {user.role !== 'admin' && (
                                             <DropdownMenuItem onClick={() => handleMakeAdmin(user.id)}>
                                                 <Shield className="mr-2 h-4 w-4 text-blue-600" /> Make Admin
+                                            </DropdownMenuItem>
+                                        )}
+                                        {user.role !== 'admin' && (
+                                            <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.isActive)}>
+                                                <X className={`mr-2 h-4 w-4 ${user.isActive ? 'text-red-600' : 'text-green-600'}`} />
+                                                {user.isActive ? 'Disable User' : 'Enable User'}
                                             </DropdownMenuItem>
                                         )}
                                     </DropdownMenuContent>

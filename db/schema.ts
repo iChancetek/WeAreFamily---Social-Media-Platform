@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, jsonb, serial, pgEnum, uuid, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, jsonb, serial, pgEnum, uuid, integer, boolean } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["admin", "member", "pending"]);
@@ -7,6 +7,12 @@ export const users = pgTable("users", {
     id: text("id").primaryKey(), // Clerk ID
     email: text("email").notNull().unique(),
     role: roleEnum("role").default("pending").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    displayName: text("display_name"),
+    imageUrl: text("image_url"),
+    bio: text("bio"),
+    language: text("language").default("en"), // 'en' | 'es'
+    theme: text("theme").default("system"), // 'light' | 'dark' | 'system'
     birthday: text("birthday"), // Format: MM-DD
     lastCelebratedYear: integer("last_celebrated_year"), // Tracks last year we made a post
     profileData: jsonb("profile_data"), // Bio, avatar url, etc.
@@ -113,4 +119,30 @@ export const storiesRelations = relations(stories, ({ one }) => ({
 export const usersRelations = relations(users, ({ many }) => ({
     posts: many(posts),
     stories: many(stories),
+    sentFamilyRequests: many(familyRequests, { relationName: "sender" }),
+    receivedFamilyRequests: many(familyRequests, { relationName: "receiver" }),
+}));
+
+export const requestStatusEnum = pgEnum("request_status", ["pending", "accepted", "rejected"]);
+
+export const familyRequests = pgTable("family_requests", {
+    id: serial("id").primaryKey(),
+    senderId: text("sender_id").references(() => users.id).notNull(),
+    receiverId: text("receiver_id").references(() => users.id).notNull(),
+    status: requestStatusEnum("status").default("pending").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const familyRequestsRelations = relations(familyRequests, ({ one }) => ({
+    sender: one(users, {
+        fields: [familyRequests.senderId],
+        references: [users.id],
+        relationName: "sender"
+    }),
+    receiver: one(users, {
+        fields: [familyRequests.receiverId],
+        references: [users.id],
+        relationName: "receiver"
+    }),
 }));

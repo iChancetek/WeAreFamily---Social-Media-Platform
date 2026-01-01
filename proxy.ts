@@ -1,8 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/timeline(.*)', '/messages(.*)', '/events(.*)']);
 
-export default clerkMiddleware(async (auth, req) => {
+// Export "proxy" as required by Next.js 16+
+export const proxy = clerkMiddleware(async (auth, req) => {
     if (isProtectedRoute(req)) await auth.protect();
 });
 
