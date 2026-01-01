@@ -10,6 +10,7 @@ export const users = pgTable("users", {
     birthday: text("birthday"), // Format: MM-DD
     lastCelebratedYear: integer("last_celebrated_year"), // Tracks last year we made a post
     profileData: jsonb("profile_data"), // Bio, avatar url, etc.
+    lastActiveAt: timestamp("last_active_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -90,4 +91,26 @@ export const messagesRelations = relations(messages, ({ one }) => ({
         fields: [messages.senderId],
         references: [users.id],
     }),
+}));
+
+export const stories = pgTable("stories", {
+    id: serial("id").primaryKey(),
+    authorId: text("author_id").references(() => users.id).notNull(),
+    mediaUrl: text("media_url").notNull(),
+    mediaType: text("media_type").notNull(), // 'image' | 'video'
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const storiesRelations = relations(stories, ({ one }) => ({
+    author: one(users, {
+        fields: [stories.authorId],
+        references: [users.id],
+    }),
+}));
+
+// Update users relations to include stories if not already present, or rely on reverse relation
+export const usersRelations = relations(users, ({ many }) => ({
+    posts: many(posts),
+    stories: many(stories),
 }));

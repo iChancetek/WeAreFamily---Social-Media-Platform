@@ -1,5 +1,7 @@
 import { Sidebar } from "./sidebar";
 import { TopNav } from "./top-nav";
+import { RightSidebar } from "./right-sidebar";
+import { ActivityTracker } from "./activity-tracker";
 
 import { getUserProfile } from "@/lib/auth";
 
@@ -9,6 +11,7 @@ export async function MainLayout({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="flex h-screen bg-transparent">
+            <ActivityTracker />
             <Sidebar className="hidden md:flex w-64 border-r border-white/10" isAdmin={isAdmin} />
             <div className="flex-1 flex flex-col min-w-0">
                 <TopNav className="md:hidden border-b border-white/10" />
@@ -18,6 +21,7 @@ export async function MainLayout({ children }: { children: React.ReactNode }) {
                     </div>
                 </main>
             </div>
+            <RightSidebar className="border-l border-white/10 bg-transparent" />
         </div>
     );
 }
