@@ -1,6 +1,6 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
-import { neon } from '@neondatabase/serverless';
+import { getDb } from "@/lib/db";
 
 // Force dynamic rendering for webhooks
 export const dynamic = 'force-dynamic';
@@ -8,14 +8,7 @@ export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   // Database connection (inside function for Edge safety)
-  const DATABASE_URL = process.env.DATABASE_URL;
-
-  if (!DATABASE_URL) {
-    console.error('DATABASE_URL is not set');
-    return new Response('Database configuration error', { status: 500 });
-  }
-
-  const sql = neon(DATABASE_URL);
+  const sql = getDb();
 
   // Clerk webhook secret
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;

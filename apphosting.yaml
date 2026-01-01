@@ -30,3 +30,8 @@ env:
     secret: OPENAI_API_KEY
   - variable: CLERK_WEBHOOK_SECRET
     secret: CLERK_WEBHOOK_SECRET
+  - variable: DATABASE_URL
+    secret: DATABASE_URL
+    availability:
+      - BUILD
+      - RUNTIME

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getUserProfile } from "@/lib/auth";
 import { db } from "@/db";
 import { users } from "@/db/schema";
