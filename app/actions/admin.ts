@@ -1,7 +1,6 @@
 'use server'
 
-import { db } from "@/lib/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
 import { revalidatePath } from "next/cache";
 import { getUserProfile } from "@/lib/auth";
 
@@ -11,7 +10,7 @@ export async function approveUser(userId: string) {
         throw new Error("Unauthorized")
     }
 
-    await updateDoc(doc(db, "users", userId), { role: 'member' });
+    await adminDb.collection("users").doc(userId).update({ role: 'member' });
 
     revalidatePath('/admin')
 }
@@ -22,7 +21,7 @@ export async function rejectUser(userId: string) {
         throw new Error("Unauthorized")
     }
 
-    await updateDoc(doc(db, "users", userId), { role: 'pending' });
+    await adminDb.collection("users").doc(userId).update({ role: 'pending' });
 
     revalidatePath('/admin')
 }
@@ -33,7 +32,7 @@ export async function makeAdmin(userId: string) {
         throw new Error("Unauthorized")
     }
 
-    await updateDoc(doc(db, "users", userId), { role: 'admin' });
+    await adminDb.collection("users").doc(userId).update({ role: 'admin' });
 
     revalidatePath('/admin')
 }
@@ -44,7 +43,7 @@ export async function toggleUserStatus(userId: string, isActive: boolean) {
         throw new Error("Unauthorized")
     }
 
-    await updateDoc(doc(db, "users", userId), { isActive });
+    await adminDb.collection("users").doc(userId).update({ isActive });
 
     revalidatePath('/admin')
 }

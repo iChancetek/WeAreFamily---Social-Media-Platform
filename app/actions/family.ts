@@ -1,7 +1,6 @@
 'use server'
 
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -16,18 +15,16 @@ export async function sendFamilyRequest(receiverId: string) {
     if (user.id === receiverId) throw new Error("Cannot add yourself")
 
     // Check if request already exists
-    const requestsQuery = query(
-        collection(db, "familyRequests"),
-        where("senderId", "==", user.id),
-        where("receiverId", "==", receiverId)
-    );
-    const existing = await getDocs(requestsQuery);
+    const existing = await adminDb.collection("familyRequests")
+        .where("senderId", "==", user.id)
+        .where("receiverId", "==", receiverId)
+        .get();
 
     if (!existing.empty) {
         throw new Error("Request already exists");
     }
 
-    const docRef = await addDoc(collection(db, "familyRequests"), {
+    const docRef = await adminDb.collection("familyRequests").add({
         senderId: user.id,
         receiverId: receiverId,
         status: 'pending',
@@ -39,24 +36,24 @@ export async function sendFamilyRequest(receiverId: string) {
 }
 
 export async function acceptFamilyRequest(requestId: string) {
-    await updateDoc(doc(db, "familyRequests", requestId), {
+    await adminDb.collection("familyRequests").doc(requestId).update({
         status: 'accepted'
     });
     revalidatePath('/family')
 }
 
 export async function rejectFamilyRequest(requestId: string) {
-    await deleteDoc(doc(db, "familyRequests", requestId));
+    await adminDb.collection("familyRequests").doc(requestId).delete();
     revalidatePath('/family')
 }
 
 export async function cancelFamilyRequest(requestId: string) {
-    await deleteDoc(doc(db, "familyRequests", requestId));
+    await adminDb.collection("familyRequests").doc(requestId).delete();
     revalidatePath('/family')
 }
 
 export async function denyFamilyRequest(requestId: string) {
-    await updateDoc(doc(db, "familyRequests", requestId), {
+    await adminDb.collection("familyRequests").doc(requestId).update({
         status: 'rejected'
     });
     revalidatePath('/family')
@@ -66,22 +63,15 @@ export async function getFamilyRequests() {
     const user = await getUserProfile();
     if (!user) return { incoming: [], sent: [] };
 
-    const incomingQuery = query(
-        collection(db, "familyRequests"),
-        where("receiverId", "==", user.id),
-        where("status", "==", 'pending')
-    );
+    const incomingSnapshot = await adminDb.collection("familyRequests")
+        .where("receiverId", "==", user.id)
+        .where("status", "==", 'pending')
+        .get();
 
-    const sentQuery = query(
-        collection(db, "familyRequests"),
-        where("senderId", "==", user.id),
-        where("status", "==", 'pending')
-    );
-
-    const [incomingSnapshot, sentSnapshot] = await Promise.all([
-        getDocs(incomingQuery),
-        getDocs(sentQuery)
-    ]);
+    const sentSnapshot = await adminDb.collection("familyRequests")
+        .where("senderId", "==", user.id)
+        .where("status", "==", 'pending')
+        .get();
 
     return {
         incoming: incomingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any),
@@ -93,7 +83,7 @@ export async function getFamilyRequests() {
 export const getPendingRequests = getFamilyRequests;
 
 export async function searchFamilyMembers(searchTerm: string) {
-    const usersSnapshot = await getDocs(collection(db, "users"));
+    const usersSnapshot = await adminDb.collection("users").get();
     const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any);
 
     return allUsers.filter((u: any) =>
@@ -110,21 +100,15 @@ export async function getFamilyMembers() {
     if (!user) return [];
 
     // Get accepted family requests
-    const sentQuery = query(
-        collection(db, "familyRequests"),
-        where("senderId", "==", user.id),
-        where("status", "==", 'accepted')
-    );
-    const receivedQuery = query(
-        collection(db, "familyRequests"),
-        where("receiverId", "==", user.id),
-        where("status", "==", 'accepted')
-    );
+    const sentSnapshot = await adminDb.collection("familyRequests")
+        .where("senderId", "==", user.id)
+        .where("status", "==", 'accepted')
+        .get();
 
-    const [sentSnapshot, receivedSnapshot] = await Promise.all([
-        getDocs(sentQuery),
-        getDocs(receivedQuery)
-    ]);
+    const receivedSnapshot = await adminDb.collection("familyRequests")
+        .where("receiverId", "==", user.id)
+        .where("status", "==", 'accepted')
+        .get();
 
     const familyIds = new Set<string>();
     sentSnapshot.docs.forEach(doc => familyIds.add(doc.data().receiverId));
@@ -133,9 +117,9 @@ export async function getFamilyMembers() {
     // Fetch family member details
     const familyMembers = await Promise.all(
         Array.from(familyIds).map(async id => {
-            const userDoc = await getDocs(query(collection(db, "users"), where("id", "==", id)));
-            if (!userDoc.empty) {
-                return { id: userDoc.docs[0].id, ...userDoc.docs[0].data() };
+            const userDoc = await adminDb.collection("users").doc(id).get();
+            if (userDoc.exists) {
+                return { id: userDoc.id, ...userDoc.data() };
             }
             return null;
         })
@@ -148,21 +132,15 @@ export async function getFamilyStatus(targetUserId: string): Promise<FamilyStatu
     const user = await getUserProfile();
     if (!user) return { status: 'none' } as FamilyStatus;
 
-    const sentQuery = query(
-        collection(db, "familyRequests"),
-        where("senderId", "==", user.id),
-        where("receiverId", "==", targetUserId)
-    );
-    const receivedQuery = query(
-        collection(db, "familyRequests"),
-        where("senderId", "==", targetUserId),
-        where("receiverId", "==", user.id)
-    );
+    const sentSnapshot = await adminDb.collection("familyRequests")
+        .where("senderId", "==", user.id)
+        .where("receiverId", "==", targetUserId)
+        .get();
 
-    const [sentSnapshot, receivedSnapshot] = await Promise.all([
-        getDocs(sentQuery),
-        getDocs(receivedQuery)
-    ]);
+    const receivedSnapshot = await adminDb.collection("familyRequests")
+        .where("senderId", "==", targetUserId)
+        .where("receiverId", "==", user.id)
+        .get();
 
     if (!sentSnapshot.empty) {
         const data = sentSnapshot.docs[0].data();

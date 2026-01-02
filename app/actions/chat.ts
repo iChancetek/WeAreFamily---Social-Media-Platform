@@ -1,21 +1,7 @@
 "use server";
 
-import { db } from "@/lib/firebase";
-import {
-    collection,
-    doc,
-    addDoc,
-    getDoc,
-    getDocs,
-    updateDoc,
-    query,
-    where,
-    orderBy,
-    limit,
-    arrayUnion,
-    serverTimestamp,
-    Timestamp
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -55,12 +41,11 @@ export async function checkOrCreateChat(targetUserId: string) {
     if (myId === targetUserId) throw new Error("Cannot chat with yourself");
 
     // Check if chat already exists between these two users
-    const chatsQuery = query(
-        collection(db, "chats"),
-        where("participants", "array-contains", myId)
-    );
-
-    const chatsSnapshot = await getDocs(chatsQuery);
+    // Note: Firestore Admin SDK doesn't support array-contains for multiple fields easily in one query if restricted
+    // But basic array-contains works.
+    const chatsSnapshot = await adminDb.collection("chats")
+        .where("participants", "array-contains", myId)
+        .get();
 
     // Find existing 1-on-1 chat
     const existingChat = chatsSnapshot.docs.find(chatDoc => {
@@ -74,11 +59,11 @@ export async function checkOrCreateChat(targetUserId: string) {
     }
 
     // Create new chat
-    const newChatRef = await addDoc(collection(db, "chats"), {
+    const newChatRef = await adminDb.collection("chats").add({
         participants: [myId, targetUserId],
         isGroup: false,
-        lastMessageAt: serverTimestamp(),
-        createdAt: serverTimestamp(),
+        lastMessageAt: FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
     });
 
     revalidatePath("/messages");
@@ -91,13 +76,10 @@ export async function getChats(): Promise<ChatSession[]> {
     const myId = user.id;
 
     // Fetch chats where user is participant
-    const chatsQuery = query(
-        collection(db, "chats"),
-        where("participants", "array-contains", myId),
-        orderBy("lastMessageAt", "desc")
-    );
-
-    const chatsSnapshot = await getDocs(chatsQuery);
+    const chatsSnapshot = await adminDb.collection("chats")
+        .where("participants", "array-contains", myId)
+        .orderBy("lastMessageAt", "desc")
+        .get();
 
     // Enrich with other user details
     const enrichedChats = await Promise.all(chatsSnapshot.docs.map(async (chatDoc) => {
@@ -107,26 +89,25 @@ export async function getChats(): Promise<ChatSession[]> {
 
         let otherUser: ChatUser | undefined;
         if (otherId) {
-            const userDoc = await getDoc(doc(db, "users", otherId));
-            if (userDoc.exists()) {
+            const userDoc = await adminDb.collection("users").doc(otherId).get();
+            if (userDoc.exists) {
                 const userData = userDoc.data();
                 otherUser = {
                     id: userDoc.id,
-                    email: userData.email,
-                    displayName: userData.displayName || "Family Member",
-                    imageUrl: userData.imageUrl || null
+                    email: userData?.email,
+                    displayName: userData?.displayName || "Family Member",
+                    imageUrl: userData?.imageUrl || null
                 };
             }
         }
 
         // Get last message content for preview
-        const messagesQuery = query(
-            collection(db, "chats", chatDoc.id, "messages"),
-            orderBy("createdAt", "desc"),
-            limit(1)
-        );
-        const lastMsgSnapshot = await getDocs(messagesQuery);
-        const lastMessage = lastMsgSnapshot.empty ? "No messages yet" : lastMsgSnapshot.docs[0].data().content;
+        const messagesSnapshot = await adminDb.collection("chats").doc(chatDoc.id).collection("messages")
+            .orderBy("createdAt", "desc")
+            .limit(1)
+            .get();
+
+        const lastMessage = messagesSnapshot.empty ? "No messages yet" : messagesSnapshot.docs[0].data().content;
 
         return {
             id: chatDoc.id,
@@ -147,24 +128,21 @@ export async function getMessages(chatId: string): Promise<Message[]> {
     if (!user) throw new Error("Unauthorized");
 
     // Verify access
-    const chatDoc = await getDoc(doc(db, "chats", chatId));
-    if (!chatDoc.exists()) {
+    const chatDoc = await adminDb.collection("chats").doc(chatId).get();
+    if (!chatDoc.exists) {
         throw new Error("Chat not found");
     }
 
     const chatData = chatDoc.data();
-    if (!chatData.participants.includes(user.id)) {
+    if (!chatData?.participants.includes(user.id)) {
         throw new Error("Access denied");
     }
 
     // Fetch messages
-    const messagesQuery = query(
-        collection(db, "chats", chatId, "messages"),
-        orderBy("createdAt", "asc"),
-        limit(50)
-    );
-
-    const messagesSnapshot = await getDocs(messagesQuery);
+    const messagesSnapshot = await adminDb.collection("chats").doc(chatId).collection("messages")
+        .orderBy("createdAt", "asc")
+        .limit(50)
+        .get();
 
     const messages = messagesSnapshot.docs.map(msgDoc => ({
         id: msgDoc.id,
@@ -182,26 +160,27 @@ export async function sendMessage(chatId: string, content: string) {
     if (!content.trim()) return;
 
     // Verify access
-    const chatDoc = await getDoc(doc(db, "chats", chatId));
-    if (!chatDoc.exists()) {
+    const chatRef = adminDb.collection("chats").doc(chatId);
+    const chatDoc = await chatRef.get();
+    if (!chatDoc.exists) {
         throw new Error("Chat not found");
     }
 
     const chatData = chatDoc.data();
-    if (!chatData.participants.includes(user.id)) {
+    if (!chatData?.participants.includes(user.id)) {
         throw new Error("Access denied");
     }
 
     // Add message to subcollection
-    await addDoc(collection(db, "chats", chatId, "messages"), {
+    await chatRef.collection("messages").add({
         senderId: user.id,
         content: content.trim(),
-        createdAt: serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
     });
 
     // Update conversation timestamp
-    await updateDoc(doc(db, "chats", chatId), {
-        lastMessageAt: serverTimestamp(),
+    await chatRef.update({
+        lastMessageAt: FieldValue.serverTimestamp(),
     });
 
     revalidatePath("/messages");

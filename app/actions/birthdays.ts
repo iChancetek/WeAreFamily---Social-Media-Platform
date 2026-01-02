@@ -1,11 +1,10 @@
 "use server";
 
-import { db } from "@/lib/firebase";
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, query, where } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 import { generateBirthdayWish } from "./ai";
 import { revalidatePath } from "next/cache";
 import { getUserProfile } from "@/lib/auth";
-import { serverTimestamp } from "firebase/firestore";
 
 export async function checkAndCelebrateBirthdays() {
     const user = await getUserProfile();
@@ -22,7 +21,7 @@ export async function checkAndCelebrateBirthdays() {
     console.log(`Checking birthdays for ${todayString}...`);
 
     // 2. Find users with this birthday
-    const usersSnapshot = await getDocs(collection(db, "users"));
+    const usersSnapshot = await adminDb.collection("users").get();
 
     const birthdayUsers = usersSnapshot.docs
         .map(userDoc => ({ id: userDoc.id, ...userDoc.data() }) as any)
@@ -39,16 +38,16 @@ export async function checkAndCelebrateBirthdays() {
         const wish = await generateBirthdayWish(name);
 
         // Create Post
-        await addDoc(collection(db, "posts"), {
+        await adminDb.collection("posts").add({
             authorId: adminUserId,
             content: `🎉🎂 HAPPY BIRTHDAY ${name}! 🎂🎉\n\n${wish}`,
             likes: [],
             mediaUrls: [],
-            createdAt: serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
         });
 
         // Update user's lastCelebratedYear
-        await updateDoc(doc(db, "users", bdayUser.id), {
+        await adminDb.collection("users").doc(bdayUser.id).update({
             lastCelebratedYear: currentYear
         });
 

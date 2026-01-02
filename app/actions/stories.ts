@@ -1,18 +1,7 @@
 "use server";
 
-import { db } from "@/lib/firebase";
-import {
-    collection,
-    addDoc,
-    getDocs,
-    getDoc,
-    doc,
-    query,
-    where,
-    orderBy,
-    Timestamp,
-    serverTimestamp
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -30,12 +19,12 @@ export async function createStory(mediaUrl: string, mediaType: 'image' | 'video'
     // Default expiration: 24 hours from now
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    await addDoc(collection(db, "stories"), {
+    await adminDb.collection("stories").add({
         authorId: user.id,
         mediaUrl,
         mediaType,
         expiresAt: Timestamp.fromDate(expiresAt),
-        createdAt: serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
     });
 
     revalidatePath("/");
@@ -46,20 +35,17 @@ export async function getActiveStories() {
     // Get stories that haven't expired
     const now = Timestamp.now();
 
-    const storiesQuery = query(
-        collection(db, "stories"),
-        where("expiresAt", ">", now),
-        orderBy("expiresAt"),
-        orderBy("createdAt", "desc")
-    );
-
-    const storiesSnapshot = await getDocs(storiesQuery);
+    const storiesSnapshot = await adminDb.collection("stories")
+        .where("expiresAt", ">", now)
+        .orderBy("expiresAt")
+        .orderBy("createdAt", "desc")
+        .get();
 
     // Fetch author data for each story
     const activeStories = await Promise.all(storiesSnapshot.docs.map(async (storyDoc) => {
         const storyData = storyDoc.data();
-        const authorDoc = await getDoc(doc(db, "users", storyData.authorId));
-        const author = authorDoc.exists() ? { id: authorDoc.id, ...authorDoc.data() } : null;
+        const authorDoc = await adminDb.collection("users").doc(storyData.authorId).get();
+        const author = authorDoc.exists ? { id: authorDoc.id, ...authorDoc.data() } : null;
 
         return {
             id: storyDoc.id,

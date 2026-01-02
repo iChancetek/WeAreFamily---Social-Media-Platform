@@ -1,21 +1,7 @@
 'use server'
 
-import { db } from "@/lib/firebase";
-import {
-    collection,
-    doc,
-    addDoc,
-    getDoc,
-    getDocs,
-    updateDoc,
-    deleteDoc,
-    query,
-    orderBy,
-    where,
-    arrayUnion,
-    arrayRemove,
-    serverTimestamp
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -25,12 +11,12 @@ export async function createPost(content: string, mediaUrls: string[] = []) {
         throw new Error("Unauthorized")
     }
 
-    await addDoc(collection(db, "posts"), {
+    await adminDb.collection("posts").add({
         authorId: user.id,
         content,
         mediaUrls,
         likes: [],
-        createdAt: serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
     });
 
     revalidatePath('/')
@@ -40,21 +26,21 @@ export async function toggleLike(postId: string) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
-    const postRef = doc(db, "posts", postId);
-    const postSnap = await getDoc(postRef);
+    const postRef = adminDb.collection("posts").doc(postId);
+    const postSnap = await postRef.get();
 
-    if (!postSnap.exists()) throw new Error("Post not found")
+    if (!postSnap.exists) throw new Error("Post not found")
 
-    const currentLikes = postSnap.data().likes || []
+    const currentLikes = postSnap.data()?.likes || []
     const isLiked = currentLikes.includes(user.id)
 
     if (isLiked) {
-        await updateDoc(postRef, {
-            likes: arrayRemove(user.id)
+        await postRef.update({
+            likes: FieldValue.arrayRemove(user.id)
         });
     } else {
-        await updateDoc(postRef, {
-            likes: arrayUnion(user.id)
+        await postRef.update({
+            likes: FieldValue.arrayUnion(user.id)
         });
     }
 
@@ -65,11 +51,11 @@ export async function addComment(postId: string, content: string) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
-    const commentsRef = collection(db, "posts", postId, "comments");
-    await addDoc(commentsRef, {
+    const commentsRef = adminDb.collection("posts").doc(postId).collection("comments");
+    await commentsRef.add({
         authorId: user.id,
         content,
-        createdAt: serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
     });
 
     revalidatePath('/')
@@ -82,28 +68,25 @@ export async function getPosts() {
     }
 
     // Fetch all posts
-    const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-    const postsSnapshot = await getDocs(postsQuery);
+    const postsSnapshot = await adminDb.collection("posts").orderBy("createdAt", "desc").get();
 
     // Build posts with author and comments
     const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc) => {
         const postData = postDoc.data();
 
         // Fetch author
-        const authorDoc = await getDoc(doc(db, "users", postData.authorId));
-        const author = authorDoc.exists() ? { id: authorDoc.id, ...authorDoc.data() } : null;
+        const authorDoc = await adminDb.collection("users").doc(postData.authorId).get();
+        const author = authorDoc.exists ? { id: authorDoc.id, ...authorDoc.data() } : null;
 
         // Fetch comments for this post
-        const commentsQuery = query(
-            collection(db, "posts", postDoc.id, "comments"),
-            orderBy("createdAt", "asc")
-        );
-        const commentsSnapshot = await getDocs(commentsQuery);
+        const commentsSnapshot = await adminDb.collection("posts").doc(postDoc.id).collection("comments")
+            .orderBy("createdAt", "asc")
+            .get();
 
         const comments = await Promise.all(commentsSnapshot.docs.map(async (commentDoc) => {
             const commentData = commentDoc.data();
-            const commentAuthorDoc = await getDoc(doc(db, "users", commentData.authorId));
-            const commentAuthor = commentAuthorDoc.exists()
+            const commentAuthorDoc = await adminDb.collection("users").doc(commentData.authorId).get();
+            const commentAuthor = commentAuthorDoc.exists
                 ? { id: commentAuthorDoc.id, ...commentAuthorDoc.data() }
                 : null;
 
@@ -131,23 +114,27 @@ export async function deletePost(postId: string) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
-    const postRef = doc(db, "posts", postId);
-    const postSnap = await getDoc(postRef);
+    const postRef = adminDb.collection("posts").doc(postId);
+    const postSnap = await postRef.get();
 
-    if (!postSnap.exists()) throw new Error("Post not found")
+    if (!postSnap.exists) throw new Error("Post not found")
 
     const post = postSnap.data();
-    if (post.authorId !== user.id && user.role !== 'admin') {
+    if (post?.authorId !== user.id && user.role !== 'admin') {
         throw new Error("Forbidden")
     }
 
     // Delete all comments first
-    const commentsQuery = query(collection(db, "posts", postId, "comments"));
-    const commentsSnapshot = await getDocs(commentsQuery);
-    await Promise.all(commentsSnapshot.docs.map(commentDoc => deleteDoc(commentDoc.ref)));
+    const commentsSnapshot = await postRef.collection("comments").get();
+    const batch = adminDb.batch();
+    commentsSnapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+    });
+    // Add post deletion to batch
+    batch.delete(postRef);
 
-    // Delete the post
-    await deleteDoc(postRef);
+    // Commit the batch
+    await batch.commit();
 
     revalidatePath('/')
 }

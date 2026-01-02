@@ -1,20 +1,7 @@
 "use server";
 
-import { db } from "@/lib/firebase";
-import {
-    collection,
-    doc,
-    addDoc,
-    getDocs,
-    getDoc,
-    updateDoc,
-    query,
-    orderBy,
-    arrayUnion,
-    arrayRemove,
-    Timestamp,
-    serverTimestamp
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -48,14 +35,14 @@ export async function createEvent(data: EventForm) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    await addDoc(collection(db, "events"), {
+    await adminDb.collection("events").add({
         creatorId: user.id,
         title: data.title,
         description: data.description || null,
         date: Timestamp.fromDate(data.date),
         location: data.location || null,
         attendees: [user.id], // Creator attends by default
-        createdAt: serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
     });
 
     revalidatePath("/events");
@@ -63,8 +50,7 @@ export async function createEvent(data: EventForm) {
 }
 
 export async function getEvents(): Promise<Event[]> {
-    const eventsQuery = query(collection(db, "events"), orderBy("date", "desc"));
-    const eventsSnapshot = await getDocs(eventsQuery);
+    const eventsSnapshot = await adminDb.collection("events").orderBy("date", "desc").get();
 
     // Collect all unique user IDs
     const allUserIds = new Set<string>();
@@ -77,12 +63,12 @@ export async function getEvents(): Promise<Event[]> {
     // Fetch all user profiles
     const userProfiles = new Map();
     await Promise.all(Array.from(allUserIds).map(async (userId) => {
-        const userDoc = await getDoc(doc(db, "users", userId));
-        if (userDoc.exists()) {
+        const userDoc = await adminDb.collection("users").doc(userId).get();
+        if (userDoc.exists) {
             const userData = userDoc.data();
             userProfiles.set(userId, {
-                displayName: userData.displayName || "Family Member",
-                imageUrl: userData.imageUrl || null,
+                displayName: userData?.displayName || "Family Member",
+                imageUrl: userData?.imageUrl || null,
             });
         }
     }));
@@ -113,17 +99,17 @@ export async function joinEvent(eventId: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const eventRef = doc(db, "events", eventId);
-    const eventSnap = await getDoc(eventRef);
+    const eventRef = adminDb.collection("events").doc(eventId);
+    const eventSnap = await eventRef.get();
 
-    if (!eventSnap.exists()) throw new Error("Event not found");
+    if (!eventSnap.exists) throw new Error("Event not found");
 
     const eventData = eventSnap.data();
-    const currentAttendees = eventData.attendees || [];
+    const currentAttendees = eventData?.attendees || [];
 
     if (!currentAttendees.includes(user.id)) {
-        await updateDoc(eventRef, {
-            attendees: arrayUnion(user.id)
+        await eventRef.update({
+            attendees: FieldValue.arrayUnion(user.id)
         });
     }
 
@@ -135,13 +121,13 @@ export async function leaveEvent(eventId: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const eventRef = doc(db, "events", eventId);
-    const eventSnap = await getDoc(eventRef);
+    const eventRef = adminDb.collection("events").doc(eventId);
+    const eventSnap = await eventRef.get();
 
-    if (!eventSnap.exists()) throw new Error("Event not found");
+    if (!eventSnap.exists) throw new Error("Event not found");
 
-    await updateDoc(eventRef, {
-        attendees: arrayRemove(user.id)
+    await eventRef.update({
+        attendees: FieldValue.arrayRemove(user.id)
     });
 
     revalidatePath("/events");

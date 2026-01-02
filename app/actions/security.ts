@@ -1,10 +1,8 @@
 "use server";
 
-import { db } from "@/lib/firebase";
-import { collection, doc, addDoc, getDocs, deleteDoc, query, where } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { updateDoc } from "firebase/firestore";
 
 export async function blockUser(userId: string) {
     const currentUser = await getUserProfile();
@@ -13,16 +11,14 @@ export async function blockUser(userId: string) {
     if (currentUser.id === userId) throw new Error("Cannot block yourself");
 
     // Check if already blocked
-    const blockedQuery = query(
-        collection(db, "blockedUsers"),
-        where("blockerId", "==", currentUser.id),
-        where("blockedId", "==", userId)
-    );
-    const existing = await getDocs(blockedQuery);
+    const existing = await adminDb.collection("blockedUsers")
+        .where("blockerId", "==", currentUser.id)
+        .where("blockedId", "==", userId)
+        .get();
 
     if (!existing.empty) return;
 
-    await addDoc(collection(db, "blockedUsers"), {
+    await adminDb.collection("blockedUsers").add({
         blockerId: currentUser.id,
         blockedId: userId,
         createdAt: new Date(),
@@ -37,14 +33,16 @@ export async function unblockUser(userId: string) {
     const currentUser = await getUserProfile();
     if (!currentUser) throw new Error("Unauthorized");
 
-    const blockedQuery = query(
-        collection(db, "blockedUsers"),
-        where("blockerId", "==", currentUser.id),
-        where("blockedId", "==", userId)
-    );
-    const blockedSnapshot = await getDocs(blockedQuery);
+    const blockedSnapshot = await adminDb.collection("blockedUsers")
+        .where("blockerId", "==", currentUser.id)
+        .where("blockedId", "==", userId)
+        .get();
 
-    await Promise.all(blockedSnapshot.docs.map(blockDoc => deleteDoc(blockDoc.ref)));
+    const batch = adminDb.batch();
+    blockedSnapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+    });
+    await batch.commit();
 
     revalidatePath("/settings");
     revalidatePath(`/u/${userId}`);
@@ -55,24 +53,22 @@ export async function getBlockedUsers() {
     const currentUser = await getUserProfile();
     if (!currentUser) return [];
 
-    const blockedQuery = query(
-        collection(db, "blockedUsers"),
-        where("blockerId", "==", currentUser.id)
-    );
-    const blockedSnapshot = await getDocs(blockedQuery);
+    const blockedSnapshot = await adminDb.collection("blockedUsers")
+        .where("blockerId", "==", currentUser.id)
+        .get();
 
     // Fetch user details for each blocked user
     const blockedUsers = await Promise.all(
         blockedSnapshot.docs.map(async (blockDoc) => {
             const blockData = blockDoc.data();
-            const userDoc = await getDocs(query(collection(db, "users"), where("id", "==", blockData.blockedId)));
-            if (!userDoc.empty) {
-                const userData = userDoc.docs[0].data();
+            const userDoc = await adminDb.collection("users").doc(blockData.blockedId).get();
+            if (userDoc.exists) {
+                const userData = userDoc.data();
                 return {
-                    id: userDoc.docs[0].id,
-                    displayName: userData.displayName,
-                    email: userData.email,
-                    imageUrl: userData.imageUrl,
+                    id: userDoc.id,
+                    displayName: userData?.displayName,
+                    email: userData?.email,
+                    imageUrl: userData?.imageUrl,
                 };
             }
             return null;
@@ -86,7 +82,7 @@ export async function toggleInvisibleMode(isInvisible: boolean) {
     const currentUser = await getUserProfile();
     if (!currentUser) throw new Error("Unauthorized");
 
-    await updateDoc(doc(db, "users", currentUser.id), { isInvisible });
+    await adminDb.collection("users").doc(currentUser.id).update({ isInvisible });
 
     revalidatePath("/settings");
     revalidatePath("/");
