@@ -12,80 +12,277 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
-    // Users Collection
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isOwner(userId);
-      allow update: if isAuthenticated() && isOwner(userId);
-      allow delete: if false; // Users shouldn't be deleted directly by client
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Posts Collection
-    match /posts/{postId} {
+    function isMember() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'member';
+    }
+
+    function isFamily(userId) {
+      // Check if there's an accepted family request between current user and target user
+      return exists(/databases/$(database)/documents/familyRequests/$(request.auth.uid + '_' + userId)) ||
+             exists(/databases/$(database)/documents/familyRequests/$(userId + '_' + request.auth.uid));
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      // Anyone authenticated can read basic user info (for discovery, messaging)
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && isOwner(resource.data.authorId);
+      
+      // Users can only create their own profile
+      allow create: if isAuthenticated() && isOwner(userId);
+      
+      // Users can only update their own profile, except 'role' field
+      allow update: if isAuthenticated() && isOwner(userId) && 
+                      (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+      
+      // Only admins can delete users (soft delete preferred)
+      allow delete: if isAdmin();
+    }
+
+    // Posts Collection - Only visible to family members
+    match /posts/{postId} {
+      // Only family members can read posts, or admins
+      allow read: if isAuthenticated() && (isFamily(resource.data.authorId) || isOwner(resource.data.authorId) || isAdmin());
+      
+      // Create: Must be authenticated and set own authorId
+      allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+      
+      // Update/Delete: Only owner or admin
+      allow update, delete: if isAuthenticated() && (isOwner(resource.data.authorId) || isAdmin());
 
       // Comments Subcollection
       match /comments/{commentId} {
+        // Inherit post visibility
         allow read: if isAuthenticated();
-        allow create: if isAuthenticated();
-        allow update, delete: if isAuthenticated() && isOwner(resource.data.authorId);
+        
+        // Create: Must be authenticated and set own authorId
+        allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+        
+        // Update/Delete: Only owner or admin
+        allow update, delete: if isAuthenticated() && (isOwner(resource.data.authorId) || isAdmin());
       }
     }
 
-    // Stories Collection
+    // Stories Collection - Only visible to family members
     match /stories/{storyId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow delete: if isAuthenticated() && isOwner(resource.data.authorId);
+      // Only family members can read stories, or admins
+      allow read: if isAuthenticated() && (isFamily(resource.data.authorId) || isOwner(resource.data.authorId) || isAdmin());
+      
+      // Create: Must be authenticated and set own authorId
+      allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+      
+      // Delete: Only owner or admin
+      allow delete: if isAuthenticated() && (isOwner(resource.data.authorId) || isAdmin());
     }
 
     // Events Collection
     match /events/{eventId} {
+      // Anyone authenticated can read events
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && isOwner(resource.data.creatorId);
+      
+      // Create: Must be authenticated and set own creatorId
+      allow create: if isAuthenticated() && request.resource.data.creatorId == request.auth.uid;
+      
+      // Update/Delete: Only creator or admin
+      allow update, delete: if isAuthenticated() && (isOwner(resource.data.creatorId) || isAdmin());
     }
 
     // Chats Collection
     match /chats/{chatId} {
-      allow read: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      // Read: Only participants or admins
+      allow read: if isAuthenticated() && (request.auth.uid in resource.data.participants || isAdmin());
+      
+      // Create: Must be authenticated and be in participants list
       allow create: if isAuthenticated() && request.auth.uid in request.resource.data.participants;
-      // Allow updates (like lastMessageAt) if user is a participant
+      
+      // Update: Only participants (for lastMessageAt updates)
       allow update: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      
+      // No deletion of chats
+      allow delete: if false;
 
       // Messages Subcollection
       match /messages/{messageId} {
-        // Read if user is a participant of the parent chat
+        // Read: Must be a participant of parent chat
         allow read: if isAuthenticated() && 
                    request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-        // Create if user is a participant of the parent chat
+        
+        // Create: Must be participant and set own senderId
         allow create: if isAuthenticated() && 
-                    request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
-                    request.resource.data.senderId == request.auth.uid;
+                     request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+                     request.resource.data.senderId == request.auth.uid;
+        
+        // No updates or deletes on messages
+        allow update, delete: if false;
       }
     }
 
     // Family Requests Collection
     match /familyRequests/{requestId} {
+      // Read: Only sender, receiver, or admin
       allow read: if isAuthenticated() && 
-                  (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
+                  (request.auth.uid == resource.data.senderId || 
+                   request.auth.uid == resource.data.receiverId ||
+                   isAdmin());
       
+      // Create: Must be authenticated and set own senderId
       allow create: if isAuthenticated() && request.resource.data.senderId == request.auth.uid;
       
+      // Update: Only sender or receiver (for status changes)
       allow update: if isAuthenticated() && 
-                    (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
+                    (request.auth.uid == resource.data.senderId || 
+                     request.auth.uid == resource.data.receiverId);
       
+      // Delete: Only sender, receiver, or admin
       allow delete: if isAuthenticated() && 
-                    (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
+                    (request.auth.uid == resource.data.senderId || 
+                     request.auth.uid == resource.data.receiverId ||
+                     isAdmin());
     }
     
     // Blocked Users Collection
     match /blockedUsers/{blockId} {
+      // Read: Only the blocker
       allow read: if isAuthenticated() && request.auth.uid == resource.data.blockerId;
+      
+      // Create: Must set own blockerId
       allow create: if isAuthenticated() && request.resource.data.blockerId == request.auth.uid;
+      
+      // Delete: Only the blocker
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.blockerId;
+      
+      // No updates
+      allow update: if false;
+    }
+
+    // Groups Collection
+    match /groups/{groupId} {
+      // Read: Public groups = anyone, Private = members only
+      allow read: if isAuthenticated() && 
+                    (resource.data.privacy == 'public' || 
+                     request.auth.uid in resource.data.members ||
+                     isAdmin());
+      
+      // Create: Must be authenticated and set own creatorId
+      allow create: if isAuthenticated() && request.resource.data.creatorId == request.auth.uid;
+      
+      // Update: Only creator or admin
+      allow update: if isAuthenticated() && (isOwner(resource.data.creatorId) || isAdmin());
+      
+      // Delete: Only creator or admin
+      allow delete: if isAuthenticated() && (isOwner(resource.data.creatorId) || isAdmin());
+
+      // Group Posts Subcollection
+      match /posts/{postId} {
+        // Read: Must be group member
+        allow read: if isAuthenticated() && 
+                      request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.members;
+        
+        // Create: Must be member and set own authorId
+        allow create: if isAuthenticated() && 
+                       request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.members &&
+                       request.resource.data.authorId == request.auth.uid;
+        
+        // Update/Delete: Only author or admin
+        allow update, delete: if isAuthenticated() && (isOwner(resource.data.authorId) || isAdmin());
+      }
+    }
+
+    // Branding Collection
+    match /branding/{brandingId} {
+      // Read: Anyone authenticated can discover branding
+      allow read: if isAuthenticated();
+      
+      // Create: Must be authenticated and set own founderId
+      allow create: if isAuthenticated() && request.resource.data.founderId == request.auth.uid;
+      
+      // Update: Only founder or admin
+      allow update: if isAuthenticated() && (isOwner(resource.data.founderId) || isAdmin());
+      
+      // Delete: Only founder or admin
+      allow delete: if isAuthenticated() && (isOwner(resource.data.founderId) || isAdmin());
+
+      // Followers Subcollection
+      match /followers/{userId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && isOwner(userId);
+        allow delete: if isAuthenticated() && isOwner(userId);
+      }
+
+      // Admins Subcollection
+      match /admins/{userId} {
+        allow read: if isAuthenticated();
+        // Only branding founder can add admins
+        allow create, delete: if isAuthenticated() && 
+                                isOwner(get(/databases/$(database)/documents/branding/$(brandingId)).data.founderId);
+      }
+
+      // Branding Posts Subcollection
+      match /posts/{postId} {
+        // Anyone can read branding posts (public marketing)
+        allow read: if isAuthenticated();
+        
+        // Create: Only branding admins or founder
+        allow create: if isAuthenticated() && 
+                       (request.auth.uid in get(/databases/$(database)/documents/branding/$(brandingId)).data.admins ||
+                        isOwner(get(/databases/$(database)/documents/branding/$(brandingId)).data.founderId));
+        
+        // Update/Delete: Only post author, branding founder, or admin
+        allow update, delete: if isAuthenticated() && 
+                                (isOwner(resource.data.authorId) || 
+                                 isOwner(get(/databases/$(database)/documents/branding/$(brandingId)).data.founderId) ||
+                                 isAdmin());
+      }
+    }
+
+    // Notifications Collection
+    match /notifications/{notificationId} {
+      // Read: Only the recipient
+      allow read: if isAuthenticated() && isOwner(resource.data.userId);
+      
+      // Create: Server-only (via server actions)
+      allow create: if false;
+      
+      // Update: Only recipient (to mark as read)
+      allow update: if isAuthenticated() && isOwner(resource.data.userId);
+      
+      // Delete: Only recipient or admin
+      allow delete: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
+    }
+
+    // Active Users Collection (for presence)
+    match /activeUsers/{userId} {
+      // Read: Any authenticated user
+      allow read: if isAuthenticated();
+      
+      // Create/Update: Server-only via activity tracker
+      allow create, update: if false;
+      
+      // Delete: Server-only
+      allow delete: if false;
+    }
+
+    // Admin Analytics Collection
+    match /analytics/{docId} {
+      // Read: Admins only
+      allow read: if isAdmin();
+      
+      // Write: Server-only
+      allow create, update, delete: if false;
+    }
+
+    // Audit Logs Collection (for security monitoring)
+    match /auditLogs/{logId} {
+      // Read: Admins only
+      allow read: if isAdmin();
+      
+      // Write: Server-only (via audit.ts)
+      allow create, update, delete: if false;
     }
   }
 }

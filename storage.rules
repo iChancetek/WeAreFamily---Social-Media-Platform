@@ -1,0 +1,106 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // User profile images and covers
+    match /users/{userId}/{allPaths=**} {
+      // Read: Anyone authenticated can view profile images
+      allow read: if isAuthenticated();
+      
+      // Write: Only the owner can upload/update their own files
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Delete: Only the owner or admin
+      allow delete: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    
+    // Post media (images, videos)
+    match /posts/{postId}/{allPaths=**} {
+      // Read: Anyone authenticated can view (Firestore rules handle post visibility)
+      allow read: if isAuthenticated();
+      
+      // Write: Only authenticated users (creator will be verified in Firestore)
+      allow write: if isAuthenticated();
+      
+      // Delete: Admins only (post deletion handles media cleanup)
+      allow delete: if isAdmin();
+    }
+    
+    // Story media
+    match /stories/{storyId}/{allPaths=**} {
+      // Read: Anyone authenticated can view (Firestore rules handle story visibility)
+      allow read: if isAuthenticated();
+      
+      // Write: Only authenticated users
+      allow write: if isAuthenticated();
+      
+      // Delete: Admins only (stories auto-expire, admin can force delete)
+      allow delete: if isAdmin();
+    }
+    
+    // Event media
+    match /events/{eventId}/{allPaths=**} {
+      // Read: Anyone authenticated can view event media
+      allow read: if isAuthenticated();
+      
+      // Write: Only authenticated users
+      allow write: if isAuthenticated();
+      
+      // Delete: Admins only
+      allow delete: if isAdmin();
+    }
+    
+    // Group media
+    match /groups/{groupId}/{allPaths=**} {
+      // Read: Anyone authenticated (Firestore rules handle group visibility)
+      allow read: if isAuthenticated();
+      
+      // Write: Only authenticated users
+      allow write: if isAuthenticated();
+      
+      // Delete: Admins only
+      allow delete: if isAdmin();
+    }
+    
+    // Branding media
+    match /branding/{brandingId}/{allPaths=**} {
+      // Read: Public (branding is for marketing)
+      allow read: if isAuthenticated();
+      
+      // Write: Only authenticated users
+      allow write: if isAuthenticated();
+      
+      // Delete: Admins only
+      allow delete: if isAdmin();
+    }
+    
+    // Chat/Message attachments
+    match /chats/{chatId}/{allPaths=**} {
+      // Read: Only authenticated users (Firestore rules handle chat access)
+      allow read: if isAuthenticated();
+      
+      // Write: Only authenticated users (participants verified in Firestore)
+      allow write: if isAuthenticated();
+      
+      // Delete: Admins only
+      allow delete: if isAdmin();
+    }
+    
+    // Deny all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

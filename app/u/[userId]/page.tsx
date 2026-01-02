@@ -70,7 +70,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
 
     return (
         <MainLayout>
-            <ProfileHeader user={user} isOwnProfile={isOwnProfile} familyStatus={familyStatus} />
+            <ProfileHeader user={user} isCurrentUser={isOwnProfile} />
             <div className="mt-8">
                 <h2 className="text-xl font-bold mb-4">Personal Timeline</h2>
                 {!hasAccess ? (
