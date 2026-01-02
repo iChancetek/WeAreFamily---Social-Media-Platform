@@ -1,8 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { getUserProfile } from "@/lib/auth";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
 import { redirect } from "next/navigation";
 import { UserList } from "@/components/admin/user-list";
 import { MainLayout } from "@/components/layout/main-layout";
@@ -19,8 +18,7 @@ export default async function AdminDashboard() {
         redirect("/");
     }
 
-    const usersQuery = query(collection(db, "users"), orderBy("createdAt", "desc"));
-    const usersSnapshot = await getDocs(usersQuery);
+    const usersSnapshot = await adminDb.collection("users").orderBy("createdAt", "desc").get();
     const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), createdAt: doc.data().createdAt?.toDate() || new Date() }) as any);
 
     // Calculate Metrics

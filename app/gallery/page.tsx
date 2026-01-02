@@ -1,6 +1,5 @@
 import { MainLayout } from "@/components/layout/main-layout";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -10,8 +9,7 @@ export default async function GalleryPage() {
         redirect("/");
     }
 
-    const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-    const postsSnapshot = await getDocs(postsQuery);
+    const postsSnapshot = await adminDb.collection("posts").orderBy("createdAt", "desc").get();
     const allPosts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any);
 
     const mediaItems = allPosts.flatMap((post: any) => (post.mediaUrls || []).map((url: string) => ({ url, postId: post.id })));
