@@ -55,6 +55,11 @@ type Post = {
     } | null;
     likes: string[] | null;
     comments?: Comment[];
+    context?: {
+        type: 'group';
+        name: string;
+        id: string;
+    } | null;
 }
 
 export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: string }) {
@@ -157,7 +162,17 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                     <AvatarFallback className="bg-primary text-white font-bold">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col flex-1">
-                    <span className="font-semibold text-card-foreground text-[15px]">{name}</span>
+                    <div className="flex items-center gap-1 flex-wrap">
+                        <span className="font-semibold text-card-foreground text-[15px]">{name}</span>
+                        {post.context && post.context.type === 'group' && (
+                            <>
+                                <span className="text-muted-foreground text-xs">▶</span>
+                                <span className="font-semibold text-card-foreground text-[15px] hover:underline cursor-pointer">
+                                    {post.context.name}
+                                </span>
+                            </>
+                        )}
+                    </div>
                     <span className="text-xs text-muted-foreground font-normal hover:underline cursor-pointer">
                         {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                     </span>

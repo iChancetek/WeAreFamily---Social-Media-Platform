@@ -10,6 +10,8 @@ import { BirthdayModal } from "@/components/birthdays/birthday-modal";
 
 import { StoriesTray } from "@/components/stories/stories-tray";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const user = await getUserProfile();
 

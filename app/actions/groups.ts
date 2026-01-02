@@ -177,3 +177,24 @@ export async function getGroupPosts(groupId: string) {
 
     return allPosts;
 }
+
+export async function getJoinedGroupIds(userId: string) {
+    // Use collectionGroup query to find all 'members' docs where userId matches
+    const snapshot = await adminDb.collectionGroup("members")
+        .where("userId", "==", userId)
+        .get();
+
+    const groupIds = new Set<string>();
+
+    snapshot.docs.forEach(doc => {
+        // Doc path: groups/{groupId}/members/{userId}
+        // doc.ref.parent is 'members' collection
+        // doc.ref.parent.parent is 'groups/{groupId}' doc
+        const groupDoc = doc.ref.parent.parent;
+        if (groupDoc) {
+            groupIds.add(groupDoc.id);
+        }
+    });
+
+    return Array.from(groupIds);
+}

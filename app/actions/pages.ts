@@ -181,3 +181,22 @@ export async function getPagePosts(pageId: string) {
 
     return allPosts;
 }
+
+export async function getFollowedPageIds(userId: string) {
+    // Use collectionGroup query to find all 'followers' docs where userId matches
+    const snapshot = await adminDb.collectionGroup("followers")
+        .where("userId", "==", userId)
+        .get();
+
+    const pageIds = new Set<string>();
+
+    snapshot.docs.forEach(doc => {
+        // Doc path: pages/{pageId}/followers/{userId}
+        const pageDoc = doc.ref.parent.parent;
+        if (pageDoc) {
+            pageIds.add(pageDoc.id);
+        }
+    });
+
+    return Array.from(pageIds);
+}
