@@ -36,20 +36,100 @@ export async function sendFamilyRequest(receiverId: string) {
 }
 
 export async function acceptFamilyRequest(requestId: string) {
+    const requestDoc = await adminDb.collection("familyRequests").doc(requestId).get();
+    const requestData = requestDoc.data();
+
+    if (!requestData) throw new Error("Request not found");
+
+    // Update request status
     await adminDb.collection("familyRequests").doc(requestId).update({
         status: 'accepted'
     });
-    revalidatePath('/family')
+
+    // Create denormalized bidirectional family connections for efficient security rules
+    const batch = adminDb.batch();
+
+    // Connection from sender to receiver
+    const senderConnectionRef = adminDb.collection("users")
+        .doc(requestData.senderId)
+        .collection("familyConnections")
+        .doc(requestData.receiverId);
+    batch.set(senderConnectionRef, {
+        connectedUserId: requestData.receiverId,
+        status: 'accepted',
+        createdAt: new Date()
+    });
+
+    // Connection from receiver to sender
+    const receiverConnectionRef = adminDb.collection("users")
+        .doc(requestData.receiverId)
+        .collection("familyConnections")
+        .doc(requestData.senderId);
+    batch.set(receiverConnectionRef, {
+        connectedUserId: requestData.senderId,
+        status: 'accepted',
+        createdAt: new Date()
+    });
+
+    await batch.commit();
+
+    revalidatePath('/family');
 }
 
 export async function rejectFamilyRequest(requestId: string) {
+    const requestDoc = await adminDb.collection("familyRequests").doc(requestId).get();
+    const requestData = requestDoc.data();
+
     await adminDb.collection("familyRequests").doc(requestId).delete();
-    revalidatePath('/family')
+
+    // Clean up any family connections if they exist
+    if (requestData) {
+        const batch = adminDb.batch();
+
+        const senderConnectionRef = adminDb.collection("users")
+            .doc(requestData.senderId)
+            .collection("familyConnections")
+            .doc(requestData.receiverId);
+        batch.delete(senderConnectionRef);
+
+        const receiverConnectionRef = adminDb.collection("users")
+            .doc(requestData.receiverId)
+            .collection("familyConnections")
+            .doc(requestData.senderId);
+        batch.delete(receiverConnectionRef);
+
+        await batch.commit();
+    }
+
+    revalidatePath('/family');
 }
 
 export async function cancelFamilyRequest(requestId: string) {
+    const requestDoc = await adminDb.collection("familyRequests").doc(requestId).get();
+    const requestData = requestDoc.data();
+
     await adminDb.collection("familyRequests").doc(requestId).delete();
-    revalidatePath('/family')
+
+    // Clean up any family connections if they exist
+    if (requestData) {
+        const batch = adminDb.batch();
+
+        const senderConnectionRef = adminDb.collection("users")
+            .doc(requestData.senderId)
+            .collection("familyConnections")
+            .doc(requestData.receiverId);
+        batch.delete(senderConnectionRef);
+
+        const receiverConnectionRef = adminDb.collection("users")
+            .doc(requestData.receiverId)
+            .collection("familyConnections")
+            .doc(requestData.senderId);
+        batch.delete(receiverConnectionRef);
+
+        await batch.commit();
+    }
+
+    revalidatePath('/family');
 }
 
 export async function denyFamilyRequest(requestId: string) {

@@ -23,9 +23,9 @@ service cloud.firestore {
     }
 
     function isFamily(userId) {
-      // Check if there's an accepted family request between current user and target user
-      return exists(/databases/$(database)/documents/familyRequests/$(request.auth.uid + '_' + userId)) ||
-             exists(/databases/$(database)/documents/familyRequests/$(userId + '_' + request.auth.uid));
+      // Check if a family connection exists in the denormalized familyConnections subcollection
+      // This is efficient because it's a direct document lookup
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)/familyConnections/$(userId));
     }
 
     // Users Collection
@@ -42,6 +42,15 @@ service cloud.firestore {
       
       // Only admins can delete users (soft delete preferred)
       allow delete: if isAdmin();
+      
+      // Family Connections Subcollection
+      match /familyConnections/{connectionId} {
+        // Read: Only the user themselves can read their connections
+        allow read: if isAuthenticated() && isOwner(userId);
+        
+        // Write: Server-only (managed by family.ts actions)
+        allow create, update, delete: if false;
+      }
     }
 
     // Posts Collection - Only visible to family members
