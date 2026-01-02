@@ -2,94 +2,148 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Heart, Shield, Zap, Globe } from "lucide-react"
+import { Heart, Shield, Users, Globe, CheckCircle } from "lucide-react"
+import Image from "next/image"
 
 export function LandingPage() {
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-rose-500 selection:text-white overflow-hidden">
-            {/* Dynamic Background */}
-            <div className="fixed inset-0 z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/20 blur-[120px] animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-rose-600/20 blur-[120px] animate-pulse delay-1000" />
-            </div>
-
+        <div className="min-h-screen bg-white">
             {/* Navigation */}
-            <nav className="relative z-10 flex items-center justify-between px-6 py-6 md:px-12">
-                <div className="flex items-center gap-2 font-bold text-2xl tracking-tighter">
-                    <Heart className="w-6 h-6 fill-rose-500 text-rose-500" />
-                    <span>WeAreFamily</span>
-                </div>
-                <div className="flex gap-4">
-                    <Link href="/login">
-                        <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-white/10 rounded-full px-6">
-                            Sign In
-                        </Button>
-                    </Link>
-                    <Link href="/signup">
-                        <Button className="bg-rose-600 hover:bg-rose-700 text-white rounded-full px-6 font-semibold shadow-[0_0_20px_rgba(225,29,72,0.5)] transition-all hover:shadow-[0_0_40px_rgba(225,29,72,0.7)] hover:scale-105">
-                            Join Now
-                        </Button>
-                    </Link>
+            <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        <div className="flex items-center gap-2 font-bold text-xl">
+                            <Heart className="w-6 h-6 text-blue-600" fill="currentColor" />
+                            <span className="text-gray-900">WeAreFamily</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Link href="/login">
+                                <Button variant="ghost" className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 font-medium">
+                                    Sign In
+                                </Button>
+                            </Link>
+                            <Link href="/signup">
+                                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm">
+                                    Create Account
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             </nav>
 
             {/* Hero Section */}
-            <main className="relative z-10 flex flex-col justify-center min-h-[80vh] px-6 text-center md:px-12">
-                <div className="space-y-8 animate-in fade-in zoom-in duration-1000 slide-in-from-bottom-10">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-rose-400 mb-4 animate-bounce delay-300">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-                        </span>
-                        The Selected Family Network
+            <section className="relative bg-gradient-to-b from-blue-50 to-white border-b border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+                    <div className="text-center">
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 tracking-tight mb-6">
+                            Connect with Your
+                            <span className="block text-blue-600 mt-2">Family</span>
+                        </h1>
+                        <p className="max-w-3xl mx-auto text-xl md:text-2xl text-gray-600 mb-10 leading-relaxed font-normal">
+                            A private, secure platform designed exclusively for families to share moments,
+                            plan events, and stay connected with the people who matter most.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <Link href="/signup">
+                                <Button size="lg" className="h-14 px-10 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md">
+                                    Join WeAreFamily
+                                </Button>
+                            </Link>
+                            <Link href="/login">
+                                <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold">
+                                    Learn More
+                                </Button>
+                            </Link>
+                        </div>
+
+                        {/* Trust Badge */}
+                        <div className="mt-12 flex items-center justify-center gap-2 text-sm text-gray-600">
+                            <Shield className="w-5 h-5 text-blue-600" />
+                            <span className="font-medium">Trusted by thousands of families worldwide</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Features Section */}
+            <section className="py-20 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose WeAreFamily?</h2>
+                        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                            Everything your family needs to stay connected, secure, and organized.
+                        </p>
                     </div>
 
-                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">
-                        YOUR FAMILY.<br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-rose-500">REIMAGINED.</span>
-                    </h1>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <FeatureCard
+                            icon={<Shield className="w-10 h-10 text-blue-600" />}
+                            title="Private & Secure"
+                            description="Your family's data is protected with enterprise-grade security. No ads, no tracking, no third-party access."
+                        />
+                        <FeatureCard
+                            icon={<Users className="w-10 h-10 text-blue-600" />}
+                            title="Built for Families"
+                            description="Share photos, plan events, coordinate schedules, and create lasting memories together in one beautiful platform."
+                        />
+                        <FeatureCard
+                            icon={<Globe className="w-10 h-10 text-blue-600" />}
+                            title="Always Connected"
+                            description="Stay in touch with real-time messaging, event notifications, and instant photo sharing from anywhere."
+                        />
+                    </div>
+                </div>
+            </section>
 
-                    <p className="max-w-2xl mx-auto text-xl md:text-2xl text-gray-400 font-light leading-relaxed">
-                        A private, secure, and beautiful space to share moments, plan events, and stay connected with the people who matter most.
+            {/* Benefits Section */}
+            <section className="py-20 bg-gray-50 border-y border-gray-200">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-4">What You'll Get</h2>
+                    </div>
+
+                    <div className="space-y-4">
+                        <BenefitItem text="Unlimited photo and video sharing" />
+                        <BenefitItem text="Private family messaging and group chats" />
+                        <BenefitItem text="Shared calendar and event planning" />
+                        <BenefitItem text="Stories that keep everyone updated" />
+                        <BenefitItem text="Secure cloud storage for family memories" />
+                        <BenefitItem text="Mobile and desktop access" />
+                    </div>
+                </div>
+            </section>
+
+            {/* CTA Section */}
+            <section className="py-24 bg-blue-600">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                        Ready to bring your family closer?
+                    </h2>
+                    <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+                        Join thousands of families who are already sharing, connecting, and creating memories together.
                     </p>
+                    <Link href="/signup">
+                        <Button size="lg" className="h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-lg">
+                            Get Started Free
+                        </Button>
+                    </Link>
+                </div>
+            </section>
 
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
-                        <Link href="/signup">
-                            <Button size="lg" className="h-14 px-8 text-lg bg-white text-black hover:bg-gray-200 rounded-full font-bold transition-transform hover:scale-105">
-                                Get Started
-                                <ArrowRight className="ml-2 w-5 h-5" />
-                            </Button>
-                        </Link>
-                        <Link href="/login">
-                            <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-white/20 bg-transparent text-white hover:bg-white/10 rounded-full">
-                                View Demo
-                            </Button>
-                        </Link>
+            {/* Footer */}
+            <footer className="bg-white border-t border-gray-200 py-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row items-center justify-between">
+                        <div className="flex items-center gap-2 mb-4 md:mb-0">
+                            <Heart className="w-6 h-6 text-blue-600" fill="currentColor" />
+                            <span className="font-bold text-gray-900 text-lg">WeAreFamily</span>
+                        </div>
+                        <p className="text-gray-600 text-sm">
+                            © 2024 WeAreFamily. Privacy-first family networking.
+                        </p>
                     </div>
                 </div>
-
-                {/* Feature Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-32 max-w-6xl mx-auto text-left">
-                    <FeatureCard
-                        icon={<Shield className="w-8 h-8 text-blue-500" />}
-                        title="Private & Secure"
-                        description="Your data stays in the family. No ads, no tracking, just genuine connection."
-                    />
-                    <FeatureCard
-                        icon={<Zap className="w-8 h-8 text-purple-500" />}
-                        title="Real-time Magic"
-                        description="Instant messaging, live event updates, and seamless photo sharing."
-                    />
-                    <FeatureCard
-                        icon={<Heart className="w-8 h-8 text-rose-500" />}
-                        title="Made with Love"
-                        description="Designed to bring you closer together with a beautiful, modern experience."
-                    />
-                </div>
-            </main>
-
-            <footer className="relative z-10 py-12 text-center text-gray-600 text-sm">
-                <p>&copy; 2024 WeAreFamily. Built for connection.</p>
             </footer>
         </div>
     )
@@ -97,12 +151,21 @@ export function LandingPage() {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
     return (
-        <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors backdrop-blur-sm group">
-            <div className="mb-6 p-4 rounded-2xl bg-white/5 w-fit group-hover:scale-110 transition-transform duration-300">
+        <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 mb-6">
                 {icon}
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
-            <p className="text-gray-400 leading-relaxed">{description}</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
+            <p className="text-gray-600 leading-relaxed">{description}</p>
+        </div>
+    )
+}
+
+function BenefitItem({ text }: { text: string }) {
+    return (
+        <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-lg border border-gray-200">
+            <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0" />
+            <span className="text-gray-900 font-medium">{text}</span>
         </div>
     )
 }
