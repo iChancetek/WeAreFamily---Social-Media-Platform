@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import "@/lib/firebase"
 
+import { createSession } from "@/app/actions/auth";
+
 export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -24,9 +26,11 @@ export default function LoginPage() {
         setIsLoading(true)
         try {
             const auth = getAuth()
-            await signInWithEmailAndPassword(auth, email, password)
+            const userCredential = await signInWithEmailAndPassword(auth, email, password)
+            await createSession(userCredential.user.uid)
             toast.success("Welcome back!")
             router.push("/")
+            router.refresh() // Ensure server components re-run
         } catch (error: any) {
             console.error(error)
             toast.error(error.message || "Failed to login")
@@ -40,9 +44,11 @@ export default function LoginPage() {
         try {
             const auth = getAuth()
             const provider = new GoogleAuthProvider()
-            await signInWithPopup(auth, provider)
+            const userCredential = await signInWithPopup(auth, provider)
+            await createSession(userCredential.user.uid)
             toast.success("Welcome back!")
             router.push("/")
+            router.refresh()
         } catch (error: any) {
             console.error(error)
             toast.error(error.message || "Failed to login with Google")

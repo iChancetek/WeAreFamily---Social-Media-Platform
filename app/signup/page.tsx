@@ -11,7 +11,7 @@ import Link from "next/link"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import "@/lib/firebase"
-import { syncUserToDb } from "@/app/actions/auth"
+import { createSession, syncUserToDb } from "@/app/actions/auth"
 
 export default function SignupPage() {
     const [name, setName] = useState("")
@@ -34,8 +34,12 @@ export default function SignupPage() {
             // Sync to Database
             await syncUserToDb(user.uid, email, name)
 
+            // Create session cookie before redirecting
+            await createSession(user.uid)
+
             toast.success("Account created successfully!")
             router.push("/")
+            router.refresh()
         } catch (error: any) {
             console.error(error)
             toast.error(error.message || "Failed to create account")
