@@ -12,9 +12,12 @@ export function LandingPage() {
             <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center gap-2 font-bold text-xl">
-                            <Heart className="w-6 h-6 text-blue-600" fill="currentColor" />
-                            <span className="text-gray-900">WeAreFamily</span>
+                        <div className="flex items-center gap-3">
+                            <Heart className="w-7 h-7 text-blue-600" fill="currentColor" />
+                            <div>
+                                <div className="font-bold text-2xl text-gray-900 tracking-tight">Famio</div>
+                                <div className="text-xs text-gray-600 font-medium -mt-1">by WeAreFamily</div>
+                            </div>
                         </div>
                         <div className="flex items-center gap-3">
                             <Link href="/login">
@@ -36,10 +39,16 @@ export function LandingPage() {
             <section className="relative bg-gradient-to-b from-blue-50 to-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
                     <div className="text-center">
-                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 tracking-tight mb-6">
-                            Connect with Your
-                            <span className="block text-blue-600 mt-2">Family</span>
+                        <div className="mb-4 inline-flex items-center gap-2 text-blue-600">
+                            <Heart className="w-8 h-8" fill="currentColor" />
+                            <span className="text-sm font-semibold uppercase tracking-wider">WeAreFamily Presents</span>
+                        </div>
+                        <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-gray-900 tracking-tight mb-4">
+                            Famio
                         </h1>
+                        <p className="text-2xl md:text-3xl font-semibold text-blue-600 mb-6">
+                            Connect with Your Family
+                        </p>
                         <p className="max-w-3xl mx-auto text-xl md:text-2xl text-gray-600 mb-10 leading-relaxed font-normal">
                             A private, secure platform designed exclusively for families to share moments,
                             plan events, and stay connected with the people who matter most.
@@ -47,7 +56,7 @@ export function LandingPage() {
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <Link href="/signup">
                                 <Button size="lg" className="h-14 px-10 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md">
-                                    Join WeAreFamily
+                                    Join Famio
                                 </Button>
                             </Link>
                             <Link href="/login">
@@ -70,7 +79,7 @@ export function LandingPage() {
             <section className="py-20 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose WeAreFamily?</h2>
+                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose Famio?</h2>
                         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
                             Everything your family needs to stay connected, secure, and organized.
                         </p>
@@ -137,10 +146,13 @@ export function LandingPage() {
                     <div className="flex flex-col md:flex-row items-center justify-between">
                         <div className="flex items-center gap-2 mb-4 md:mb-0">
                             <Heart className="w-6 h-6 text-blue-600" fill="currentColor" />
-                            <span className="font-bold text-gray-900 text-lg">WeAreFamily</span>
+                            <div>
+                                <span className="font-bold text-gray-900 text-lg">Famio</span>
+                                <span className="text-gray-500 text-sm ml-2">by WeAreFamily</span>
+                            </div>
                         </div>
                         <p className="text-gray-600 text-sm">
-                            © 2024 WeAreFamily. Privacy-first family networking.
+                            © 2024 Famio by WeAreFamily. Privacy-first family networking.
                         </p>
                     </div>
                 </div>
