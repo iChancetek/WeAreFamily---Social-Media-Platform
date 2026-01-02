@@ -99,7 +99,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {familyMembers.map((member) => (
-                            <div key={member.id} className="flex items-center gap-3 p-4 bg-white dark:bg-slate-950 border rounded-lg hover:border-blue-500 transition-colors cursor-pointer" onClick={() => router.push(`/u/${member.id}`)}>
+                            <div key={member.id} className="flex items-center gap-3 p-4 bg-white dark:bg-card border rounded-lg hover:border-primary transition-colors cursor-pointer" onClick={() => router.push(`/u/${member.id}`)}>
                                 <Avatar className="h-12 w-12">
                                     <AvatarImage src={member.imageUrl} />
                                     <AvatarFallback>{member.displayName?.charAt(0)}</AvatarFallback>

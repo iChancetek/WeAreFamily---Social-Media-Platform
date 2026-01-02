@@ -75,7 +75,7 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-zinc-900 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm">
+        <div className="flex flex-col h-full bg-white dark:bg-card rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm">
             {/* Header */}
             <div className="p-4 border-b border-gray-100 dark:border-white/5 flex items-center gap-3 bg-white/50 backdrop-blur-md">
                 <Avatar className="h-10 w-10">
@@ -91,7 +91,7 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
             </div>
 
             {/* Messages Area */}
-            <ScrollArea className="flex-1 p-4 bg-gray-50/50 dark:bg-zinc-950/50">
+            <ScrollArea className="flex-1 p-4 bg-gray-50/50 dark:bg-background/50">
                 <div className="flex flex-col gap-3 min-h-full justify-end">
                     {isLoading ? (
                         <div className="flex justify-center py-10">
@@ -108,7 +108,7 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
                                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${isMe
                                         ? 'bg-primary text-primary-foreground rounded-br-none'
-                                        : 'bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/5 rounded-bl-none shadow-sm'
+                                        : 'bg-white dark:bg-card text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/5 rounded-bl-none shadow-sm'
                                         }`}>
                                         {msg.content}
                                         <div className={`text-[10px] mt-1 opacity-70 ${isMe ? 'text-primary-foreground/80' : 'text-gray-500'}`}>
@@ -124,7 +124,7 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
             </ScrollArea>
 
             {/* Input Area */}
-            <div className="p-4 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-white/5">
+            <div className="p-4 bg-white dark:bg-card border-t border-gray-100 dark:border-white/5">
                 <form
                     onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                     className="flex gap-2"
@@ -133,7 +133,7 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
                         placeholder="Type a message..."
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
-                        className="flex-1 bg-gray-100 dark:bg-zinc-800 border-none focus-visible:ring-1 focus-visible:ring-primary"
+                        className="flex-1 bg-gray-100 dark:bg-secondary border-none focus-visible:ring-1 focus-visible:ring-primary"
                     />
                     <Button type="submit" size="icon" disabled={!inputText.trim() || isSending} className="shrink-0">
                         <Send className="w-4 h-4" />

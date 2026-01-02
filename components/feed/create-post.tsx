@@ -93,7 +93,7 @@ export function CreatePost() {
                     <div className="flex-1 space-y-3">
                         <Textarea
                             placeholder={t("feed.placeholder")}
-                            className="min-h-[80px] bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 focus:bg-white dark:focus:bg-slate-900 border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
+                            className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                         />

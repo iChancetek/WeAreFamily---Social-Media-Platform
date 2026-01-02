@@ -54,16 +54,16 @@ export function StoriesTrayClient({
                     <div className="flex-shrink-0 snap-start">
                         <CreateStoryDialog>
                             <div className="relative w-28 h-48 rounded-xl overflow-hidden cursor-pointer group shadow-sm transition-transform hover:scale-[1.02]">
-                                <div className="absolute inset-0 bg-gray-100 dark:bg-zinc-800">
+                                <div className="absolute inset-0 bg-gray-100 dark:bg-muted">
                                     {currentUserImage ? (
                                         <img src={currentUserImage} alt="Me" className="w-full h-2/3 object-cover opacity-80" />
                                     ) : (
-                                        <div className="w-full h-2/3 bg-gray-200 dark:bg-zinc-700 flex items-center justify-center">
+                                        <div className="w-full h-2/3 bg-gray-200 dark:bg-muted/80 flex items-center justify-center">
                                             <span className="text-2xl font-bold text-gray-400">{currentUserDisplayName?.charAt(0)}</span>
                                         </div>
                                     )}
                                 </div>
-                                <div className="absolute bottom-0 inset-x-0 h-1/3 bg-white dark:bg-zinc-900 flex flex-col items-center justify-center pt-4 z-10">
+                                <div className="absolute bottom-0 inset-x-0 h-1/3 bg-white dark:bg-card flex flex-col items-center justify-center pt-4 z-10">
                                     <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">Create Story</span>
                                 </div>
                                 <div className="absolute top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 bg-primary rounded-full p-1 border-4 border-white dark:border-zinc-900">
