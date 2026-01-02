@@ -47,7 +47,7 @@ export function ChatList({ chats }: ChatListProps) {
                             <div className="flex justify-between items-baseline mb-1">
                                 <span className={cn(
                                     "font-semibold truncate text-sm",
-                                    isActive ? "text-primary" : "text-gray-900 dark:text-gray-100"
+                                    isActive ? "text-primary" : "text-foreground"
                                 )}>
                                     {otherUser?.displayName || "Family Member"}
                                 </span>

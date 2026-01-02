@@ -55,7 +55,7 @@ export function EventCard({ event, currentUserId }: EventCardProps) {
                 <div className="flex-1 flex flex-col p-5">
                     <div className="flex justify-between items-start mb-2">
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-primary transition-colors">
+                            <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
                                 {event.title}
                             </h3>
                             {event.location && (

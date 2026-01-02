@@ -70,8 +70,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
                         <div className="bg-slate-200 dark:bg-muted p-4 rounded-full mb-4">
                             <Lock className="w-8 h-8 text-slate-500" />
                         </div>
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Private Profile</h3>
-                        <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-sm">
+                        <h3 className="text-lg font-semibold text-foreground">Private Profile</h3>
+                        <p className="text-muted-foreground mt-2 max-w-sm">
                             You must be family to view {user.displayName || "this user"}'s posts and photos. Send a family request to connect!
                         </p>
                     </div>

@@ -63,7 +63,7 @@ export function ProfileHeader({ user, isCurrentUser }: ProfileHeaderProps) {
                     </div>
                     <div className="mt-6 sm:flex-1 sm:min-w-0 sm:flex sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
                         <div className="sm:hidden 2xl:block mt-6 min-w-0 flex-1">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">
+                            <h1 className="text-2xl font-bold text-foreground truncate">
                                 {user.displayName}
                             </h1>
                         </div>
@@ -85,17 +85,16 @@ export function ProfileHeader({ user, isCurrentUser }: ProfileHeaderProps) {
                     </div>
                 </div>
                 <div className="hidden sm:block 2xl:hidden mt-6 min-w-0 flex-1">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">
+                    <h1 className="text-2xl font-bold text-foreground truncate">
                         {user.displayName}
                     </h1>
                 </div>
 
                 {user.bio && (
-                    <p className="mt-4 text-gray-600 dark:text-gray-400 max-w-2xl">
+                    <p className="mt-4 text-muted-foreground max-w-2xl">
                         {user.bio}
                     </p>
                 )}
             </div>
-        </div>
-    )
+            )
 }

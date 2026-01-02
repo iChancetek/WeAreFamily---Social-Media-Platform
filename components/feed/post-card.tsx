@@ -172,7 +172,7 @@ function CommentItem({
                         <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8">Cancel</Button>
                     </div>
                 ) : (
-                    <p className="text-gray-700 dark:text-gray-300">{editContent}</p>
+                    <p className="text-foreground">{editContent}</p>
                 )}
             </div>
         </div>

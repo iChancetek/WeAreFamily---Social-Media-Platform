@@ -84,7 +84,7 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
                     <AvatarFallback>{otherUser?.displayName?.charAt(0) || "?"}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <h3 className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100">
+                    <h3 className="font-semibold text-sm md:text-base text-foreground">
                         {otherUser?.displayName || "Family Member"}
                     </h3>
                     <p className="text-xs text-green-500 font-medium">Online</p>

@@ -47,14 +47,17 @@
   .dark {
     /* Sexy Pure Black Theme */
     --background: 0 0 0;
-    --foreground: 255 255 255;
+    --foreground: 84 72 238;
+    /* Blurple Text */
 
     --card: 9 9 11;
     /* Deep Onyx (Zinc-950) */
-    --card-foreground: 255 255 255;
+    --card-foreground: 84 72 238;
+    /* Blurple Text */
 
     --popover: 9 9 11;
-    --popover-foreground: 255 255 255;
+    --popover-foreground: 84 72 238;
+    /* Blurple Text */
 
     --primary: 84 72 238;
     /* vibrant violet-blue */
@@ -62,13 +65,16 @@
 
     --secondary: 24 24 27;
     /* Zinc-900 */
-    --secondary-foreground: 255 255 255;
+    --secondary-foreground: 84 72 238;
+    /* Blurple Text */
 
     --muted: 24 24 27;
-    --muted-foreground: 161 161 170;
+    --muted-foreground: 133 125 219;
+    /* Muted Blurple */
 
     --accent: 24 24 27;
-    --accent-foreground: 255 255 255;
+    --accent-foreground: 84 72 238;
+    /* Blurple Text */
 
     --destructive: 127 29 29;
     --destructive-foreground: 255 255 255;
@@ -126,7 +132,7 @@
 
   .glass-card {
     /* Sexy: Deep Zinc BG + Subtle White Border overlay */
-    @apply bg-white dark:bg-zinc-950 text-black dark:text-white rounded-lg border border-gray-100 dark:border-white/10 shadow-md;
+    @apply bg-white dark:bg-zinc-950 text-black dark:text-primary rounded-lg border border-gray-100 dark:border-white/10 shadow-md;
   }
 
   .pb-safe {

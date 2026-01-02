@@ -40,7 +40,7 @@ export function FamilyMembersCard({ members }: FamilyMembersCardProps) {
                                 <AvatarImage src={member.imageUrl || undefined} className="object-cover" />
                                 <AvatarFallback>{member.displayName?.charAt(0) || "U"}</AvatarFallback>
                             </Avatar>
-                            <span className="text-[10px] text-center truncate w-full font-medium text-gray-600 dark:text-gray-400">
+                            <span className="text-[10px] text-center truncate w-full font-medium text-muted-foreground">
                                 {member.displayName?.split(' ')[0]}
                             </span>
                         </Link>

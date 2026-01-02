@@ -46,7 +46,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                             <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
                                 <MessageSquare className="w-8 h-8 opacity-50" />
                             </div>
-                            <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Select a Conversation</h2>
+                            <h2 className="text-xl font-semibold mb-2 text-foreground">Select a Conversation</h2>
                             <p className="max-w-xs text-sm">
                                 Choose a family member from the list to start chatting or checking up on them!
                             </p>

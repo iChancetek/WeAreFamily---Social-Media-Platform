@@ -64,7 +64,7 @@ export function StoriesTrayClient({
                                     )}
                                 </div>
                                 <div className="absolute bottom-0 inset-x-0 h-1/3 bg-white dark:bg-card flex flex-col items-center justify-center pt-4 z-10">
-                                    <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">Create Story</span>
+                                    <span className="text-xs font-semibold text-foreground">Create Story</span>
                                 </div>
                                 <div className="absolute top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 bg-primary rounded-full p-1 border-4 border-white dark:border-zinc-900">
                                     <Plus className="w-5 h-5 text-white" />
