@@ -9,14 +9,7 @@ runConfig:
 
   # Environment variables and secrets.
   env:
-    - variable: NEXT_PUBLIC_CLERK_SIGN_IN_URL
-      value: /sign-in
-    - variable: NEXT_PUBLIC_CLERK_SIGN_UP_URL
-      value: /sign-up
-    - variable: NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL
-      value: /
-    - variable: NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
-      value: /
+
 
   # Grant access to secrets in Cloud Secret Manager.
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters

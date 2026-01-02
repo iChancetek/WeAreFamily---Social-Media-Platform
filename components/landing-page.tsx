@@ -20,12 +20,12 @@ export function LandingPage() {
                     <span>WeAreFamily</span>
                 </div>
                 <div className="flex gap-4">
-                    <Link href="/sign-in">
+                    <Link href="/login">
                         <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-white/10 rounded-full px-6">
                             Sign In
                         </Button>
                     </Link>
-                    <Link href="/sign-up">
+                    <Link href="/signup">
                         <Button className="bg-rose-600 hover:bg-rose-700 text-white rounded-full px-6 font-semibold shadow-[0_0_20px_rgba(225,29,72,0.5)] transition-all hover:shadow-[0_0_40px_rgba(225,29,72,0.7)] hover:scale-105">
                             Join Now
                         </Button>
@@ -54,13 +54,13 @@ export function LandingPage() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
-                        <Link href="/sign-up">
+                        <Link href="/signup">
                             <Button size="lg" className="h-14 px-8 text-lg bg-white text-black hover:bg-gray-200 rounded-full font-bold transition-transform hover:scale-105">
                                 Get Started
                                 <ArrowRight className="ml-2 w-5 h-5" />
                             </Button>
                         </Link>
-                        <Link href="/sign-in">
+                        <Link href="/login">
                             <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-white/20 bg-transparent text-white hover:bg-white/10 rounded-full">
                                 View Demo
                             </Button>
