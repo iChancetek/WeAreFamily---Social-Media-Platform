@@ -68,8 +68,21 @@ export async function getPosts() {
             return [] // Return empty if unauthorized
         }
 
-        // Fetch all posts
-        const postsSnapshot = await adminDb.collection("posts").orderBy("createdAt", "desc").get();
+        const { getFamilyMemberIds } = await import("./family");
+        const familyIds = await getFamilyMemberIds(user.id);
+        const allowedIds = [user.id, ...familyIds];
+
+        // Firestore 'in' query supports up to 30 items. 
+        // For scalability, we should implement pagination or multiple queries. 
+        // For now, we'll take the first 30 most relevant connections if they have many.
+        // In a real separate-feed system, we'd fan-out posts to a user's feed collection.
+        const queryIds = allowedIds.slice(0, 30);
+
+        // Fetch posts from self and family
+        const postsSnapshot = await adminDb.collection("posts")
+            .where("authorId", "in", queryIds)
+            .orderBy("createdAt", "desc")
+            .get();
 
         // Build posts with author and comments
         const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc) => {

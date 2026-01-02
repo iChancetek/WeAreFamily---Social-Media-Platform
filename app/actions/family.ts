@@ -103,8 +103,29 @@ export async function getFamilyRequests() {
 // Alias for family page
 export const getPendingRequests = getFamilyRequests;
 
+// Filter out invisible users and blocked users
+// Note: This is an unoptimized in-memory filter. For production, we'd need a dedicated search index (Algolia/Typesense)
+// or denormalized privacy flags.
+const currentUser = await getUserProfile();
+const blockedIds = new Set<string>();
 export async function searchFamilyMembers(searchTerm: string) {
+    const currentUser = await getUserProfile();
+
+    // Filter out invisible users and blocked users
     const usersSnapshot = await adminDb.collection("users").get();
+
+    // Fetch blocked users
+    const blockedIds = new Set<string>();
+    if (currentUser) {
+        const blockedSnapshot = await adminDb.collection("blockedUsers").get();
+        blockedSnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.blockerId === currentUser.id || data.blockedId === currentUser.id) {
+                blockedIds.add(data.blockerId === currentUser.id ? data.blockedId : data.blockerId);
+            }
+        });
+    }
+
     const allUsers = usersSnapshot.docs.map(doc => {
         const data = doc.data();
         return {
@@ -114,10 +135,17 @@ export async function searchFamilyMembers(searchTerm: string) {
         };
     }) as any;
 
-    return allUsers.filter((u: any) =>
-        u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return allUsers.filter((u: any) => {
+        if (blockedIds.has(u.id)) return false;
+        // Don't show invisible users unless it's yourself (though why search for yourself?) or admin?
+        // Let's just hide invisible users from search completely except for admins.
+        if (u.isInvisible && u.id !== currentUser?.id && currentUser?.role !== 'admin') return false;
+
+        return (
+            u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    });
 }
 
 // Alias for backward compatibility
@@ -127,24 +155,12 @@ export async function getFamilyMembers() {
     const user = await getUserProfile();
     if (!user) return [];
 
-    // Get accepted family requests
-    const sentSnapshot = await adminDb.collection("familyRequests")
-        .where("senderId", "==", user.id)
-        .where("status", "==", 'accepted')
-        .get();
-
-    const receivedSnapshot = await adminDb.collection("familyRequests")
-        .where("receiverId", "==", user.id)
-        .where("status", "==", 'accepted')
-        .get();
-
-    const familyIds = new Set<string>();
-    sentSnapshot.docs.forEach(doc => familyIds.add(doc.data().receiverId));
-    receivedSnapshot.docs.forEach(doc => familyIds.add(doc.data().senderId));
+    // Use getFamilyMemberIds to get the IDs first (which handles blocking logic)
+    const familyIds = await getFamilyMemberIds(user.id);
 
     // Fetch family member details
     const familyMembers = await Promise.all(
-        Array.from(familyIds).map(async id => {
+        familyIds.map(async id => {
             const userDoc = await adminDb.collection("users").doc(id).get();
             if (userDoc.exists) {
                 const data = userDoc.data()!;
@@ -159,6 +175,35 @@ export async function getFamilyMembers() {
     );
 
     return familyMembers.filter(Boolean);
+}
+
+export async function getFamilyMemberIds(userId: string) {
+    // Get accepted family requests
+    const sentSnapshot = await adminDb.collection("familyRequests")
+        .where("senderId", "==", userId)
+        .where("status", "==", 'accepted')
+        .get();
+
+    const receivedSnapshot = await adminDb.collection("familyRequests")
+        .where("receiverId", "==", userId)
+        .where("status", "==", 'accepted')
+        .get();
+
+    const familyIds = new Set<string>();
+    sentSnapshot.docs.forEach(doc => familyIds.add(doc.data().receiverId));
+    receivedSnapshot.docs.forEach(doc => familyIds.add(doc.data().senderId));
+
+    // Filter out blocked users
+    const blockedSnapshot = await adminDb.collection("blockedUsers").get();
+    blockedSnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        if (data.blockerId === userId || data.blockedId === userId) {
+            familyIds.delete(data.blockerId === userId ? data.blockedId : data.blockerId);
+            // Also delete the request to be clean? No, let's just hide the connection.
+        }
+    });
+
+    return Array.from(familyIds);
 }
 
 // ... family members ...

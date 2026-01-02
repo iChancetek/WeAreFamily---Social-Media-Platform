@@ -9,7 +9,16 @@ export default async function GalleryPage() {
         redirect("/");
     }
 
-    const postsSnapshot = await adminDb.collection("posts").orderBy("createdAt", "desc").get();
+    const { getFamilyMemberIds } = await import("@/app/actions/family");
+    const familyIds = await getFamilyMemberIds(user.id);
+    const allowedIds = [user.id, ...familyIds];
+    const queryIds = allowedIds.slice(0, 30); // Limit to 30 for Firestore 'in' query
+
+    const postsSnapshot = await adminDb.collection("posts")
+        .where("authorId", "in", queryIds)
+        .orderBy("createdAt", "desc")
+        .get();
+
     const allPosts = postsSnapshot.docs.map(doc => {
         const data = doc.data();
         return {
