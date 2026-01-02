@@ -79,16 +79,21 @@ export async function getEvents(): Promise<Event[]> {
             const eventData = eventDoc.data();
             const attendees = eventData.attendees || [];
 
+            // Serialize creator
+            const creator = userProfiles.get(eventData.creatorId) ? {
+                ...userProfiles.get(eventData.creatorId)
+            } : null;
+
             return {
                 id: eventDoc.id,
                 title: eventData.title,
                 description: eventData.description || null,
-                date: eventData.date?.toDate() || new Date(),
+                date: eventData.date?.toDate ? eventData.date.toDate() : new Date(eventData.date || Date.now()),
                 location: eventData.location || null,
                 creatorId: eventData.creatorId,
                 attendees,
-                createdAt: eventData.createdAt?.toDate() || new Date(),
-                creator: userProfiles.get(eventData.creatorId),
+                createdAt: eventData.createdAt?.toDate ? eventData.createdAt.toDate() : new Date(eventData.createdAt || Date.now()),
+                creator: creator,
                 attendeeProfiles: attendees.map((id: string) => userProfiles.get(id)).filter(Boolean),
             };
         });

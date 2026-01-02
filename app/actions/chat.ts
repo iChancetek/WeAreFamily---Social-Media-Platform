@@ -114,7 +114,7 @@ export async function getChats(): Promise<ChatSession[]> {
             name: chatData.name || null,
             isGroup: chatData.isGroup || false,
             participants: chatData.participants || [],
-            lastMessageAt: chatData.lastMessageAt?.toDate() || null,
+            lastMessageAt: chatData.lastMessageAt?.toDate ? chatData.lastMessageAt.toDate() : new Date(chatData.lastMessageAt || Date.now()),
             otherUser,
             lastMessage,
         };
@@ -147,7 +147,7 @@ export async function getMessages(chatId: string): Promise<Message[]> {
     const messages = messagesSnapshot.docs.map(msgDoc => ({
         id: msgDoc.id,
         ...msgDoc.data(),
-        createdAt: msgDoc.data().createdAt?.toDate() || new Date(),
+        createdAt: msgDoc.data().createdAt?.toDate ? msgDoc.data().createdAt.toDate() : new Date(msgDoc.data().createdAt || Date.now()),
     })) as Message[];
 
     return messages;

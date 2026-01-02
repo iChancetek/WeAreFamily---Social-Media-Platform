@@ -10,7 +10,14 @@ export default async function GalleryPage() {
     }
 
     const postsSnapshot = await adminDb.collection("posts").orderBy("createdAt", "desc").get();
-    const allPosts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any);
+    const allPosts = postsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+        };
+    }) as any;
 
     const mediaItems = allPosts.flatMap((post: any) => (post.mediaUrls || []).map((url: string) => ({ url, postId: post.id })));
 
