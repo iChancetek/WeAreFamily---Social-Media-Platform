@@ -37,7 +37,7 @@ export default function LoginPage() {
 
             console.log("User authenticated, syncing to database...")
             // Sync user (existing users might have empty profileData, that's fine)
-            await syncUserToDb(user.uid, user.email!, user.displayName || user.email!.split('@')[0])
+            await syncUserToDb(user.uid, user.email!, user.displayName || user.email!.split('@')[0], undefined, undefined, user.emailVerified)
 
             console.log("Creating session cookie...")
             await createSession(user.uid)
@@ -72,7 +72,8 @@ export default function LoginPage() {
                 user.email!,
                 user.displayName || user.email!.split('@')[0],
                 firstName,
-                lastName
+                lastName,
+                user.emailVerified
             )
             await createSession(user.uid)
 
