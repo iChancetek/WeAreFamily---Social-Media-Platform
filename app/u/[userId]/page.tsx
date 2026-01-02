@@ -61,19 +61,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
                 ) : userPosts.length === 0 ? (
                     <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900">
                         <p className="text-gray-500 mb-2">No posts yet.</p>
-                        <details className="text-xs text-left mt-4 text-slate-400">
-                            <summary>Debug Info</summary>
-                            <pre className="mt-2 p-2 bg-slate-200 dark:bg-slate-800 rounded overflow-auto">
-                                {JSON.stringify({
-                                    targetUserId: userId,
-                                    viewerId: currentUser.id,
-                                    hasAccess,
-                                    isOwnProfile,
-                                    familyStatus: familyStatus.status,
-                                    role: currentUser.role
-                                }, null, 2)}
-                            </pre>
-                        </details>
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -83,6 +70,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
                     </div>
                 )}
             </div>
-        </MainLayout>
+        </MainLayout >
     );
 }

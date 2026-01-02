@@ -24,13 +24,13 @@ export function Sidebar({ isAdmin, className }: SidebarProps) {
 
     const links = [
         { href: "/", label: "Home", icon: Home },
+        { href: "/profile", label: "Profile", icon: User },
         { href: "/family", label: "Family", icon: Users },
         { href: "/groups", label: "Groups", icon: Tent },
         { href: "/messages", label: "Messages", icon: MessageSquare },
         { href: "/events", label: "Events", icon: Ticket },
         { href: "/gallery", label: "Gallery", icon: ImageIcon },
         { href: "/branding", label: "Branding", icon: Briefcase },
-        { href: "/profile", label: "Profile", icon: User },
         { href: "/notifications", label: "Notifications", icon: Bell },
         { href: "/settings", label: "Settings", icon: Settings },
     ];
