@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
 import { redirect } from "next/navigation";
 
 export async function getUserProfile() {
@@ -11,16 +10,21 @@ export async function getUserProfile() {
         return null;
     }
 
-    const userDoc = await getDoc(doc(db, "users", sessionUid));
+    try {
+        const userDoc = await adminDb.collection("users").doc(sessionUid).get();
 
-    if (!userDoc.exists()) {
+        if (!userDoc.exists) {
+            return null;
+        }
+
+        return {
+            id: userDoc.id,
+            ...userDoc.data()
+        } as any;
+    } catch (error) {
+        console.error("Error fetching user profile:", error);
         return null;
     }
-
-    return {
-        id: userDoc.id,
-        ...userDoc.data()
-    } as any;
 }
 
 export async function requireUser() {

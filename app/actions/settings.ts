@@ -1,7 +1,6 @@
 'use server'
 
-import { db } from "@/lib/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -9,8 +8,7 @@ export async function updateProfile(data: { displayName?: string, bio?: string, 
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
-    const userRef = doc(db, "users", user.id);
-    await updateDoc(userRef, {
+    await adminDb.collection("users").doc(user.id).update({
         ...(data.displayName !== undefined && { displayName: data.displayName }),
         ...(data.bio !== undefined && { bio: data.bio }),
         ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
@@ -28,8 +26,7 @@ export async function updateAccountSettings(data: { language?: string, theme?: s
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
-    const userRef = doc(db, "users", user.id);
-    await updateDoc(userRef, {
+    await adminDb.collection("users").doc(user.id).update({
         ...(data.language !== undefined && { language: data.language }),
         ...(data.theme !== undefined && { theme: data.theme }),
     });

@@ -1,6 +1,5 @@
 import { MainLayout } from "@/components/layout/main-layout";
-import { db } from "@/lib/firebase";
-import { collection, doc, getDoc, getDocs, query, where, orderBy } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
 import { notFound, redirect } from "next/navigation";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { PostCard } from "@/components/feed/post-card";
@@ -16,9 +15,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
     }
 
     const { userId } = await params;
-    const userDoc = await getDoc(doc(db, "users", userId));
+    const userDoc = await adminDb.collection("users").doc(userId).get();
 
-    if (!userDoc.exists()) {
+    if (!userDoc.exists) {
         notFound();
     }
 
@@ -30,41 +29,40 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
     const hasAccess = isOwnProfile || familyStatus.status === 'accepted' || currentUser.role === 'admin';
 
     // Fetch user posts
-    const postsQuery = query(
-        collection(db, "posts"),
-        where("authorId", "==", userId),
-        orderBy("createdAt", "desc")
-    );
-    const postsSnapshot = await getDocs(postsQuery);
+    const userPosts = hasAccess ? await (async () => {
+        const postsSnapshot = await adminDb.collection("posts")
+            .where("authorId", "==", userId)
+            .orderBy("createdAt", "desc")
+            .get();
 
-    const userPosts = hasAccess ? await Promise.all(postsSnapshot.docs.map(async (postDoc) => {
-        const postData = postDoc.data();
+        return Promise.all(postsSnapshot.docs.map(async (postDoc) => {
+            const postData = postDoc.data();
 
-        // Fetch comments
-        const commentsQuery = query(
-            collection(db, "posts", postDoc.id, "comments"),
-            orderBy("createdAt", "asc")
-        );
-        const commentsSnapshot = await getDocs(commentsQuery);
-        const comments = await Promise.all(commentsSnapshot.docs.map(async (commentDoc) => {
-            const commentData = commentDoc.data();
-            const authorDoc = await getDoc(doc(db, "users", commentData.authorId));
+            // Fetch comments
+            const commentsSnapshot = await adminDb.collection("posts").doc(postDoc.id).collection("comments")
+                .orderBy("createdAt", "asc")
+                .get();
+
+            const comments = await Promise.all(commentsSnapshot.docs.map(async (commentDoc) => {
+                const commentData = commentDoc.data();
+                const authorDoc = await adminDb.collection("users").doc(commentData.authorId).get();
+                return {
+                    id: commentDoc.id,
+                    ...commentData,
+                    author: authorDoc.exists ? { id: authorDoc.id, ...authorDoc.data() } : null,
+                    createdAt: commentData.createdAt?.toDate() || new Date(),
+                };
+            }));
+
             return {
-                id: commentDoc.id,
-                ...commentData,
-                author: authorDoc.exists() ? { id: authorDoc.id, ...authorDoc.data() } : null,
-                createdAt: commentData.createdAt?.toDate() || new Date(),
-            };
+                id: postDoc.id,
+                ...postData,
+                author: user,
+                comments,
+                createdAt: postData.createdAt?.toDate() || new Date(),
+            } as any;
         }));
-
-        return {
-            id: postDoc.id,
-            ...postData,
-            author: user,
-            comments,
-            createdAt: postData.createdAt?.toDate() || new Date(),
-        } as any;
-    })) : [];
+    })() : [];
 
     return (
         <MainLayout>

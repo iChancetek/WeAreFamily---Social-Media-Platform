@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
 import { doc, updateDoc } from "firebase/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -15,8 +15,7 @@ export async function updateBirthday(birthday: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const userRef = doc(db, "users", user.id);
-    await updateDoc(userRef, { birthday });
+    await adminDb.collection("users").doc(user.id).update({ birthday });
 
     revalidatePath("/");
     return { success: true };

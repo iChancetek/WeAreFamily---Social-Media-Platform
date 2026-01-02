@@ -1,8 +1,7 @@
 "use server"
-
 import { cookies } from "next/headers"
-import { db } from "@/lib/firebase";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function createSession(uid: string) {
     // In Next.js 15/16, cookies() is async
@@ -23,16 +22,16 @@ export async function deleteSession() {
 
 export async function syncUserToDb(uid: string, email: string, displayName: string) {
     try {
-        const userRef = doc(db, "users", uid);
-        const userDoc = await getDoc(userRef);
+        const userRef = adminDb.collection("users").doc(uid);
+        const userDoc = await userRef.get();
 
-        if (!userDoc.exists()) {
-            await setDoc(userRef, {
+        if (!userDoc.exists) {
+            await userRef.set({
                 email: email,
                 displayName: displayName,
                 role: "member", // Default role for new users
                 isActive: true, // Active by default
-                createdAt: serverTimestamp(),
+                createdAt: FieldValue.serverTimestamp(),
             });
         }
     } catch (error) {
