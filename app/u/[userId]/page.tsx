@@ -4,9 +4,12 @@ import { notFound, redirect } from "next/navigation";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { PostCard } from "@/components/feed/post-card";
 import { getUserProfile } from "@/lib/auth";
+import { sanitizeData } from "@/lib/serialization";
 
 import { getFamilyStatus } from "@/app/actions/family";
 import { Lock } from "lucide-react";
+
+export const dynamic = 'force-dynamic';
 
 export default async function ProfilePage({ params }: { params: Promise<{ userId: string }> }) {
     const currentUser = await getUserProfile();
@@ -21,12 +24,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
         notFound();
     }
 
-    const user = {
+    const user = sanitizeData({
         id: userDoc.id,
-        ...userDoc.data(),
-        createdAt: userDoc.data()?.createdAt?.toDate ? userDoc.data()?.createdAt.toDate() : new Date(),
-        birthday: userDoc.data()?.birthday?.toDate ? userDoc.data()?.birthday.toDate() : userDoc.data()?.birthday || null,
-    } as any;
+        ...userDoc.data()
+    });
 
     const isOwnProfile = currentUser.id === userId;
     // Fetch family status
@@ -51,21 +52,19 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
             const comments = await Promise.all(commentsSnapshot.docs.map(async (commentDoc) => {
                 const commentData = commentDoc.data();
                 const authorDoc = await adminDb.collection("users").doc(commentData.authorId).get();
-                return {
+                return sanitizeData({
                     id: commentDoc.id,
                     ...commentData,
-                    author: authorDoc.exists ? { id: authorDoc.id, ...authorDoc.data() } : null,
-                    createdAt: commentData.createdAt?.toDate() || new Date(),
-                };
+                    author: authorDoc.exists ? { id: authorDoc.id, ...authorDoc.data() } : null
+                });
             }));
 
-            return {
+            return sanitizeData({
                 id: postDoc.id,
                 ...postData,
                 author: user,
                 comments,
-                createdAt: postData.createdAt?.toDate() || new Date(),
-            } as any;
+            });
         }));
     })() : [];
 

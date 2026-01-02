@@ -2,7 +2,10 @@ import { getPages } from "@/app/actions/pages";
 import { CreatePageDialog } from "@/components/pages/create-page-dialog";
 import { PageCard } from "@/components/pages/page-card";
 import { MainLayout } from "@/components/layout/main-layout";
+import { getUserProfile } from "@/lib/auth";
 import { Separator } from "@/components/ui/separator";
+
+export const dynamic = 'force-dynamic';
 
 export default async function PagesPage() {
     const pages = await getPages();

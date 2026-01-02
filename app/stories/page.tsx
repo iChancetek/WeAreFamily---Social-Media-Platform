@@ -3,6 +3,8 @@ import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { StoriesTray } from "@/components/stories/stories-tray";
 
+export const dynamic = 'force-dynamic';
+
 export default async function StoriesPage() {
     const user = await getUserProfile();
     if (!user) redirect("/login");

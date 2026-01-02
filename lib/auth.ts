@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { adminDb } from "@/lib/firebase-admin";
 import { redirect } from "next/navigation";
+import { sanitizeData } from "@/lib/serialization";
 
 export async function getUserProfile() {
     try {
@@ -17,10 +18,11 @@ export async function getUserProfile() {
             return null;
         }
 
-        return {
+        const data = userDoc.data();
+        return sanitizeData({
             id: userDoc.id,
-            ...userDoc.data()
-        } as any;
+            ...data
+        });
     } catch (error) {
         console.error("Error fetching user profile:", error);
         return null;

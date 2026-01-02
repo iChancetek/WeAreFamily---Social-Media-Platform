@@ -17,14 +17,15 @@ import { PostCard } from "@/components/feed/post-card"; // Assuming this creates
 import { GroupPostCreator } from "@/components/groups/group-post-creator"; // Will create this next
 import { JoinGroupButton } from "@/components/groups/join-group-button"; // Client component for actions
 
-export default async function GroupPage({ params }: { params: { groupId: string } }) {
-    const group = await getGroup(params.groupId);
+export default async function GroupPage({ params }: { params: Promise<{ groupId: string }> }) {
+    const { groupId } = await params;
+    const group = await getGroup(groupId);
     if (!group) return notFound();
 
     const user = await getUserProfile();
-    const memberStatus = await getGroupMemberStatus(params.groupId);
+    const memberStatus = await getGroupMemberStatus(groupId);
     const isMember = !!memberStatus;
-    const posts = await getGroupPosts(params.groupId);
+    const posts = await getGroupPosts(groupId);
 
     // If private and not member, check if we can see anything?
     // Usually show basic info and join button.

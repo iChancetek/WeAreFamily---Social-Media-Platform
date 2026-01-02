@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
-import { toggleLike, addComment, deletePost } from "@/app/actions/posts";
 import { generateCommentSuggestion } from "@/app/actions/ai";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -26,8 +26,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { createPost } from "@/app/actions/posts";
+import { createPost, toggleReaction, addComment, deletePost, ReactionType } from "@/app/actions/posts";
 import { Heart, MessageCircle, Share2, Trash2, Send, Sparkles, Repeat2 } from "lucide-react";
+import { getReactionIcon, getReactionLabel, getReactionColor, ReactionSelector } from "./reaction-selector";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 
 type Comment = {
     id: string;
@@ -53,7 +59,8 @@ type Post = {
         displayName?: string | null;
         imageUrl?: string | null;
     } | null;
-    likes: string[] | null;
+    likes: string[] | null; // Keep for backward compatibility/types
+    reactions?: Record<string, ReactionType>;
     comments?: Comment[];
     context?: {
         type: 'group';
@@ -73,27 +80,41 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
     const name = profile.displayName || "Unknown User";
     const initials = name.slice(0, 2).toUpperCase();
 
-    const [isLiked, setIsLiked] = useState(post.likes?.includes(currentUserId || ""));
-    const [likesCount, setLikesCount] = useState(post.likes?.length || 0);
+    const reactionsMap = post.reactions || {};
+    const myReaction = currentUserId ? reactionsMap[currentUserId] : undefined;
+
+    const [currentMyReaction, setCurrentMyReaction] = useState<ReactionType | undefined>(myReaction);
+    const [allReactions, setAllReactions] = useState<Record<string, ReactionType>>(reactionsMap);
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const handleLike = async () => {
+    const handleReaction = async (type: ReactionType) => {
         // Optimistic update
-        const newIsLiked = !isLiked;
-        setIsLiked(newIsLiked);
-        setLikesCount(prev => newIsLiked ? prev + 1 : prev - 1);
+        const isRemoving = currentMyReaction === type;
+        const newMyReaction = isRemoving ? undefined : type;
+
+        setCurrentMyReaction(newMyReaction);
+        setAllReactions(prev => {
+            const next = { ...prev };
+            if (isRemoving) {
+                delete next[currentUserId || ""];
+            } else {
+                next[currentUserId || ""] = type;
+            }
+            return next;
+        });
 
         try {
-            await toggleLike(post.id);
+            await toggleReaction(post.id, type);
         } catch {
             // Revert on failure
-            setIsLiked(!newIsLiked);
-            setLikesCount(prev => !newIsLiked ? prev + 1 : prev - 1);
-            toast.error("Failed to like post");
+            setCurrentMyReaction(currentMyReaction);
+            setAllReactions(reactionsMap);
+            toast.error("Failed to update reaction");
         }
     };
+
 
     const handleComment = async () => {
         if (!commentText.trim()) return;
@@ -212,14 +233,16 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                     </div>
                 )}
 
-                {(likesCount > 0 || (post.comments && post.comments.length > 0)) && (
-                    <div className="flex justify-between text-xs text-muted-foreground mt-3 px-1">
-                        {likesCount > 0 && (
+                {(Object.keys(allReactions).length > 0 || (post.comments && post.comments.length > 0)) && (
+                    <div className="flex justify-between items-center text-xs text-muted-foreground mt-3 px-1">
+                        {Object.keys(allReactions).length > 0 && (
                             <div className="flex items-center gap-1">
-                                <div className="bg-primary rounded-full p-1">
-                                    <Heart className="w-2 h-2 text-primary-foreground fill-primary-foreground" />
+                                <div className="flex -space-x-1">
+                                    {Array.from(new Set(Object.values(allReactions))).slice(0, 3).map((type, idx) => (
+                                        <span key={idx} className="z-[1]">{getReactionIcon(type)}</span>
+                                    ))}
                                 </div>
-                                <span>{likesCount}</span>
+                                <span className="ml-1">{Object.keys(allReactions).length}</span>
                             </div>
                         )}
                         {post.comments && post.comments.length > 0 && (
@@ -232,14 +255,23 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
             </CardContent>
             <CardFooter className="flex-col !items-stretch px-2 py-1 mx-2 mt-1 border-t border-border">
                 <div className="flex justify-between items-center text-muted-foreground w-full mb-1">
-                    <Button
-                        variant="ghost"
-                        onClick={handleLike}
-                        className={`flex-1 gap-2 hover:bg-muted h-9 font-medium rounded-md ${isLiked ? "text-primary" : "text-muted-foreground"}`}
-                    >
-                        <Heart className={`w-5 h-5 ${isLiked ? "fill-primary" : ""}`} />
-                        <span className="text-[15px]">Like</span>
-                    </Button>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                className={cn(
+                                    "flex-1 gap-2 hover:bg-muted h-9 font-medium rounded-md transition-all duration-200",
+                                    currentMyReaction ? getReactionColor(currentMyReaction) : "text-muted-foreground"
+                                )}
+                            >
+                                <span className="text-xl">{getReactionIcon(currentMyReaction)}</span>
+                                <span className="text-[15px]">{getReactionLabel(currentMyReaction)}</span>
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 border-none bg-transparent shadow-none" side="top" align="start" sideOffset={10}>
+                            <ReactionSelector onSelect={handleReaction} currentReaction={currentMyReaction} />
+                        </PopoverContent>
+                    </Popover>
                     <Button
                         variant="ghost"
                         onClick={() => setShowComments(!showComments)}

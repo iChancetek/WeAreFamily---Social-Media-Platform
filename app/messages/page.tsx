@@ -6,12 +6,15 @@ import { ChatWindow } from "@/components/chat/chat-window";
 import { redirect } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 
-export default async function MessagesPage({ searchParams }: { searchParams: { chatId?: string } }) {
+export const dynamic = 'force-dynamic';
+
+export default async function MessagesPage({ searchParams }: { searchParams: Promise<{ chatId?: string }> }) {
+    const { chatId } = await searchParams;
     const user = await getUserProfile();
     if (!user) redirect("/login");
 
     const chats = await getChats();
-    const activeChatId = searchParams.chatId || null;
+    const activeChatId = chatId || null;
 
     const activeSession = activeChatId ? chats.find(c => c.id === activeChatId) : null;
 

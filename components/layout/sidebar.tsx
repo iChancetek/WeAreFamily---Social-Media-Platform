@@ -1,7 +1,8 @@
 'use client'
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell } from "lucide-react";
+import { NotificationBadge } from "@/components/notifications/notification-badge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ export function Sidebar({ isAdmin }: SidebarProps) {
         { href: "/groups", label: "Groups", icon: Tent },
         { href: "/pages", label: "Pages", icon: Briefcase }, // Added Pages link
         { href: "/messages", label: "Messages", icon: MessageSquare },
+        { href: "/notifications", label: "Notifications", icon: Bell },
         { href: "/events", label: "Events", icon: Ticket },
         { href: "/gallery", label: "Gallery", icon: ImageIcon },
         { href: "/settings", label: "Settings", icon: Settings },
@@ -48,13 +50,18 @@ export function Sidebar({ isAdmin }: SidebarProps) {
                             <Button
                                 variant="ghost"
                                 className={cn(
-                                    "w-full justify-start gap-4 text-base font-medium transition-colors h-12 rounded-lg px-4",
+                                    "w-full justify-start gap-4 text-base font-medium transition-colors h-12 rounded-lg px-4 relative", // Added 'relative' for badge positioning
                                     isActive
                                         ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
                                         : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
                                 )}>
                                 <link.icon className={cn("w-6 h-6", isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-500 group-hover:text-slate-900 dark:group-hover:text-slate-300")} />
                                 {link.label}
+                                {link.href === '/notifications' && (
+                                    <div className="absolute top-2 left-6">
+                                        <NotificationBadge />
+                                    </div>
+                                )}
                             </Button>
                         </Link>
                     )

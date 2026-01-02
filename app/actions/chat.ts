@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { sanitizeData } from "@/lib/serialization";
 
 // --- Types ---
 export type ChatUser = {
@@ -109,15 +110,15 @@ export async function getChats(): Promise<ChatSession[]> {
 
         const lastMessage = messagesSnapshot.empty ? "No messages yet" : messagesSnapshot.docs[0].data().content;
 
-        return {
+        return sanitizeData({
             id: chatDoc.id,
             name: chatData.name || null,
             isGroup: chatData.isGroup || false,
             participants: chatData.participants || [],
-            lastMessageAt: chatData.lastMessageAt?.toDate ? chatData.lastMessageAt.toDate() : new Date(chatData.lastMessageAt || Date.now()),
             otherUser,
             lastMessage,
-        };
+            lastMessageAt: chatData.lastMessageAt
+        });
     }));
 
     return enrichedChats;
@@ -144,13 +145,10 @@ export async function getMessages(chatId: string): Promise<Message[]> {
         .limit(50)
         .get();
 
-    const messages = messagesSnapshot.docs.map(msgDoc => ({
+    return messagesSnapshot.docs.map(msgDoc => sanitizeData({
         id: msgDoc.id,
         ...msgDoc.data(),
-        createdAt: msgDoc.data().createdAt?.toDate ? msgDoc.data().createdAt.toDate() : new Date(msgDoc.data().createdAt || Date.now()),
     })) as Message[];
-
-    return messages;
 }
 
 export async function sendMessage(chatId: string, content: string) {

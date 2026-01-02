@@ -2,7 +2,10 @@ import { getGroups } from "@/app/actions/groups";
 import { CreateGroupDialog } from "@/components/groups/create-group-dialog";
 import { GroupCard } from "@/components/groups/group-card";
 import { MainLayout } from "@/components/layout/main-layout";
+import { getUserProfile } from "@/lib/auth";
 import { Separator } from "@/components/ui/separator";
+
+export const dynamic = 'force-dynamic';
 
 export default async function GroupsPage() {
     const groups = await getGroups();

@@ -3,6 +3,7 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { sanitizeData } from "@/lib/serialization";
 
 export async function blockUser(userId: string) {
     const currentUser = await getUserProfile();
@@ -64,12 +65,12 @@ export async function getBlockedUsers() {
             const userDoc = await adminDb.collection("users").doc(blockData.blockedId).get();
             if (userDoc.exists) {
                 const userData = userDoc.data();
-                return {
+                return sanitizeData({
                     id: userDoc.id,
                     displayName: userData?.displayName,
                     email: userData?.email,
                     imageUrl: userData?.imageUrl,
-                };
+                });
             }
             return null;
         })

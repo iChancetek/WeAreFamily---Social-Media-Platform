@@ -44,6 +44,7 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
 
     // Navigate to next story/user
     const next = useCallback(() => {
+        if (!currentUser) return;
         if (currentStoryIndex < currentUser.stories.length - 1) {
             setCurrentStoryIndex(prev => prev + 1);
             setProgress(0);
@@ -54,20 +55,23 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
         } else {
             onOpenChange(false);
         }
-    }, [currentStoryIndex, currentUserIndex, initialStories.length, currentUser?.stories.length, onOpenChange]);
+    }, [currentStoryIndex, currentUserIndex, initialStories.length, currentUser, onOpenChange]);
 
     // Navigate to previous story/user
     const prev = useCallback(() => {
+        if (!currentUser) return;
         if (currentStoryIndex > 0) {
             setCurrentStoryIndex(prev => prev - 1);
             setProgress(0);
         } else if (currentUserIndex > 0) {
-            setCurrentUserIndex(prev => prev - 1);
-            // Go to last story of previous user
-            setCurrentStoryIndex(initialStories[currentUserIndex - 1].stories.length - 1);
-            setProgress(0);
+            const prevUser = initialStories[currentUserIndex - 1];
+            if (prevUser) {
+                setCurrentUserIndex(prev => prev - 1);
+                setCurrentStoryIndex(prevUser.stories.length - 1);
+                setProgress(0);
+            }
         }
-    }, [currentStoryIndex, currentUserIndex, initialStories]);
+    }, [currentStoryIndex, currentUserIndex, initialStories, currentUser]);
 
     // Auto-advance logic
     useEffect(() => {

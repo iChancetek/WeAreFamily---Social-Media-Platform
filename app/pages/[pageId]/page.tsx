@@ -9,13 +9,16 @@ import { PostCard } from "@/components/feed/post-card";
 import { FollowPageButton } from "@/components/pages/follow-page-button";
 import { PagePostCreator } from "@/components/pages/page-post-creator";
 
-export default async function PageDetail({ params }: { params: { pageId: string } }) {
-    const page = await getPage(params.pageId);
+export const dynamic = 'force-dynamic';
+
+export default async function PageDetail({ params }: { params: Promise<{ pageId: string }> }) {
+    const { pageId } = await params;
+    const page = await getPage(pageId);
     if (!page) return notFound();
 
     const user = await getUserProfile();
-    const followStatus = await getPageFollowStatus(params.pageId);
-    const posts = await getPagePosts(params.pageId);
+    const followStatus = await getPageFollowStatus(pageId);
+    const posts = await getPagePosts(pageId);
 
     const isAdmin = followStatus?.role === 'admin';
 

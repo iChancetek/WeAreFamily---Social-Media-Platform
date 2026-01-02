@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { CalendarDays } from "lucide-react";
 import { MainLayout } from "@/components/layout/main-layout";
 
+export const dynamic = 'force-dynamic';
+
 export default async function EventsPage() {
     const user = await getUserProfile();
     if (!user) redirect("/login");

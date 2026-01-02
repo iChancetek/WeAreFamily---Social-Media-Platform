@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { sanitizeData } from "@/lib/serialization";
 
 export async function createStory(mediaUrl: string, mediaType: 'image' | 'video') {
     const user = await getUserProfile();
@@ -42,7 +43,6 @@ export async function getActiveStories() {
             .orderBy("createdAt", "desc")
             .get();
 
-        // Fetch author data for each story
         const activeStories = await Promise.all(storiesSnapshot.docs.map(async (storyDoc) => {
             const storyData = storyDoc.data();
             const authorDoc = await adminDb.collection("users").doc(storyData.authorId).get();
@@ -52,13 +52,11 @@ export async function getActiveStories() {
                 imageUrl: authorDoc.data()?.imageUrl
             } : null;
 
-            return {
+            return sanitizeData({
                 id: storyDoc.id,
                 ...storyData,
-                author,
-                createdAt: storyData.createdAt?.toDate() || new Date(),
-                expiresAt: storyData.expiresAt?.toDate() || new Date(),
-            };
+                author
+            });
         }));
 
         // Group stories by user

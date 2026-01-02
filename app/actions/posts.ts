@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { sanitizeData } from "@/lib/serialization";
 
 export async function createPost(content: string, mediaUrls: string[] = []) {
     const user = await getUserProfile()
@@ -15,14 +16,16 @@ export async function createPost(content: string, mediaUrls: string[] = []) {
         authorId: user.id,
         content,
         mediaUrls,
-        likes: [],
+        reactions: {}, // Map of userId -> reactionType
         createdAt: FieldValue.serverTimestamp(),
     });
 
     revalidatePath('/')
 }
 
-export async function toggleLike(postId: string) {
+export type ReactionType = 'brilliant' | 'excellent' | 'hugs' | 'thinking_of_you';
+
+export async function toggleReaction(postId: string, reactionType: ReactionType) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
@@ -31,17 +34,29 @@ export async function toggleLike(postId: string) {
 
     if (!postSnap.exists) throw new Error("Post not found")
 
-    const currentLikes = postSnap.data()?.likes || []
-    const isLiked = currentLikes.includes(user.id)
+    const postData = postSnap.data();
+    const currentReactions = postData?.reactions || {};
+    const existingReaction = currentReactions[user.id];
 
-    if (isLiked) {
+    if (existingReaction === reactionType) {
+        // Remove reaction if same type is clicked again
         await postRef.update({
-            likes: FieldValue.arrayRemove(user.id)
+            [`reactions.${user.id}`]: FieldValue.delete()
         });
     } else {
+        // Add or Change reaction
         await postRef.update({
-            likes: FieldValue.arrayUnion(user.id)
+            [`reactions.${user.id}`]: reactionType
         });
+
+        // Trigger Notification
+        if (postData && postData.authorId) {
+            const { createNotification } = await import("./notifications");
+            await createNotification(postData.authorId, 'like' as any, postId, {
+                reactionType,
+                postPreview: postData.content?.substring(0, 50)
+            }).catch(console.error);
+        }
     }
 
     revalidatePath('/')
@@ -57,6 +72,19 @@ export async function addComment(postId: string, content: string) {
         content,
         createdAt: FieldValue.serverTimestamp(),
     });
+
+    const postRef = adminDb.collection("posts").doc(postId);
+    const postSnap = await postRef.get();
+    const postData = postSnap.data();
+
+    // Trigger Notification
+    if (postData && postData.authorId) {
+        const { createNotification } = await import("./notifications");
+        await createNotification(postData.authorId, 'comment', postId, {
+            commentPreview: content.substring(0, 50),
+            postPreview: postData.content?.substring(0, 50)
+        }).catch(console.error);
+    }
 
     revalidatePath('/')
 }
@@ -252,16 +280,20 @@ export async function getPosts() {
                 };
             }));
 
-            return {
+            const reactions = post.reactions || {};
+            const likesCount = Object.keys(reactions).length;
+            const likes = Object.keys(reactions); // For backward compatibility with PostCard's current check
+
+            return sanitizeData({
                 id: post.id,
                 content: post.content,
                 mediaUrls: post.mediaUrls,
-                likes: post.likes,
-                createdAt: post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt || Date.now()),
+                likes,
+                reactions,
                 author,
                 comments,
                 context // Pass this to UI
-            };
+            });
         }));
 
         return finalPosts;

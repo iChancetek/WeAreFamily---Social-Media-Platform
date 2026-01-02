@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
+import { sanitizeData } from "@/lib/serialization";
 
 export type Page = {
     id: string;
@@ -45,12 +46,10 @@ export async function getPages() {
     const pagesSnapshot = await adminDb.collection("pages").orderBy("createdAt", "desc").get();
 
     return pagesSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
+        return sanitizeData({
             id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
-        } as Page;
+            ...doc.data()
+        }) as Page;
     });
 }
 
@@ -58,12 +57,10 @@ export async function getPage(pageId: string) {
     const doc = await adminDb.collection("pages").doc(pageId).get();
     if (!doc.exists) return null;
 
-    const data = doc.data()!;
-    return {
+    return sanitizeData({
         id: doc.id,
-        ...data,
-        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
-    } as Page;
+        ...doc.data()
+    }) as Page;
 }
 
 export async function followPage(pageId: string) {
@@ -85,6 +82,16 @@ export async function followPage(pageId: string) {
     await adminDb.collection("pages").doc(pageId).update({
         followerCount: FieldValue.increment(1)
     });
+
+    // Notify Page Founder/Admin
+    const pageDoc = await adminDb.collection("pages").doc(pageId).get();
+    const pageData = pageDoc.data();
+    if (pageData && pageData.founderId) {
+        const { createNotification } = await import("./notifications");
+        await createNotification(pageData.founderId, 'follow', pageId, {
+            pageName: pageData.name
+        }).catch(console.error);
+    }
 
     revalidatePath(`/pages/${pageId}`);
     revalidatePath('/pages');
@@ -112,7 +119,7 @@ export async function getPageFollowStatus(pageId: string) {
     const followerDoc = await adminDb.collection("pages").doc(pageId).collection("followers").doc(user.id).get();
     if (!followerDoc.exists) return null;
 
-    return followerDoc.data() as { role: 'admin' | 'follower', followedAt: any };
+    return sanitizeData(followerDoc.data()) as { role: 'admin' | 'follower', followedAt: any };
 }
 
 export async function createPagePost(pageId: string, content: string, mediaUrls: string[] = []) {
@@ -169,14 +176,13 @@ export async function getPagePosts(pageId: string) {
             } : { id: 'unknown', displayName: 'Unknown' };
         }
 
-        return {
+        return sanitizeData({
             id: postDoc.id,
             content: postData.content || "",
             mediaUrls: postData.mediaUrls || [],
             likes: postData.likes || [],
-            author, // Page or User
-            createdAt: postData.createdAt?.toDate ? postData.createdAt.toDate() : new Date(postData.createdAt || Date.now()),
-        } as any;
+            author
+        });
     }));
 
     return allPosts;

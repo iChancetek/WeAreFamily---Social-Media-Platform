@@ -10,8 +10,9 @@ import { AdminCharts } from "@/components/admin/admin-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, Calendar } from "lucide-react";
 import { subDays, startOfDay, subYears, format } from "date-fns";
+import { sanitizeData } from "@/lib/serialization";
 
-export default async function AdminDashboard() {
+export default async function AdminPage() {
     const user = await getUserProfile();
 
     if (!user || user.role !== 'admin') {
@@ -19,7 +20,7 @@ export default async function AdminDashboard() {
     }
 
     const usersSnapshot = await adminDb.collection("users").orderBy("createdAt", "desc").get();
-    const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), createdAt: doc.data().createdAt?.toDate() || new Date() }) as any);
+    const allUsers = usersSnapshot.docs.map(doc => sanitizeData({ id: doc.id, ...doc.data() }));
 
     // Calculate Metrics
     const now = new Date();

@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
+import { sanitizeData } from "@/lib/serialization";
 
 export type Group = {
     id: string;
@@ -49,12 +50,10 @@ export async function getGroups() {
     // For now, we'll just return the groups.
 
     return groupsSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
+        return sanitizeData({
             id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
-        } as Group;
+            ...doc.data()
+        }) as Group;
     });
 }
 
@@ -62,12 +61,10 @@ export async function getGroup(groupId: string) {
     const doc = await adminDb.collection("groups").doc(groupId).get();
     if (!doc.exists) return null;
 
-    const data = doc.data()!;
-    return {
+    return sanitizeData({
         id: doc.id,
-        ...data,
-        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
-    } as Group;
+        ...doc.data()
+    }) as Group;
 }
 
 export async function joinGroup(groupId: string) {
@@ -116,7 +113,7 @@ export async function getGroupMemberStatus(groupId: string) {
     const memberDoc = await adminDb.collection("groups").doc(groupId).collection("members").doc(user.id).get();
     if (!memberDoc.exists) return null;
 
-    return memberDoc.data() as { role: 'admin' | 'member', joinedAt: any };
+    return sanitizeData(memberDoc.data()) as { role: 'admin' | 'member', joinedAt: any };
 }
 
 export async function createGroupPost(groupId: string, content: string, mediaUrls: string[] = []) {
@@ -165,14 +162,13 @@ export async function getGroupPosts(groupId: string) {
             email: authorDoc.data()?.email,
         } : null;
 
-        return {
+        return sanitizeData({
             id: postDoc.id,
             content: postData.content || "",
             mediaUrls: postData.mediaUrls || [],
             likes: postData.likes || [],
-            author,
-            createdAt: postData.createdAt?.toDate ? postData.createdAt.toDate() : new Date(postData.createdAt || Date.now()),
-        } as any; // Cast to any or a shared Post type to satisfy the component
+            author
+        });
     }));
 
     return allPosts;
