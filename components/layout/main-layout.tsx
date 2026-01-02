@@ -19,7 +19,7 @@ export async function MainLayout({ children, className }: { children: React.Reac
         <div className="flex h-screen bg-transparent">
             <ActivityTracker />
             <Sidebar isAdmin={isAdmin} />
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 md:pl-64">
                 <TopNav className="md:hidden border-b border-white/10" />
                 <main className="flex-1 overflow-y-auto p-4 md:p-8">
                     <div className={containerClass}>

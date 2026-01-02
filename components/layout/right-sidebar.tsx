@@ -11,7 +11,7 @@ export async function RightSidebar({ className }: RightSidebarProps) {
 
     if (activeUsers.length === 0) {
         return (
-            <div className={cn("flex flex-col gap-4 p-4", className)}>
+            <div className={cn("hidden lg:flex flex-col gap-4 p-4 w-80", className)}>
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Contacts</h3>
                 <p className="text-xs text-gray-400">No other family members are online right now.</p>
             </div>
