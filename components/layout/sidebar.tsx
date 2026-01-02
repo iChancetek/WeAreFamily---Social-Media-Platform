@@ -16,13 +16,16 @@ interface SidebarProps {
 
 export function Sidebar({ isAdmin }: SidebarProps) {
     const pathname = usePathname();
-    const { user, signOut } = useAuth();
+    const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
+
+    // Get user's first name from profile or display name
+    const firstName = profile?.displayName?.split(' ')[0] || profile?.email?.split('@')[0] || t("nav.profile");
 
     // Simplified links for now, removing translation dependency to fix build quickly
     const links = [
         { href: "/", label: t("nav.home"), icon: Home },
-        { href: "/profile", label: t("nav.profile"), icon: Users },
+        { href: "/profile", label: firstName, icon: Users },
         { href: "/family", label: t("nav.family"), icon: Users },
         { href: "/groups", label: t("nav.groups"), icon: Tent },
         { href: "/branding", label: t("nav.branding"), icon: Briefcase },
