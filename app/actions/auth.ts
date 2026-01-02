@@ -24,18 +24,24 @@ import { users } from "@/db/schema"
 import { eq } from "drizzle-orm"
 
 export async function syncUserToDb(uid: string, email: string, displayName: string) {
-    const existingUser = await db.query.users.findFirst({
-        where: eq(users.id, uid)
-    })
-
-    if (!existingUser) {
-        await db.insert(users).values({
-            id: uid,
-            email: email,
-            displayName: displayName,
-            // firstName/lastName/updatedAt not in schema
-            createdAt: new Date(),
+    try {
+        const existingUser = await db.query.users.findFirst({
+            where: eq(users.id, uid)
         })
+
+        if (!existingUser) {
+            await db.insert(users).values({
+                id: uid,
+                email: email,
+                displayName: displayName,
+                role: "member", // Default role for new users
+                isActive: true, // Active by default
+                createdAt: new Date(),
+            })
+        }
+    } catch (error) {
+        console.error("Error syncing user to database:", error)
+        throw new Error("Failed to sync user to database")
     }
 }
 
