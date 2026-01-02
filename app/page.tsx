@@ -1,4 +1,3 @@
-
 import { PendingApprovalScreen } from "@/components/auth/pending-approval-screen";
 import { MainLayout } from "@/components/layout/main-layout";
 import { getUserProfile } from "@/lib/auth";
