@@ -154,56 +154,31 @@ export async function getPosts() {
             console.error("Context fetching failed completely:", e);
         }
 
-        // PRODUCTION HOTFIX: Fetch global feed to restore pre-migration behavior
-        // The user reported that before migration, posts were working perfectly (implying global visibility or lost family connections).
-        // Since we relaxed Firestore rules to allow all posts, the feed should also show all post.
+        // 1. Personal Feed (Self + Family)
+        const allowedAuthorIds = [user.id, ...familyIds];
 
-        const queries: Promise<any>[] = [];
-
-        queries.push(
-            adminDb.collection("posts")
-                .orderBy("createdAt", "desc")
-                .limit(20)
-                .get()
-                .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' })))
-                .catch(async (err) => {
-                    console.error("Global posts query failed (likely index missing), falling back to unordered:", err);
-                    // Fallback to simple query if index is missing
-                    try {
-                        const snap = await adminDb.collection("posts").limit(20).get();
-                        return snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' }));
-                    } catch (fallbackErr) {
-                        console.error("Fallback query failed:", fallbackErr);
-                        return [];
-                    }
-                })
-        );
-
-        /* 
-        // Family filtering logic (Restricted for now - uncomment when family connections are fully restored)
         if (allowedAuthorIds.length > 0) {
-            const chunks = chunkArray(allowedAuthorIds, 30);
-            chunks.forEach(chunk => {
-                let query = adminDb.collection("posts");
-                if (chunk.length === 1) {
-                    query = query.where("authorId", "==", chunk[0]) as any;
-                } else {
-                    query = query.where("authorId", "in", chunk) as any;
-                }
+            // Firestore 'in' query supports max 10 values by default, rarely 30 depending on key.
+            // Safest to stick to 10 for 'in' queries or multiple queries.
+            // The chunkArray helper is available below.
+            const chunks = chunkArray(allowedAuthorIds, 10);
 
+            chunks.forEach(chunk => {
                 queries.push(
-                    query.orderBy("createdAt", "desc")
+                    adminDb.collection("posts")
+                        .where("authorId", "in", chunk)
+                        .orderBy("createdAt", "desc")
                         .limit(20)
                         .get()
                         .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' })))
                         .catch(err => {
                             console.error("Family posts query failed:", err);
+                            // Fallback for missing index if needed, though 'in' + orderBy usually requires one
                             return [];
                         })
                 );
             });
         }
-        */
 
         // 2. Group Posts
         // Group posts are in `groups/{groupId}/posts`
