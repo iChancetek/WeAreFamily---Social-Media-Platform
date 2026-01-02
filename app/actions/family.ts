@@ -59,6 +59,13 @@ export async function denyFamilyRequest(requestId: string) {
     revalidatePath('/family')
 }
 
+// ... imports
+
+// Helper for serialization
+const serialize = (data: any) => JSON.parse(JSON.stringify(data));
+
+// ... send, accept, reject, cancel, deny ...
+
 export async function getFamilyRequests() {
     const user = await getUserProfile();
     if (!user) return { incoming: [], sent: [] };
@@ -74,17 +81,37 @@ export async function getFamilyRequests() {
         .get();
 
     return {
-        incoming: incomingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any),
-        sent: sentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any)
+        incoming: incomingSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+            };
+        }) as any,
+        sent: sentSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+            };
+        }) as any
     };
 }
 
-// Alias for family page
-export const getPendingRequests = getFamilyRequests;
+// ... alias ...
 
 export async function searchFamilyMembers(searchTerm: string) {
     const usersSnapshot = await adminDb.collection("users").get();
-    const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any);
+    const allUsers = usersSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+        };
+    }) as any;
 
     return allUsers.filter((u: any) =>
         u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -92,8 +119,7 @@ export async function searchFamilyMembers(searchTerm: string) {
     );
 }
 
-// Alias for backward compatibility
-export const searchUsers = searchFamilyMembers;
+// ... alias ...
 
 export async function getFamilyMembers() {
     const user = await getUserProfile();
@@ -119,7 +145,12 @@ export async function getFamilyMembers() {
         Array.from(familyIds).map(async id => {
             const userDoc = await adminDb.collection("users").doc(id).get();
             if (userDoc.exists) {
-                return { id: userDoc.id, ...userDoc.data() };
+                const data = userDoc.data()!;
+                return {
+                    id: userDoc.id,
+                    ...data,
+                    createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+                };
             }
             return null;
         })
@@ -127,6 +158,8 @@ export async function getFamilyMembers() {
 
     return familyMembers.filter(Boolean);
 }
+
+// ... family members ...
 
 export async function getFamilyStatus(targetUserId: string): Promise<FamilyStatus> {
     const user = await getUserProfile();

@@ -21,7 +21,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
         notFound();
     }
 
-    const user = { id: userDoc.id, ...userDoc.data() } as any;
+    const user = {
+        id: userDoc.id,
+        ...userDoc.data(),
+        createdAt: userDoc.data()?.createdAt?.toDate ? userDoc.data()?.createdAt.toDate() : new Date(),
+        birthday: userDoc.data()?.birthday?.toDate ? userDoc.data()?.birthday.toDate() : userDoc.data()?.birthday || null,
+    } as any;
 
     const isOwnProfile = currentUser.id === userId;
     // Fetch family status
