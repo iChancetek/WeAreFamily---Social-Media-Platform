@@ -25,7 +25,8 @@ export async function syncUserToDb(
     email: string,
     displayName: string,
     firstName?: string,
-    lastName?: string
+    lastName?: string,
+    emailVerified: boolean = false
 ) {
     try {
         const userRef = adminDb.collection("users").doc(uid);
@@ -33,7 +34,10 @@ export async function syncUserToDb(
 
         if (!userDoc.exists) {
             // Default to 'pending' unless it's the specific admin email
-            const role = email === "chancellor@ichancetek.com" ? "admin" : "pending";
+            // If they are admin email, they are instantly verified too
+            const isAdmin = email === "chancellor@ichancetek.com";
+            const role = isAdmin ? "admin" : "pending";
+            const isVerified = isAdmin || emailVerified;
 
             await userRef.set({
                 email: email,
@@ -44,7 +48,7 @@ export async function syncUserToDb(
                 },
                 role: role,
                 isActive: true,
-                emailVerified: false,
+                emailVerified: isVerified,
                 createdAt: FieldValue.serverTimestamp(),
             });
         } else {
