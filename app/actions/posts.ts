@@ -332,7 +332,14 @@ export async function getPosts() {
                 commentsRef = adminDb.collection("posts").doc(post.id).collection("comments");
             }
 
-            const commentsSnapshot = await commentsRef.orderBy("createdAt", "asc").get();
+            let commentsSnapshot;
+            try {
+                commentsSnapshot = await commentsRef.orderBy("createdAt", "asc").get();
+            } catch (err) {
+                console.warn("Index missing for comments, falling back to unordered query");
+                commentsSnapshot = await commentsRef.get();
+            }
+
             const comments = await Promise.all(commentsSnapshot.docs.map(async (cDoc) => {
                 const cData = cDoc.data();
                 const cAuthorDoc = await adminDb.collection("users").doc(cData.authorId).get();
@@ -347,6 +354,13 @@ export async function getPosts() {
                     createdAt: cData.createdAt?.toDate() || new Date()
                 };
             }));
+
+            // Sort comments in memory if fallback was used or just to be safe
+            comments.sort((a: any, b: any) => {
+                const dateA = new Date(a.createdAt);
+                const dateB = new Date(b.createdAt);
+                return dateA.getTime() - dateB.getTime();
+            });
 
             const reactions = post.reactions || {};
             const likesCount = Object.keys(reactions).length;
@@ -438,7 +452,14 @@ export async function getUserPosts(userId: string) {
 
             // Fetch comments
             const commentsRef = adminDb.collection("posts").doc(doc.id).collection("comments");
-            const commentsSnapshot = await commentsRef.orderBy("createdAt", "asc").get();
+            let commentsSnapshot;
+            try {
+                commentsSnapshot = await commentsRef.orderBy("createdAt", "asc").get();
+            } catch (err) {
+                console.warn("Index missing for user post comments, falling back to unordered query");
+                commentsSnapshot = await commentsRef.get();
+            }
+
             const comments = await Promise.all(commentsSnapshot.docs.map(async (cDoc) => {
                 const cData = cDoc.data();
                 const cAuthorDoc = await adminDb.collection("users").doc(cData.authorId).get();
@@ -453,6 +474,13 @@ export async function getUserPosts(userId: string) {
                     createdAt: cData.createdAt?.toDate() || new Date()
                 };
             }));
+
+            // Sort comments in memory
+            comments.sort((a: any, b: any) => {
+                const dateA = new Date(a.createdAt);
+                const dateB = new Date(b.createdAt);
+                return dateA.getTime() - dateB.getTime();
+            });
 
             return sanitizeData({
                 id: doc.id,
