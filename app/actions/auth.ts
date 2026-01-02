@@ -73,7 +73,7 @@ export async function notifyAdminNewUser(uid: string, email: string, fullName: s
         const notificationPromises = adminsSnapshot.docs.map(adminDoc =>
             createNotification(
                 adminDoc.id,
-                'admin_action',
+                'admin_action' as any,
                 uid,
                 {
                     action: 'new_user_registration',
