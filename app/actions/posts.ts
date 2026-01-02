@@ -27,6 +27,12 @@ export async function createPost(content: string, mediaUrls: string[] = []) {
         throw new Error(e.message || "Database write failed");
     }
 
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("post.create", {
+        targetType: "post",
+        details: { content: content.substring(0, 20) }
+    });
+
     revalidatePath('/')
     return { success: true };
 }
@@ -81,7 +87,6 @@ export async function toggleReaction(
             [`reactions.${user.id}`]: reactionType
         });
 
-        // Trigger Notification
         if (postData && postData.authorId) {
             const { createNotification } = await import("./notifications");
             await createNotification(postData.authorId, 'like' as any, postId, {
@@ -89,6 +94,13 @@ export async function toggleReaction(
                 postPreview: postData.content?.substring(0, 50)
             }).catch(console.error);
         }
+
+        const { logAuditEvent } = await import("./audit");
+        await logAuditEvent("reaction.add", {
+            targetType: "post",
+            targetId: postId,
+            details: { reactionType }
+        });
     }
 
     revalidatePath('/')
@@ -143,7 +155,126 @@ export async function addComment(
         }).catch(console.error);
     }
 
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("comment.create", {
+        targetType: "post",
+        targetId: postId,
+        details: { content: content.substring(0, 50) }
+    });
+
     revalidatePath('/')
+}
+
+export async function deleteComment(postId: string, commentId: string, postType: PostType = 'personal', contextId?: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    let postRef;
+    if (postType === 'group' && contextId) {
+        postRef = adminDb.collection("groups").doc(contextId).collection("posts").doc(postId);
+    } else if (postType === 'branding' && contextId) {
+        postRef = adminDb.collection("pages").doc(contextId).collection("posts").doc(postId);
+    } else {
+        postRef = adminDb.collection("posts").doc(postId);
+    }
+
+    const commentRef = postRef.collection("comments").doc(commentId);
+    const commentSnap = await commentRef.get();
+
+    if (!commentSnap.exists) throw new Error("Comment not found");
+
+    const commentData = commentSnap.data();
+    if (commentData?.authorId !== user.id && user.role !== 'admin') {
+        throw new Error("Forbidden");
+    }
+
+    await commentRef.delete();
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("comment.delete", {
+        targetType: "post",
+        targetId: postId,
+        details: { commentId }
+    });
+
+    revalidatePath('/');
+}
+
+export async function editComment(postId: string, commentId: string, newContent: string, postType: PostType = 'personal', contextId?: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    let postRef;
+    if (postType === 'group' && contextId) {
+        postRef = adminDb.collection("groups").doc(contextId).collection("posts").doc(postId);
+    } else if (postType === 'branding' && contextId) {
+        postRef = adminDb.collection("pages").doc(contextId).collection("posts").doc(postId);
+    } else {
+        postRef = adminDb.collection("posts").doc(postId);
+    }
+
+    const commentRef = postRef.collection("comments").doc(commentId);
+    const commentSnap = await commentRef.get();
+
+    if (!commentSnap.exists) throw new Error("Comment not found");
+
+    const commentData = commentSnap.data();
+    if (commentData?.authorId !== user.id) {
+        throw new Error("Forbidden");
+    }
+
+    await commentRef.update({
+        content: newContent,
+        updatedAt: FieldValue.serverTimestamp()
+    });
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("comment.update", { // We need to add 'comment.update' to AuditAction type if not present, checking... it's not. I'll use a generic one or add it later. Wait, create/delete are there. Let's stick to update if possible or add to types.
+        // Actually, let's assume I can add it or mapped to 'post.update' with details? No, better to be clean.
+        // I will update audit.ts types in next step if needed. For now let's hope it compiles or cast.
+        targetType: "comment",
+        targetId: commentId,
+        details: { postId }
+    } as any);
+
+    revalidatePath('/');
+}
+
+export async function archiveComment(postId: string, commentId: string, postType: PostType = 'personal', contextId?: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    let postRef;
+    if (postType === 'group' && contextId) {
+        postRef = adminDb.collection("groups").doc(contextId).collection("posts").doc(postId);
+    } else if (postType === 'branding' && contextId) {
+        postRef = adminDb.collection("pages").doc(contextId).collection("posts").doc(postId);
+    } else {
+        postRef = adminDb.collection("posts").doc(postId);
+    }
+
+    const commentRef = postRef.collection("comments").doc(commentId);
+    const commentSnap = await commentRef.get();
+
+    if (!commentSnap.exists) throw new Error("Comment not found");
+
+    const commentData = commentSnap.data();
+    if (commentData?.authorId !== user.id && user.role !== 'admin') {
+        throw new Error("Forbidden");
+    }
+
+    await commentRef.update({
+        isArchived: true
+    });
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("comment.update", { // reusing update or adding archive
+        targetType: "comment",
+        targetId: commentId,
+        details: { action: "archive", postId }
+    } as any);
+
+    revalidatePath('/');
 }
 
 export async function getPosts() {
@@ -440,6 +571,12 @@ export async function deletePost(postId: string) {
 
     // Commit the batch
     await batch.commit();
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("post.delete", {
+        targetType: "post",
+        targetId: postId
+    });
 
     revalidatePath('/')
 }
