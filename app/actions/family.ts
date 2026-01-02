@@ -336,16 +336,25 @@ export async function getFamilyMembers() {
 }
 
 export async function getFamilyMemberIds(userId: string) {
-    // Get accepted family requests
-    const sentSnapshot = await adminDb.collection("familyRequests")
-        .where("senderId", "==", userId)
-        .where("status", "==", 'accepted')
-        .get();
+    // Queries can be expensive, but we initialized familyConnections for this!
+    // Wait, did we? Yes, in acceptFamilyRequest we write to `users/{id}/familyConnections`.
+    // Let's use THAT if it exists, as it's cleaner.
+    // BUT, we must be sure it's populated. 
+    // Legacy requests might not have it.
+    // Safer to stick to familyRequests collection for now to support old data + new data, 
+    // OR we could migrate? 
+    // Let's stick to querying familyRequests properly in both directions.
 
-    const receivedSnapshot = await adminDb.collection("familyRequests")
-        .where("receiverId", "==", userId)
-        .where("status", "==", 'accepted')
-        .get();
+    const [sentSnapshot, receivedSnapshot] = await Promise.all([
+        adminDb.collection("familyRequests")
+            .where("senderId", "==", userId)
+            .where("status", "==", 'accepted')
+            .get(),
+        adminDb.collection("familyRequests")
+            .where("receiverId", "==", userId)
+            .where("status", "==", 'accepted')
+            .get()
+    ]);
 
     const familyIds = new Set<string>();
     sentSnapshot.docs.forEach(doc => familyIds.add(doc.data().receiverId));
@@ -357,7 +366,6 @@ export async function getFamilyMemberIds(userId: string) {
         const data = doc.data();
         if (data.blockerId === userId || data.blockedId === userId) {
             familyIds.delete(data.blockerId === userId ? data.blockedId : data.blockerId);
-            // Also delete the request to be clean? No, let's just hide the connection.
         }
     });
 
