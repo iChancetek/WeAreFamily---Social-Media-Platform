@@ -54,6 +54,9 @@ export function NotificationsList() {
                 // Let's assume we go home for now.
                 router.push('/');
                 break;
+            case 'message':
+                router.push(notification.referenceId ? `/messages?chatId=${notification.referenceId}` : '/messages');
+                break;
             case 'follow':
                 router.push(`/branding/${notification.referenceId}`);
                 break;
@@ -132,6 +135,7 @@ export function NotificationsList() {
 function getNotificationText(n: Notification) {
     switch (n.type) {
         case 'like': return "liked your post.";
+        case 'message': return n.meta?.message || "sent you a message.";
         case 'comment': return "commented on your post.";
         case 'follow': return `started following ${n.meta?.brandingName || "your branding"}.`;
         case 'group_invite': return "invited you to a group.";
@@ -142,6 +146,7 @@ function getNotificationText(n: Notification) {
 function getIcon(type: string) {
     switch (type) {
         case 'like': return <Heart className="w-4 h-4 text-red-500 fill-red-500" />;
+        case 'message': return <MessageCircle className="w-4 h-4 text-primary" />;
         case 'comment': return <MessageCircle className="w-4 h-4 text-blue-500" />;
         case 'follow': return <UserPlus className="w-4 h-4 text-green-500" />;
         case 'group_invite': return <Users className="w-4 h-4 text-purple-500" />;

@@ -27,7 +27,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
         <MainLayout className="max-w-7xl w-full h-[calc(100vh-theme(spacing.32))]">
             <div className="flex gap-6 h-full">
                 {/* Sidebar List */}
-                <div className={`w-full md:w-80 flex flex-col bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-white/5 overflow-hidden shadow-sm ${activeChatId ? 'hidden md:flex' : 'flex'}`}>
+                <div className={`w-full md:w-80 flex flex-col bg-white dark:bg-card rounded-xl border border-gray-200 dark:border-white/5 overflow-hidden shadow-sm ${activeChatId ? 'hidden md:flex' : 'flex'}`}>
                     <div className="p-4 border-b border-gray-100 dark:border-white/5 flex items-center justify-between">
                         <h1 className="font-bold text-xl tracking-tight">Messages</h1>
                         <NewChatDialog familyMembers={familyMembers} />
@@ -42,7 +42,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                     {activeSession ? (
                         <ChatWindow session={activeSession} currentUserId={user.id} />
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center bg-white/50 dark:bg-zinc-900/50 rounded-xl border border-dashed border-gray-200 dark:border-white/10 p-8 text-center text-muted-foreground animate-in fade-in zoom-in-95 duration-500 h-full">
+                        <div className="flex-1 flex flex-col items-center justify-center bg-white/50 dark:bg-card/50 rounded-xl border border-dashed border-gray-200 dark:border-white/10 p-8 text-center text-muted-foreground animate-in fade-in zoom-in-95 duration-500 h-full">
                             <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
                                 <MessageSquare className="w-8 h-8 opacity-50" />
                             </div>
