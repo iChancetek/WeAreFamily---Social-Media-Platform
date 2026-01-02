@@ -21,6 +21,10 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
 
+    const [needsVerification, setNeedsVerification] = useState(false)
+    const [unverifiedUser, setUnverifiedUser] = useState<any>(null)
+    const [resendCooldown, setResendCooldown] = useState(0)
+
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
@@ -30,8 +34,8 @@ export default function LoginPage() {
             const user = userCredential.user
 
             if (!user.emailVerified) {
-                await auth.signOut();
-                toast.error("Please verify your email address before logging in.")
+                setUnverifiedUser(user)
+                setNeedsVerification(true)
                 return;
             }
 
@@ -52,6 +56,44 @@ export default function LoginPage() {
             setIsLoading(false)
         }
     }
+
+    const handleResendVerification = async () => {
+        if (!unverifiedUser || resendCooldown > 0) return;
+
+        setIsLoading(true);
+        try {
+            const { sendEmailVerification } = await import("firebase/auth");
+            await sendEmailVerification(unverifiedUser);
+            toast.success("Verification email sent! Please check your inbox.");
+            setResendCooldown(60);
+
+            // Start cooldown timer
+            const interval = setInterval(() => {
+                setResendCooldown((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(interval);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+        } catch (error: any) {
+            console.error("Error sending verification email:", error);
+            toast.error(error.message || "Failed to send verification email");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleBackToLogin = async () => {
+        const auth = getAuth();
+        await auth.signOut();
+        setNeedsVerification(false);
+        setUnverifiedUser(null);
+        setEmail("");
+        setPassword("");
+    };
 
     const handleGoogleLogin = async () => {
         setIsLoading(true)
@@ -86,6 +128,54 @@ export default function LoginPage() {
         } finally {
             setIsLoading(false)
         }
+    }
+
+    if (needsVerification) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white py-12">
+                <Card className="w-full max-w-md shadow-lg border-blue-100">
+                    <CardHeader className="text-center space-y-2">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                            <Heart className="w-8 h-8 text-blue-600" fill="currentColor" />
+                            <span className="text-2xl font-bold text-blue-600">Famio</span>
+                        </div>
+                        <CardTitle className="text-2xl font-bold text-gray-900">Verify Your Email</CardTitle>
+                        <CardDescription>
+                            We sent a verification email to <span className="font-medium text-foreground">{unverifiedUser?.email}</span>.
+                            <br />Please check your inbox and click the link to verify your account.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="p-4 bg-amber-50 rounded-lg border border-amber-100 text-sm text-amber-800">
+                            <p className="font-semibold mb-1">Account requires verification</p>
+                            <p>You must verify your email address before you can access your account.</p>
+                        </div>
+
+                        <Button
+                            className="w-full"
+                            onClick={handleResendVerification}
+                            disabled={isLoading || resendCooldown > 0}
+                        >
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            {resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : "Resend Verification Email"}
+                        </Button>
+
+                        <div className="relative my-4">
+                            <div className="absolute inset-0 flex items-center">
+                                <Separator />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white px-2 text-muted-foreground">or</span>
+                            </div>
+                        </div>
+
+                        <Button variant="outline" className="w-full" onClick={handleBackToLogin}>
+                            Back to Login
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        );
     }
 
     return (

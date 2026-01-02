@@ -21,9 +21,14 @@ export function NotificationsList() {
     }, []);
 
     async function loadNotifications() {
-        const data = await getNotifications();
-        setNotifications(data);
-        setLoading(false);
+        try {
+            const data = await getNotifications();
+            setNotifications(data);
+        } catch (error) {
+            console.error("Failed to load notifications:", error);
+        } finally {
+            setLoading(false);
+        }
     }
 
     async function handleMarkAllRead() {

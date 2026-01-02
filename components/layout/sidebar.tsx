@@ -22,6 +22,22 @@ export function Sidebar({ isAdmin, className }: SidebarProps) {
 
     // ... (rest of logic)
 
+    const links = [
+        { href: "/", label: "Home", icon: Home },
+        { href: "/family", label: "Family", icon: Users },
+        { href: "/groups", label: "Groups", icon: Tent },
+        { href: "/messages", label: "Messages", icon: MessageSquare },
+        { href: "/events", label: "Events", icon: Ticket },
+        { href: "/gallery", label: "Gallery", icon: ImageIcon },
+        { href: "/branding", label: "Pages", icon: Briefcase },
+        { href: "/notifications", label: "Notifications", icon: Bell },
+        { href: "/settings", label: "Settings", icon: Settings },
+    ];
+
+    if (isAdmin) {
+        links.push({ href: "/admin", label: "Admin", icon: Shield });
+    }
+
     return (
         <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-slate-950 border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-50", className)}>
             <div className="px-6 py-4">

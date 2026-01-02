@@ -36,22 +36,24 @@ export default async function GalleryPage() {
             .orderBy("createdAt", "desc")
             .get();
     } catch (e) {
-        console.error("Gallery fetch failed (missing index?):", e);
-        return (
-            <MainLayout>
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Family Gallery</h1>
-                    <p className="text-gray-500">Shared memories from everyone</p>
-                </div>
-                <p className="text-center text-red-500 py-10">Unable to load gallery. A database index may be missing.</p>
-            </MainLayout>
-        );
+        console.log("Gallery index missing, falling back to unordered query");
+        postsSnapshot = await adminDb.collection("posts")
+            .where("authorId", "in", queryIds)
+            .get();
+        // We will sort in memory below
     }
 
     const allPosts = postsSnapshot.docs.map(doc => sanitizeData({
         id: doc.id,
         ...doc.data()
     })) as any[];
+
+    // Sort in memory to handle fallback case
+    allPosts.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+        return dateB.getTime() - dateA.getTime();
+    });
 
     const mediaItems = allPosts.flatMap((post: any) =>
         (post.mediaUrls || []).map((url: string) => ({ url, postId: post.id }))

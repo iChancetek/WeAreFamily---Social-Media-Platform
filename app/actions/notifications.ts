@@ -55,11 +55,20 @@ export async function getNotifications() {
     const user = await getUserProfile();
     if (!user) return [];
 
-    const snapshot = await adminDb.collection("notifications")
-        .where("recipientId", "==", user.id)
-        .orderBy("createdAt", "desc")
-        .limit(20)
-        .get();
+    let snapshot;
+    try {
+        snapshot = await adminDb.collection("notifications")
+            .where("recipientId", "==", user.id)
+            .orderBy("createdAt", "desc")
+            .limit(20)
+            .get();
+    } catch (err) {
+        console.log("Index missing for getNotifications, falling back to unordered query");
+        snapshot = await adminDb.collection("notifications")
+            .where("recipientId", "==", user.id)
+            .limit(50) // Fetch a bit more to ensure recent ones are included
+            .get();
+    }
 
     const notifications = await Promise.all(snapshot.docs.map(async (doc) => {
         const data = doc.data();
@@ -74,11 +83,17 @@ export async function getNotifications() {
         return sanitizeData({
             id: doc.id,
             ...data,
-            sender
+            sender,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
         });
     }));
 
-    return notifications;
+    // Ensure sorting in case we fell back to unordered query
+    return notifications.sort((a: any, b: any) => {
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
+        return dateB.getTime() - dateA.getTime();
+    });
 }
 
 export async function markAsRead(notificationId: string) {

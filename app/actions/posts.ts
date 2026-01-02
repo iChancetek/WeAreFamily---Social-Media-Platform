@@ -413,11 +413,20 @@ export async function deletePost(postId: string) {
 
 export async function getUserPosts(userId: string) {
     try {
-        const postsSnapshot = await adminDb.collection("posts")
-            .where("authorId", "==", userId)
-            .orderBy("createdAt", "desc")
-            .limit(50)
-            .get();
+        let postsSnapshot;
+        try {
+            postsSnapshot = await adminDb.collection("posts")
+                .where("authorId", "==", userId)
+                .orderBy("createdAt", "desc")
+                .limit(50)
+                .get();
+        } catch (err) {
+            console.log("Index missing for getUserPosts, falling back to unordered query");
+            postsSnapshot = await adminDb.collection("posts")
+                .where("authorId", "==", userId)
+                .limit(50)
+                .get();
+        }
 
         const posts = await Promise.all(postsSnapshot.docs.map(async (doc) => {
             const post = doc.data();
@@ -455,7 +464,12 @@ export async function getUserPosts(userId: string) {
             });
         }));
 
-        return posts;
+        // Ensure sorting in case we fell back to unordered query
+        return posts.sort((a: any, b: any) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return dateB.getTime() - dateA.getTime();
+        });
     } catch (error) {
         console.error("Error fetching user posts:", error);
         return [];

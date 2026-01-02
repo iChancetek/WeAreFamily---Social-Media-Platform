@@ -7,6 +7,7 @@ import { getUserProfile } from "@/lib/auth";
 import { sanitizeData } from "@/lib/serialization";
 
 import { getFamilyStatus } from "@/app/actions/family";
+import { getUserPosts } from "@/app/actions/posts";
 import { Lock } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
@@ -35,38 +36,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
     const hasAccess = isOwnProfile || familyStatus.status === 'accepted' || currentUser.role === 'admin';
 
     // Fetch user posts
-    const userPosts = hasAccess ? await (async () => {
-        const postsSnapshot = await adminDb.collection("posts")
-            .where("authorId", "==", userId)
-            .orderBy("createdAt", "desc")
-            .get();
+    console.log(`Checking profile access for viewer ${currentUser.id} to target ${userId}`);
+    console.log(`Access status: isOwn=${isOwnProfile}, family=${familyStatus.status}, role=${currentUser.role}`);
+    console.log(`Has Access: ${hasAccess}`);
 
-        return Promise.all(postsSnapshot.docs.map(async (postDoc) => {
-            const postData = postDoc.data();
-
-            // Fetch comments
-            const commentsSnapshot = await adminDb.collection("posts").doc(postDoc.id).collection("comments")
-                .orderBy("createdAt", "asc")
-                .get();
-
-            const comments = await Promise.all(commentsSnapshot.docs.map(async (commentDoc) => {
-                const commentData = commentDoc.data();
-                const authorDoc = await adminDb.collection("users").doc(commentData.authorId).get();
-                return sanitizeData({
-                    id: commentDoc.id,
-                    ...commentData,
-                    author: authorDoc.exists ? { id: authorDoc.id, ...authorDoc.data() } : null
-                });
-            }));
-
-            return sanitizeData({
-                id: postDoc.id,
-                ...postData,
-                author: user,
-                comments,
-            });
-        }));
-    })() : [];
+    const userPosts = hasAccess ? await getUserPosts(userId) : [];
+    console.log(`Fetched ${userPosts.length} posts for profile ${userId}`);
 
     return (
         <MainLayout>
@@ -84,7 +59,22 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
                         </p>
                     </div>
                 ) : userPosts.length === 0 ? (
-                    <p className="text-gray-500">No posts yet.</p>
+                    <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900">
+                        <p className="text-gray-500 mb-2">No posts yet.</p>
+                        <details className="text-xs text-left mt-4 text-slate-400">
+                            <summary>Debug Info</summary>
+                            <pre className="mt-2 p-2 bg-slate-200 dark:bg-slate-800 rounded overflow-auto">
+                                {JSON.stringify({
+                                    targetUserId: userId,
+                                    viewerId: currentUser.id,
+                                    hasAccess,
+                                    isOwnProfile,
+                                    familyStatus: familyStatus.status,
+                                    role: currentUser.role
+                                }, null, 2)}
+                            </pre>
+                        </details>
+                    </div>
                 ) : (
                     <div className="space-y-4">
                         {userPosts.map(post => (
