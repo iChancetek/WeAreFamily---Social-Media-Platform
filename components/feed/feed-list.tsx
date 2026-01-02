@@ -17,6 +17,18 @@ export function FeedList() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
+                // Run diagnostics in background
+                import("@/app/actions/debug").then(async mod => {
+                    const diag = await mod.checkFeedDiagnostics();
+                    console.log("FEED DIAGNOSTICS:", diag);
+                    if (diag.familyCount === 0) {
+                        console.warn("DIAGNOSTIC ALERT: No family members found!");
+                    }
+                    if (diag.errors && diag.errors.length > 0) {
+                        console.warn("DIAGNOSTIC ERRORS:", diag.errors);
+                    }
+                });
+
                 const data = await getPosts()
                 setPosts(data)
             } catch (err) {

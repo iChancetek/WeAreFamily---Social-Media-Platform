@@ -196,10 +196,20 @@ export async function getPosts() {
                         .limit(20)
                         .get()
                         .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' })))
-                        .catch(err => {
-                            console.error("Family posts query failed:", err);
-                            // Fallback for missing index if needed, though 'in' + orderBy usually requires one
-                            return [];
+                        .catch(async err => {
+                            console.warn("Family posts ordered query failed (likely missing index), trying fallback:", err);
+                            // Fallback: Query WITHOUT orderBy, then sort in memory.
+                            // 'in' query works without index if no orderBy is present.
+                            try {
+                                const fallbackSnap = await adminDb.collection("posts")
+                                    .where("authorId", "in", chunk)
+                                    .limit(20) // Still limit to avoid massive fetch
+                                    .get();
+                                return fallbackSnap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' }));
+                            } catch (fallbackErr) {
+                                console.error("Family posts fallback query also failed:", fallbackErr);
+                                return [];
+                            }
                         })
                 );
             });
