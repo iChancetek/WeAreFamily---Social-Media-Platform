@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import { updateProfile, updateAccountSettings } from "@/app/actions/settings"
+import { toggleInvisibleMode, unblockUser } from "@/app/actions/security"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -42,6 +43,8 @@ import {
 import { ArrowLeft, Shield } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useClerk } from "@clerk/nextjs"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 
 // --- Schemas ---
 const profileFormSchema = z.object({
@@ -72,10 +75,18 @@ interface SettingsContentProps {
         bio?: string | null;
         language?: string | null;
         theme?: string | null;
-    }
+        isInvisible?: boolean;
+    },
+    blockedUsers: {
+        id: string;
+        displayName?: string | null;
+        email: string;
+        imageUrl?: string | null;
+        profileData: unknown;
+    }[]
 }
 
-export function SettingsContent({ user }: SettingsContentProps) {
+export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
     const router = useRouter()
     const { t, setLanguage } = useLanguage()
     const { setTheme } = useTheme()
@@ -86,6 +97,8 @@ export function SettingsContent({ user }: SettingsContentProps) {
     const [imageUrl, setImageUrl] = useState<string | undefined>(user.imageUrl || undefined)
     const [coverUrl, setCoverUrl] = useState<string | undefined>(user.coverUrl || undefined)
     const [coverType, setCoverType] = useState<'image' | 'video' | undefined>(user.coverType as 'image' | 'video' || undefined)
+    const [isInvisible, setIsInvisible] = useState(user.isInvisible || false);
+    const [blockedList, setBlockedList] = useState(blockedUsers);
 
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
@@ -143,6 +156,28 @@ export function SettingsContent({ user }: SettingsContentProps) {
             return false
         }
     }
+
+    // --- Security Handlers ---
+    const handleToggleInvisible = async (checked: boolean) => {
+        setIsInvisible(checked);
+        try {
+            await toggleInvisibleMode(checked);
+            toast.success(checked ? "Invisible mode enabled" : "Invisible mode disabled");
+        } catch {
+            setIsInvisible(!checked); // Revert on error
+            toast.error("Failed to update visibility");
+        }
+    };
+
+    const handleUnblock = async (userId: string) => {
+        try {
+            await unblockUser(userId);
+            setBlockedList(prev => prev.filter(u => u.id !== userId));
+            toast.success("User unblocked");
+        } catch {
+            toast.error("Failed to unblock user");
+        }
+    };
 
     // --- Unified Exit Logic ---
     const isDirty = profileForm.formState.isDirty || accountForm.formState.isDirty
@@ -334,6 +369,58 @@ export function SettingsContent({ user }: SettingsContentProps) {
                         </CardContent>
                     </Card>
 
+                    {/* Security Section */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Privacy & Security</CardTitle>
+                            <CardDescription>
+                                Manage your visibility and blocked users.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Invisible Mode</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        Hide your online status from other users.
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={isInvisible}
+                                    onCheckedChange={handleToggleInvisible}
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <Label className="text-base">Blocked Users</Label>
+                                {blockedList.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">You haven't blocked anyone.</p>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {blockedList.map((blockedUser) => {
+                                            const profile = blockedUser.profileData as { firstName: string, lastName: string } | null;
+                                            const name = blockedUser.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : blockedUser.email);
+                                            return (
+                                                <div key={blockedUser.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-8 w-8">
+                                                            <AvatarImage src={blockedUser.imageUrl || undefined} />
+                                                            <AvatarFallback>{name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                                        </Avatar>
+                                                        <span className="text-sm font-medium">{name}</span>
+                                                    </div>
+                                                    <Button variant="ghost" size="sm" onClick={() => handleUnblock(blockedUser.id)}>
+                                                        Unblock
+                                                    </Button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     {/* Account Section */}
                     <Card>
                         <CardHeader>
@@ -407,8 +494,8 @@ export function SettingsContent({ user }: SettingsContentProps) {
                                             <Shield className="w-4 h-4" />
                                             {t("settings.manageSecurity")}
                                         </Button>
-                                        <FormDescription className="mt-2">
-                                            {t("settings.security.desc")}
+                                        <FormDescription className="mt-2 text-xs">
+                                            Manage MFA and password via Clerk.
                                         </FormDescription>
                                     </div>
 

@@ -19,8 +19,29 @@ export const users = pgTable("users", {
     lastCelebratedYear: integer("last_celebrated_year"), // Tracks last year we made a post
     profileData: jsonb("profile_data"), // Bio, avatar url, etc.
     lastActiveAt: timestamp("last_active_at"),
+    isInvisible: boolean("is_invisible").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const blockedUsers = pgTable("blocked_users", {
+    id: serial("id").primaryKey(),
+    blockerId: text("blocker_id").references(() => users.id).notNull(),
+    blockedId: text("blocked_id").references(() => users.id).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const blockedUsersRelations = relations(blockedUsers, ({ one }) => ({
+    blocker: one(users, {
+        fields: [blockedUsers.blockerId],
+        references: [users.id],
+        relationName: "blocker"
+    }),
+    blocked: one(users, {
+        fields: [blockedUsers.blockedId],
+        references: [users.id],
+        relationName: "blocked"
+    }),
+}));
 
 export const posts = pgTable("posts", {
     id: serial("id").primaryKey(),
@@ -123,6 +144,8 @@ export const usersRelations = relations(users, ({ many }) => ({
     stories: many(stories),
     sentFamilyRequests: many(familyRequests, { relationName: "sender" }),
     receivedFamilyRequests: many(familyRequests, { relationName: "receiver" }),
+    blockedUsers: many(blockedUsers, { relationName: "blocker" }),
+    blockedBy: many(blockedUsers, { relationName: "blocked" }),
 }));
 
 export const requestStatusEnum = pgEnum("request_status", ["pending", "accepted", "rejected"]);

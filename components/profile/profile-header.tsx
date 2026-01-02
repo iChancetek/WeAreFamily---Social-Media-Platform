@@ -1,5 +1,7 @@
 'use client'
 
+import { BlockButton } from "@/components/profile/block-button";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -67,23 +69,24 @@ export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeade
                     </div>
                     <div className="flex gap-2 mb-4 md:mb-2 items-center">
                         {!isOwnProfile && (
-                            <FamilyRequestButton
-                                targetUserId={user.id}
-                                initialStatus={familyStatus.status}
-                                initialRequestId={familyStatus.requestId}
-                                className="h-9"
-                            />
+                            <>
+                                <FamilyRequestButton
+                                    targetUserId={user.id}
+                                    initialStatus={familyStatus.status}
+                                    initialRequestId={familyStatus.requestId}
+                                    className="h-9"
+                                />
+                                <Button variant="outline" className="h-9">Message</Button>
+                                <BlockButton targetUserId={user.id} />
+                            </>
                         )}
-                        {isOwnProfile ? (
+                        {isOwnProfile && (
                             <Link href="/settings">
-                                <Button variant="outline" size="sm" className="gap-2 h-9">
-                                    <Edit className="w-4 h-4" /> Edit Profile
+                                <Button variant="outline" className="gap-2 h-9">
+                                    <Edit className="w-4 h-4" />
+                                    Edit Profile
                                 </Button>
                             </Link>
-                        ) : (
-                            <Button className="bg-rose-500 hover:bg-rose-600 text-white gap-2 h-9">
-                                <Mail className="w-4 h-4" /> Message
-                            </Button>
                         )}
                     </div>
                 </div>
