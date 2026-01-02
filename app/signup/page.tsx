@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
+import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,13 +31,16 @@ export default function SignupPage() {
             // Update display name in Firebase
             await updateProfile(user, { displayName: name })
 
+            // Send verification email
+            await sendEmailVerification(user);
+
             // Sync to Database
             await syncUserToDb(user.uid, email, name)
 
             // Create session cookie before redirecting
             await createSession(user.uid)
 
-            toast.success("Account created successfully!")
+            toast.success("Account created! Please check your email to verify your account.")
             router.push("/")
             router.refresh()
         } catch (error: any) {
