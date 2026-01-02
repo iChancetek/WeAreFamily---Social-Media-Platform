@@ -152,9 +152,16 @@ export async function getPosts() {
                 .limit(20)
                 .get()
                 .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' })))
-                .catch(err => {
-                    console.error("Global posts query failed:", err);
-                    return [];
+                .catch(async (err) => {
+                    console.error("Global posts query failed (likely index missing), falling back to unordered:", err);
+                    // Fallback to simple query if index is missing
+                    try {
+                        const snap = await adminDb.collection("posts").limit(20).get();
+                        return snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' }));
+                    } catch (fallbackErr) {
+                        console.error("Fallback query failed:", fallbackErr);
+                        return [];
+                    }
                 })
         );
 
