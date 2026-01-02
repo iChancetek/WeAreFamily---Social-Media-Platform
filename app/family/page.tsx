@@ -23,7 +23,7 @@ export default async function FamilyPage() {
     const familyMembers = await getFamilyMembers();
 
     return (
-        <MainLayout>
+        <MainLayout className="max-w-6xl">
             <div className="space-y-6 pb-16">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Family & Connections</h1>

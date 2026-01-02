@@ -20,7 +20,7 @@ export default async function SettingsPage() {
     const blockedUsers = await getBlockedUsers();
 
     return (
-        <MainLayout>
+        <MainLayout className="max-w-4xl">
             <div className="pb-16 pt-6">
                 <SettingsContent user={serializedUser} blockedUsers={blockedUsers.filter(Boolean) as any} />
             </div>
