@@ -96,5 +96,6 @@ export function ProfileHeader({ user, isCurrentUser }: ProfileHeaderProps) {
                     </p>
                 )}
             </div>
-            )
+        </div>
+    )
 }
