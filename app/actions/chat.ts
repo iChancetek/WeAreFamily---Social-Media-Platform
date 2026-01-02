@@ -67,6 +67,19 @@ export async function checkOrCreateChat(targetUserId: string) {
         createdAt: FieldValue.serverTimestamp(),
     });
 
+    // Notify the other user
+    try {
+        const { createNotification } = await import("./notifications");
+        await createNotification(
+            targetUserId,
+            "message",
+            newChatRef.id,
+            { message: "Started a new conversation with you" }
+        );
+    } catch (error) {
+        console.error("Failed to send chat notification:", error);
+    }
+
     revalidatePath("/messages");
     return newChatRef.id;
 }

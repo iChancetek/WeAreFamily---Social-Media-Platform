@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getMessages, sendMessage, Message, ChatSession } from "@/app/actions/chat";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, Smile } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ChatWindowProps {
     session: ChatSession;
@@ -127,8 +128,30 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
             <div className="p-4 bg-white dark:bg-card border-t border-gray-100 dark:border-white/5">
                 <form
                     onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-                    className="flex gap-2"
+                    className="flex gap-2 items-center"
                 >
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-foreground">
+                                <Smile className="w-5 h-5" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-2" align="start">
+                            <div className="grid grid-cols-8 gap-2">
+                                {["👍", "❤️", "😂", "😮", "😢", "😡", "🎉", "🔥", "😎", "✨", "👋", "🙏", "🤝", "👀", "💯", "🤔"].map(emoji => (
+                                    <button
+                                        key={emoji}
+                                        onClick={() => setInputText(prev => prev + emoji)}
+                                        className="text-xl hover:bg-muted p-1 rounded transition-colors"
+                                        type="button"
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+
                     <Input
                         placeholder="Type a message..."
                         value={inputText}
