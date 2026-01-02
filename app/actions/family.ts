@@ -242,9 +242,21 @@ export async function searchFamilyMembers(searchTerm: string) {
 
         const name = (u.displayName || "").toLowerCase();
         const email = (u.email || "").toLowerCase();
+
+        // Check for profile name fields (firstName/lastName)
+        const profileFirst = (u.profileData?.firstName || "").toLowerCase();
+        const profileLast = (u.profileData?.lastName || "").toLowerCase();
+        const profileFull = `${profileFirst} ${profileLast}`.trim();
+
         const search = searchTerm.toLowerCase();
 
-        return name.includes(search) || email.includes(search);
+        return (
+            name.includes(search) ||
+            email.includes(search) ||
+            profileFirst.includes(search) ||
+            profileLast.includes(search) ||
+            profileFull.includes(search)
+        );
     });
 
     // Enhance with family status & Return Strict POJOs
