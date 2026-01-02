@@ -1,5 +1,6 @@
 'use client'
 
+// Updated: 2026-01-02 - ChanceTEK branding
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Heart, Shield, Users, Globe, CheckCircle } from "lucide-react"
