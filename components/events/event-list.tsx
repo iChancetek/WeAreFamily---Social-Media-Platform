@@ -54,11 +54,11 @@ export function EventList({ events }: { events: Event[] }) {
                 const isAttending = user && event.attendees?.includes(user.uid);
 
                 return (
-                    <Card key={event.id} className="border-l-4 border-l-rose-400 shadow-sm hover:shadow-md transition-all">
+                    <Card key={event.id} className="border-l-4 border-l-primary shadow-sm hover:shadow-md transition-all">
                         <CardHeader className="pb-2">
                             <CardTitle className="flex justify-between items-start text-lg">
                                 <span>{event.title}</span>
-                                {isAttending && <Badge variant="secondary" className="bg-rose-100 text-rose-700">Going</Badge>}
+                                {isAttending && <Badge variant="secondary" className="bg-primary/10 text-primary">Going</Badge>}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">

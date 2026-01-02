@@ -40,8 +40,8 @@ export function EventCard({ event, currentUserId }: EventCardProps) {
         <Card className="hover:shadow-md transition-shadow dark:border-white/10 overflow-hidden group">
             <div className="flex flex-col sm:flex-row h-full">
                 {/* Date Badge */}
-                <div className="bg-blue-50 dark:bg-blue-950/30 sm:w-24 flex sm:flex-col items-center justify-center p-4 gap-2 sm:gap-0 border-b sm:border-b-0 sm:border-r border-blue-100 dark:border-white/5">
-                    <span className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400 uppercase">
+                <div className="bg-primary/10 dark:bg-primary/20 sm:w-24 flex sm:flex-col items-center justify-center p-4 gap-2 sm:gap-0 border-b sm:border-b-0 sm:border-r border-primary/10 dark:border-white/5">
+                    <span className="text-xl sm:text-2xl font-bold text-primary dark:text-primary-foreground uppercase">
                         {format(date, "MMM")}
                     </span>
                     <span className="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-slate-100">
@@ -55,7 +55,7 @@ export function EventCard({ event, currentUserId }: EventCardProps) {
                 <div className="flex-1 flex flex-col p-5">
                     <div className="flex justify-between items-start mb-2">
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 transition-colors">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-primary transition-colors">
                                 {event.title}
                             </h3>
                             {event.location && (
