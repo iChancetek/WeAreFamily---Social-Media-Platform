@@ -247,16 +247,26 @@ export async function searchFamilyMembers(searchTerm: string) {
         return name.includes(search) || email.includes(search);
     });
 
-    // Enhance with family status
+    // Enhance with family status & Return Strict POJOs
     const usersWithStatus = await Promise.all(filteredUsers.map(async (u: any) => {
         const status = await getFamilyStatus(u.id);
+
+        // Return ONLY what the UI needs, ensuring simple types
         return {
-            ...u,
-            familyStatus: status
+            id: u.id,
+            displayName: u.displayName || null,
+            email: u.email || null,
+            imageUrl: u.imageUrl || null,
+            isInvisible: !!u.isInvisible,
+            familyStatus: {
+                status: status.status,
+                requestId: status.requestId || null
+            }
         };
     }));
 
-    return sanitizeData(usersWithStatus);
+    // Double safety: JSON parse/stringify to guarantee POJO
+    return JSON.parse(JSON.stringify(usersWithStatus));
 }
 
 // Alias for backward compatibility

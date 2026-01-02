@@ -3,6 +3,7 @@ import { TopNav } from "./top-nav";
 import { RightSidebar } from "./right-sidebar";
 import { ActivityTracker } from "./activity-tracker";
 import { BirthdayOnboarding } from "@/components/onboarding/birthday-onboarding";
+import { BottomNav } from "./bottom-nav";
 
 import { getUserProfile } from "@/lib/auth";
 
@@ -29,6 +30,7 @@ export async function MainLayout({ children, className }: { children: React.Reac
             </div>
             <RightSidebar className="border-l border-white/10 bg-transparent" />
             <BirthdayOnboarding currentBirthday={user?.birthday || null} />
+            <BottomNav />
         </div>
     );
 }
