@@ -8,7 +8,13 @@ interface AdminChartsProps {
     roleData: { name: string; value: number }[];
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = [
+    '#3b82f6', // blue-500
+    '#f43f5e', // rose-500
+    '#10b981', // emerald-500
+    '#8b5cf6', // violet-500
+    '#f59e0b', // amber-500
+];
 
 export function AdminCharts({ registrationData, roleData }: AdminChartsProps) {
     return (
@@ -35,9 +41,28 @@ export function AdminCharts({ registrationData, roleData }: AdminChartsProps) {
                                 tickFormatter={(value) => `${value}`}
                             />
                             <Tooltip
-                                contentStyle={{ background: "#333", border: "none", color: "#fff" }}
+                                contentStyle={{
+                                    backgroundColor: "rgba(255, 255, 255, 0.8)",
+                                    borderColor: "#e5e7eb",
+                                    borderRadius: "8px",
+                                    color: "#1f2937",
+                                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                }}
+                                itemStyle={{ color: "#1f2937" }}
+                                cursor={{ fill: 'transparent' }}
                             />
-                            <Bar dataKey="total" fill="#adfa1d" radius={[4, 4, 0, 0]} />
+                            <Bar
+                                dataKey="total"
+                                fill="url(#colorTotal)"
+                                radius={[4, 4, 0, 0]}
+                                animationDuration={1000}
+                            />
+                            <defs>
+                                <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.8} />
+                                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.3} />
+                                </linearGradient>
+                            </defs>
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -55,17 +80,29 @@ export function AdminCharts({ registrationData, roleData }: AdminChartsProps) {
                                 cx="50%"
                                 cy="50%"
                                 innerRadius={60}
-                                outerRadius={80}
+                                outerRadius={100}
                                 fill="#8884d8"
-                                paddingAngle={5}
+                                paddingAngle={2}
                                 dataKey="value"
                             >
                                 {roleData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]}
+                                        strokeWidth={0}
+                                    />
                                 ))}
                             </Pie>
-                            <Tooltip />
-                            <Legend />
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: "rgba(255, 255, 255, 0.8)",
+                                    borderRadius: "8px",
+                                    border: "none",
+                                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                }}
+                                itemStyle={{ color: "#1f2937" }}
+                            />
+                            <Legend verticalAlign="bottom" height={36} />
                         </PieChart>
                     </ResponsiveContainer>
                 </CardContent>

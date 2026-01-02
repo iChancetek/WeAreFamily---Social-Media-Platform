@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 
-export function Sidebar() {
+export function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
     const pathname = usePathname();
     const { user, signOut } = useAuth();
 
@@ -24,7 +24,7 @@ export function Sidebar() {
         { href: "/settings", label: "Settings", icon: Settings },
     ];
 
-    if (user?.email === 'admin@famio.us') { // Simple admin check placeholder
+    if (isAdmin) {
         links.push({ href: "/admin", label: "Admin", icon: Shield });
     }
 
