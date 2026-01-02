@@ -7,44 +7,41 @@
 
 @layer base {
   :root {
-    /* Truth Social Light Mode - Clean White Theme */
+    /* Truth Social Theme */
     --background: 255 255 255;
-    /* Pure White Background */
+    /* Strict White */
     --foreground: 15 20 25;
-    /* Dark Text */
+    /* High Contrast Dark */
 
     --card: 255 255 255;
-    /* White Cards */
     --card-foreground: 15 20 25;
 
     --popover: 255 255 255;
     --popover-foreground: 15 20 25;
 
-    --primary: 29 155 240;
-    /* Truth Social Blue */
+    --primary: 84 72 238;
+    /* vibrant violet-blue #5448EE */
     --primary-foreground: 255 255 255;
 
-    --secondary: 239 243 244;
-    /* Very Light Gray for hover states */
+    --secondary: 245 248 250;
+    /* Light Gray Accent */
     --secondary-foreground: 15 20 25;
 
-    --muted: 247 249 249;
-    /* Subtle Gray Background */
+    --muted: 245 248 250;
     --muted-foreground: 83 100 113;
-    /* Muted Text */
 
-    --accent: 239 243 244;
+    --accent: 245 248 250;
     --accent-foreground: 15 20 25;
 
     --destructive: 244 33 46;
-    /* Red */
     --destructive-foreground: 255 255 255;
 
     --border: 239 243 244;
-    /* Light Border */
     --input: 239 243 244;
-    --ring: 29 155 240;
-    --radius: 0.75rem;
+    --ring: 84 72 238;
+    /* #5448EE */
+    --radius: 0.5rem;
+    /* Slightly sharper corners */
   }
 
   .dark {
@@ -69,9 +66,11 @@
     --popover: 255 255 255;
     --popover-foreground: 10 10 10;
 
-    --primary: 37 99 235;
-    /* Blue 600 */
+    --primary: 84 72 238;
+    /* vibrant violet-blue */
     --primary-foreground: 255 255 255;
+    /* Keep existing dark navy background as requested, or shift? User focused on Light Mode. 
+       Let's keep the dark mode "safe" but update the brand color. */
 
     --secondary: 30 41 59;
     /* Slate 800 */
@@ -88,7 +87,7 @@
 
     --border: 30 41 59;
     --input: 30 41 59;
-    --ring: 37 99 235;
+    --ring: 84 72 238;
   }
 }
 
@@ -133,11 +132,11 @@
 
 @layer utilities {
   .glass {
-    @apply bg-white dark:bg-black/40 backdrop-blur-md border-r border-border dark:border-white/10 shadow-lg;
+    @apply bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-white/10 shadow-sm;
   }
 
   .glass-card {
-    @apply bg-white dark:bg-slate-900/80 text-black dark:text-white rounded-xl border border-gray-200 dark:border-white/10 shadow-sm;
+    @apply bg-white dark:bg-slate-900 text-black dark:text-white rounded-lg border border-gray-100 dark:border-white/10 shadow-sm;
   }
 
   .pb-safe {
