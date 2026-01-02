@@ -62,52 +62,57 @@ export async function addComment(postId: string, content: string) {
 }
 
 export async function getPosts() {
-    const user = await getUserProfile()
-    if (!user || user.role === 'pending') {
-        throw new Error("Unauthorized")
-    }
+    try {
+        const user = await getUserProfile()
+        if (!user || user.role === 'pending') {
+            return [] // Return empty if unauthorized
+        }
 
-    // Fetch all posts
-    const postsSnapshot = await adminDb.collection("posts").orderBy("createdAt", "desc").get();
+        // Fetch all posts
+        const postsSnapshot = await adminDb.collection("posts").orderBy("createdAt", "desc").get();
 
-    // Build posts with author and comments
-    const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc) => {
-        const postData = postDoc.data();
+        // Build posts with author and comments
+        const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc) => {
+            const postData = postDoc.data();
 
-        // Fetch author
-        const authorDoc = await adminDb.collection("users").doc(postData.authorId).get();
-        const author = authorDoc.exists ? { id: authorDoc.id, ...authorDoc.data() } : null;
+            // Fetch author
+            const authorDoc = await adminDb.collection("users").doc(postData.authorId).get();
+            const author = authorDoc.exists ? { id: authorDoc.id, ...authorDoc.data() } : null;
 
-        // Fetch comments for this post
-        const commentsSnapshot = await adminDb.collection("posts").doc(postDoc.id).collection("comments")
-            .orderBy("createdAt", "asc")
-            .get();
+            // Fetch comments for this post
+            const commentsSnapshot = await adminDb.collection("posts").doc(postDoc.id).collection("comments")
+                .orderBy("createdAt", "asc")
+                .get();
 
-        const comments = await Promise.all(commentsSnapshot.docs.map(async (commentDoc) => {
-            const commentData = commentDoc.data();
-            const commentAuthorDoc = await adminDb.collection("users").doc(commentData.authorId).get();
-            const commentAuthor = commentAuthorDoc.exists
-                ? { id: commentAuthorDoc.id, ...commentAuthorDoc.data() }
-                : null;
+            const comments = await Promise.all(commentsSnapshot.docs.map(async (commentDoc) => {
+                const commentData = commentDoc.data();
+                const commentAuthorDoc = await adminDb.collection("users").doc(commentData.authorId).get();
+                const commentAuthor = commentAuthorDoc.exists
+                    ? { id: commentAuthorDoc.id, ...commentAuthorDoc.data() }
+                    : null;
+
+                return {
+                    id: commentDoc.id,
+                    ...commentData,
+                    author: commentAuthor,
+                    createdAt: commentData.createdAt?.toDate() || new Date(),
+                };
+            }));
 
             return {
-                id: commentDoc.id,
-                ...commentData,
-                author: commentAuthor,
-                createdAt: commentData.createdAt?.toDate() || new Date(),
+                id: postDoc.id,
+                ...postData,
+                author,
+                comments,
+                createdAt: postData.createdAt?.toDate() || new Date(),
             };
         }));
 
-        return {
-            id: postDoc.id,
-            ...postData,
-            author,
-            comments,
-            createdAt: postData.createdAt?.toDate() || new Date(),
-        };
-    }));
-
-    return allPosts;
+        return allPosts;
+    } catch (error) {
+        console.error("Error fetching posts:", error);
+        return [];
+    }
 }
 
 export async function deletePost(postId: string) {

@@ -50,49 +50,54 @@ export async function createEvent(data: EventForm) {
 }
 
 export async function getEvents(): Promise<Event[]> {
-    const eventsSnapshot = await adminDb.collection("events").orderBy("date", "desc").get();
+    try {
+        const eventsSnapshot = await adminDb.collection("events").orderBy("date", "desc").get();
 
-    // Collect all unique user IDs
-    const allUserIds = new Set<string>();
-    eventsSnapshot.docs.forEach(eventDoc => {
-        const eventData = eventDoc.data();
-        allUserIds.add(eventData.creatorId);
-        (eventData.attendees || []).forEach((id: string) => allUserIds.add(id));
-    });
+        // Collect all unique user IDs
+        const allUserIds = new Set<string>();
+        eventsSnapshot.docs.forEach(eventDoc => {
+            const eventData = eventDoc.data();
+            allUserIds.add(eventData.creatorId);
+            (eventData.attendees || []).forEach((id: string) => allUserIds.add(id));
+        });
 
-    // Fetch all user profiles
-    const userProfiles = new Map();
-    await Promise.all(Array.from(allUserIds).map(async (userId) => {
-        const userDoc = await adminDb.collection("users").doc(userId).get();
-        if (userDoc.exists) {
-            const userData = userDoc.data();
-            userProfiles.set(userId, {
-                displayName: userData?.displayName || "Family Member",
-                imageUrl: userData?.imageUrl || null,
-            });
-        }
-    }));
+        // Fetch all user profiles
+        const userProfiles = new Map();
+        await Promise.all(Array.from(allUserIds).map(async (userId) => {
+            const userDoc = await adminDb.collection("users").doc(userId).get();
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                userProfiles.set(userId, {
+                    displayName: userData?.displayName || "Family Member",
+                    imageUrl: userData?.imageUrl || null,
+                });
+            }
+        }));
 
-    // Build events with enriched data
-    const events = eventsSnapshot.docs.map(eventDoc => {
-        const eventData = eventDoc.data();
-        const attendees = eventData.attendees || [];
+        // Build events with enriched data
+        const events = eventsSnapshot.docs.map(eventDoc => {
+            const eventData = eventDoc.data();
+            const attendees = eventData.attendees || [];
 
-        return {
-            id: eventDoc.id,
-            title: eventData.title,
-            description: eventData.description || null,
-            date: eventData.date?.toDate() || new Date(),
-            location: eventData.location || null,
-            creatorId: eventData.creatorId,
-            attendees,
-            createdAt: eventData.createdAt?.toDate() || new Date(),
-            creator: userProfiles.get(eventData.creatorId),
-            attendeeProfiles: attendees.map((id: string) => userProfiles.get(id)).filter(Boolean),
-        };
-    });
+            return {
+                id: eventDoc.id,
+                title: eventData.title,
+                description: eventData.description || null,
+                date: eventData.date?.toDate() || new Date(),
+                location: eventData.location || null,
+                creatorId: eventData.creatorId,
+                attendees,
+                createdAt: eventData.createdAt?.toDate() || new Date(),
+                creator: userProfiles.get(eventData.creatorId),
+                attendeeProfiles: attendees.map((id: string) => userProfiles.get(id)).filter(Boolean),
+            };
+        });
 
-    return events;
+        return events;
+    } catch (error) {
+        console.error("Error fetching events:", error);
+        return [];
+    }
 }
 
 export async function joinEvent(eventId: string) {
