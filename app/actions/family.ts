@@ -100,7 +100,8 @@ export async function getFamilyRequests() {
     };
 }
 
-// ... alias ...
+// Alias for family page
+export const getPendingRequests = getFamilyRequests;
 
 export async function searchFamilyMembers(searchTerm: string) {
     const usersSnapshot = await adminDb.collection("users").get();
@@ -119,7 +120,8 @@ export async function searchFamilyMembers(searchTerm: string) {
     );
 }
 
-// ... alias ...
+// Alias for backward compatibility
+export const searchUsers = searchFamilyMembers;
 
 export async function getFamilyMembers() {
     const user = await getUserProfile();
