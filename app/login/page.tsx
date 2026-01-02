@@ -29,6 +29,12 @@ export default function LoginPage() {
             const userCredential = await signInWithEmailAndPassword(auth, email, password)
             const user = userCredential.user
 
+            if (!user.emailVerified) {
+                await auth.signOut();
+                toast.error("Please verify your email address before logging in.")
+                return;
+            }
+
             console.log("User authenticated, syncing to database...")
             // Sync user (existing users might have empty profileData, that's fine)
             await syncUserToDb(user.uid, user.email!, user.displayName || user.email!.split('@')[0])

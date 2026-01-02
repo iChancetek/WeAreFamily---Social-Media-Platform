@@ -56,12 +56,11 @@ export default function SignupPage() {
             // Notify admins of new user registration
             await notifyAdminNewUser(user.uid, email, `${firstName} ${lastName}`)
 
-            // Create session cookie
-            await createSession(user.uid)
+            // Do NOT create session. Enforce verification.
+            await auth.signOut();
 
-            toast.success("Account created successfully! Please check your email to verify your account. An admin will review your request.")
-            router.push("/")
-            router.refresh()
+            toast.success("Account created! Please check your email to verify your account.")
+            router.push("/login")
         } catch (error: any) {
             console.error(error)
             if (error.code === 'auth/email-already-in-use') {
