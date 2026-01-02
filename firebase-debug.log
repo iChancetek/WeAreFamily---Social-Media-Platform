@@ -1,0 +1,65 @@
+[debug] [2026-01-02T15:24:19.685Z] ----------------------------------------------------------------------
+[debug] [2026-01-02T15:24:19.701Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\chanc\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only firestore:rules
+[debug] [2026-01-02T15:24:19.702Z] CLI Version:   15.1.0
+[debug] [2026-01-02T15:24:19.702Z] Platform:      win32
+[debug] [2026-01-02T15:24:19.702Z] Node Version:  v24.12.0
+[debug] [2026-01-02T15:24:19.702Z] Time:          Fri Jan 02 2026 10:24:19 GMT-0500 (Eastern Standard Time)
+[debug] [2026-01-02T15:24:19.703Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-01-02T15:24:23.269Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-02T15:24:23.270Z] > authorizing via signed-in user (isydneyai@gmail.com)
+[debug] [2026-01-02T15:24:23.270Z] [iam] checking project we-are-family-221 for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-01-02T15:24:23.272Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:23.272Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:23.274Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/we-are-family-221:testIamPermissions [none]
+[debug] [2026-01-02T15:24:23.274Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/we-are-family-221:testIamPermissions x-goog-quota-user=projects/we-are-family-221
+[debug] [2026-01-02T15:24:23.274Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/we-are-family-221:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-01-02T15:24:23.592Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/we-are-family-221:testIamPermissions 200
+[debug] [2026-01-02T15:24:23.593Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/we-are-family-221:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[info] 
+[info] === Deploying to 'we-are-family-221'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-01-02T15:24:23.599Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:23.599Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:23.599Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/we-are-family-221/databases/(default) [none]
+[debug] [2026-01-02T15:24:23.902Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/we-are-family-221/databases/(default) 200
+[debug] [2026-01-02T15:24:23.902Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/we-are-family-221/databases/(default) {"name":"projects/we-are-family-221/databases/(default)","uid":"82746664-ab23-4c55-941f-1786332893e9","createTime":"2026-01-01T01:34:31.698903Z","updateTime":"2026-01-01T01:34:31.698903Z","locationId":"nam5","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-01-02T14:24:23.930122Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"s","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"IK6MgO+U7ZEDMMa0ltOZ6ZED"}
+[info] i  firestore: reading indexes from firestore.indexes.json... 
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2026-01-02T15:24:23.905Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:23.905Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:23.905Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/we-are-family-221:test [none]
+[debug] [2026-01-02T15:24:23.905Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/we-are-family-221:test [omitted]
+[debug] [2026-01-02T15:24:24.191Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/we-are-family-221:test 200
+[debug] [2026-01-02T15:24:24.191Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/we-are-family-221:test {"issues":[{"sourcePosition":{"fileName":"firestore.rules","line":20,"column":14,"currentOffset":448,"endOffset":455},"description":"Unused function: isMember.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":22,"column":14,"currentOffset":509,"endOffset":511},"description":"Invalid function name: get.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":22,"column":59,"currentOffset":554,"endOffset":560},"description":"Invalid variable name: request.","severity":"WARNING"}]}
+[warn] !  [W] 20:14 - Unused function: isMember. 
+[warn] !  [W] 22:14 - Invalid function name: get. 
+[warn] !  [W] 22:59 - Invalid variable name: request. 
+[info] +  cloud.firestore: rules file firestore.rules compiled successfully 
+[debug] [2026-01-02T15:24:24.194Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:24.194Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:24.194Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/we-are-family-221/releases pageSize=10&pageToken=
+[debug] [2026-01-02T15:24:24.347Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/we-are-family-221/releases 200
+[debug] [2026-01-02T15:24:24.347Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/we-are-family-221/releases {"releases":[{"name":"projects/we-are-family-221/releases/cloud.firestore","rulesetName":"projects/we-are-family-221/rulesets/af545738-720d-4f50-a8c6-f870e31ea456","createTime":"2026-01-01T01:35:17.641293Z","updateTime":"2026-01-02T15:04:14.699447Z"},{"name":"projects/we-are-family-221/releases/firebase.storage/we-are-family-221.firebasestorage.app","rulesetName":"projects/we-are-family-221/rulesets/be7b5b6e-7394-4457-a36d-9b33640a8cfd","createTime":"2026-01-01T22:48:20.959502Z","updateTime":"2026-01-01T22:48:20.959502Z"}]}
+[debug] [2026-01-02T15:24:24.401Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:24.402Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:24.402Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/we-are-family-221/rulesets/af545738-720d-4f50-a8c6-f870e31ea456 [none]
+[debug] [2026-01-02T15:24:24.564Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/we-are-family-221/rulesets/af545738-720d-4f50-a8c6-f870e31ea456 200
+[debug] [2026-01-02T15:24:24.565Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/we-are-family-221/rulesets/af545738-720d-4f50-a8c6-f870e31ea456 [omitted]
+[info] i  firestore: latest version of firestore.rules already up to date, skipping upload... 
+[debug] [2026-01-02T15:24:24.567Z] [rules] releasing cloud.firestore/(default) with ruleset projects/we-are-family-221/rulesets/af545738-720d-4f50-a8c6-f870e31ea456
+[debug] [2026-01-02T15:24:24.567Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:24.568Z] Checked if tokens are valid: true, expires at: 1767369467880
+[debug] [2026-01-02T15:24:24.568Z] >>> [apiv2][query] PATCH https://firebaserules.googleapis.com/v1/projects/we-are-family-221/releases/cloud.firestore/(default) [none]
+[debug] [2026-01-02T15:24:24.568Z] >>> [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/we-are-family-221/releases/cloud.firestore/(default) {"release":{"name":"projects/we-are-family-221/releases/cloud.firestore/(default)","rulesetName":"projects/we-are-family-221/rulesets/af545738-720d-4f50-a8c6-f870e31ea456"}}
+[debug] [2026-01-02T15:24:24.957Z] <<< [apiv2][status] PATCH https://firebaserules.googleapis.com/v1/projects/we-are-family-221/releases/cloud.firestore/(default) 200
+[debug] [2026-01-02T15:24:24.957Z] <<< [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/we-are-family-221/releases/cloud.firestore/(default) {"name":"projects/we-are-family-221/releases/cloud.firestore","rulesetName":"projects/we-are-family-221/rulesets/af545738-720d-4f50-a8c6-f870e31ea456","createTime":"2026-01-01T01:35:17.641293Z","updateTime":"2026-01-02T15:24:24.962774Z"}
+[debug] [2026-01-02T15:24:24.958Z] [rules] updated release projects/we-are-family-221/releases/cloud.firestore
+[info] +  firestore: released rules firestore.rules to cloud.firestore 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/we-are-family-221/overview

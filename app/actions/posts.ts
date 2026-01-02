@@ -123,7 +123,7 @@ export async function addComment(
 export async function getPosts() {
     try {
         const user = await getUserProfile()
-        if (!user || user.role === 'pending') {
+        if (!user) {
             return [] // Return empty if unauthorized
         }
 
