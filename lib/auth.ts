@@ -1,28 +1,29 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 export async function getUserProfile() {
-    const user = await currentUser();
+    const cookieStore = await cookies();
+    const sessionUid = cookieStore.get("session_uid")?.value;
 
-    if (!user) {
+    if (!sessionUid) {
         return null;
     }
 
     const dbUser = await db.query.users.findFirst({
-        where: eq(users.id, user.id),
+        where: eq(users.id, sessionUid),
     });
 
-    return dbUser;
+    return dbUser || null;
 }
 
 export async function requireUser() {
     const profile = await getUserProfile();
 
     if (!profile) {
-        redirect("/sign-in");
+        redirect("/login");
     }
 
     return profile;

@@ -10,10 +10,10 @@ import { generatePostContent } from "@/app/actions/ai";
 import { uploadFile } from "@/app/actions/upload";
 import { toast } from "sonner";
 import { ImageIcon, Loader2, Send, Sparkles, X } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/components/auth-provider";
 
 export function CreatePost() {
-    const { user } = useUser();
+    const { user } = useAuth();
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -77,12 +77,12 @@ export function CreatePost() {
             <CardContent className="p-4">
                 <div className="flex gap-3">
                     <Avatar className="w-10 h-10 border border-gray-200">
-                        <AvatarImage src={user?.imageUrl} />
-                        <AvatarFallback>{user?.firstName?.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={user?.photoURL || undefined} />
+                        <AvatarFallback>{user?.displayName?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-3">
                         <Textarea
-                            placeholder={`What's on your mind, ${user?.firstName || 'User'}?`}
+                            placeholder={`What's on your mind, ${user?.displayName?.split(' ')[0] || 'Family'}?`}
                             className="min-h-[80px] bg-gray-100 hover:bg-gray-200 focus:bg-white border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}

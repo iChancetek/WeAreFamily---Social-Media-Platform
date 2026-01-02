@@ -57,9 +57,10 @@ type Post = {
 }
 
 export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: string }) {
-    const profile = post.author.profileData as { firstName?: string, lastName?: string, imageUrl?: string } | null;
+    const profile = post.author.profileData as { firstName?: string, lastName?: string, imageUrl?: string, displayName?: string } | null;
 
-    const name = post.author.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : post.author.email);
+    // Prioritize displayName, then first+last, then email
+    const name = post.author.displayName || profile?.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : post.author.email);
     const initials = name.slice(0, 2).toUpperCase();
 
     const [isLiked, setIsLiked] = useState(post.likes?.includes(currentUserId || ""));
@@ -260,7 +261,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                 </Avatar>
                                 <div className="bg-muted rounded-2xl px-3 py-2">
                                     <span className="font-semibold text-xs block text-card-foreground">
-                                        {(comment.author.profileData as any)?.firstName || 'User'}
+                                        {(comment.author.profileData as any)?.displayName || (comment.author.profileData as any)?.firstName || 'User'}
                                     </span>
                                     <span className="text-sm text-card-foreground">{comment.content}</span>
                                 </div>

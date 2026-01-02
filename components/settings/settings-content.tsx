@@ -42,7 +42,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ArrowLeft, Shield } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useClerk } from "@clerk/nextjs"
+import { useAuth } from "@/components/auth-provider"
+// import { useClerk } from "@clerk/nextjs" // Removed
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 
@@ -55,6 +56,7 @@ const profileFormSchema = z.object({
     imageUrl: z.string().optional(),
     coverUrl: z.string().optional(),
     coverType: z.string().optional(),
+    birthday: z.string().optional(),
 })
 
 const accountFormSchema = z.object({
@@ -75,6 +77,7 @@ interface SettingsContentProps {
         bio?: string | null;
         language?: string | null;
         theme?: string | null;
+        birthday?: string | null;
         isInvisible?: boolean;
     },
     blockedUsers: {
@@ -90,7 +93,8 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
     const router = useRouter()
     const { t, setLanguage } = useLanguage()
     const { setTheme } = useTheme()
-    const { openUserProfile } = useClerk()
+    const { signOut } = useAuth()
+    // const { openUserProfile } = useClerk() // Removed Clerk
     const [showExitDialog, setShowExitDialog] = useState(false)
 
     // --- Profile Form State ---
@@ -108,6 +112,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
             imageUrl: user.imageUrl || "",
             coverUrl: user.coverUrl || "",
             coverType: user.coverType || "",
+            birthday: user.birthday || "",
         },
     })
 
@@ -135,9 +140,10 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                 ...data,
                 imageUrl: imageUrl,
                 coverUrl: coverUrl,
-                coverType: coverType
+                coverType: coverType,
+                birthday: data.birthday
             })
-            profileForm.reset({ ...data, imageUrl, coverUrl, coverType })
+            profileForm.reset({ ...data, imageUrl, coverUrl, coverType, birthday: data.birthday })
             return true
         } catch {
             return false
@@ -362,6 +368,20 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                             </FormItem>
                                         )}
                                     />
+                                    <FormField
+                                        control={profileForm.control}
+                                        name="birthday"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Birthday</FormLabel>
+                                                <FormControl>
+                                                    <Input type="text" placeholder="MM-DD" {...field} />
+                                                </FormControl>
+                                                <FormDescription>MM-DD (e.g., 12-25). Used for automated birthday wishes!</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                     <Button type="submit">{t("settings.updateProfile")}</Button>
                                 </form>
                             </Form>
@@ -482,21 +502,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                         )}
                                     />
 
-                                    <div className="pt-4 border-t border-border">
-                                        <FormLabel className="mb-2 block">{t("settings.security")}</FormLabel>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => openUserProfile()}
-                                            className="w-full sm:w-auto gap-2"
-                                        >
-                                            <Shield className="w-4 h-4" />
-                                            {t("settings.manageSecurity")}
-                                        </Button>
-                                        <FormDescription className="mt-2 text-xs">
-                                            Manage MFA and password via Clerk.
-                                        </FormDescription>
-                                    </div>
+                                    {/* Security Section Removed - Managed via Firebase Auth directly */}
 
                                     <Button type="submit">{t("settings.updateAccount")}</Button>
                                 </form>

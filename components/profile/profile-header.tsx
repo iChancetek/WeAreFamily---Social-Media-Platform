@@ -10,6 +10,10 @@ import Link from "next/link";
 
 import { FamilyRequestButton } from "@/components/family/family-request-button";
 import { FamilyStatus } from "@/app/actions/family";
+import { checkOrCreateChat } from "@/app/actions/chat";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 type User = {
     id: string;
@@ -31,6 +35,20 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeaderProps) {
+    const router = useRouter();
+    const [isMessaging, setIsMessaging] = useState(false);
+
+    const handleMessage = async () => {
+        setIsMessaging(true);
+        try {
+            const chatId = await checkOrCreateChat(user.id);
+            router.push(`/messages?chatId=${chatId}`);
+        } catch (error) {
+            console.error("Failed to start chat", error);
+            setIsMessaging(false);
+        }
+    };
+
     // Merge user table fields with profileData for backward compatibility or direct access
     const profile = {
         ...(user.profileData as { firstName?: string, lastName?: string, imageUrl?: string } | null),
@@ -76,7 +94,14 @@ export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeade
                                     initialRequestId={familyStatus.requestId}
                                     className="h-9"
                                 />
-                                <Button variant="outline" className="h-9">Message</Button>
+                                <Button
+                                    variant="outline"
+                                    className="h-9"
+                                    disabled={isMessaging}
+                                    onClick={handleMessage}
+                                >
+                                    {isMessaging ? <Loader2 className="w-4 h-4 animate-spin" /> : "Message"}
+                                </Button>
                                 <BlockButton targetUserId={user.id} />
                             </>
                         )}

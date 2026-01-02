@@ -1,101 +1,146 @@
-'use client'
+"use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send } from "lucide-react";
-import { getChatDetails, sendMessage } from "@/app/actions/chat";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { getMessages, sendMessage, Message, ChatSession } from "@/app/actions/chat";
+import { Send, Loader2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
-export function ChatWindow({ chatId, onBack, currentUserId }: any) {
-    const [messages, setMessages] = useState<any[]>([]);
-    const [input, setInput] = useState("");
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+interface ChatWindowProps {
+    session: ChatSession;
+    currentUserId: string;
+}
 
-    // Initial fetch
+export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [inputText, setInputText] = useState("");
+    const [isSending, setIsSending] = useState(false);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const otherUser = session.otherUser;
+
+    const fetchMessages = async () => {
+        try {
+            const data = await getMessages(session.id);
+            setMessages(data);
+            setIsLoading(false);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    // Initial fetch and Polling
     useEffect(() => {
-        let isMounted = true;
-        const fetchMessages = async () => {
-            try {
-                const details = await getChatDetails(chatId);
-                if (isMounted && details) {
-                    setMessages(details.messages);
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        };
-
         fetchMessages();
-        const interval = setInterval(fetchMessages, 3000); // Polling every 3s
-        return () => { isMounted = false; clearInterval(interval); }
-    }, [chatId]);
+        const interval = setInterval(fetchMessages, 3000); // Poll every 3s
+        return () => clearInterval(interval);
+    }, [session.id]);
 
+    // Auto-scroll to bottom on new messages
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (scrollRef.current) {
+            scrollRef.current.scrollIntoView({ behavior: "smooth" });
+        }
     }, [messages]);
 
     const handleSend = async () => {
-        if (!input.trim()) return;
-        const content = input;
-        setInput(""); // Optimistic clear
+        if (!inputText.trim()) return;
 
-        // Optimistic update
-        const optimisticMsg = {
-            id: Date.now(),
-            content,
+        const content = inputText;
+        setInputText(""); // Optimistic clear
+
+        // Optimistic append
+        const tempMsg: Message = {
+            id: Date.now(), // Temp ID
+            chatId: session.id,
             senderId: currentUserId,
+            content: content,
             createdAt: new Date(),
-            sender: { id: currentUserId } // Mock
         };
-        setMessages(prev => [...prev, optimisticMsg]);
+        setMessages(prev => [...prev, tempMsg]);
 
+        setIsSending(true);
         try {
-            await sendMessage(chatId, content);
+            await sendMessage(session.id, content);
+            await fetchMessages(); // Sync real ID
         } catch {
-            toast.error("Failed to send");
+            // Revert or show error (simplified)
+            console.error("Failed to send");
+        } finally {
+            setIsSending(false);
         }
-    }
+    };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50">
-            <div className="p-4 border-b bg-white flex items-center gap-3">
-                <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}>
-                    <ArrowLeft className="w-5 h-5" />
-                </Button>
-                <div className="font-bold">Chat #{chatId}</div>
+        <div className="flex flex-col h-full bg-white dark:bg-zinc-900 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-100 dark:border-white/5 flex items-center gap-3 bg-white/50 backdrop-blur-md">
+                <Avatar className="h-10 w-10">
+                    <AvatarImage src={otherUser?.imageUrl || undefined} />
+                    <AvatarFallback>{otherUser?.displayName?.charAt(0) || "?"}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <h3 className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100">
+                        {otherUser?.displayName || "Family Member"}
+                    </h3>
+                    <p className="text-xs text-green-500 font-medium">Online</p>
+                </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((msg: any) => {
-                    const isMe = msg.senderId === currentUserId;
-                    return (
-                        <div key={msg.id} className={cn("flex", isMe ? "justify-end" : "justify-start")}>
-                            <div className={cn(
-                                "max-w-[70%] rounded-2xl px-4 py-2 text-sm shadow-sm",
-                                isMe ? "bg-rose-500 text-white" : "bg-white text-gray-900"
-                            )}>
-                                {msg.content}
-                            </div>
+            {/* Messages Area */}
+            <ScrollArea className="flex-1 p-4 bg-gray-50/50 dark:bg-zinc-950/50">
+                <div className="flex flex-col gap-3 min-h-full justify-end">
+                    {isLoading ? (
+                        <div className="flex justify-center py-10">
+                            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                         </div>
-                    )
-                })}
-                <div ref={messagesEndRef} />
-            </div>
+                    ) : messages.length === 0 ? (
+                        <div className="text-center text-muted-foreground py-10 text-sm">
+                            Say hello! 👋
+                        </div>
+                    ) : (
+                        messages.map((msg) => {
+                            const isMe = msg.senderId === currentUserId;
+                            return (
+                                <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${isMe
+                                            ? 'bg-primary text-primary-foreground rounded-br-none'
+                                            : 'bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/5 rounded-bl-none shadow-sm'
+                                        }`}>
+                                        {msg.content}
+                                        <div className={`text-[10px] mt-1 opacity-70 ${isMe ? 'text-primary-foreground/80' : 'text-gray-500'}`}>
+                                            {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                    <div ref={scrollRef} />
+                </div>
+            </ScrollArea>
 
-            <div className="p-4 bg-white border-t flex gap-2">
-                <Input
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleSend()}
-                    placeholder="Type a message..."
-                    className="flex-1"
-                />
-                <Button onClick={handleSend} size="icon" className="bg-rose-500 hover:bg-rose-600">
-                    <Send className="w-4 h-4 absolute text-white" />
-                </Button>
+            {/* Input Area */}
+            <div className="p-4 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-white/5">
+                <form
+                    onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+                    className="flex gap-2"
+                >
+                    <Input
+                        placeholder="Type a message..."
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        className="flex-1 bg-gray-100 dark:bg-zinc-800 border-none focus-visible:ring-1 focus-visible:ring-primary"
+                    />
+                    <Button type="submit" size="icon" disabled={!inputText.trim() || isSending} className="shrink-0">
+                        <Send className="w-4 h-4" />
+                    </Button>
+                </form>
             </div>
         </div>
-    )
+    );
 }

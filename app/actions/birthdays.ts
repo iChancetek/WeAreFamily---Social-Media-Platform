@@ -6,10 +6,10 @@ import { eq, and, isNotNull } from "drizzle-orm";
 import { generateBirthdayWish } from "./ai";
 import { revalidatePath } from "next/cache";
 
-import { currentUser } from "@clerk/nextjs/server";
+import { getUserProfile } from "@/lib/auth";
 
 export async function checkAndCelebrateBirthdays() {
-    const user = await currentUser();
+    const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
     const adminUserId = user.id;
 

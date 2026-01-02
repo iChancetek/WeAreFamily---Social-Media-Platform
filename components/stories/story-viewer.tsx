@@ -15,8 +15,7 @@ interface Story {
 interface UserStories {
     user: {
         imageUrl: string | null;
-        firstName: string | null;
-        lastName: string | null;
+        displayName: string | null;
     };
     stories: Story[];
 }
@@ -137,10 +136,10 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
                         <div className="flex items-center gap-2">
                             <Avatar className="w-8 h-8 border border-white/50">
                                 <AvatarImage src={currentUser.user.imageUrl || undefined} />
-                                <AvatarFallback>{currentUser.user.firstName?.charAt(0)}</AvatarFallback>
+                                <AvatarFallback>{currentUser.user.displayName?.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <span className="text-white font-semibold text-sm">
-                                {currentUser.user.firstName} {currentUser.user.lastName}
+                                {currentUser.user.displayName}
                             </span>
                             <span className="text-white/60 text-xs ml-auto">
                                 {new Date(currentStory.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

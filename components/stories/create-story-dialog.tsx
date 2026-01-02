@@ -4,7 +4,8 @@ import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { createStory } from "@/app/actions/stories";
-import { uploadFile } from "@/app/actions/upload";
+// import { uploadFile } from "@/app/actions/upload"; // Removed - using Firebase Storage
+import { useAuth } from "@/components/auth-provider";
 import { toast } from "sonner";
 import { Loader2, Plus, Image as ImageIcon, X } from "lucide-react";
 
@@ -21,21 +22,31 @@ export function CreateStoryDialog({ children }: CreateStoryDialogProps) {
     const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const { user } = useAuth(); // Need user for path
+
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
+        if (e.target.files && e.target.files[0] && user) {
             const file = e.target.files[0];
             const type = file.type.startsWith('video/') ? 'video' : 'image';
 
             setIsUploading(true);
             try {
-                const formData = new FormData();
-                formData.append('file', file);
-                const url = await uploadFile(formData);
+                const { storage } = await import("@/lib/firebase");
+                const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+
+                // Create a unique reference
+                const timestamp = Date.now();
+                const storageRef = ref(storage, `stories/${user.uid}/${timestamp}-${file.name}`);
+
+                await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(storageRef);
+
                 setMediaUrl(url);
                 setMediaType(type);
                 toast.success("Media uploaded! Ready to post.");
-            } catch {
-                toast.error("Upload failed");
+            } catch (error: any) {
+                console.error("Upload failed", error);
+                toast.error("Upload failed: " + error.message);
             } finally {
                 setIsUploading(false);
             }

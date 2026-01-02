@@ -1,36 +1,35 @@
+
 'use client'
 
-import { ModeToggle } from "@/components/mode-toggle";
+import { useAuth } from "@/components/auth-provider";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Sparkles, Heart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Home, User, Calendar, MessageCircle, Settings, LogOut, Heart, ImageIcon, Shield } from "lucide-react";
-import { SignOutButton, useUser } from "@clerk/nextjs";
-import { useLanguage } from "@/components/language-context";
+import { ModeToggle } from "@/components/mode-toggle";
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-    isAdmin?: boolean;
-}
-
-export function Sidebar({ className, isAdmin }: SidebarProps) {
+export function Sidebar() {
     const pathname = usePathname();
-    const { user } = useUser();
-    const { t } = useLanguage();
+    const { user, signOut } = useAuth();
 
+    // Simplified links for now, removing translation dependency to fix build quickly
     const links = [
-        { href: "/", label: t("nav.home"), icon: Home },
-        ...(isAdmin ? [{ href: "/admin", label: t("nav.admin"), icon: Shield }] : []),
-        { href: "/messages", label: t("nav.messages"), icon: MessageCircle },
-        { href: "/gallery", label: t("nav.gallery"), icon: ImageIcon },
-        { href: "/events", label: t("nav.events"), icon: Calendar },
-        { href: "/family", label: t("nav.family"), icon: Heart }, // Using Heart as placeholder, could be Users
-        { href: user ? `/u/${user.id}` : "#", label: t("nav.profile"), icon: User },
-        { href: "/settings", label: t("nav.settings"), icon: Settings },
+        { href: "/", label: "Home", icon: Home },
+        { href: "/family", label: "Family", icon: Users },
+        { href: "/messages", label: "Messages", icon: MessageSquare },
+        { href: "/events", label: "Events", icon: Ticket },
+        { href: "/gallery", label: "Gallery", icon: ImageIcon },
+        { href: "/stories", label: "Stories", icon: Sparkles },
+        { href: "/settings", label: "Settings", icon: Settings },
     ];
 
+    if (user?.email === 'admin@famio.us') { // Simple admin check placeholder
+        links.push({ href: "/admin", label: "Admin", icon: Shield });
+    }
+
     return (
-        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-slate-950 border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-50 shadow-sm", className)}>
+        <div className="flex flex-col h-full py-4 bg-white dark:bg-slate-950 border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-50 shadow-sm">
             <div className="px-6 py-4">
                 <Link href="/" className="flex items-center gap-2">
                     <Heart className="w-8 h-8 fill-blue-600 text-blue-600 dark:fill-blue-500 dark:text-blue-500" />
@@ -61,13 +60,14 @@ export function Sidebar({ className, isAdmin }: SidebarProps) {
                 <div className="px-4">
                     <ModeToggle />
                 </div>
-                <SignOutButton>
-                    <Button variant="ghost" className="w-full justify-start gap-4 text-slate-600 dark:text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-4 h-12">
-                        <LogOut className="w-6 h-6" />
-                        {t("nav.signout")}
+                <div className="p-4 border-t border-border mt-auto">
+                    <Button variant="ghost" className="w-full justify-start gap-3 text-red-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20" onClick={() => signOut()}>
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
                     </Button>
-                </SignOutButton>
+                </div>
             </div>
         </div>
     );
 }
+

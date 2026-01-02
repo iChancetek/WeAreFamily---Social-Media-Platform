@@ -16,8 +16,7 @@ interface Story {
 interface UserStories {
     user: {
         imageUrl: string | null;
-        firstName: string | null;
-        lastName: string | null;
+        displayName: string | null;
     };
     stories: Story[];
 }
@@ -26,7 +25,7 @@ interface StoriesTrayClientProps {
     currentUserId?: string; // Clerk ID
     currentUserRole?: string;
     currentUserImage?: string | null;
-    currentUserFirstName?: string | null;
+    currentUserDisplayName?: string | null;
     activeStories: UserStories[];
 }
 
@@ -34,7 +33,7 @@ export function StoriesTrayClient({
     currentUserId,
     currentUserRole,
     currentUserImage,
-    currentUserFirstName,
+    currentUserDisplayName,
     activeStories
 }: StoriesTrayClientProps) {
     const [viewerOpen, setViewerOpen] = useState(false);
@@ -60,7 +59,7 @@ export function StoriesTrayClient({
                                         <img src={currentUserImage} alt="Me" className="w-full h-2/3 object-cover opacity-80" />
                                     ) : (
                                         <div className="w-full h-2/3 bg-gray-200 dark:bg-zinc-700 flex items-center justify-center">
-                                            <span className="text-2xl font-bold text-gray-400">{currentUserFirstName?.charAt(0)}</span>
+                                            <span className="text-2xl font-bold text-gray-400">{currentUserDisplayName?.charAt(0)}</span>
                                         </div>
                                     )}
                                 </div>
@@ -102,13 +101,13 @@ export function StoriesTrayClient({
 
                             {/* User Avatar */}
                             <div className="absolute top-3 left-3 w-10 h-10 rounded-full border-4 border-primary overflow-hidden z-10">
-                                <img src={storyGroup.user.imageUrl || '/placeholder-user.jpg'} alt={storyGroup.user.firstName || 'User'} className="w-full h-full object-cover" />
+                                <img src={storyGroup.user.imageUrl || '/placeholder-user.jpg'} alt={storyGroup.user.displayName || 'User'} className="w-full h-full object-cover" />
                             </div>
 
                             {/* User Name */}
                             <div className="absolute bottom-3 left-3 right-3 z-10">
                                 <p className="text-white text-xs font-bold truncate drop-shadow-md">
-                                    {storyGroup.user.firstName} {storyGroup.user.lastName}
+                                    {storyGroup.user.displayName}
                                 </p>
                             </div>
                         </div>

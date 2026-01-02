@@ -7,7 +7,7 @@ import { CalendarIcon, MapPin } from "lucide-react"
 import { format } from "date-fns"
 import { joinEvent } from "@/app/actions/events"
 import { toast } from "sonner"
-import { useUser } from "@clerk/nextjs"
+import { useAuth } from "@/components/auth-provider"
 
 type Event = {
     id: number;
@@ -20,7 +20,7 @@ type Event = {
 }
 
 export function EventList({ events }: { events: Event[] }) {
-    const { user } = useUser();
+    const { user } = useAuth();
 
     const handleJoin = async (id: number) => {
         try {
@@ -42,7 +42,7 @@ export function EventList({ events }: { events: Event[] }) {
     return (
         <div className="grid md:grid-cols-2 gap-4">
             {events.map((event) => {
-                const isAttending = user && event.attendees?.includes(user.id);
+                const isAttending = user && event.attendees?.includes(user.uid);
 
                 return (
                     <Card key={event.id} className="border-l-4 border-l-rose-400 shadow-sm hover:shadow-md transition-all">

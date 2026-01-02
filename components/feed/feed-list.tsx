@@ -1,9 +1,9 @@
-import { currentUser } from "@clerk/nextjs/server"
+import { getUserProfile } from "@/lib/auth"
 import { getPosts } from "@/app/actions/posts"
 import { PostCard } from "./post-card"
 
 export async function FeedList() {
-    const user = await currentUser()
+    const user = await getUserProfile()
     const posts = await getPosts()
 
     if (posts.length === 0) {

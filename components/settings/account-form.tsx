@@ -24,11 +24,11 @@ import {
 import { toast } from "sonner"
 import { updateAccountSettings } from "@/app/actions/settings"
 import { useTheme } from "next-themes"
-import { useClerk } from "@clerk/nextjs"
 import { Shield } from "lucide-react"
 import { useLanguage } from "@/components/language-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect } from "react"
+import { useAuth } from "@/components/auth-provider"
 
 const accountFormSchema = z.object({
     language: z.string().optional(),
@@ -37,18 +37,12 @@ const accountFormSchema = z.object({
 
 type AccountFormValues = z.infer<typeof accountFormSchema>
 
-interface AccountFormProps {
-    user: {
-        id: string;
-        language?: string | null;
-        theme?: string | null;
-    }
-}
+// ...
 
-export function AccountForm({ user }: AccountFormProps) {
+export function AccountForm({ user }: { user: any }) {
     const router = useRouter()
     const { setTheme } = useTheme()
-    const { openUserProfile } = useClerk()
+    const { user: authUser } = useAuth() // No openUserProfile in firebase
     const { setLanguage, t } = useLanguage()
 
     const form = useForm<AccountFormValues>({
@@ -145,21 +139,7 @@ export function AccountForm({ user }: AccountFormProps) {
                             )}
                         />
 
-                        <div className="pt-4 border-t border-border">
-                            <FormLabel className="mb-2 block">{t("settings.security")}</FormLabel>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => openUserProfile()}
-                                className="w-full sm:w-auto gap-2"
-                            >
-                                <Shield className="w-4 h-4" />
-                                {t("settings.manageSecurity")}
-                            </Button>
-                            <FormDescription className="mt-2">
-                                {t("settings.security.desc")}
-                            </FormDescription>
-                        </div>
+                        {/* Security Section Removed - Managed via Firebase Auth directly */}
 
                         <Button type="submit">{t("settings.updateAccount")}</Button>
                     </form>

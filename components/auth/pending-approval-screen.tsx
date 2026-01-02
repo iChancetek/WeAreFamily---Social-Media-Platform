@@ -1,9 +1,12 @@
+'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { SignOutButton } from "@clerk/nextjs";
 import { LockIcon } from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
 
 export function PendingApprovalScreen() {
+    const { signOut } = useAuth();
+
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
             <Card className="w-full max-w-md shadow-lg border-gray-100">
@@ -13,7 +16,7 @@ export function PendingApprovalScreen() {
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">Access Pending</CardTitle>
                     <CardDescription className="text-base text-gray-600">
-                        Welcome to We Are Family! Your account is currently awaiting admin approval.
+                        Welcome to WeAreFamily! Your account is currently awaiting admin approval.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 text-center">
@@ -23,11 +26,9 @@ export function PendingApprovalScreen() {
                     </p>
 
                     <div className="pt-2">
-                        <SignOutButton>
-                            <Button variant="outline" className="w-full">
-                                Sign Out
-                            </Button>
-                        </SignOutButton>
+                        <Button variant="outline" className="w-full" onClick={() => signOut()}>
+                            Sign Out
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
