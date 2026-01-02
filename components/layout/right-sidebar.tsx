@@ -23,8 +23,8 @@ export async function RightSidebar({ className }: RightSidebarProps) {
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Contacts</h3>
             <div className="flex flex-col gap-2">
                 {activeUsers.map((user: any) => {
-                    const profile = user.profileData as { firstName: string, lastName: string, imageUrl: string };
-                    const name = profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.email;
+                    const profile = user.profileData as { firstName: string, lastName: string, imageUrl: string } | null;
+                    const name = user.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.email);
 
                     return (
                         <div key={user.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">

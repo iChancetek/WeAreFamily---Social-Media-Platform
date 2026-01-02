@@ -13,6 +13,8 @@ type User = {
     id: string;
     email: string;
     profileData: unknown;
+    displayName?: string | null;
+    bio?: string | null;
     coverUrl?: string | null;
     coverType?: string | null;
 }
@@ -29,11 +31,15 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeaderProps) {
     // Merge user table fields with profileData for backward compatibility or direct access
     const profile = {
-        ...(user.profileData as { firstName?: string, lastName?: string, imageUrl?: string, bio?: string } | null),
+        ...(user.profileData as { firstName?: string, lastName?: string, imageUrl?: string } | null),
+        bio: user.bio,
+        displayName: user.displayName,
         coverUrl: user.coverUrl,
         coverType: user.coverType
     };
-    const name = profile?.firstName ? `${profile.firstName} ${profile.lastName}` : (user.email ? user.email : "User");
+
+    // Prioritize displayName, then profileData names, then email
+    const name = user.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : (user.email ? user.email : "User"));
     const initials = name.slice(0, 2).toUpperCase();
 
     return (
@@ -57,7 +63,7 @@ export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeade
                     </Avatar>
                     <div className="flex-1 mb-2">
                         <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
-                        <p className="text-gray-500 text-sm">{profile?.bio || "No bio yet"}</p>
+                        <p className="text-gray-500 text-sm">{profile.bio || "No bio yet"}</p>
                     </div>
                     <div className="flex gap-2 mb-4 md:mb-2 items-center">
                         {!isOwnProfile && (

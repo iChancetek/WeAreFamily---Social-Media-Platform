@@ -23,6 +23,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/components/language-context";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { ArrowLeft } from "lucide-react"
 
 const profileFormSchema = z.object({
     displayName: z.string().min(2, {
@@ -30,6 +41,8 @@ const profileFormSchema = z.object({
     }),
     bio: z.string().max(160).optional(),
     imageUrl: z.string().optional(),
+    coverUrl: z.string().optional(),
+    coverType: z.string().optional(),
 })
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
@@ -50,6 +63,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     const [imageUrl, setImageUrl] = useState<string | undefined>(user.imageUrl || undefined);
     const [coverUrl, setCoverUrl] = useState<string | undefined>(user.coverUrl || undefined);
     const [coverType, setCoverType] = useState<'image' | 'video' | undefined>(user.coverType as 'image' | 'video' || undefined);
+    const [showExitDialog, setShowExitDialog] = useState(false);
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
@@ -57,6 +71,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
             displayName: user.displayName || "",
             bio: user.bio || "",
             imageUrl: user.imageUrl || "",
+            coverUrl: user.coverUrl || "",
+            coverType: user.coverType || "",
         },
     })
 
@@ -69,21 +85,49 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 coverType: coverType
             })
             toast.success("Profile updated")
+
+            // Re-sync form state so it's not dirty anymore
+            form.reset({ ...data, imageUrl: imageUrl });
             router.refresh()
         } catch {
             toast.error("Failed to update profile")
         }
     }
 
+    const handleExit = () => {
+        if (form.formState.isDirty) {
+            setShowExitDialog(true);
+        } else {
+            router.push('/');
+        }
+    };
+
+    const handleDiscardAndExit = () => {
+        router.push('/');
+    };
+
+    const handleSaveAndExit = async () => {
+        await form.handleSubmit(async (data) => {
+            await onSubmit(data);
+            router.push('/');
+        })();
+    };
+
     const { t } = useLanguage();
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>{t("settings.profile.title")}</CardTitle>
-                <CardDescription>
-                    {t("settings.profile.desc")}
-                </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>{t("settings.profile.title")}</CardTitle>
+                    <CardDescription>
+                        {t("settings.profile.desc")}
+                    </CardDescription>
+                </div>
+                <Button variant="outline" onClick={handleExit} className="gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Exit
+                </Button>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
@@ -113,6 +157,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                                 const url = await getDownloadURL(storageRef);
 
                                                 setImageUrl(url);
+
+                                                // Mark form as dirty manually since we're managing image state outside hook form for now
+                                                // Ideally should integrate fully, but for dirty check:
+                                                form.setValue('imageUrl', url, { shouldDirty: true });
+
                                                 toast.success("Upload complete");
                                             } catch (error: any) {
                                                 console.error("Upload failed", error);
@@ -152,7 +201,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                         const url = await getDownloadURL(storageRef);
 
                                         setCoverUrl(url);
-                                        setCoverType(file.type.startsWith('video') ? 'video' : 'image');
+                                        const type = file.type.startsWith('video') ? 'video' : 'image';
+                                        setCoverType(type);
+
+                                        form.setValue('coverUrl', url, { shouldDirty: true });
+                                        form.setValue('coverType', type, { shouldDirty: true });
+
                                         toast.success("Cover uploaded");
                                     } catch (error: any) {
                                         console.error("Upload failed", error);
@@ -201,6 +255,22 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         <Button type="submit">{t("settings.updateProfile")}</Button>
                     </form>
                 </Form>
+
+                <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                You have unsaved changes. Do you want to save them before exiting?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => setShowExitDialog(false)}>Cancel</AlertDialogCancel>
+                            <Button variant="outline" onClick={handleDiscardAndExit}>Discard</Button>
+                            <Button onClick={handleSaveAndExit}>Save & Exit</Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </CardContent>
         </Card >
     )

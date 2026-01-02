@@ -35,9 +35,11 @@ type Comment = {
     createdAt: Date;
     author: {
         id: string;
+        displayName?: string | null;
         profileData: unknown;
     };
 }
+
 
 type Post = {
     id: number;
@@ -47,6 +49,7 @@ type Post = {
     author: {
         id: string;
         email: string;
+        displayName?: string | null;
         profileData: unknown;
     };
     likes: string[] | null;
@@ -55,7 +58,8 @@ type Post = {
 
 export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: string }) {
     const profile = post.author.profileData as { firstName?: string, lastName?: string, imageUrl?: string } | null;
-    const name = profile?.firstName ? `${profile.firstName} ${profile.lastName}` : post.author.email;
+
+    const name = post.author.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : post.author.email);
     const initials = name.slice(0, 2).toUpperCase();
 
     const [isLiked, setIsLiked] = useState(post.likes?.includes(currentUserId || ""));

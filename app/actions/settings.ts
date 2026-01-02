@@ -23,6 +23,7 @@ export async function updateProfile(data: { displayName?: string, bio?: string, 
 
     revalidatePath('/settings')
     revalidatePath('/u/' + user.id)
+    revalidatePath('/')
 }
 
 export async function updateAccountSettings(data: { language?: string, theme?: string }) {

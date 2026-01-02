@@ -34,6 +34,7 @@ export async function getActiveUsers() {
             profileData: true,
             email: true,
             lastActiveAt: true,
+            displayName: true,
         },
         limit: 20
     });
