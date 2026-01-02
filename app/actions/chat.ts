@@ -109,6 +109,7 @@ export async function getChats(): Promise<ChatSession[]> {
 
         return {
             ...chat,
+            isGroup: chat.isGroup as boolean | null,
             otherUser,
             lastMessage: lastMsg?.content || "No messages yet"
         };
