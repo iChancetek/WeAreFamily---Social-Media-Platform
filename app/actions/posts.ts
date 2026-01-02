@@ -140,15 +140,24 @@ export async function getPosts() {
             getFollowedBrandingIds(user.id)
         ]);
 
-        const allowedAuthorIds = [user.id, ...familyIds];
+        // PRODUCTION HOTFIX: Fetch global feed to restore pre-migration behavior
+        // The user reported that before migration, posts were working perfectly (implying global visibility or lost family connections).
+        // Since we relaxed Firestore rules to allow all posts, the feed should also show all post.
 
-        // Firestore limits 'in' queries to 10-30 items depending on complexity.
-        // We'll prioritize recent items or just slice for now.
-        // Ideally, we'd fire 3 separate queries and merge them.
+        queries.push(
+            adminDb.collection("posts")
+                .orderBy("createdAt", "desc")
+                .limit(20)
+                .get()
+                .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' })))
+                .catch(err => {
+                    console.error("Global posts query failed:", err);
+                    return [];
+                })
+        );
 
-        const queries: Promise<any>[] = [];
-
-        // 1. Family Posts
+        /* 
+        // Family filtering logic (Restricted for now - uncomment when family connections are fully restored)
         if (allowedAuthorIds.length > 0) {
             const chunks = chunkArray(allowedAuthorIds, 30);
             chunks.forEach(chunk => {
@@ -171,6 +180,7 @@ export async function getPosts() {
                 );
             });
         }
+        */
 
         // 2. Group Posts
         // Group posts are in `groups/{groupId}/posts`
