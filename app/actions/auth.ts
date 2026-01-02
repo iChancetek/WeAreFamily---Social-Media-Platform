@@ -20,7 +20,13 @@ export async function deleteSession() {
     cookieStore.delete("session_uid")
 }
 
-export async function syncUserToDb(uid: string, email: string, displayName: string) {
+export async function syncUserToDb(
+    uid: string,
+    email: string,
+    displayName: string,
+    firstName?: string,
+    lastName?: string
+) {
     try {
         const userRef = adminDb.collection("users").doc(uid);
         const userDoc = await userRef.get();
@@ -32,8 +38,13 @@ export async function syncUserToDb(uid: string, email: string, displayName: stri
             await userRef.set({
                 email: email,
                 displayName: displayName,
+                profileData: {
+                    firstName: firstName || "",
+                    lastName: lastName || "",
+                },
                 role: role,
                 isActive: true,
+                emailVerified: false,
                 createdAt: FieldValue.serverTimestamp(),
             });
         } else {
@@ -48,6 +59,38 @@ export async function syncUserToDb(uid: string, email: string, displayName: stri
         throw new Error("Failed to sync user to database")
     }
 }
+
+export async function notifyAdminNewUser(uid: string, email: string, fullName: string) {
+    try {
+        // Get all admin users
+        const adminsSnapshot = await adminDb.collection("users")
+            .where("role", "==", "admin")
+            .get();
+
+        const { createNotification } = await import("./notifications");
+
+        // Create notification for each admin
+        const notificationPromises = adminsSnapshot.docs.map(adminDoc =>
+            createNotification(
+                adminDoc.id,
+                'admin_action',
+                uid,
+                {
+                    action: 'new_user_registration',
+                    userName: fullName,
+                    userEmail: email,
+                    message: `New user ${fullName} (${email}) has registered and is pending approval.`
+                }
+            )
+        );
+
+        await Promise.all(notificationPromises);
+    } catch (error) {
+        console.error("Error notifying admins:", error);
+        // Don't throw - this shouldn't block the signup process
+    }
+}
+
 export async function sendPasswordReset(email: string) {
     // This is typically handled on the client in Firebase, 
     // but we can provide a server-side trigger if needed 
