@@ -133,12 +133,20 @@ export async function getPosts() {
         const { getBranding } = await import("./branding");
         const { getGroup } = await import("./groups");
 
-        // Parallel fetch of IDs
-        const [familyIds, groupIds, brandingIds] = await Promise.all([
-            getFamilyMemberIds(user.id),
-            getJoinedGroupIds(user.id),
-            getFollowedBrandingIds(user.id)
-        ]);
+        // Parallel fetch of IDs with error handling
+        let familyIds: string[] = [];
+        let groupIds: string[] = [];
+        let brandingIds: string[] = [];
+
+        try {
+            [familyIds, groupIds, brandingIds] = await Promise.all([
+                getFamilyMemberIds(user.id).catch(e => { console.error("Family ID fetch failed:", e); return []; }),
+                getJoinedGroupIds(user.id).catch(e => { console.error("Group ID fetch failed:", e); return []; }),
+                getFollowedBrandingIds(user.id).catch(e => { console.error("Branding ID fetch failed:", e); return []; })
+            ]);
+        } catch (e) {
+            console.error("Context fetching failed completely:", e);
+        }
 
         // PRODUCTION HOTFIX: Fetch global feed to restore pre-migration behavior
         // The user reported that before migration, posts were working perfectly (implying global visibility or lost family connections).
