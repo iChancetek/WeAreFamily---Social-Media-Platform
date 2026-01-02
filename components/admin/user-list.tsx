@@ -37,7 +37,7 @@ export function UserList({ users }: { users: User[] }) {
     const handleApprove = async (id: string) => {
         try {
             await approveUser(id)
-            toast.success("User approved")
+            toast.success("Family Member approved")
         } catch {
             toast.error("Failed to approve")
         }
@@ -46,7 +46,7 @@ export function UserList({ users }: { users: User[] }) {
     const handleReject = async (id: string) => {
         try {
             await rejectUser(id)
-            toast.success("User rejected (set to pending)")
+            toast.success("Family Member rejected (set to pending)")
         } catch {
             toast.error("Failed to reject")
         }
@@ -55,7 +55,7 @@ export function UserList({ users }: { users: User[] }) {
     const handleMakeAdmin = async (id: string) => {
         try {
             await makeAdmin(id)
-            toast.success("User promoted to Admin")
+            toast.success("Family Member promoted to Admin")
         } catch {
             toast.error("Failed to promote")
         }
@@ -64,7 +64,7 @@ export function UserList({ users }: { users: User[] }) {
     const handleToggleStatus = async (id: string, currentStatus: boolean) => {
         try {
             await toggleUserStatus(id, !currentStatus)
-            toast.success(`User ${!currentStatus ? 'enabled' : 'disabled'}`)
+            toast.success(`Family Member ${!currentStatus ? 'enabled' : 'disabled'}`)
         } catch {
             toast.error("Failed to update status")
         }
@@ -74,7 +74,7 @@ export function UserList({ users }: { users: User[] }) {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>User</TableHead>
+                    <TableHead>Family Member</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Joined</TableHead>
@@ -139,7 +139,7 @@ export function UserList({ users }: { users: User[] }) {
                                         {user.role !== 'admin' && (
                                             <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.isActive)}>
                                                 <X className={`mr-2 h-4 w-4 ${user.isActive ? 'text-red-600' : 'text-green-600'}`} />
-                                                {user.isActive ? 'Disable User' : 'Enable User'}
+                                                {user.isActive ? 'Disable Member' : 'Enable Member'}
                                             </DropdownMenuItem>
                                         )}
                                     </DropdownMenuContent>

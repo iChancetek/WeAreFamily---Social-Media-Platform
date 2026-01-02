@@ -13,14 +13,14 @@ export async function RightSidebar({ className }: RightSidebarProps) {
         return (
             <div className={cn("flex flex-col gap-4 p-4", className)}>
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Contacts</h3>
-                <p className="text-xs text-gray-400">No one else is online right now.</p>
+                <p className="text-xs text-gray-400">No other family members are online right now.</p>
             </div>
         );
     }
 
     return (
         <aside className={cn("hidden lg:flex flex-col gap-4 p-4 w-80 overflow-y-auto", className)}>
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Contacts</h3>
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Family Members</h3>
             <div className="flex flex-col gap-2">
                 {activeUsers.map((user: any) => {
                     const profile = user.profileData as { firstName: string, lastName: string, imageUrl: string } | null;

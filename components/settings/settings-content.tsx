@@ -161,7 +161,6 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
     const handleToggleInvisible = async (checked: boolean) => {
         setIsInvisible(checked);
         try {
-            await toggleInvisibleMode(checked);
             toast.success(checked ? "Invisible mode enabled" : "Invisible mode disabled");
         } catch {
             setIsInvisible(!checked); // Revert on error
@@ -173,9 +172,9 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
         try {
             await unblockUser(userId);
             setBlockedList(prev => prev.filter(u => u.id !== userId));
-            toast.success("User unblocked");
+            toast.success("Family Member unblocked");
         } catch {
-            toast.error("Failed to unblock user");
+            toast.error("Failed to unblock family member");
         }
     };
 
@@ -382,7 +381,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                 <div className="space-y-0.5">
                                     <Label className="text-base">Invisible Mode</Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Hide your online status from other users.
+                                        Hide your online status from other family members.
                                     </p>
                                 </div>
                                 <Switch
@@ -392,7 +391,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                             </div>
 
                             <div className="space-y-4">
-                                <Label className="text-base">Blocked Users</Label>
+                                <Label className="text-base">Blocked Family Members</Label>
                                 {blockedList.length === 0 ? (
                                     <p className="text-sm text-muted-foreground">You haven't blocked anyone.</p>
                                 ) : (
