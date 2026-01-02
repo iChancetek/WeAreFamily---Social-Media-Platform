@@ -18,7 +18,7 @@ export async function FeedList() {
         return (
             <div className="space-y-4">
                 {posts.map((post) => (
-                    <PostCard key={post.id} post={post} currentUserId={user?.id} />
+                    <PostCard key={post.id} post={post as any} currentUserId={user?.id} />
                 ))}
             </div>
         )

@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { redirect } from "next/navigation";
 
 export async function getUserProfile() {
@@ -12,11 +11,16 @@ export async function getUserProfile() {
         return null;
     }
 
-    const dbUser = await db.query.users.findFirst({
-        where: eq(users.id, sessionUid),
-    });
+    const userDoc = await getDoc(doc(db, "users", sessionUid));
 
-    return dbUser || null;
+    if (!userDoc.exists()) {
+        return null;
+    }
+
+    return {
+        id: userDoc.id,
+        ...userDoc.data()
+    } as any;
 }
 
 export async function requireUser() {

@@ -1,13 +1,25 @@
 "use server";
 
-import { db } from "@/db";
-import { events, users } from "@/db/schema";
-import { eq, desc, inArray } from "drizzle-orm";
+import { db } from "@/lib/firebase";
+import {
+    collection,
+    doc,
+    addDoc,
+    getDocs,
+    getDoc,
+    updateDoc,
+    query,
+    orderBy,
+    arrayUnion,
+    arrayRemove,
+    Timestamp,
+    serverTimestamp
+} from "firebase/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 export type Event = {
-    id: number;
+    id: string;
     title: string;
     description: string | null;
     date: Date;
@@ -36,13 +48,14 @@ export async function createEvent(data: EventForm) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    await db.insert(events).values({
+    await addDoc(collection(db, "events"), {
         creatorId: user.id,
         title: data.title,
-        description: data.description,
-        date: data.date,
-        location: data.location,
+        description: data.description || null,
+        date: Timestamp.fromDate(data.date),
+        location: data.location || null,
         attendees: [user.id], // Creator attends by default
+        createdAt: serverTimestamp(),
     });
 
     revalidatePath("/events");
@@ -50,65 +63,86 @@ export async function createEvent(data: EventForm) {
 }
 
 export async function getEvents(): Promise<Event[]> {
-    const rawEvents = await db.select().from(events).orderBy(desc(events.date));
+    const eventsQuery = query(collection(db, "events"), orderBy("date", "desc"));
+    const eventsSnapshot = await getDocs(eventsQuery);
 
-    // Allow fetching user profiles for creator and attendees
-    // For efficiency, we collect all unique user IDs involved
+    // Collect all unique user IDs
     const allUserIds = new Set<string>();
-    rawEvents.forEach(e => {
-        allUserIds.add(e.creatorId);
-        (e.attendees as string[] || []).forEach(a => allUserIds.add(a));
+    eventsSnapshot.docs.forEach(eventDoc => {
+        const eventData = eventDoc.data();
+        allUserIds.add(eventData.creatorId);
+        (eventData.attendees || []).forEach((id: string) => allUserIds.add(id));
     });
 
-    const userList = await db.select().from(users).where(inArray(users.id, Array.from(allUserIds)));
-    const userMap = new Map(userList.map(u => {
-        const profile = u.profileData as any;
-        return [u.id, {
-            displayName: u.displayName || profile?.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : "Family Member"),
-            imageUrl: u.imageUrl || profile?.imageUrl || null
-        }];
+    // Fetch all user profiles
+    const userProfiles = new Map();
+    await Promise.all(Array.from(allUserIds).map(async (userId) => {
+        const userDoc = await getDoc(doc(db, "users", userId));
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            userProfiles.set(userId, {
+                displayName: userData.displayName || "Family Member",
+                imageUrl: userData.imageUrl || null,
+            });
+        }
     }));
 
-    return rawEvents.map(e => ({
-        ...e,
-        attendees: (e.attendees as string[]) || [],
-        creator: userMap.get(e.creatorId),
-        attendeeProfiles: (e.attendees as string[] || []).map(id => userMap.get(id)).filter(Boolean) as any[]
-    }));
+    // Build events with enriched data
+    const events = eventsSnapshot.docs.map(eventDoc => {
+        const eventData = eventDoc.data();
+        const attendees = eventData.attendees || [];
+
+        return {
+            id: eventDoc.id,
+            title: eventData.title,
+            description: eventData.description || null,
+            date: eventData.date?.toDate() || new Date(),
+            location: eventData.location || null,
+            creatorId: eventData.creatorId,
+            attendees,
+            createdAt: eventData.createdAt?.toDate() || new Date(),
+            creator: userProfiles.get(eventData.creatorId),
+            attendeeProfiles: attendees.map((id: string) => userProfiles.get(id)).filter(Boolean),
+        };
+    });
+
+    return events;
 }
 
-export async function joinEvent(eventId: number) {
+export async function joinEvent(eventId: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const [event] = await db.select().from(events).where(eq(events.id, eventId));
-    if (!event) throw new Error("Event not found");
+    const eventRef = doc(db, "events", eventId);
+    const eventSnap = await getDoc(eventRef);
 
-    const currentAttendees = (event.attendees as string[]) || [];
+    if (!eventSnap.exists()) throw new Error("Event not found");
+
+    const eventData = eventSnap.data();
+    const currentAttendees = eventData.attendees || [];
 
     if (!currentAttendees.includes(user.id)) {
-        await db.update(events)
-            .set({ attendees: [...currentAttendees, user.id] })
-            .where(eq(events.id, eventId));
+        await updateDoc(eventRef, {
+            attendees: arrayUnion(user.id)
+        });
     }
 
     revalidatePath("/events");
     return { success: true };
 }
 
-export async function leaveEvent(eventId: number) {
+export async function leaveEvent(eventId: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const [event] = await db.select().from(events).where(eq(events.id, eventId));
-    if (!event) throw new Error("Event not found");
+    const eventRef = doc(db, "events", eventId);
+    const eventSnap = await getDoc(eventRef);
 
-    const currentAttendees = (event.attendees as string[]) || [];
-    const newAttendees = currentAttendees.filter(id => id !== user.id);
+    if (!eventSnap.exists()) throw new Error("Event not found");
 
-    await db.update(events)
-        .set({ attendees: newAttendees })
-        .where(eq(events.id, eventId));
+    await updateDoc(eventRef, {
+        attendees: arrayRemove(user.id)
+    });
 
     revalidatePath("/events");
     return { success: true };

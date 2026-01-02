@@ -55,8 +55,7 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
 
         // Optimistic append
         const tempMsg: Message = {
-            id: Date.now(), // Temp ID
-            chatId: session.id,
+            id: Date.now().toString(), // Temp ID as string
             senderId: currentUserId,
             content: content,
             createdAt: new Date(),
@@ -108,8 +107,8 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
                             return (
                                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${isMe
-                                            ? 'bg-primary text-primary-foreground rounded-br-none'
-                                            : 'bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/5 rounded-bl-none shadow-sm'
+                                        ? 'bg-primary text-primary-foreground rounded-br-none'
+                                        : 'bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/5 rounded-bl-none shadow-sm'
                                         }`}>
                                         {msg.content}
                                         <div className={`text-[10px] mt-1 opacity-70 ${isMe ? 'text-primary-foreground/80' : 'text-gray-500'}`}>

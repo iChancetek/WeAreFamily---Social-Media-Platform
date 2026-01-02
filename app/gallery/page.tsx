@@ -1,7 +1,6 @@
 import { MainLayout } from "@/components/layout/main-layout";
-import { db } from "@/db";
-import { posts } from "@/db/schema";
-import { desc, isNotNull } from "drizzle-orm";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -11,18 +10,11 @@ export default async function GalleryPage() {
         redirect("/");
     }
 
-    // Fetch posts that have mediaUrls
-    // Drizzle doesn't have "array_length" helper ease in ORM query builder for jsonb text array without raw sql usually
-    // But since we store as string[], we can filter where not null.
-    // Ideally we filter where jsonb_array_length(media_urls) > 0.
-    // For now, fetch all posts and filter in code (simplistic for MVP). 
-    // Or use raw SQL if needed. Let's use code filter for simplicity.
+    const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const postsSnapshot = await getDocs(postsQuery);
+    const allPosts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any);
 
-    const allPosts = await db.query.posts.findMany({
-        orderBy: [desc(posts.createdAt)],
-    });
-
-    const mediaItems = allPosts.flatMap(post => (post.mediaUrls || []).map(url => ({ url, postId: post.id })));
+    const mediaItems = allPosts.flatMap((post: any) => (post.mediaUrls || []).map((url: string) => ({ url, postId: post.id })));
 
     return (
         <MainLayout>

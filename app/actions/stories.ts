@@ -1,10 +1,20 @@
 "use server";
 
-import { db } from "@/db";
-import { stories, users } from "@/db/schema";
+import { db } from "@/lib/firebase";
+import {
+    collection,
+    addDoc,
+    getDocs,
+    getDoc,
+    doc,
+    query,
+    where,
+    orderBy,
+    Timestamp,
+    serverTimestamp
+} from "firebase/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { desc, gt, eq } from "drizzle-orm";
 
 export async function createStory(mediaUrl: string, mediaType: 'image' | 'video') {
     const user = await getUserProfile();
@@ -20,11 +30,12 @@ export async function createStory(mediaUrl: string, mediaType: 'image' | 'video'
     // Default expiration: 24 hours from now
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    await db.insert(stories).values({
+    await addDoc(collection(db, "stories"), {
         authorId: user.id,
         mediaUrl,
         mediaType,
-        expiresAt,
+        expiresAt: Timestamp.fromDate(expiresAt),
+        createdAt: serverTimestamp(),
     });
 
     revalidatePath("/");
@@ -33,24 +44,41 @@ export async function createStory(mediaUrl: string, mediaType: 'image' | 'video'
 
 export async function getActiveStories() {
     // Get stories that haven't expired
-    const now = new Date();
+    const now = Timestamp.now();
 
-    const activeStories = await db.query.stories.findMany({
-        where: gt(stories.expiresAt, now),
-        with: {
-            author: true,
-        },
-        orderBy: [desc(stories.createdAt)],
-    });
+    const storiesQuery = query(
+        collection(db, "stories"),
+        where("expiresAt", ">", now),
+        orderBy("expiresAt"),
+        orderBy("createdAt", "desc")
+    );
+
+    const storiesSnapshot = await getDocs(storiesQuery);
+
+    // Fetch author data for each story
+    const activeStories = await Promise.all(storiesSnapshot.docs.map(async (storyDoc) => {
+        const storyData = storyDoc.data();
+        const authorDoc = await getDoc(doc(db, "users", storyData.authorId));
+        const author = authorDoc.exists() ? { id: authorDoc.id, ...authorDoc.data() } : null;
+
+        return {
+            id: storyDoc.id,
+            ...storyData,
+            author,
+            createdAt: storyData.createdAt?.toDate() || new Date(),
+            expiresAt: storyData.expiresAt?.toDate() || new Date(),
+        };
+    }));
 
     // Group stories by user
     const userStoriesMap = new Map();
 
     for (const story of activeStories) {
-        const authorId = story.authorId;
+        const storyData = story as any;
+        const authorId = storyData.authorId;
         if (!userStoriesMap.has(authorId)) {
             userStoriesMap.set(authorId, {
-                user: story.author,
+                user: storyData.author,
                 stories: [],
             });
         }

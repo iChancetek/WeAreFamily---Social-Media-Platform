@@ -62,7 +62,7 @@ export default async function FamilyPage() {
                                                     </div>
                                                     <FamilyRequestButton
                                                         targetUserId={req.senderId}
-                                                        initialStatus="pending_received"
+                                                        initialStatus={{ status: 'pending_received', requestId: req.id }}
                                                         initialRequestId={req.id}
                                                         className="w-full h-8 text-xs"
                                                     />
@@ -85,7 +85,7 @@ export default async function FamilyPage() {
                                                     </div>
                                                     <FamilyRequestButton
                                                         targetUserId={req.receiverId}
-                                                        initialStatus="pending_sent"
+                                                        initialStatus={{ status: 'pending_sent', requestId: req.id }}
                                                         initialRequestId={req.id}
                                                         className="w-full h-8 text-xs"
                                                     />

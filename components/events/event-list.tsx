@@ -5,12 +5,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CalendarIcon, MapPin } from "lucide-react"
 import { format } from "date-fns"
-import { joinEvent } from "@/app/actions/events"
+import { joinEvent, leaveEvent } from "@/app/actions/events"
 import { toast } from "sonner"
 import { useAuth } from "@/components/auth-provider"
 
 type Event = {
-    id: number;
+    id: string;
     title: string;
     description: string | null;
     date: Date;
@@ -22,14 +22,23 @@ type Event = {
 export function EventList({ events }: { events: Event[] }) {
     const { user } = useAuth();
 
-    const handleJoin = async (id: number) => {
+    const handleJoin = async (id: string) => {
         try {
             await joinEvent(id);
             toast.success("You're going! 🏃‍♂️");
         } catch {
             toast.error("Failed to join.");
         }
-    }
+    };
+
+    const handleLeave = async (id: string) => {
+        try {
+            await leaveEvent(id);
+            toast.success("Cancelled RSVP");
+        } catch {
+            toast.error("Failed to leave.");
+        }
+    };
 
     if (events.length === 0) {
         return (

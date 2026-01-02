@@ -1,10 +1,23 @@
 'use server'
 
-import { db } from "@/db"
-import { posts, users, comments } from "@/db/schema"
-import { getUserProfile } from "@/lib/auth"
-import { desc, eq } from "drizzle-orm"
-import { revalidatePath } from "next/cache"
+import { db } from "@/lib/firebase";
+import {
+    collection,
+    doc,
+    addDoc,
+    getDoc,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+    query,
+    orderBy,
+    where,
+    arrayUnion,
+    arrayRemove,
+    serverTimestamp
+} from "firebase/firestore";
+import { getUserProfile } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 export async function createPost(content: string, mediaUrls: string[] = []) {
     const user = await getUserProfile()
@@ -12,48 +25,52 @@ export async function createPost(content: string, mediaUrls: string[] = []) {
         throw new Error("Unauthorized")
     }
 
-    await db.insert(posts).values({
+    await addDoc(collection(db, "posts"), {
         authorId: user.id,
         content,
         mediaUrls,
-    })
+        likes: [],
+        createdAt: serverTimestamp(),
+    });
 
     revalidatePath('/')
 }
 
-export async function toggleLike(postId: number) {
+export async function toggleLike(postId: string) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
-    const post = await db.query.posts.findFirst({
-        where: eq(posts.id, postId),
-    })
+    const postRef = doc(db, "posts", postId);
+    const postSnap = await getDoc(postRef);
 
-    if (!post) throw new Error("Post not found")
+    if (!postSnap.exists()) throw new Error("Post not found")
 
-    const currentLikes = post.likes || []
+    const currentLikes = postSnap.data().likes || []
     const isLiked = currentLikes.includes(user.id)
 
-    const newLikes = isLiked
-        ? currentLikes.filter(id => id !== user.id)
-        : [...currentLikes, user.id]
-
-    await db.update(posts)
-        .set({ likes: newLikes })
-        .where(eq(posts.id, postId))
+    if (isLiked) {
+        await updateDoc(postRef, {
+            likes: arrayRemove(user.id)
+        });
+    } else {
+        await updateDoc(postRef, {
+            likes: arrayUnion(user.id)
+        });
+    }
 
     revalidatePath('/')
 }
 
-export async function addComment(postId: number, content: string) {
+export async function addComment(postId: string, content: string) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
-    await db.insert(comments).values({
-        postId,
+    const commentsRef = collection(db, "posts", postId, "comments");
+    await addDoc(commentsRef, {
         authorId: user.id,
         content,
-    })
+        createdAt: serverTimestamp(),
+    });
 
     revalidatePath('/')
 }
@@ -64,41 +81,73 @@ export async function getPosts() {
         throw new Error("Unauthorized")
     }
 
-    // Fetch posts with author info and comments
-    const allPosts = await db.query.posts.findMany({
-        orderBy: [desc(posts.createdAt)],
-        with: {
-            author: true,
-            comments: {
-                with: { author: true },
-                orderBy: (comments, { asc }) => [asc(comments.createdAt)]
-            }
-        }
-    })
+    // Fetch all posts
+    const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const postsSnapshot = await getDocs(postsQuery);
 
-    return allPosts
+    // Build posts with author and comments
+    const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc) => {
+        const postData = postDoc.data();
+
+        // Fetch author
+        const authorDoc = await getDoc(doc(db, "users", postData.authorId));
+        const author = authorDoc.exists() ? { id: authorDoc.id, ...authorDoc.data() } : null;
+
+        // Fetch comments for this post
+        const commentsQuery = query(
+            collection(db, "posts", postDoc.id, "comments"),
+            orderBy("createdAt", "asc")
+        );
+        const commentsSnapshot = await getDocs(commentsQuery);
+
+        const comments = await Promise.all(commentsSnapshot.docs.map(async (commentDoc) => {
+            const commentData = commentDoc.data();
+            const commentAuthorDoc = await getDoc(doc(db, "users", commentData.authorId));
+            const commentAuthor = commentAuthorDoc.exists()
+                ? { id: commentAuthorDoc.id, ...commentAuthorDoc.data() }
+                : null;
+
+            return {
+                id: commentDoc.id,
+                ...commentData,
+                author: commentAuthor,
+                createdAt: commentData.createdAt?.toDate() || new Date(),
+            };
+        }));
+
+        return {
+            id: postDoc.id,
+            ...postData,
+            author,
+            comments,
+            createdAt: postData.createdAt?.toDate() || new Date(),
+        };
+    }));
+
+    return allPosts;
 }
 
-export async function deletePost(postId: number) {
+export async function deletePost(postId: string) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
-    const post = await db.query.posts.findFirst({
-        where: eq(posts.id, postId),
-    })
+    const postRef = doc(db, "posts", postId);
+    const postSnap = await getDoc(postRef);
 
-    if (!post) throw new Error("Post not found")
+    if (!postSnap.exists()) throw new Error("Post not found")
 
+    const post = postSnap.data();
     if (post.authorId !== user.id && user.role !== 'admin') {
         throw new Error("Forbidden")
     }
 
-    // Delete comments first (cascade or manual) - typically DB cascade handles this if set, 
-    // but Drizzle/Neon might need manual cleanup if FK constraint isn't CASCADE. 
-    // Assuming standard FK default, we might need to delete comments.
-    // Safe bet: delete comments first.
-    await db.delete(comments).where(eq(comments.postId, postId))
-    await db.delete(posts).where(eq(posts.id, postId))
+    // Delete all comments first
+    const commentsQuery = query(collection(db, "posts", postId, "comments"));
+    const commentsSnapshot = await getDocs(commentsQuery);
+    await Promise.all(commentsSnapshot.docs.map(commentDoc => deleteDoc(commentDoc.ref)));
+
+    // Delete the post
+    await deleteDoc(postRef);
 
     revalidatePath('/')
 }

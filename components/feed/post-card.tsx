@@ -30,37 +30,42 @@ import { createPost } from "@/app/actions/posts";
 import { Heart, MessageCircle, Share2, Trash2, Send, Sparkles, Repeat2 } from "lucide-react";
 
 type Comment = {
-    id: number;
+    id: string;
     content: string;
     createdAt: Date;
     author: {
         id: string;
         displayName?: string | null;
-        profileData: unknown;
-    };
+        imageUrl?: string | null;
+        email?: string | null;
+    } | null;
 }
 
 
 type Post = {
-    id: number;
+    id: string;
     content: string;
     mediaUrls: string[] | null;
     createdAt: Date;
     author: {
         id: string;
-        email: string;
+        email?: string | null;
         displayName?: string | null;
-        profileData: unknown;
-    };
+        imageUrl?: string | null;
+    } | null;
     likes: string[] | null;
     comments?: Comment[];
 }
 
 export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: string }) {
-    const profile = post.author.profileData as { firstName?: string, lastName?: string, imageUrl?: string, displayName?: string } | null;
+    const author = post.author;
+    const profile = author ? {
+        displayName: author.displayName || author.email || "Unknown",
+        imageUrl: author.imageUrl
+    } : { displayName: "Unknown User", imageUrl: undefined };
 
-    // Prioritize displayName, then first+last, then email
-    const name = post.author.displayName || profile?.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : post.author.email);
+    // Prioritize displayName, then email
+    const name = profile.displayName || "Unknown User";
     const initials = name.slice(0, 2).toUpperCase();
 
     const [isLiked, setIsLiked] = useState(post.likes?.includes(currentUserId || ""));
@@ -142,13 +147,13 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
         }
     };
 
-    const isAuthor = currentUserId === post.author.id;
+    const isAuthor = currentUserId && post.author && currentUserId === post.author.id;
 
     return (
         <Card className="mb-4 overflow-hidden glass-card border-none rounded-lg relative group">
             <CardHeader className="flex flex-row items-center gap-3 p-4 pb-2">
                 <Avatar className="w-10 h-10 border border-gray-200">
-                    <AvatarImage src={profile?.imageUrl} />
+                    <AvatarImage src={profile?.imageUrl || undefined} />
                     <AvatarFallback className="bg-primary text-white font-bold">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col flex-1">
@@ -253,20 +258,27 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
 
                 {showComments && (
                     <div className="w-full pt-2 border-t border-border animate-in slide-in-from-top-2">
-                        {post.comments?.map(comment => (
-                            <div key={comment.id} className="flex gap-2 mb-3">
-                                <Avatar className="w-8 h-8">
-                                    <AvatarImage src={(comment.author.profileData as any)?.imageUrl} />
-                                    <AvatarFallback>U</AvatarFallback>
-                                </Avatar>
-                                <div className="bg-muted rounded-2xl px-3 py-2">
-                                    <span className="font-semibold text-xs block text-card-foreground">
-                                        {(comment.author.profileData as any)?.displayName || (comment.author.profileData as any)?.firstName || 'User'}
-                                    </span>
-                                    <span className="text-sm text-card-foreground">{comment.content}</span>
+                        {post.comments?.map(comment => {
+                            const commentAuthor = comment.author;
+                            const commentAuthorName = commentAuthor?.displayName || commentAuthor?.email || "Unknown";
+                            const commentAuthorImage = commentAuthor?.imageUrl || undefined;
+
+                            return (
+                                <div key={comment.id} className="flex gap-3 text-sm mb-3">
+                                    <Avatar className="w-8 h-8 rounded-full border border-gray-100 dark:border-white/10 shrink-0">
+                                        <AvatarImage src={commentAuthorImage} />
+                                        <AvatarFallback>{commentAuthorName.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-sm">{commentAuthorName}</span>
+                                            <span className="text-xs text-gray-500">{formatDistanceToNow(comment.createdAt, { addSuffix: true })}</span>
+                                        </div>
+                                        <p className="text-gray-700 dark:text-gray-300">{comment.content}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
 
                         <div className="flex gap-2 mt-2 items-center">
                             <Avatar className="w-8 h-8">

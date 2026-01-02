@@ -1,8 +1,21 @@
 "use server";
 
-import { db } from "@/db";
-import { chats, messages, users } from "@/db/schema";
-import { eq, sql, desc, and, asc, inArray } from "drizzle-orm";
+import { db } from "@/lib/firebase";
+import {
+    collection,
+    doc,
+    addDoc,
+    getDoc,
+    getDocs,
+    updateDoc,
+    query,
+    where,
+    orderBy,
+    limit,
+    arrayUnion,
+    serverTimestamp,
+    Timestamp
+} from "firebase/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -15,18 +28,17 @@ export type ChatUser = {
 }
 
 export type ChatSession = {
-    id: number;
+    id: string;
     name: string | null;
     isGroup: boolean | null;
-    participants: string[] | null;
+    participants: string[];
     lastMessageAt: Date | null;
     otherUser?: ChatUser; // Enriched data for FE convenience
     lastMessage?: string | null;
 }
 
 export type Message = {
-    id: number;
-    chatId: number;
+    id: string;
     senderId: string;
     content: string;
     createdAt: Date;
@@ -42,33 +54,35 @@ export async function checkOrCreateChat(targetUserId: string) {
 
     if (myId === targetUserId) throw new Error("Cannot chat with yourself");
 
-    // 1. Check if chat already exists
-    // This is a naive check. A robust one would check for exact array match.
-    // For now, we'll fetch all my chats and filter in memory or use raw SQL.
-    // Drizzle's arrayContains is handy if supported properly for JSONB arrays of strings.
-    // Using simple approach: Fetch all chats where I am a participant.
+    // Check if chat already exists between these two users
+    const chatsQuery = query(
+        collection(db, "chats"),
+        where("participants", "array-contains", myId)
+    );
 
-    // Note: This query is inefficient at scale but fine for MVP.
-    const allChats = await db.select().from(chats);
+    const chatsSnapshot = await getDocs(chatsQuery);
 
-    const existingChat = allChats.find(c => {
-        const p = c.participants as string[];
-        return !c.isGroup && p.includes(myId) && p.includes(targetUserId);
+    // Find existing 1-on-1 chat
+    const existingChat = chatsSnapshot.docs.find(chatDoc => {
+        const chatData = chatDoc.data();
+        return !chatData.isGroup &&
+            chatData.participants.includes(targetUserId);
     });
 
     if (existingChat) {
         return existingChat.id;
     }
 
-    // 2. Create new chat
-    const [newChat] = await db.insert(chats).values({
+    // Create new chat
+    const newChatRef = await addDoc(collection(db, "chats"), {
         participants: [myId, targetUserId],
         isGroup: false,
-        lastMessageAt: new Date(),
-    }).returning();
+        lastMessageAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+    });
 
     revalidatePath("/messages");
-    return newChat.id;
+    return newChatRef.id;
 }
 
 export async function getChats(): Promise<ChatSession[]> {
@@ -76,89 +90,119 @@ export async function getChats(): Promise<ChatSession[]> {
     if (!user) throw new Error("Unauthorized");
     const myId = user.id;
 
-    // Fetch raw chats
-    // Again, filtering in memory for MVP simplicity with JSONB array
-    const allChats = await db.select().from(chats).orderBy(desc(chats.lastMessageAt));
-    const myChats = allChats.filter(c => (c.participants as string[])?.includes(myId));
+    // Fetch chats where user is participant
+    const chatsQuery = query(
+        collection(db, "chats"),
+        where("participants", "array-contains", myId),
+        orderBy("lastMessageAt", "desc")
+    );
+
+    const chatsSnapshot = await getDocs(chatsQuery);
 
     // Enrich with other user details
-    const enrichedChats = await Promise.all(myChats.map(async (chat) => {
-        const p = chat.participants as string[];
-        const otherId = p.find(id => id !== myId);
+    const enrichedChats = await Promise.all(chatsSnapshot.docs.map(async (chatDoc) => {
+        const chatData = chatDoc.data();
+        const participants = chatData.participants || [];
+        const otherId = participants.find((id: string) => id !== myId);
 
         let otherUser: ChatUser | undefined;
         if (otherId) {
-            const [u] = await db.select().from(users).where(eq(users.id, otherId));
-            if (u) {
-                const profile = u.profileData as any;
+            const userDoc = await getDoc(doc(db, "users", otherId));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
                 otherUser = {
-                    id: u.id,
-                    email: u.email,
-                    displayName: u.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : u.email.split('@')[0]),
-                    imageUrl: u.imageUrl || profile?.imageUrl || null
+                    id: userDoc.id,
+                    email: userData.email,
+                    displayName: userData.displayName || "Family Member",
+                    imageUrl: userData.imageUrl || null
                 };
             }
         }
 
         // Get last message content for preview
-        const [lastMsg] = await db.select()
-            .from(messages)
-            .where(eq(messages.chatId, chat.id))
-            .orderBy(desc(messages.createdAt))
-            .limit(1);
+        const messagesQuery = query(
+            collection(db, "chats", chatDoc.id, "messages"),
+            orderBy("createdAt", "desc"),
+            limit(1)
+        );
+        const lastMsgSnapshot = await getDocs(messagesQuery);
+        const lastMessage = lastMsgSnapshot.empty ? "No messages yet" : lastMsgSnapshot.docs[0].data().content;
 
         return {
-            ...chat,
-            isGroup: chat.isGroup as boolean | null,
+            id: chatDoc.id,
+            name: chatData.name || null,
+            isGroup: chatData.isGroup || false,
+            participants: chatData.participants || [],
+            lastMessageAt: chatData.lastMessageAt?.toDate() || null,
             otherUser,
-            lastMessage: lastMsg?.content || "No messages yet"
+            lastMessage,
         };
     }));
 
     return enrichedChats;
 }
 
-export async function getMessages(chatId: number): Promise<Message[]> {
+export async function getMessages(chatId: string): Promise<Message[]> {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
     // Verify access
-    const [chat] = await db.select().from(chats).where(eq(chats.id, chatId));
-    if (!chat || !(chat.participants as string[]).includes(user.id)) {
+    const chatDoc = await getDoc(doc(db, "chats", chatId));
+    if (!chatDoc.exists()) {
+        throw new Error("Chat not found");
+    }
+
+    const chatData = chatDoc.data();
+    if (!chatData.participants.includes(user.id)) {
         throw new Error("Access denied");
     }
 
-    const msgs = await db.select()
-        .from(messages)
-        .where(eq(messages.chatId, chatId))
-        .orderBy(asc(messages.createdAt)) // Oldest first
-        .limit(50); // Pagination later
+    // Fetch messages
+    const messagesQuery = query(
+        collection(db, "chats", chatId, "messages"),
+        orderBy("createdAt", "asc"),
+        limit(50)
+    );
 
-    return msgs as Message[];
+    const messagesSnapshot = await getDocs(messagesQuery);
+
+    const messages = messagesSnapshot.docs.map(msgDoc => ({
+        id: msgDoc.id,
+        ...msgDoc.data(),
+        createdAt: msgDoc.data().createdAt?.toDate() || new Date(),
+    })) as Message[];
+
+    return messages;
 }
 
-export async function sendMessage(chatId: number, content: string) {
+export async function sendMessage(chatId: string, content: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
     if (!content.trim()) return;
 
     // Verify access
-    const [chat] = await db.select().from(chats).where(eq(chats.id, chatId));
-    if (!chat || !(chat.participants as string[]).includes(user.id)) {
+    const chatDoc = await getDoc(doc(db, "chats", chatId));
+    if (!chatDoc.exists()) {
+        throw new Error("Chat not found");
+    }
+
+    const chatData = chatDoc.data();
+    if (!chatData.participants.includes(user.id)) {
         throw new Error("Access denied");
     }
 
-    await db.insert(messages).values({
-        chatId,
+    // Add message to subcollection
+    await addDoc(collection(db, "chats", chatId, "messages"), {
         senderId: user.id,
         content: content.trim(),
+        createdAt: serverTimestamp(),
     });
 
     // Update conversation timestamp
-    await db.update(chats)
-        .set({ lastMessageAt: new Date() })
-        .where(eq(chats.id, chatId));
+    await updateDoc(doc(db, "chats", chatId), {
+        lastMessageAt: serverTimestamp(),
+    });
 
     revalidatePath("/messages");
     return { success: true };

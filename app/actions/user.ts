@@ -1,8 +1,7 @@
 "use server";
 
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { db } from "@/lib/firebase";
+import { doc, updateDoc } from "firebase/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -16,9 +15,8 @@ export async function updateBirthday(birthday: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    await db.update(users)
-        .set({ birthday: birthday })
-        .where(eq(users.id, user.id));
+    const userRef = doc(db, "users", user.id);
+    await updateDoc(userRef, { birthday });
 
     revalidatePath("/");
     return { success: true };

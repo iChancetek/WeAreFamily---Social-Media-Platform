@@ -28,10 +28,7 @@ type User = {
 interface ProfileHeaderProps {
     user: User;
     isOwnProfile: boolean;
-    familyStatus: {
-        status: FamilyStatus;
-        requestId?: number;
-    }
+    familyStatus: FamilyStatus;
 }
 
 export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeaderProps) {
@@ -45,52 +42,40 @@ export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeade
             router.push(`/messages?chatId=${chatId}`);
         } catch (error) {
             console.error("Failed to start chat", error);
+        } finally {
             setIsMessaging(false);
         }
     };
 
-    // Merge user table fields with profileData for backward compatibility or direct access
-    const profile = {
-        ...(user.profileData as { firstName?: string, lastName?: string, imageUrl?: string } | null),
-        bio: user.bio,
-        displayName: user.displayName,
-        coverUrl: user.coverUrl,
-        coverType: user.coverType
-    };
-
-    // Prioritize displayName, then profileData names, then email
-    const name = user.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : (user.email ? user.email : "User"));
+    const profile = user.profileData as { bio?: string, imageUrl?: string } | null;
+    const name = user.displayName || user.email;
     const initials = name.slice(0, 2).toUpperCase();
 
     return (
-        <Card className="border-rose-100 shadow-sm relative overflow-hidden">
-            <div className="h-32 bg-gray-100 relative">
-                {profile?.coverUrl ? (
-                    profile.coverType === 'video' ? (
-                        <video src={profile.coverUrl} className="w-full h-full object-cover" autoPlay loop muted />
-                    ) : (
-                        <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover" />
-                    )
-                ) : (
-                    <div className="w-full h-full bg-gradient-to-r from-rose-100 to-rose-200" />
+        <div className="relative mb-8">
+            {/* Cover Image */}
+            <div className="h-48 md:h-64 bg-gradient-to-r from-blue-400 to-indigo-500 w-full object-cover">
+                {user.coverUrl && (
+                    <img src={user.coverUrl} alt="Cover" className="w-full h-full object-cover" />
                 )}
             </div>
-            <CardContent className="pt-0 relative">
-                <div className="flex flex-col md:flex-row items-start md:items-end gap-4 -mt-12 px-2">
+
+            <div className="container px-4 mx-auto">
+                <div className="relative -mt-12 flex flex-col md:flex-row items-end md:items-center gap-4">
                     <Avatar className="w-24 h-24 border-4 border-white shadow-sm ring-2 ring-rose-50">
-                        <AvatarImage src={profile?.imageUrl} />
+                        <AvatarImage src={profile?.imageUrl || undefined} />
                         <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 mb-2">
                         <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
-                        <p className="text-gray-500 text-sm">{profile.bio || "No bio yet"}</p>
+                        <p className="text-gray-500 text-sm">{profile?.bio || "No bio yet"}</p>
                     </div>
                     <div className="flex gap-2 mb-4 md:mb-2 items-center">
                         {!isOwnProfile && (
                             <>
                                 <FamilyRequestButton
                                     targetUserId={user.id}
-                                    initialStatus={familyStatus.status}
+                                    initialStatus={familyStatus}
                                     initialRequestId={familyStatus.requestId}
                                     className="h-9"
                                 />
@@ -115,7 +100,7 @@ export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeade
                         )}
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     )
 }

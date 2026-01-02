@@ -1,13 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { getUserProfile } from "@/lib/auth";
-import { db } from "@/db";
-import { users } from "@/db/schema";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { redirect } from "next/navigation";
 import { UserList } from "@/components/admin/user-list";
 import { MainLayout } from "@/components/layout/main-layout";
 import { BirthdayTrigger } from "@/components/admin/birthday-trigger";
-import { desc, sql, gte } from "drizzle-orm";
 import { AdminCharts } from "@/components/admin/admin-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, Calendar } from "lucide-react";
@@ -20,7 +19,9 @@ export default async function AdminDashboard() {
         redirect("/");
     }
 
-    const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+    const usersQuery = query(collection(db, "users"), orderBy("createdAt", "desc"));
+    const usersSnapshot = await getDocs(usersQuery);
+    const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), createdAt: doc.data().createdAt?.toDate() || new Date() }) as any);
 
     // Calculate Metrics
     const now = new Date();
@@ -54,7 +55,7 @@ export default async function AdminDashboard() {
 
     const roleData = Object.entries(roleCounts).map(([key, value]) => ({
         name: key.charAt(0).toUpperCase() + key.slice(1),
-        value
+        value: value as number
     }));
 
     return (

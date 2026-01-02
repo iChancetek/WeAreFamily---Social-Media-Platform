@@ -10,7 +10,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: { c
     if (!user) redirect("/login");
 
     const chats = await getChats();
-    const activeChatId = searchParams.chatId ? Number(searchParams.chatId) : null;
+    const activeChatId = searchParams.chatId || null;
 
     const activeSession = activeChatId ? chats.find(c => c.id === activeChatId) : null;
 

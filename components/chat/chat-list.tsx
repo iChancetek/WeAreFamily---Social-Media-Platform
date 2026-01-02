@@ -13,7 +13,7 @@ interface ChatListProps {
 
 export function ChatList({ chats }: ChatListProps) {
     const searchParams = useSearchParams();
-    const activeChatId = Number(searchParams.get("chatId"));
+    const activeChatId = searchParams.get("chatId");
 
     if (chats.length === 0) {
         return (

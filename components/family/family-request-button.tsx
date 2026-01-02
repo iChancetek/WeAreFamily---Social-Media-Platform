@@ -10,13 +10,13 @@ import { cn } from "@/lib/utils"
 interface FamilyRequestButtonProps {
     targetUserId: string
     initialStatus: FamilyStatus
-    initialRequestId?: number
+    initialRequestId?: string
     className?: string
 }
 
 export function FamilyRequestButton({ targetUserId, initialStatus, initialRequestId, className }: FamilyRequestButtonProps) {
     const [status, setStatus] = useState<FamilyStatus>(initialStatus)
-    const [requestId, setRequestId] = useState<number | undefined>(initialRequestId)
+    const [requestId, setRequestId] = useState<string | undefined>(initialRequestId)
     const [isPending, startTransition] = useTransition()
 
     // Sync state with props if they change (e.g. navigation)
@@ -28,8 +28,9 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
     const handleSend = () => {
         startTransition(async () => {
             try {
-                await sendFamilyRequest(targetUserId)
-                setStatus('pending_sent')
+                const newId = await sendFamilyRequest(targetUserId)
+                setStatus({ status: 'pending_sent', requestId: newId })
+                setRequestId(newId)
                 toast.success("Request sent")
             } catch (err: any) {
                 toast.error(err.message)
@@ -42,7 +43,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
         startTransition(async () => {
             try {
                 await cancelFamilyRequest(requestId)
-                setStatus('none')
+                setStatus({ status: 'none' })
                 setRequestId(undefined)
                 toast.success("Request canceled")
             } catch (err: any) {
@@ -56,7 +57,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
         startTransition(async () => {
             try {
                 await acceptFamilyRequest(requestId)
-                setStatus('accepted')
+                setStatus({ status: 'accepted', requestId })
                 toast.success("Request accepted")
             } catch (err: any) {
                 toast.error(err.message)
@@ -64,8 +65,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
         })
     }
 
-    if (status === 'self') return null
-    if (status === 'accepted') {
+    if (status.status === 'accepted') {
         return (
             <Button variant="outline" className={cn("gap-2 text-green-600 border-green-200 cursor-default hover:text-green-600 hover:bg-green-50", className)}>
                 <UserCheck className="w-4 h-4" />
@@ -74,7 +74,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
         )
     }
 
-    if (status === 'pending_sent') {
+    if (status.status === 'pending_sent') {
         return (
             <Button
                 variant="secondary"
@@ -88,13 +88,13 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
         )
     }
 
-    if (status === 'pending_received') {
+    if (status.status === 'pending_received') {
         const handleDeny = () => {
             if (!requestId) return
             startTransition(async () => {
                 try {
                     await denyFamilyRequest(requestId)
-                    setStatus('none')
+                    setStatus({ status: 'none' })
                     setRequestId(undefined)
                     toast.success("Request denied")
                 } catch (err: any) {

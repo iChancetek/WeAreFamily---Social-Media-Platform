@@ -16,7 +16,7 @@ export default async function SettingsPage() {
     return (
         <MainLayout>
             <div className="pb-16 pt-6">
-                <SettingsContent user={user} blockedUsers={blockedUsers} />
+                <SettingsContent user={user} blockedUsers={blockedUsers.filter(Boolean) as any} />
             </div>
         </MainLayout>
     );

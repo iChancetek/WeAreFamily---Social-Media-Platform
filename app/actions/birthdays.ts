@@ -1,12 +1,11 @@
 "use server";
 
-import { db } from "@/db";
-import { users, posts } from "@/db/schema";
-import { eq, and, isNotNull } from "drizzle-orm";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, query, where } from "firebase/firestore";
 import { generateBirthdayWish } from "./ai";
 import { revalidatePath } from "next/cache";
-
 import { getUserProfile } from "@/lib/auth";
+import { serverTimestamp } from "firebase/firestore";
 
 export async function checkAndCelebrateBirthdays() {
     const user = await getUserProfile();
@@ -23,13 +22,11 @@ export async function checkAndCelebrateBirthdays() {
     console.log(`Checking birthdays for ${todayString}...`);
 
     // 2. Find users with this birthday
-    const allUsers = await db.query.users.findMany({
-        where: isNotNull(users.birthday)
-    });
+    const usersSnapshot = await getDocs(collection(db, "users"));
 
-    const birthdayUsers = allUsers.filter(u => {
-        return u.birthday === todayString && u.lastCelebratedYear !== currentYear;
-    });
+    const birthdayUsers = usersSnapshot.docs
+        .map(userDoc => ({ id: userDoc.id, ...userDoc.data() }) as any)
+        .filter((u: any) => u.birthday === todayString && u.lastCelebratedYear !== currentYear);
 
     if (birthdayUsers.length === 0) {
         return { success: true, message: "No new birthdays to celebrate today." };
@@ -37,23 +34,23 @@ export async function checkAndCelebrateBirthdays() {
 
     // 3. Generate wishes and create posts
     let celebratedCount = 0;
-    for (const user of birthdayUsers) {
-        const profile = user.profileData as { firstName?: string, lastName?: string };
-        const name = profile.firstName || "Family Member";
-
+    for (const bdayUser of birthdayUsers) {
+        const name = (bdayUser as any).displayName || "Family Member";
         const wish = await generateBirthdayWish(name);
 
         // Create Post
-        await db.insert(posts).values({
-            authorId: adminUserId, // Post on behalf of Admin (or the system runner)
+        await addDoc(collection(db, "posts"), {
+            authorId: adminUserId,
             content: `🎉🎂 HAPPY BIRTHDAY ${name}! 🎂🎉\n\n${wish}`,
-            createdAt: new Date(),
+            likes: [],
+            mediaUrls: [],
+            createdAt: serverTimestamp(),
         });
 
         // Update user's lastCelebratedYear
-        await db.update(users)
-            .set({ lastCelebratedYear: currentYear })
-            .where(eq(users.id, user.id));
+        await updateDoc(doc(db, "users", bdayUser.id), {
+            lastCelebratedYear: currentYear
+        });
 
         celebratedCount++;
     }
