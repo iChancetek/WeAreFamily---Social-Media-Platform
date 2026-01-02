@@ -7,43 +7,44 @@
 
 @layer base {
   :root {
-    /* Facebook Light Mode */
-    --background: 240 242 245;
-    /* #f0f2f5 Light Gray */
-    --foreground: 5 5 5;
-    /* #050505 Dark Text */
+    /* Truth Social Light Mode - Clean White Theme */
+    --background: 255 255 255;
+    /* Pure White Background */
+    --foreground: 15 20 25;
+    /* Dark Text */
 
     --card: 255 255 255;
-    /* White */
-    --card-foreground: 5 5 5;
+    /* White Cards */
+    --card-foreground: 15 20 25;
 
     --popover: 255 255 255;
-    --popover-foreground: 5 5 5;
+    --popover-foreground: 15 20 25;
 
-    --primary: 8 102 255;
-    /* #0866ff Facebook Blue */
+    --primary: 29 155 240;
+    /* Truth Social Blue */
     --primary-foreground: 255 255 255;
 
-    --secondary: 228 230 235;
-    /* #e4e6eb Gray for buttons */
-    --secondary-foreground: 5 5 5;
+    --secondary: 239 243 244;
+    /* Very Light Gray for hover states */
+    --secondary-foreground: 15 20 25;
 
-    --muted: 240 242 245;
-    --muted-foreground: 101 103 107;
-    /* #65676b Gray Text */
+    --muted: 247 249 249;
+    /* Subtle Gray Background */
+    --muted-foreground: 83 100 113;
+    /* Muted Text */
 
-    --accent: 231 243 255;
-    /* Light Blue BG */
-    --accent-foreground: 24 119 242;
+    --accent: 239 243 244;
+    --accent-foreground: 15 20 25;
 
-    --destructive: 239 68 68;
+    --destructive: 244 33 46;
+    /* Red */
     --destructive-foreground: 255 255 255;
 
-    --border: 228 230 235;
+    --border: 239 243 244;
     /* Light Border */
-    --input: 240 242 245;
-    --ring: 8 102 255;
-    --radius: 0.5rem;
+    --input: 239 243 244;
+    --ring: 29 155 240;
+    --radius: 0.75rem;
   }
 
   .dark {
