@@ -130,7 +130,7 @@ export function CreatePost() {
                                     disabled={isUploading}
                                     className="text-gray-600 hover:bg-gray-100 gap-2"
                                 >
-                                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-green-500" /> : <ImageIcon className="w-6 h-6 text-green-500" />}
+                                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-6 h-6 text-primary" />}
                                     <span className="text-[15px] font-semibold text-gray-600">Photo/Video</span>
                                 </Button>
                                 <Button
@@ -140,7 +140,7 @@ export function CreatePost() {
                                     disabled={isGenerating}
                                     className="text-gray-600 hover:bg-gray-100 gap-2"
                                 >
-                                    {isGenerating ? <Loader2 className="w-5 h-5 animate-spin text-purple-500" /> : <Sparkles className="w-6 h-6 text-purple-500" />}
+                                    {isGenerating ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <Sparkles className="w-6 h-6 text-primary" />}
                                     <span className="text-[15px] font-semibold text-gray-600">Magic AI</span>
                                 </Button>
                             </div>
@@ -148,7 +148,7 @@ export function CreatePost() {
                             <Button
                                 onClick={handleSubmit}
                                 disabled={(!content.trim() && mediaUrls.length === 0) || isSubmitting || isUploading}
-                                className="bg-primary hover:bg-blue-600 text-white font-semibold px-8"
+                                className="bg-primary hover:bg-primary/90 text-white font-semibold px-8"
                             >
                                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
                                 {t("btn.post")}
