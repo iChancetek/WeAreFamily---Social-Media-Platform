@@ -79,6 +79,7 @@ interface SettingsContentProps {
         theme?: string | null;
         birthday?: string | null;
         isInvisible?: boolean;
+        email?: string | null;
     },
     blockedUsers: {
         id: string;
@@ -184,8 +185,24 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
         }
     };
 
+    const handlePasswordReset = async () => {
+        if (!user.email) {
+            toast.error("User email not found");
+            return;
+        }
+        try {
+            const { getAuth, sendPasswordResetEmail } = await import("firebase/auth");
+            const auth = getAuth();
+            await sendPasswordResetEmail(auth, user.email);
+            toast.success("Password reset email sent to " + user.email);
+        } catch (error: any) {
+            console.error("Password reset error:", error);
+            toast.error(error.message || "Failed to send reset email");
+        }
+    };
+
     // --- Unified Exit Logic ---
-    const isDirty = profileForm.formState.isDirty || accountForm.formState.isDirty
+    const isDirty = accountForm.formState.isDirty
 
     const handleExit = () => {
         if (isDirty) {
@@ -201,9 +218,6 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
 
     const handleSaveAndExit = async () => {
         const promises = []
-        if (profileForm.formState.isDirty) {
-            promises.push(profileForm.handleSubmit(onProfileSubmit)())
-        }
         if (accountForm.formState.isDirty) {
             promises.push(accountForm.handleSubmit(onAccountSubmit)())
         }
@@ -238,155 +252,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                         </Button>
                     </div>
 
-                    {/* Profile Section */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t("settings.profile.title")}</CardTitle>
-                            <CardDescription>{t("settings.profile.desc")}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Form {...profileForm}>
-                                <form onSubmit={profileForm.handleSubmit(async (data) => {
-                                    if (await onProfileSubmit(data)) {
-                                        toast.success("Profile updated")
-                                        router.refresh()
-                                    } else {
-                                        toast.error("Failed to update profile")
-                                    }
-                                })} className="space-y-8">
-                                    {/* Profile Pic Upload */}
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="w-20 h-20">
-                                            <AvatarImage src={imageUrl} />
-                                            <AvatarFallback>JD</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col gap-2">
-                                            <FormLabel>{t("settings.profilePic")}</FormLabel>
-                                            <div className="flex items-center gap-2">
-                                                <Input
-                                                    type="file"
-                                                    accept="image/*,video/*"
-                                                    onChange={async (e) => {
-                                                        const file = e.target.files?.[0];
-                                                        if (!file) return;
-
-                                                        try {
-                                                            toast.info("Uploading...");
-                                                            const { storage } = await import("@/lib/firebase");
-                                                            const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
-
-                                                            const storageRef = ref(storage, `users/${user.id}/profile/${file.name}`);
-                                                            await uploadBytes(storageRef, file);
-                                                            const url = await getDownloadURL(storageRef);
-
-                                                            setImageUrl(url);
-                                                            profileForm.setValue('imageUrl', url, { shouldDirty: true });
-                                                            toast.success("Upload complete");
-                                                        } catch (error: any) {
-                                                            console.error("Upload failed", error);
-                                                            toast.error(`Error uploading: ${error.message || "Unknown error"}`);
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Cover Upload */}
-                                    <div className="flex flex-col gap-2">
-                                        <FormLabel>{t("settings.cover")}</FormLabel>
-                                        {coverUrl && (
-                                            <div className="relative w-full h-32 rounded-md overflow-hidden bg-muted mb-2">
-                                                {coverUrl.includes("mp4") || coverUrl.includes("webm") ? (
-                                                    <video src={coverUrl} className="w-full h-full object-cover" autoPlay loop muted />
-                                                ) : (
-                                                    <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
-                                                )}
-                                            </div>
-                                        )}
-                                        <Input
-                                            type="file"
-                                            accept="image/*,video/*"
-                                            onChange={async (e) => {
-                                                const file = e.target.files?.[0];
-                                                if (!file) return;
-
-                                                try {
-                                                    toast.info("Uploading cover...");
-                                                    const { storage } = await import("@/lib/firebase");
-                                                    const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
-
-                                                    const storageRef = ref(storage, `users/${user.id}/cover/${file.name}`);
-                                                    await uploadBytes(storageRef, file);
-                                                    const url = await getDownloadURL(storageRef);
-
-                                                    setCoverUrl(url);
-                                                    const type = file.type.startsWith('video') ? 'video' : 'image';
-                                                    setCoverType(type);
-
-                                                    profileForm.setValue('coverUrl', url, { shouldDirty: true });
-                                                    profileForm.setValue('coverType', type, { shouldDirty: true });
-
-                                                    toast.success("Cover uploaded");
-                                                } catch (error: any) {
-                                                    console.error("Upload failed", error);
-                                                    toast.error(`Error uploading: ${error.message || "Unknown error"}`);
-                                                }
-                                            }}
-                                        />
-                                    </div>
-
-                                    <FormField
-                                        control={profileForm.control}
-                                        name="displayName"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>{t("settings.displayName")}</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="John Doe" {...field} />
-                                                </FormControl>
-                                                <FormDescription>{t("settings.displayName.desc")}</FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={profileForm.control}
-                                        name="bio"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>{t("settings.bio")}</FormLabel>
-                                                <FormControl>
-                                                    <Textarea
-                                                        placeholder="Tell us a little bit about yourself"
-                                                        className="resize-none"
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormDescription>{t("settings.bio.desc")}</FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={profileForm.control}
-                                        name="birthday"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Birthday</FormLabel>
-                                                <FormControl>
-                                                    <Input type="text" placeholder="MM-DD" {...field} />
-                                                </FormControl>
-                                                <FormDescription>MM-DD (e.g., 12-25). Used for automated birthday wishes!</FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <Button type="submit">{t("settings.updateProfile")}</Button>
-                                </form>
-                            </Form>
-                        </CardContent>
-                    </Card>
+                    {/* Profile Section Moved to /profile */}
 
                     {/* Security Section */}
                     <Card>
@@ -502,7 +368,20 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                         )}
                                     />
 
-                                    {/* Security Section Removed - Managed via Firebase Auth directly */}
+                                    <div className="space-y-4 pt-4 border-t border-border">
+                                        <Label className="text-base">Security</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Manage your password and security settings.
+                                        </p>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full text-blue-600 border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                            onClick={handlePasswordReset}
+                                        >
+                                            Change Password (Send Email)
+                                        </Button>
+                                    </div>
 
                                     <Button type="submit">{t("settings.updateAccount")}</Button>
                                 </form>

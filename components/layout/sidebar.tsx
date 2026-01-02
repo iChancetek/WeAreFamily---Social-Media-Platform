@@ -20,9 +20,10 @@ export function Sidebar({ isAdmin }: SidebarProps) {
     // Simplified links for now, removing translation dependency to fix build quickly
     const links = [
         { href: "/", label: "Home", icon: Home },
+        { href: "/profile", label: "Profile", icon: Users }, // Point to dedicated profile
         { href: "/family", label: "Family", icon: Users },
         { href: "/groups", label: "Groups", icon: Tent },
-        { href: "/branding", label: "Branding", icon: Briefcase }, // Updated Pages -> Branding
+        { href: "/branding", label: "Branding", icon: Briefcase },
         { href: "/messages", label: "Messages", icon: MessageSquare },
         { href: "/notifications", label: "Notifications", icon: Bell },
         { href: "/events", label: "Events", icon: Ticket },

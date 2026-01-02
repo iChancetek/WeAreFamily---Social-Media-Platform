@@ -63,10 +63,11 @@ type Post = {
     reactions?: Record<string, ReactionType>;
     comments?: Comment[];
     context?: {
-        type: 'group';
+        type: 'group' | 'branding';
         name: string;
         id: string;
     } | null;
+    type?: 'personal' | 'group' | 'branding';
 }
 
 export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: string }) {
@@ -106,7 +107,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
         });
 
         try {
-            await toggleReaction(post.id, type);
+            await toggleReaction(post.id, type, post.type || 'personal', post.context?.id);
         } catch {
             // Revert on failure
             setCurrentMyReaction(currentMyReaction);
@@ -120,7 +121,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
         if (!commentText.trim()) return;
 
         try {
-            await addComment(post.id, commentText);
+            await addComment(post.id, commentText, post.type || 'personal', post.context?.id);
             setCommentText("");
             toast.success("Comment added!");
         } catch {
@@ -128,27 +129,31 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
         }
     };
 
-    const handleShare = async () => {
+    const handleCopyLink = async () => {
+        try {
+            const url = `${window.location.origin}/post/${post.id}`;
+            await navigator.clipboard.writeText(url);
+            toast.success("Link copied to clipboard! 📋");
+        } catch {
+            toast.error("Failed to copy link");
+        }
+    };
+
+    const handleExternalShare = async () => {
         const shareData = {
             title: `Post by ${name}`,
             text: post.content,
-            url: window.location.href,
+            url: `${window.location.origin}/post/${post.id}`,
         };
 
         if (navigator.share) {
             try {
                 await navigator.share(shareData);
             } catch (err) {
-                // User cancelled or failed
                 console.log("Share cancelled");
             }
         } else {
-            try {
-                await navigator.clipboard.writeText(`${post.content}\n\n- Shared from WeAreFamily`);
-                toast.success("Copied to clipboard! 📋");
-            } catch {
-                toast.error("Failed to share");
-            }
+            handleCopyLink();
         }
     };
 
@@ -295,7 +300,11 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                 <Repeat2 className="w-4 h-4" />
                                 Repost to Feed
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleShare} className="gap-2 cursor-pointer">
+                            <DropdownMenuItem onClick={handleCopyLink} className="gap-2 cursor-pointer">
+                                <Share2 className="w-4 h-4" />
+                                Copy Link
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleExternalShare} className="gap-2 cursor-pointer">
                                 <Share2 className="w-4 h-4" />
                                 Share Externally
                             </DropdownMenuItem>

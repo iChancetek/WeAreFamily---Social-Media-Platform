@@ -48,3 +48,14 @@ export async function syncUserToDb(uid: string, email: string, displayName: stri
         throw new Error("Failed to sync user to database")
     }
 }
+export async function sendPasswordReset(email: string) {
+    // This is typically handled on the client in Firebase, 
+    // but we can provide a server-side trigger if needed 
+    // or just document that it should be called on client.
+    // Actually, Firebase Admin doesn't have a direct 'sendPasswordReset' method 
+    // like the client SDK. It usually generates a link.
+    // To keep it simple and consistent with Firebase patterns,
+    // we'll implement this on the client side in the Settings UI.
+    // But I'll provide a placeholder here if any server-side logic is needed.
+    return { success: true };
+}

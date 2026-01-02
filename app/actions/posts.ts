@@ -23,13 +23,27 @@ export async function createPost(content: string, mediaUrls: string[] = []) {
     revalidatePath('/')
 }
 
+export type PostType = 'personal' | 'group' | 'branding';
 export type ReactionType = 'brilliant' | 'excellent' | 'hugs' | 'thinking_of_you';
 
-export async function toggleReaction(postId: string, reactionType: ReactionType) {
+export async function toggleReaction(
+    postId: string,
+    reactionType: ReactionType,
+    postType: PostType = 'personal',
+    contextId?: string
+) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
-    const postRef = adminDb.collection("posts").doc(postId);
+    let postRef;
+    if (postType === 'group' && contextId) {
+        postRef = adminDb.collection("groups").doc(contextId).collection("posts").doc(postId);
+    } else if (postType === 'branding' && contextId) {
+        postRef = adminDb.collection("pages").doc(contextId).collection("posts").doc(postId);
+    } else {
+        postRef = adminDb.collection("posts").doc(postId);
+    }
+
     const postSnap = await postRef.get();
 
     if (!postSnap.exists) throw new Error("Post not found")
@@ -60,20 +74,35 @@ export async function toggleReaction(postId: string, reactionType: ReactionType)
     }
 
     revalidatePath('/')
+    if (postType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
+    if (postType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
 }
 
-export async function addComment(postId: string, content: string) {
+export async function addComment(
+    postId: string,
+    content: string,
+    postType: PostType = 'personal',
+    contextId?: string
+) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
-    const commentsRef = adminDb.collection("posts").doc(postId).collection("comments");
+    let postRef;
+    if (postType === 'group' && contextId) {
+        postRef = adminDb.collection("groups").doc(contextId).collection("posts").doc(postId);
+    } else if (postType === 'branding' && contextId) {
+        postRef = adminDb.collection("pages").doc(contextId).collection("posts").doc(postId);
+    } else {
+        postRef = adminDb.collection("posts").doc(postId);
+    }
+
+    const commentsRef = postRef.collection("comments");
     await commentsRef.add({
         authorId: user.id,
         content,
         createdAt: FieldValue.serverTimestamp(),
     });
 
-    const postRef = adminDb.collection("posts").doc(postId);
     const postSnap = await postRef.get();
     const postData = postSnap.data();
 
@@ -119,16 +148,24 @@ export async function getPosts() {
 
         // 1. Family Posts
         if (allowedAuthorIds.length > 0) {
-            // Chunking might be needed if > 30 family members
             const chunks = chunkArray(allowedAuthorIds, 30);
             chunks.forEach(chunk => {
+                let query = adminDb.collection("posts");
+                if (chunk.length === 1) {
+                    query = query.where("authorId", "==", chunk[0]) as any;
+                } else {
+                    query = query.where("authorId", "in", chunk) as any;
+                }
+
                 queries.push(
-                    adminDb.collection("posts")
-                        .where("authorId", "in", chunk)
-                        .orderBy("createdAt", "desc")
+                    query.orderBy("createdAt", "desc")
                         .limit(20)
                         .get()
                         .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' })))
+                        .catch(err => {
+                            console.error("Family posts query failed:", err);
+                            return [];
+                        })
                 );
             });
         }
@@ -142,20 +179,8 @@ export async function getPosts() {
         // We need to query the subcollections.
 
         if (groupIds.length > 0) {
-            const chunks = chunkArray(groupIds, 10); // stricter limit for collectionGroup
+            const chunks = chunkArray(groupIds, 10);
             chunks.forEach(chunk => {
-                // Note: We need a field 'groupId' in the post doc to query on it via collectionGroup if it's not the parent?
-                // Actually, if we use collectionGroup("posts"), we get ALL posts from top level and subcollections?
-                // No, top level is "posts", subcollection is "posts". Yes they share name.
-                // But we need to distinguish.
-                // This is tricky.
-
-                // Alternative: Fetch for each group. (N+1 problem but manageable for small number of groups).
-                // Better: collectionGroup("posts") where 'groupId' in chunk. 
-                // My `createGroupPost` adds `groupId` to the doc? Let's check.
-                // Yes: `createGroupPost` adds field `groupId`.
-                // My `createPost` (personal) does NOT add `groupId`.
-
                 queries.push(
                     adminDb.collectionGroup("posts")
                         .where("groupId", "in", chunk)
@@ -163,6 +188,10 @@ export async function getPosts() {
                         .limit(20)
                         .get()
                         .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'group' })))
+                        .catch(err => {
+                            console.error("Group posts query failed:", err);
+                            return [];
+                        })
                 );
             });
         }
@@ -180,6 +209,10 @@ export async function getPosts() {
                         .limit(20)
                         .get()
                         .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'branding' })))
+                        .catch(err => {
+                            console.error("Branding posts query failed:", err);
+                            return [];
+                        })
                 );
             });
         }
