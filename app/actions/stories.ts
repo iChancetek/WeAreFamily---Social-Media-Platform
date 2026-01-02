@@ -46,7 +46,11 @@ export async function getActiveStories() {
         const activeStories = await Promise.all(storiesSnapshot.docs.map(async (storyDoc) => {
             const storyData = storyDoc.data();
             const authorDoc = await adminDb.collection("users").doc(storyData.authorId).get();
-            const author = authorDoc.exists ? { id: authorDoc.id, ...authorDoc.data() } : null;
+            const author = authorDoc.exists ? {
+                id: authorDoc.id,
+                displayName: authorDoc.data()?.displayName,
+                imageUrl: authorDoc.data()?.imageUrl
+            } : null;
 
             return {
                 id: storyDoc.id,

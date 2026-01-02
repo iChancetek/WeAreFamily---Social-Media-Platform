@@ -77,7 +77,12 @@ export async function getPosts() {
 
             // Fetch author
             const authorDoc = await adminDb.collection("users").doc(postData.authorId).get();
-            const author = authorDoc.exists ? { id: authorDoc.id, ...authorDoc.data() } : null;
+            const author = authorDoc.exists ? {
+                id: authorDoc.id,
+                displayName: authorDoc.data()?.displayName,
+                imageUrl: authorDoc.data()?.imageUrl,
+                email: authorDoc.data()?.email, // PostCard uses email as fallback
+            } : null;
 
             // Fetch comments for this post
             const commentsSnapshot = await adminDb.collection("posts").doc(postDoc.id).collection("comments")
@@ -88,7 +93,12 @@ export async function getPosts() {
                 const commentData = commentDoc.data();
                 const commentAuthorDoc = await adminDb.collection("users").doc(commentData.authorId).get();
                 const commentAuthor = commentAuthorDoc.exists
-                    ? { id: commentAuthorDoc.id, ...commentAuthorDoc.data() }
+                    ? {
+                        id: commentAuthorDoc.id,
+                        displayName: commentAuthorDoc.data()?.displayName,
+                        imageUrl: commentAuthorDoc.data()?.imageUrl,
+                        email: commentAuthorDoc.data()?.email,
+                    }
                     : null;
 
                 return {

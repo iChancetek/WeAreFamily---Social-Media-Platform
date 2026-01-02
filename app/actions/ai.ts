@@ -13,6 +13,13 @@ function getClient() {
 
 export async function generatePostContent(prompt: string) {
     try {
+        const apiKey = process.env.OPENAI_API_KEY;
+        console.log("AI Action: Checking API Key...", apiKey ? "Present" : "Missing");
+
+        if (!apiKey) {
+            throw new Error("OpenAI API Key is missing");
+        }
+
         const openai = getClient();
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
@@ -31,9 +38,8 @@ export async function generatePostContent(prompt: string) {
 
         return response.choices[0].message.content || "";
     } catch (error) {
-        console.error("OpenAI Error:", error);
-        // Don't crash the UI, return empty string or error message
-        throw new Error("Failed to generate content. Check API Key.");
+        console.error("OpenAI Error Details:", error);
+        throw new Error("Failed to generate content. See server logs.");
     }
 }
 
