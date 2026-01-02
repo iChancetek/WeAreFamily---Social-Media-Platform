@@ -35,7 +35,7 @@ export async function createEvent(data: EventForm) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    await adminDb.collection("events").add({
+    const docRef = await adminDb.collection("events").add({
         creatorId: user.id,
         title: data.title,
         description: data.description || null,

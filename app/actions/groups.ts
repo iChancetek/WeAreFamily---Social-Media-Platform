@@ -143,7 +143,7 @@ export async function createGroupPost(groupId: string, content: string, mediaUrl
     const memberStatus = await getGroupMemberStatus(groupId);
     if (!memberStatus) throw new Error("Must be a member to post");
 
-    await adminDb.collection("groups").doc(groupId).collection("posts").add({
+    const docRef = await adminDb.collection("groups").doc(groupId).collection("posts").add({
         authorId: user.id,
         content,
         mediaUrls,
@@ -154,8 +154,8 @@ export async function createGroupPost(groupId: string, content: string, mediaUrl
     const { logAuditEvent } = await import("./audit");
     await logAuditEvent("group.post_create", {
         targetType: "group_post",
-        targetId: groupId,
-        details: { content: content.substring(0, 50) }
+        targetId: docRef.id,
+        details: { groupId, content: content.substring(0, 50) }
     });
 
     revalidatePath(`/groups/${groupId}`);
