@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "We Are Family",
-  description: "A private family social platform.",
+  title: "Famio - Connect with Your Family and Friends",
+  description: "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
 };
 
 export default function RootLayout({
