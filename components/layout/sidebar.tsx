@@ -1,15 +1,18 @@
-
 'use client'
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Sparkles, Heart } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 
-export function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
+interface SidebarProps {
+    isAdmin?: boolean;
+}
+
+export function Sidebar({ isAdmin }: SidebarProps) {
     const pathname = usePathname();
     const { user, signOut } = useAuth();
 
@@ -17,10 +20,11 @@ export function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
     const links = [
         { href: "/", label: "Home", icon: Home },
         { href: "/family", label: "Family", icon: Users },
+        { href: "/groups", label: "Groups", icon: Tent },
+        { href: "/pages", label: "Pages", icon: Briefcase }, // Added Pages link
         { href: "/messages", label: "Messages", icon: MessageSquare },
         { href: "/events", label: "Events", icon: Ticket },
         { href: "/gallery", label: "Gallery", icon: ImageIcon },
-        { href: "/stories", label: "Stories", icon: Sparkles },
         { href: "/settings", label: "Settings", icon: Settings },
     ];
 
