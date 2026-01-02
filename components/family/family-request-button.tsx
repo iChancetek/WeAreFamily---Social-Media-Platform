@@ -78,7 +78,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
         return (
             <Button
                 variant="secondary"
-                className={cn("gap-2", className)}
+                className={cn("gap-2 whitespace-nowrap", className)}
                 onClick={handleCancel}
                 disabled={isPending}
             >
@@ -132,7 +132,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
     return (
         <Button
             variant="default"
-            className={cn("gap-2", className)}
+            className={cn("gap-2 whitespace-nowrap", className)}
             onClick={handleSend}
             disabled={isPending}
         >

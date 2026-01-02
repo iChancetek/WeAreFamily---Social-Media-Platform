@@ -53,15 +53,15 @@ export function SearchUsers() {
 
             <div className="space-y-2">
                 {results.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-3 rounded-lg border bg-card text-card-foreground shadow-sm">
-                        <Link href={`/u/${user.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <div key={user.id} className="flex items-center justify-between p-3 rounded-lg border bg-card text-card-foreground shadow-sm gap-3">
+                        <Link href={`/u/${user.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity flex-1 min-w-0">
                             <Avatar>
                                 <AvatarImage src={user.imageUrl} />
                                 <AvatarFallback>{user.displayName?.slice(0, 2).toUpperCase() || user.email.slice(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
-                            <div className="flex flex-col">
-                                <span className="font-medium">{user.displayName || user.email}</span>
-                                {user.displayName && <span className="text-xs text-muted-foreground">{user.email}</span>}
+                            <div className="flex flex-col min-w-0">
+                                <span className="font-medium truncate">{user.displayName || user.email}</span>
+                                {user.displayName && <span className="text-xs text-muted-foreground truncate">{user.email}</span>}
                             </div>
                         </Link>
                         <FamilyRequestButton
