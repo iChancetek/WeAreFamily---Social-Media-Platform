@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { getAuth, onAuthStateChanged, User, signOut as firebaseSignOut } from "firebase/auth"
-import { createSession, deleteSession } from "@/app/actions/auth"
+import { createSession, deleteSession, syncUserToDb } from "@/app/actions/auth"
 import { useRouter } from "next/navigation"
 
 import "@/lib/firebase"; // Ensure firebase is initialized
@@ -31,8 +31,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
                 setUser(firebaseUser)
-                // Sync session to server
-                await createSession(firebaseUser.uid)
+                try {
+                    // Sync user to DB first
+                    await syncUserToDb(
+                        firebaseUser.uid,
+                        firebaseUser.email || "",
+                        firebaseUser.displayName || "Family Member"
+                    );
+                    // Then create session
+                    await createSession(firebaseUser.uid)
+                } catch (error) {
+                    console.error("Auth sync failed:", error);
+                }
             } else {
                 setUser(null)
                 // Clear session on server
