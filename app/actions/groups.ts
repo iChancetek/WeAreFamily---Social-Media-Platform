@@ -38,6 +38,13 @@ export async function createGroup(data: { name: string; description: string; cat
         joinedAt: FieldValue.serverTimestamp(),
     });
 
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("group.create", {
+        targetType: "group",
+        targetId: groupRef.id,
+        details: { name: data.name }
+    });
+
     revalidatePath('/groups');
     return groupRef.id;
 }
@@ -87,6 +94,12 @@ export async function joinGroup(groupId: string) {
         memberCount: FieldValue.increment(1)
     });
 
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("group.join", {
+        targetType: "group",
+        targetId: groupId
+    });
+
     revalidatePath(`/groups/${groupId}`);
     revalidatePath('/groups');
 }
@@ -100,6 +113,12 @@ export async function leaveGroup(groupId: string) {
     // Decrement member count
     await adminDb.collection("groups").doc(groupId).update({
         memberCount: FieldValue.increment(-1)
+    });
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("group.leave", {
+        targetType: "group",
+        targetId: groupId
     });
 
     revalidatePath(`/groups/${groupId}`);
@@ -130,6 +149,13 @@ export async function createGroupPost(groupId: string, content: string, mediaUrl
         mediaUrls,
         likes: [],
         createdAt: FieldValue.serverTimestamp(),
+    });
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("group.post_create", {
+        targetType: "group_post",
+        targetId: groupId,
+        details: { content: content.substring(0, 50) }
     });
 
     revalidatePath(`/groups/${groupId}`);

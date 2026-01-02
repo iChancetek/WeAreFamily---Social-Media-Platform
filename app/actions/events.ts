@@ -45,6 +45,13 @@ export async function createEvent(data: EventForm) {
         createdAt: FieldValue.serverTimestamp(),
     });
 
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("event.create", {
+        targetType: "event",
+        targetId: docRef.id, // Need to capture docRef from add()
+        details: { title: data.title }
+    });
+
     revalidatePath("/events");
     return { success: true };
 }
@@ -123,6 +130,12 @@ export async function joinEvent(eventId: string) {
         });
     }
 
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("event.join", {
+        targetType: "event",
+        targetId: eventId
+    });
+
     revalidatePath("/events");
     return { success: true };
 }
@@ -138,6 +151,12 @@ export async function leaveEvent(eventId: string) {
 
     await eventRef.update({
         attendees: FieldValue.arrayRemove(user.id)
+    });
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("event.leave", {
+        targetType: "event",
+        targetId: eventId
     });
 
     revalidatePath("/events");

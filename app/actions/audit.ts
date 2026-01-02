@@ -45,6 +45,9 @@ export type AuditAction =
     | "admin.enable_user"
     | "settings.update"
     | "security.invisible_mode"
+    | "event.join"
+    | "event.leave"
+    | "group.post_create"
     | "reaction.add"
     | "reaction.remove";
 
