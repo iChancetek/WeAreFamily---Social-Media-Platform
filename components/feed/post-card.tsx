@@ -26,9 +26,29 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { createPost, toggleReaction, addComment, deletePost, ReactionType } from "@/app/actions/posts";
+import {
+    createPost,
+    toggleReaction,
+    addComment,
+    deletePost,
+    deleteComment,
+    editComment,
+    archiveComment,
+    ReactionType
+} from "@/app/actions/posts";
 import { useLanguage } from "@/components/language-context";
-import { Heart, MessageCircle, Share2, Trash2, Send, Sparkles, Repeat2 } from "lucide-react";
+import {
+    Heart,
+    MessageCircle,
+    Share2,
+    Trash2,
+    Send,
+    Sparkles,
+    Repeat2,
+    MoreHorizontal,
+    Pencil,
+    Archive
+} from "lucide-react";
 import { getReactionIcon, getReactionLabel, getReactionColor, ReactionSelector } from "./reaction-selector";
 import {
     Popover,
@@ -40,12 +60,123 @@ type Comment = {
     id: string;
     content: string;
     createdAt: Date;
+    isArchived?: boolean;
     author: {
         id: string;
         displayName?: string | null;
         imageUrl?: string | null;
         email?: string | null;
     } | null;
+}
+
+function CommentItem({
+    comment,
+    post,
+    currentUserId
+}: {
+    comment: Comment,
+    post: Post,
+    currentUserId?: string
+}) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState(comment.content);
+    const [isDeleted, setIsDeleted] = useState(false);
+    const [isArchived, setIsArchived] = useState(comment.isArchived || false);
+
+    if (isDeleted || isArchived) return null; // Hide if deleted or archived
+
+    const isAuthor = currentUserId && comment.author && currentUserId === comment.author.id;
+    const authorName = comment.author?.displayName || comment.author?.email || "Unknown";
+    const authorImage = comment.author?.imageUrl || undefined;
+
+    const handleSaveEdit = async () => {
+        try {
+            await editComment(post.id, comment.id, editContent, post.type || 'personal', post.context?.id);
+            setIsEditing(false);
+            toast.success("Comment updated");
+        } catch {
+            toast.error("Failed to update comment");
+        }
+    };
+
+    const handleDelete = async () => {
+        try {
+            await deleteComment(post.id, comment.id, post.type || 'personal', post.context?.id);
+            setIsDeleted(true);
+            toast.success("Comment deleted");
+        } catch {
+            toast.error("Failed to delete comment");
+        }
+    };
+
+    const handleArchive = async () => {
+        try {
+            await archiveComment(post.id, comment.id, post.type || 'personal', post.context?.id);
+            setIsArchived(true);
+            toast.success("Comment archived");
+        } catch {
+            toast.error("Failed to archive comment");
+        }
+    };
+
+    return (
+        <div className="flex gap-3 text-sm mb-3 group/comment">
+            <Avatar className="w-8 h-8 rounded-full border border-gray-100 dark:border-white/10 shrink-0">
+                <AvatarImage src={authorImage} />
+                <AvatarFallback>{authorName.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm">{authorName}</span>
+                        <span className="text-xs text-gray-500">{formatDistanceToNow(comment.createdAt, { addSuffix: true })}</span>
+                    </div>
+                    {isAuthor && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover/comment:opacity-100 transition-opacity">
+                                    <MoreHorizontal className="w-3 h-3" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                                    <Pencil className="w-3 h-3 mr-2" />
+                                    Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleArchive}>
+                                    <Archive className="w-3 h-3 mr-2" />
+                                    Archive
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
+                                    <Trash2 className="w-3 h-3 mr-2" />
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
+
+                {isEditing ? (
+                    <div className="flex gap-2 items-center">
+                        <Input
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            className="h-8 text-sm"
+                            autoFocus
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleSaveEdit();
+                                if (e.key === 'Escape') setIsEditing(false);
+                            }}
+                        />
+                        <Button size="sm" onClick={handleSaveEdit} className="h-8">Save</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8">Cancel</Button>
+                    </div>
+                ) : (
+                    <p className="text-gray-700 dark:text-gray-300">{editContent}</p>
+                )}
+            </div>
+        </div>
+    );
 }
 
 
@@ -316,27 +447,14 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
 
                 {showComments && (
                     <div className="w-full pt-2 border-t border-border animate-in slide-in-from-top-2">
-                        {post.comments?.map(comment => {
-                            const commentAuthor = comment.author;
-                            const commentAuthorName = commentAuthor?.displayName || commentAuthor?.email || "Unknown";
-                            const commentAuthorImage = commentAuthor?.imageUrl || undefined;
-
-                            return (
-                                <div key={comment.id} className="flex gap-3 text-sm mb-3">
-                                    <Avatar className="w-8 h-8 rounded-full border border-gray-100 dark:border-white/10 shrink-0">
-                                        <AvatarImage src={commentAuthorImage} />
-                                        <AvatarFallback>{commentAuthorName.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-sm">{commentAuthorName}</span>
-                                            <span className="text-xs text-gray-500">{formatDistanceToNow(comment.createdAt, { addSuffix: true })}</span>
-                                        </div>
-                                        <p className="text-gray-700 dark:text-gray-300">{comment.content}</p>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {post.comments?.map(comment => (
+                            <CommentItem
+                                key={comment.id}
+                                comment={comment}
+                                post={post}
+                                currentUserId={currentUserId}
+                            />
+                        ))}
 
                         <div className="flex gap-2 mt-2 items-center">
                             <Avatar className="w-8 h-8">

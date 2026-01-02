@@ -20,12 +20,19 @@ export async function createStory(mediaUrl: string, mediaType: 'image' | 'video'
     // Default expiration: 24 hours from now
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    await adminDb.collection("stories").add({
+    const docRef = await adminDb.collection("stories").add({
         authorId: user.id,
         mediaUrl,
         mediaType,
         expiresAt: Timestamp.fromDate(expiresAt),
         createdAt: FieldValue.serverTimestamp(),
+    });
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("story.create", {
+        targetType: "story",
+        targetId: docRef.id,
+        details: { mediaUrl: mediaUrl.substring(0, 50) } // don't log full url if long
     });
 
     revalidatePath("/");

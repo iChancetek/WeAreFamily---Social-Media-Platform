@@ -54,6 +54,14 @@ export async function sendFamilyRequest(receiverId: string) {
     });
 
     revalidatePath(`/u/${receiverId}`)
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("family.request_sent", {
+        targetType: "user",
+        targetId: receiverId,
+        details: { requestId: docRef.id }
+    });
+
     return docRef.id;
 }
 
@@ -95,6 +103,12 @@ export async function acceptFamilyRequest(requestId: string) {
 
     await batch.commit();
 
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("family.request_accepted", {
+        targetType: "family_request",
+        targetId: requestId
+    });
+
     revalidatePath('/family');
     revalidatePath('/'); // Refresh home feed to show new posts
 }
@@ -123,6 +137,12 @@ export async function rejectFamilyRequest(requestId: string) {
 
         await batch.commit();
     }
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("family.request_rejected", {
+        targetType: "family_request",
+        targetId: requestId
+    });
 
     revalidatePath('/family');
     revalidatePath('/');
@@ -153,6 +173,12 @@ export async function cancelFamilyRequest(requestId: string) {
         await batch.commit();
     }
 
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("family.request_cancelled", {
+        targetType: "family_request",
+        targetId: requestId
+    });
+
     revalidatePath('/family');
     revalidatePath('/');
 }
@@ -161,6 +187,14 @@ export async function denyFamilyRequest(requestId: string) {
     await adminDb.collection("familyRequests").doc(requestId).update({
         status: 'rejected'
     });
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("family.request_rejected", { // Reuse rejected for denied
+        targetType: "family_request",
+        targetId: requestId,
+        details: { action: 'deny' }
+    });
+
     revalidatePath('/family')
     revalidatePath('/')
 }
