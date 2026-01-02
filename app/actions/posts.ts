@@ -14,15 +14,21 @@ export async function createPost(content: string, mediaUrls: string[] = []) {
 
     // Allow all authenticated users to post (removed pending role check for production)
 
-    await adminDb.collection("posts").add({
-        authorId: user.id,
-        content,
-        mediaUrls,
-        reactions: {}, // Map of userId -> reactionType
-        createdAt: FieldValue.serverTimestamp(),
-    });
+    try {
+        await adminDb.collection("posts").add({
+            authorId: user.id,
+            content,
+            mediaUrls,
+            reactions: {}, // Map of userId -> reactionType
+            createdAt: FieldValue.serverTimestamp(),
+        });
+    } catch (e: any) {
+        console.error("Create Post Failed:", e);
+        throw new Error(e.message || "Database write failed");
+    }
 
     revalidatePath('/')
+    return { success: true };
 }
 
 export type PostType = 'personal' | 'group' | 'branding';

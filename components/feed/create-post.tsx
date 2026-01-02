@@ -36,8 +36,9 @@ export function CreatePost() {
 
             // Refresh the page to show the new post
             window.location.reload();
-        } catch {
-            toast.error("Failed to share moment. Please try again.");
+        } catch (err: any) {
+            console.error("Post creation error:", err);
+            toast.error(err.message || "Failed to share moment. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
