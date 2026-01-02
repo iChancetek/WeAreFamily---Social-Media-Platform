@@ -7,6 +7,7 @@ import { UserList } from "@/components/admin/user-list";
 import { MainLayout } from "@/components/layout/main-layout";
 import { BirthdayTrigger } from "@/components/admin/birthday-trigger";
 import { AdminCharts } from "@/components/admin/admin-charts";
+import { AuditLogViewer } from "@/components/admin/audit-log-viewer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, Calendar } from "lucide-react";
 import { subDays, startOfDay, subYears, format } from "date-fns";
@@ -118,9 +119,14 @@ export default async function AdminPage() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-950 rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-slate-950 rounded-lg shadow p-6 mb-6">
                     <h2 className="text-xl font-semibold mb-4">User Management</h2>
                     <UserList users={allUsers} />
+                </div>
+
+                <div className="bg-white dark:bg-slate-950 rounded-lg shadow p-6">
+                    <h2 className="text-xl font-semibold mb-4">Audit Logs</h2>
+                    <AuditLogViewer />
                 </div>
             </div>
         </MainLayout>
