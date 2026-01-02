@@ -160,23 +160,45 @@ export async function getFamilyRequests() {
         .where("status", "==", 'pending')
         .get();
 
+    const incomingRequests = await Promise.all(incomingSnapshot.docs.map(async doc => {
+        const data = doc.data();
+        const senderDoc = await adminDb.collection("users").doc(data.senderId).get();
+        const sender = senderDoc.exists ? {
+            id: senderDoc.id,
+            displayName: senderDoc.data()?.displayName,
+            imageUrl: senderDoc.data()?.imageUrl,
+            email: senderDoc.data()?.email,
+        } : { email: 'Unknown' };
+
+        return {
+            id: doc.id,
+            ...data,
+            sender,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+        };
+    }));
+
+    const sentRequests = await Promise.all(sentSnapshot.docs.map(async doc => {
+        const data = doc.data();
+        const receiverDoc = await adminDb.collection("users").doc(data.receiverId).get();
+        const receiver = receiverDoc.exists ? {
+            id: receiverDoc.id,
+            displayName: receiverDoc.data()?.displayName,
+            imageUrl: receiverDoc.data()?.imageUrl,
+            email: receiverDoc.data()?.email,
+        } : { email: 'Unknown' };
+
+        return {
+            id: doc.id,
+            ...data,
+            receiver,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+        };
+    }));
+
     return {
-        incoming: incomingSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                ...data,
-                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
-            };
-        }) as any,
-        sent: sentSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                ...data,
-                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
-            };
-        }) as any
+        incoming: incomingRequests,
+        sent: sentRequests
     };
 }
 
@@ -214,17 +236,29 @@ export async function searchFamilyMembers(searchTerm: string) {
         };
     }) as any;
 
-    return allUsers.filter((u: any) => {
+    const filteredUsers = allUsers.filter((u: any) => {
         if (blockedIds.has(u.id)) return false;
         // Don't show invisible users unless it's yourself (though why search for yourself?) or admin?
         // Let's just hide invisible users from search completely except for admins.
         if (u.isInvisible && u.id !== currentUser?.id && currentUser?.role !== 'admin') return false;
 
-        return (
-            u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            u.email?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        const name = (u.displayName || "").toLowerCase();
+        const email = (u.email || "").toLowerCase();
+        const search = searchTerm.toLowerCase();
+
+        return name.includes(search) || email.includes(search);
     });
+
+    // Enhance with family status
+    const usersWithStatus = await Promise.all(filteredUsers.map(async (u: any) => {
+        const status = await getFamilyStatus(u.id);
+        return {
+            ...u,
+            familyStatus: status
+        };
+    }));
+
+    return usersWithStatus;
 }
 
 // Alias for backward compatibility
