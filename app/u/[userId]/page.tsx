@@ -25,15 +25,28 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
         notFound();
     }
 
-    const user = sanitizeData({
-        id: userDoc.id,
-        ...userDoc.data()
-    });
-
     const isOwnProfile = currentUser.id === userId;
     // Fetch family status
     const familyStatus = await getFamilyStatus(userId);
     const hasAccess = isOwnProfile || familyStatus.status === 'accepted' || currentUser.role === 'admin';
+
+    // Sanitize user data based on access
+    const userData = userDoc.data()!;
+    const user = sanitizeData({
+        id: userDoc.id,
+        displayName: userData.displayName,
+        imageUrl: userData.imageUrl,
+        // Only show full profile data if has access
+        ...(hasAccess ? userData : {}),
+        // Always allow cover photo? Or hide it? "photos" implies cover too potentially.
+        // Let's hide bio and cover if private as requested "info, data, etc".
+        // But keep coverUrl if we want the header to look okay-ish?
+        // User said "cannot have access to... photos". Cover IS a photo.
+        // Let's strip coverUrl and bio if !hasAccess.
+        coverUrl: hasAccess ? userData.coverUrl : null,
+        coverType: hasAccess ? userData.coverType : null,
+        bio: hasAccess ? userData.bio : null,
+    });
 
     // Fetch user posts
     console.log(`Checking profile access for viewer ${currentUser.id} to target ${userId}`);

@@ -427,6 +427,19 @@ export async function deletePost(postId: string) {
 
 export async function getUserPosts(userId: string) {
     try {
+        const user = await getUserProfile();
+        if (!user) return [];
+
+        // Strict Privacy Check
+        if (user.id !== userId && user.role !== 'admin') {
+            const { getFamilyStatus } = await import("./family");
+            const status = await getFamilyStatus(userId);
+            if (status.status !== 'accepted') {
+                console.warn(`Unauthorized access attempt to user posts: ${user.id} -> ${userId}`);
+                return [];
+            }
+        }
+
         let postsSnapshot;
         try {
             postsSnapshot = await adminDb.collection("posts")
