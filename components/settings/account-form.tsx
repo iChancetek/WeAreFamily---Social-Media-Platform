@@ -23,6 +23,8 @@ import {
 import { toast } from "sonner"
 import { updateAccountSettings } from "@/app/actions/settings"
 import { useTheme } from "next-themes"
+import { useClerk } from "@clerk/nextjs"
+import { Shield } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect } from "react"
 
@@ -43,6 +45,7 @@ interface AccountFormProps {
 
 export function AccountForm({ user }: AccountFormProps) {
     const { setTheme } = useTheme()
+    const { openUserProfile } = useClerk()
 
     const form = useForm<AccountFormValues>({
         resolver: zodResolver(accountFormSchema),
@@ -133,6 +136,23 @@ export function AccountForm({ user }: AccountFormProps) {
                                 </FormItem>
                             )}
                         />
+
+                        <div className="pt-4 border-t border-border">
+                            <FormLabel className="mb-2 block">Security</FormLabel>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => openUserProfile()}
+                                className="w-full sm:w-auto gap-2"
+                            >
+                                <Shield className="w-4 h-4" />
+                                Manage Password & Security
+                            </Button>
+                            <FormDescription className="mt-2">
+                                Change your password, enable 2FA, and manage connected accounts.
+                            </FormDescription>
+                        </div>
+
                         <Button type="submit">Update account</Button>
                     </form>
                 </Form>

@@ -19,6 +19,12 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
     const [requestId, setRequestId] = useState<number | undefined>(initialRequestId)
     const [isPending, startTransition] = useTransition()
 
+    // Sync state with props if they change (e.g. navigation)
+    useEffect(() => {
+        setStatus(initialStatus)
+        setRequestId(initialRequestId)
+    }, [initialStatus, initialRequestId])
+
     const handleSend = () => {
         startTransition(async () => {
             try {

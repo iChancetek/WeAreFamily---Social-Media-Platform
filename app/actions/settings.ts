@@ -7,7 +7,7 @@ import { getUserProfile } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 
-export async function updateProfile(data: { displayName?: string, bio?: string, imageUrl?: string }) {
+export async function updateProfile(data: { displayName?: string, bio?: string, imageUrl?: string, coverUrl?: string, coverType?: 'image' | 'video' }) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
@@ -15,7 +15,9 @@ export async function updateProfile(data: { displayName?: string, bio?: string, 
         .set({
             displayName: data.displayName,
             bio: data.bio,
-            imageUrl: data.imageUrl
+            imageUrl: data.imageUrl,
+            coverUrl: data.coverUrl,
+            coverType: data.coverType
         })
         .where(eq(users.id, user.id))
 

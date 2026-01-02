@@ -36,12 +36,16 @@ interface ProfileFormProps {
         id: string;
         displayName?: string | null;
         imageUrl?: string | null;
+        coverUrl?: string | null;
+        coverType?: string | null;
         bio?: string | null;
     }
 }
 
 export function ProfileForm({ user }: ProfileFormProps) {
     const [imageUrl, setImageUrl] = useState<string | undefined>(user.imageUrl || undefined);
+    const [coverUrl, setCoverUrl] = useState<string | undefined>(user.coverUrl || undefined);
+    const [coverType, setCoverType] = useState<'image' | 'video' | undefined>(user.coverType as 'image' | 'video' || undefined);
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
@@ -56,7 +60,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
         try {
             await updateProfile({
                 ...data,
-                imageUrl: imageUrl
+                imageUrl: imageUrl,
+                coverUrl: coverUrl,
+                coverType: coverType
             })
             toast.success("Profile updated")
         } catch {
@@ -111,6 +117,44 @@ export function ProfileForm({ user }: ProfileFormProps) {
                             </div>
                         </div>
 
+                        <div className="flex flex-col gap-2">
+                            <FormLabel>Cover Photo / Video</FormLabel>
+                            {coverUrl && (
+                                <div className="relative w-full h-32 rounded-md overflow-hidden bg-muted mb-2">
+                                    {coverUrl.includes("mp4") || coverUrl.includes("webm") ? (
+                                        <video src={coverUrl} className="w-full h-full object-cover" autoPlay loop muted />
+                                    ) : (
+                                        <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+                                    )}
+                                </div>
+                            )}
+                            <Input
+                                type="file"
+                                accept="image/*,video/*"
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+
+                                    try {
+                                        toast.info("Uploading cover...");
+                                        const { storage } = await import("@/lib/firebase");
+                                        const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+
+                                        const storageRef = ref(storage, `users/${user.id}/cover/${file.name}`);
+                                        await uploadBytes(storageRef, file);
+                                        const url = await getDownloadURL(storageRef);
+
+                                        setCoverUrl(url);
+                                        setCoverType(file.type.startsWith('video') ? 'video' : 'image');
+                                        toast.success("Cover uploaded");
+                                    } catch (error: any) {
+                                        console.error("Upload failed", error);
+                                        toast.error(`Error uploading: ${error.message || "Unknown error"}`);
+                                    }
+                                }}
+                            />
+                        </div>
+
                         <FormField
                             control={form.control}
                             name="displayName"
@@ -151,6 +195,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     </form>
                 </Form>
             </CardContent>
-        </Card>
+        </Card >
     )
 }

@@ -10,13 +10,13 @@ import { getUserProfile } from "@/lib/auth";
 import { getFamilyStatus } from "@/app/actions/family";
 import { Lock } from "lucide-react";
 
-export default async function ProfilePage({ params }: { params: { userId: string } }) {
+export default async function ProfilePage({ params }: { params: Promise<{ userId: string }> }) {
     const currentUser = await getUserProfile();
     if (!currentUser || currentUser.role === 'pending') {
         redirect("/");
     }
 
-    const userId = params.userId;
+    const { userId } = await params;
     const user = await db.query.users.findFirst({
         where: eq(users.id, userId)
     });

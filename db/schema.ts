@@ -10,6 +10,8 @@ export const users = pgTable("users", {
     isActive: boolean("is_active").default(true).notNull(),
     displayName: text("display_name"),
     imageUrl: text("image_url"),
+    coverUrl: text("cover_url"),
+    coverType: text("cover_type"), // 'image' | 'video'
     bio: text("bio"),
     language: text("language").default("en"), // 'en' | 'es'
     theme: text("theme").default("system"), // 'light' | 'dark' | 'system'
