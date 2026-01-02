@@ -59,7 +59,7 @@ export async function toggleReaction(
     const postData = postSnap.data();
 
     // Strict Privacy Check for Personal Posts
-    if (postType === 'personal' && postData?.authorId !== user.id && user.role !== 'admin') {
+    if (postType === 'personal' && postData && postData.authorId !== user.id && user.role !== 'admin') {
         const { getFamilyStatus } = await import("./family");
         const status = await getFamilyStatus(postData.authorId);
         if (status.status !== 'accepted') {
@@ -119,7 +119,7 @@ export async function addComment(
     const postData = postSnap.data();
 
     // Strict Privacy Check for Personal Posts
-    if (postType === 'personal' && postData?.authorId !== user.id && user.role !== 'admin') {
+    if (postType === 'personal' && postData && postData.authorId !== user.id && user.role !== 'admin') {
         const { getFamilyStatus } = await import("./family");
         const status = await getFamilyStatus(postData.authorId);
         if (status.status !== 'accepted') {
