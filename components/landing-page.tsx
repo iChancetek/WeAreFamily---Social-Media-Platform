@@ -47,7 +47,8 @@ export function LandingPage() {
                             Famio
                         </h1>
                         <p className="text-2xl md:text-3xl font-semibold text-blue-600 mb-6">
-                            Connect with Your Family
+                            Connect with Your Family and Friends.<br />
+                            We Are One Family
                         </p>
                         <p className="max-w-3xl mx-auto text-xl md:text-2xl text-gray-600 mb-10 leading-relaxed font-normal">
                             A private, secure platform designed exclusively for families to share moments,
