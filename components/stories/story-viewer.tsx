@@ -6,7 +6,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Story {
-    id: number;
+    id: string;
     mediaUrl: string;
     mediaType: 'image' | 'video';
     createdAt: Date;

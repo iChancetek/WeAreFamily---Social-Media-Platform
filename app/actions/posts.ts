@@ -98,15 +98,15 @@ export async function getPosts() {
 
         const { getFamilyMemberIds } = await import("./family");
         const { getJoinedGroupIds } = await import("./groups");
-        const { getFollowedPageIds } = await import("./pages");
-        const { getPage } = await import("./pages");
+        const { getFollowedBrandingIds } = await import("./branding");
+        const { getBranding } = await import("./branding");
         const { getGroup } = await import("./groups");
 
         // Parallel fetch of IDs
-        const [familyIds, groupIds, pageIds] = await Promise.all([
+        const [familyIds, groupIds, brandingIds] = await Promise.all([
             getFamilyMemberIds(user.id),
             getJoinedGroupIds(user.id),
-            getFollowedPageIds(user.id)
+            getFollowedBrandingIds(user.id)
         ]);
 
         const allowedAuthorIds = [user.id, ...familyIds];
@@ -167,19 +167,19 @@ export async function getPosts() {
             });
         }
 
-        // 3. Page Posts
-        // Page posts are in `pages/{pageId}/posts`.
-        // `createPagePost` adds `pageId`.
-        if (pageIds.length > 0) {
-            const chunks = chunkArray(pageIds, 10);
+        // 3. Branding Posts
+        // Branding posts are in `pages/{pageId}/posts`.
+        // `createBrandingPost` adds `brandingId`.
+        if (brandingIds.length > 0) {
+            const chunks = chunkArray(brandingIds, 10);
             chunks.forEach(chunk => {
                 queries.push(
                     adminDb.collectionGroup("posts")
-                        .where("pageId", "in", chunk)
+                        .where("brandingId", "in", chunk)
                         .orderBy("createdAt", "desc")
                         .limit(20)
                         .get()
-                        .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'page' })))
+                        .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'branding' })))
                 );
             });
         }
@@ -217,20 +217,20 @@ export async function getPosts() {
                     context = { type: 'group', name: group.name, id: group.id };
                 }
 
-            } else if (post.type === 'page') {
-                // Author is the Page usually
-                if (post.postedAsPage) {
-                    const page = await getPage(post.pageId);
-                    if (page) {
+            } else if (post.type === 'branding') {
+                // Author is the Branding usually
+                if (post.postedAsBranding) {
+                    const branding = await getBranding(post.brandingId);
+                    if (branding) {
                         author = {
-                            id: page.id,
-                            displayName: page.name,
-                            imageUrl: page.imageUrl,
+                            id: branding.id,
+                            displayName: branding.name,
+                            imageUrl: branding.imageUrl,
                             email: null
                         };
                     }
                 } else {
-                    // User posted on page? Not implemented yet but handled
+                    // User posted on branding? Not implemented yet but handled
                     const authorDoc = await adminDb.collection("users").doc(post.authorId).get();
                     author = authorDoc.exists ? { ...authorDoc.data(), id: authorDoc.id } : null;
                 }
@@ -253,13 +253,13 @@ export async function getPosts() {
             // We need to know WHICH collection the post is in to fetch comments.
             // Personal: posts/{id}/comments
             // Group: groups/{groupId}/posts/{id}/comments
-            // Page: pages/{pageId}/posts/{id}/comments
+            // Page: pages/{brandingId}/posts/{id}/comments
 
             let commentsRef;
             if (post.type === 'group') {
                 commentsRef = adminDb.collection("groups").doc(post.groupId).collection("posts").doc(post.id).collection("comments");
-            } else if (post.type === 'page') {
-                commentsRef = adminDb.collection("pages").doc(post.pageId).collection("posts").doc(post.id).collection("comments");
+            } else if (post.type === 'branding') {
+                commentsRef = adminDb.collection("pages").doc(post.brandingId).collection("posts").doc(post.id).collection("comments");
             } else {
                 commentsRef = adminDb.collection("posts").doc(post.id).collection("comments");
             }
@@ -288,6 +288,7 @@ export async function getPosts() {
                 id: post.id,
                 content: post.content,
                 mediaUrls: post.mediaUrls,
+                createdAt: post.createdAt,
                 likes,
                 reactions,
                 author,

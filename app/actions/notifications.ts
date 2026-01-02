@@ -13,7 +13,7 @@ export type Notification = {
     recipientId: string;
     senderId: string;
     type: NotificationType;
-    referenceId: string; // The ID of the post, group, or page
+    referenceId: string; // The ID of the post, group, or branding
     read: boolean;
     createdAt: Date;
     sender?: {

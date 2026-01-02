@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus } from "lucide-react";
 
 interface Story {
-    id: number;
+    id: string;
     mediaUrl: string;
     mediaType: 'image' | 'video';
     createdAt: Date;

@@ -43,7 +43,7 @@ export async function getActiveStories() {
             .orderBy("createdAt", "desc")
             .get();
 
-        const activeStories = await Promise.all(storiesSnapshot.docs.map(async (storyDoc) => {
+        const activeStoriesResults = await Promise.all(storiesSnapshot.docs.map(async (storyDoc) => {
             const storyData = storyDoc.data();
             const authorDoc = await adminDb.collection("users").doc(storyData.authorId).get();
             const author = authorDoc.exists ? {
@@ -52,12 +52,16 @@ export async function getActiveStories() {
                 imageUrl: authorDoc.data()?.imageUrl
             } : null;
 
+            if (!author) return null;
+
             return sanitizeData({
                 id: storyDoc.id,
                 ...storyData,
                 author
             });
         }));
+
+        const activeStories = activeStoriesResults.filter(s => s !== null);
 
         // Group stories by user
         const userStoriesMap = new Map();

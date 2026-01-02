@@ -22,7 +22,7 @@ export function Sidebar({ isAdmin }: SidebarProps) {
         { href: "/", label: "Home", icon: Home },
         { href: "/family", label: "Family", icon: Users },
         { href: "/groups", label: "Groups", icon: Tent },
-        { href: "/pages", label: "Pages", icon: Briefcase }, // Added Pages link
+        { href: "/branding", label: "Branding", icon: Briefcase }, // Updated Pages -> Branding
         { href: "/messages", label: "Messages", icon: MessageSquare },
         { href: "/notifications", label: "Notifications", icon: Bell },
         { href: "/events", label: "Events", icon: Ticket },

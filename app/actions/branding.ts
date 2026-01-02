@@ -6,7 +6,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
 import { sanitizeData } from "@/lib/serialization";
 
-export type Page = {
+export type Branding = {
     id: string;
     name: string;
     description: string;
@@ -19,12 +19,12 @@ export type Page = {
     isFollowing?: boolean;
 };
 
-export async function createPage(data: { name: string; description: string; category: string; imageUrl?: string }) {
-    console.log("Creating page", data);
+export async function createBranding(data: { name: string; description: string; category: string; imageUrl?: string }) {
+    console.log("Creating branding", data);
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const pageRef = await adminDb.collection("pages").add({
+    const brandingRef = await adminDb.collection("pages").add({
         ...data,
         founderId: user.id,
         createdAt: FieldValue.serverTimestamp(),
@@ -32,42 +32,42 @@ export async function createPage(data: { name: string; description: string; cate
     });
 
     // Add founder as follower/admin
-    await pageRef.collection("followers").doc(user.id).set({
+    await brandingRef.collection("followers").doc(user.id).set({
         userId: user.id,
         role: 'admin', // Founder is admin
         followedAt: FieldValue.serverTimestamp(),
     });
 
-    revalidatePath('/pages');
-    return pageRef.id;
+    revalidatePath('/branding');
+    return brandingRef.id;
 }
 
-export async function getPages() {
-    const pagesSnapshot = await adminDb.collection("pages").orderBy("createdAt", "desc").get();
+export async function getBrandings() {
+    const brandingsSnapshot = await adminDb.collection("pages").orderBy("createdAt", "desc").get();
 
-    return pagesSnapshot.docs.map(doc => {
+    return brandingsSnapshot.docs.map(doc => {
         return sanitizeData({
             id: doc.id,
             ...doc.data()
-        }) as Page;
+        }) as Branding;
     });
 }
 
-export async function getPage(pageId: string) {
-    const doc = await adminDb.collection("pages").doc(pageId).get();
+export async function getBranding(brandingId: string) {
+    const doc = await adminDb.collection("pages").doc(brandingId).get();
     if (!doc.exists) return null;
 
     return sanitizeData({
         id: doc.id,
         ...doc.data()
-    }) as Page;
+    }) as Branding;
 }
 
-export async function followPage(pageId: string) {
+export async function followBranding(brandingId: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const followerRef = adminDb.collection("pages").doc(pageId).collection("followers").doc(user.id);
+    const followerRef = adminDb.collection("pages").doc(brandingId).collection("followers").doc(user.id);
     const followerDoc = await followerRef.get();
 
     if (followerDoc.exists) return; // Already following
@@ -79,91 +79,88 @@ export async function followPage(pageId: string) {
     });
 
     // Increment follower count
-    await adminDb.collection("pages").doc(pageId).update({
+    await adminDb.collection("pages").doc(brandingId).update({
         followerCount: FieldValue.increment(1)
     });
 
-    // Notify Page Founder/Admin
-    const pageDoc = await adminDb.collection("pages").doc(pageId).get();
-    const pageData = pageDoc.data();
-    if (pageData && pageData.founderId) {
+    // Notify Branding Founder/Admin
+    const brandingDoc = await adminDb.collection("pages").doc(brandingId).get();
+    const brandingData = brandingDoc.data();
+    if (brandingData && brandingData.founderId) {
         const { createNotification } = await import("./notifications");
-        await createNotification(pageData.founderId, 'follow', pageId, {
-            pageName: pageData.name
+        await createNotification(brandingData.founderId, 'follow', brandingId, {
+            brandingName: brandingData.name
         }).catch(console.error);
     }
 
-    revalidatePath(`/pages/${pageId}`);
-    revalidatePath('/pages');
+    revalidatePath(`/branding/${brandingId}`);
+    revalidatePath('/branding');
 }
 
-export async function unfollowPage(pageId: string) {
+export async function unfollowBranding(brandingId: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    await adminDb.collection("pages").doc(pageId).collection("followers").doc(user.id).delete();
+    await adminDb.collection("pages").doc(brandingId).collection("followers").doc(user.id).delete();
 
     // Decrement follower count
-    await adminDb.collection("pages").doc(pageId).update({
+    await adminDb.collection("pages").doc(brandingId).update({
         followerCount: FieldValue.increment(-1)
     });
 
-    revalidatePath(`/pages/${pageId}`);
-    revalidatePath('/pages');
+    revalidatePath(`/branding/${brandingId}`);
+    revalidatePath('/branding');
 }
 
-export async function getPageFollowStatus(pageId: string) {
+export async function getBrandingFollowStatus(brandingId: string) {
     const user = await getUserProfile();
     if (!user) return null;
 
-    const followerDoc = await adminDb.collection("pages").doc(pageId).collection("followers").doc(user.id).get();
+    const followerDoc = await adminDb.collection("pages").doc(brandingId).collection("followers").doc(user.id).get();
     if (!followerDoc.exists) return null;
 
     return sanitizeData(followerDoc.data()) as { role: 'admin' | 'follower', followedAt: any };
 }
 
-export async function createPagePost(pageId: string, content: string, mediaUrls: string[] = []) {
+export async function createBrandingPost(brandingId: string, content: string, mediaUrls: string[] = []) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    // Check if user is admin of the page
-    const status = await getPageFollowStatus(pageId);
-    if (status?.role !== 'admin') throw new Error("Only admins can post to the page");
+    // Check if user is admin of the branding
+    const status = await getBrandingFollowStatus(brandingId);
+    if (status?.role !== 'admin') throw new Error("Only admins can post to the branding");
 
-    await adminDb.collection("pages").doc(pageId).collection("posts").add({
-        authorId: user.id, // Or pageId if we want it to look like the page posted it? 
-        // For now, let's say author is user, but we might display it differently.
-        // Actually, "Pages" usually post AS the page.
-        postedAsPage: true,
-        pageId: pageId,
+    await adminDb.collection("pages").doc(brandingId).collection("posts").add({
+        authorId: user.id,
+        postedAsBranding: true,
+        brandingId: brandingId,
         content,
         mediaUrls,
         likes: [],
         createdAt: FieldValue.serverTimestamp(),
     });
 
-    revalidatePath(`/pages/${pageId}`);
+    revalidatePath(`/branding/${brandingId}`);
 }
 
-export async function getPagePosts(pageId: string) {
-    // Pages are public usually, so no strict privacy check needed unless we add privacy later.
-    const postsSnapshot = await adminDb.collection("pages").doc(pageId).collection("posts")
+export async function getBrandingPosts(brandingId: string) {
+    const postsSnapshot = await adminDb.collection("pages").doc(brandingId).collection("posts")
         .orderBy("createdAt", "desc")
         .get();
 
     const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc) => {
         const postData = postDoc.data();
 
-        // If postedAsPage, Fetch Page Details as Author
+        // If postedAsBranding, Fetch Branding Details as Author
         let author = null;
-        if (postData.postedAsPage) {
-            const page = await getPage(pageId);
-            if (page) {
+        if (postData.postedAsBranding) {
+            const branding = await getBranding(brandingId);
+            if (branding) {
                 author = {
-                    id: page.id,
-                    displayName: page.name,
-                    imageUrl: page.imageUrl,
-                    email: null // Page has no email
+                    id: branding.id,
+                    displayName: branding.name,
+                    imageUrl: branding.imageUrl,
+                    email: null
                 };
             }
         } else {
@@ -180,6 +177,7 @@ export async function getPagePosts(pageId: string) {
             id: postDoc.id,
             content: postData.content || "",
             mediaUrls: postData.mediaUrls || [],
+            createdAt: postData.createdAt,
             likes: postData.likes || [],
             author
         });
@@ -188,21 +186,20 @@ export async function getPagePosts(pageId: string) {
     return allPosts;
 }
 
-export async function getFollowedPageIds(userId: string) {
-    // Use collectionGroup query to find all 'followers' docs where userId matches
+export async function getFollowedBrandingIds(userId: string) {
     const snapshot = await adminDb.collectionGroup("followers")
         .where("userId", "==", userId)
         .get();
 
-    const pageIds = new Set<string>();
+    const brandingIds = new Set<string>();
 
     snapshot.docs.forEach(doc => {
-        // Doc path: pages/{pageId}/followers/{userId}
-        const pageDoc = doc.ref.parent.parent;
-        if (pageDoc) {
-            pageIds.add(pageDoc.id);
+        const brandingDoc = doc.ref.parent.parent;
+        if (brandingDoc) {
+            brandingIds.add(brandingDoc.id);
         }
     });
 
-    return Array.from(pageIds);
+    return Array.from(brandingIds);
 }
+

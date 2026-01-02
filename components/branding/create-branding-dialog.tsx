@@ -32,7 +32,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { createPage } from "@/app/actions/pages"
+import { createBranding } from "@/app/actions/branding"
 import { toast } from "sonner"
 import { PlusCircle, Loader2 } from "lucide-react"
 
@@ -43,7 +43,7 @@ const formSchema = z.object({
     imageUrl: z.string().optional(),
 })
 
-export function CreatePageDialog() {
+export function CreateBrandingDialog() {
     const [open, setOpen] = useState(false)
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -61,14 +61,14 @@ export function CreatePageDialog() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true)
         try {
-            const pageId = await createPage(values)
-            toast.success("Page created successfully!")
+            const brandingId = await createBranding(values)
+            toast.success("Branding created successfully!")
             setOpen(false)
             form.reset()
-            router.push(`/pages/${pageId}`)
+            router.push(`/branding/${brandingId}`)
         } catch (error) {
             console.error(error)
-            toast.error("Failed to create page")
+            toast.error("Failed to create branding")
         } finally {
             setIsSubmitting(false)
         }
@@ -79,12 +79,12 @@ export function CreatePageDialog() {
             <DialogTrigger asChild>
                 <Button className="gap-2">
                     <PlusCircle className="w-4 h-4" />
-                    Create Page
+                    Create Branding
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Create a New Page</DialogTitle>
+                    <DialogTitle>Create a New Branding</DialogTitle>
                     <DialogDescription>
                         Promote your business, brand, or public profile.
                     </DialogDescription>
@@ -96,7 +96,7 @@ export function CreatePageDialog() {
                             name="name"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Page Name</FormLabel>
+                                    <FormLabel>Branding Name</FormLabel>
                                     <FormControl>
                                         <Input placeholder="e.g., Grandma's Bakery" {...field} />
                                     </FormControl>
@@ -135,7 +135,7 @@ export function CreatePageDialog() {
                                 <FormItem>
                                     <FormLabel>Description</FormLabel>
                                     <FormControl>
-                                        <Textarea placeholder="What is this page about?" {...field} />
+                                        <Textarea placeholder="What is this branding about?" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -158,7 +158,7 @@ export function CreatePageDialog() {
                         <div className="flex justify-end pt-4">
                             <Button type="submit" disabled={isSubmitting}>
                                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Create Page
+                                Create Branding
                             </Button>
                         </div>
                     </form>

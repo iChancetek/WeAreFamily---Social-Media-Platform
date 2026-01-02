@@ -106,8 +106,7 @@ export const getPendingRequests = getFamilyRequests;
 // Filter out invisible users and blocked users
 // Note: This is an unoptimized in-memory filter. For production, we'd need a dedicated search index (Algolia/Typesense)
 // or denormalized privacy flags.
-const currentUser = await getUserProfile();
-const blockedIds = new Set<string>();
+// or denormalized privacy flags.
 export async function searchFamilyMembers(searchTerm: string) {
     const currentUser = await getUserProfile();
 

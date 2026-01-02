@@ -77,10 +77,16 @@ export async function getChats(): Promise<ChatSession[]> {
     const myId = user.id;
 
     // Fetch chats where user is participant
-    const chatsSnapshot = await adminDb.collection("chats")
-        .where("participants", "array-contains", myId)
-        .orderBy("lastMessageAt", "desc")
-        .get();
+    let chatsSnapshot;
+    try {
+        chatsSnapshot = await adminDb.collection("chats")
+            .where("participants", "array-contains", myId)
+            .orderBy("lastMessageAt", "desc")
+            .get();
+    } catch (e) {
+        console.error("Error fetching chats (maybe missing index):", e);
+        return [];
+    }
 
     // Enrich with other user details
     const enrichedChats = await Promise.all(chatsSnapshot.docs.map(async (chatDoc) => {
@@ -140,10 +146,16 @@ export async function getMessages(chatId: string): Promise<Message[]> {
     }
 
     // Fetch messages
-    const messagesSnapshot = await adminDb.collection("chats").doc(chatId).collection("messages")
-        .orderBy("createdAt", "asc")
-        .limit(50)
-        .get();
+    let messagesSnapshot;
+    try {
+        messagesSnapshot = await adminDb.collection("chats").doc(chatId).collection("messages")
+            .orderBy("createdAt", "asc")
+            .limit(50)
+            .get();
+    } catch (e) {
+        console.error("Error fetching messages:", e);
+        return [];
+    }
 
     return messagesSnapshot.docs.map(msgDoc => sanitizeData({
         id: msgDoc.id,

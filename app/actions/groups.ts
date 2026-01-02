@@ -166,6 +166,7 @@ export async function getGroupPosts(groupId: string) {
             id: postDoc.id,
             content: postData.content || "",
             mediaUrls: postData.mediaUrls || [],
+            createdAt: postData.createdAt,
             likes: postData.likes || [],
             author
         });

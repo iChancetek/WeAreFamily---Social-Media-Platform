@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { followPage, unfollowPage } from "@/app/actions/pages";
+import { followBranding, unfollowBranding } from "@/app/actions/branding";
 import { toast } from "sonner";
 import { Loader2, Plus, Check } from "lucide-react";
 
-interface FollowPageButtonProps {
-    pageId: string;
+interface FollowBrandingButtonProps {
+    brandingId: string;
     isFollowing: boolean; // We'll infer this from status
     role?: 'admin' | 'follower' | null;
 }
 
-export function FollowPageButton({ pageId, isFollowing: initialIsFollowing, role }: FollowPageButtonProps) {
+export function FollowBrandingButton({ brandingId, isFollowing: initialIsFollowing, role }: FollowBrandingButtonProps) {
     const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -28,13 +28,13 @@ export function FollowPageButton({ pageId, isFollowing: initialIsFollowing, role
         setIsLoading(true);
         try {
             if (isFollowing) {
-                await unfollowPage(pageId);
+                await unfollowBranding(brandingId);
                 setIsFollowing(false);
-                toast.success("Unfollowed page");
+                toast.success("Unfollowed branding");
             } else {
-                await followPage(pageId);
+                await followBranding(brandingId);
                 setIsFollowing(true);
-                toast.success("Following page!");
+                toast.success("Following branding!");
             }
         } catch (error) {
             console.error(error);

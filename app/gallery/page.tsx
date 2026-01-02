@@ -2,6 +2,7 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { sanitizeData } from "@/lib/serialization";
 
 export const dynamic = 'force-dynamic';
 
@@ -16,21 +17,45 @@ export default async function GalleryPage() {
     const allowedIds = [user.id, ...familyIds];
     const queryIds = allowedIds.slice(0, 30); // Limit to 30 for Firestore 'in' query
 
-    const postsSnapshot = await adminDb.collection("posts")
-        .where("authorId", "in", queryIds)
-        .orderBy("createdAt", "desc")
-        .get();
+    if (queryIds.length === 0) {
+        return (
+            <MainLayout>
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900">Family Gallery</h1>
+                    <p className="text-gray-500">Shared memories from everyone</p>
+                </div>
+                <p className="text-center text-gray-500 py-10">No photos shared yet.</p>
+            </MainLayout>
+        );
+    }
 
-    const allPosts = postsSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
-        };
-    }) as any;
+    let postsSnapshot;
+    try {
+        postsSnapshot = await adminDb.collection("posts")
+            .where("authorId", "in", queryIds)
+            .orderBy("createdAt", "desc")
+            .get();
+    } catch (e) {
+        console.error("Gallery fetch failed (missing index?):", e);
+        return (
+            <MainLayout>
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900">Family Gallery</h1>
+                    <p className="text-gray-500">Shared memories from everyone</p>
+                </div>
+                <p className="text-center text-red-500 py-10">Unable to load gallery. A database index may be missing.</p>
+            </MainLayout>
+        );
+    }
 
-    const mediaItems = allPosts.flatMap((post: any) => (post.mediaUrls || []).map((url: string) => ({ url, postId: post.id })));
+    const allPosts = postsSnapshot.docs.map(doc => sanitizeData({
+        id: doc.id,
+        ...doc.data()
+    })) as any[];
+
+    const mediaItems = allPosts.flatMap((post: any) =>
+        (post.mediaUrls || []).map((url: string) => ({ url, postId: post.id }))
+    );
 
     return (
         <MainLayout>

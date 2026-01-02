@@ -45,12 +45,12 @@ export function NotificationsList() {
             case 'like':
             case 'comment':
                 // Ideally scroll to post? For now just go to feed maybe or we have a single post view?
-                // We don't have a single post view yet (except group/page feeds). 
+                // We don't have a single post view yet (except group/branding feeds). 
                 // Let's assume we go home for now.
                 router.push('/');
                 break;
             case 'follow':
-                router.push(`/pages/${notification.referenceId}`);
+                router.push(`/branding/${notification.referenceId}`);
                 break;
             case 'group_invite':
                 router.push(`/groups/${notification.referenceId}`);
@@ -128,7 +128,7 @@ function getNotificationText(n: Notification) {
     switch (n.type) {
         case 'like': return "liked your post.";
         case 'comment': return "commented on your post.";
-        case 'follow': return `started following ${n.meta?.pageName || "your page"}.`;
+        case 'follow': return `started following ${n.meta?.brandingName || "your branding"}.`;
         case 'group_invite': return "invited you to a group.";
         default: return "interacted with you.";
     }
