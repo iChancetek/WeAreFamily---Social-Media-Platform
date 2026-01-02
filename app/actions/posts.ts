@@ -57,6 +57,16 @@ export async function toggleReaction(
     if (!postSnap.exists) throw new Error("Post not found")
 
     const postData = postSnap.data();
+
+    // Strict Privacy Check for Personal Posts
+    if (postType === 'personal' && postData?.authorId !== user.id && user.role !== 'admin') {
+        const { getFamilyStatus } = await import("./family");
+        const status = await getFamilyStatus(postData.authorId);
+        if (status.status !== 'accepted') {
+            throw new Error("Unauthorized: You must be family to react to this post.");
+        }
+    }
+
     const currentReactions = postData?.reactions || {};
     const existingReaction = currentReactions[user.id];
 
@@ -104,15 +114,25 @@ export async function addComment(
         postRef = adminDb.collection("posts").doc(postId);
     }
 
+    const postSnap = await postRef.get();
+    if (!postSnap.exists) throw new Error("Post not found");
+    const postData = postSnap.data();
+
+    // Strict Privacy Check for Personal Posts
+    if (postType === 'personal' && postData?.authorId !== user.id && user.role !== 'admin') {
+        const { getFamilyStatus } = await import("./family");
+        const status = await getFamilyStatus(postData.authorId);
+        if (status.status !== 'accepted') {
+            throw new Error("Unauthorized: You must be family to comment on this post.");
+        }
+    }
+
     const commentsRef = postRef.collection("comments");
     await commentsRef.add({
         authorId: user.id,
         content,
         createdAt: FieldValue.serverTimestamp(),
     });
-
-    const postSnap = await postRef.get();
-    const postData = postSnap.data();
 
     // Trigger Notification
     if (postData && postData.authorId) {
@@ -156,6 +176,7 @@ export async function getPosts() {
 
         // 1. Personal Feed (Self + Family)
         const allowedAuthorIds = [user.id, ...familyIds];
+        const queries: Promise<any>[] = [];
 
         if (allowedAuthorIds.length > 0) {
             // Firestore 'in' query supports max 10 values by default, rarely 30 depending on key.
@@ -230,15 +251,24 @@ export async function getPosts() {
         const results = await Promise.all(queries);
         const allRawPosts = results.flat();
 
+        // STRICT SAFETY CHECK (CLIENT-SIDE FILTERING)
+        // Ensure no leakage happens due to quirks in Promise.all or Firestore fallback
+        const verifiedPosts = allRawPosts.filter((post: any) => {
+            if (post.type === 'personal') {
+                return allowedAuthorIds.includes(post.authorId);
+            }
+            return true; // Allow group/branding posts for now
+        });
+
         // Sort by date desc
-        allRawPosts.sort((a, b) => {
+        verifiedPosts.sort((a: any, b: any) => {
             const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
             const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
             return dateB.getTime() - dateA.getTime();
         });
 
         // Hydrate authors/groups/pages
-        const finalPosts = await Promise.all(allRawPosts.map(async (post: any) => {
+        const finalPosts = await Promise.all(verifiedPosts.map(async (post: any) => {
             let author = null;
             let context = null; // "Posted in X"
 

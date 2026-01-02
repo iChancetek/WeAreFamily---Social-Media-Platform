@@ -37,29 +37,42 @@ export async function getActiveStories() {
         // Get stories that haven't expired
         const now = Timestamp.now();
 
-        let storiesSnapshot;
-        try {
-            storiesSnapshot = await adminDb.collection("stories")
-                .where("expiresAt", ">", now)
-                .orderBy("expiresAt")
-                .orderBy("createdAt", "desc")
-                .get();
-        } catch (indexError) {
-            console.error("Stories index missing, falling back to manual filtering:", indexError);
-            // Fallback: Fetch latest 100 stories and filter manually
-            storiesSnapshot = await adminDb.collection("stories")
-                .limit(100)
-                .get();
-            // Manually filter for expiration
-            const nowMs = Date.now();
-            // Note: storiesSnapshot docs are QueryDocumentSnapshot
-            // We need to filter them. But maps below iterate docs. 
-            // We can just proceed and filter in the map logic or let the UI handle it?
-            // Better to filter here to match expected output.
-            // Actually, the simpler fallback is just to return the snapshot and let the map logic filter?
-            // No, the map logic assumes valid stories.
-            // Let's rely on the in-memory processing.
+        const user = await getUserProfile();
+        if (!user) return [];
+
+        const { getFamilyMemberIds } = await import("./family");
+        const familyIds = await getFamilyMemberIds(user.id).catch(e => { console.error("Story family fetch error:", e); return []; });
+
+        // Allowed authors: Myself + Family
+        const allowedAuthorIds = [user.id, ...familyIds];
+        const queries: Promise<any>[] = [];
+
+        if (allowedAuthorIds.length > 0) {
+            const chunks = chunkArray(allowedAuthorIds, 10);
+            chunks.forEach(chunk => {
+                queries.push(
+                    adminDb.collection("stories")
+                        .where("authorId", "in", chunk)
+                        .where("expiresAt", ">", now)
+                        .orderBy("expiresAt", "asc") // Need index for this: authorId + expiresAt
+                        .get()
+                        .then(snap => snap.docs)
+                        .catch(err => {
+                            console.error("Family stories query failed:", err);
+                            // Fallback? If index missing, 'in' query might fail.
+                            // We can try fetching by authorId and filtering in memory if needed, but that's heavy.
+                            // Let's assume index creation or simple fail-safe.
+                            return [];
+                        })
+                );
+            });
         }
+
+        const results = await Promise.all(queries);
+        const storiesDocs = results.flat();
+
+        // Mock snapshot structure for compatibility with existing map logic
+        const storiesSnapshot = { docs: storiesDocs };
 
         const activeStoriesResults = await Promise.all(storiesSnapshot.docs.map(async (storyDoc) => {
             const storyData = storyDoc.data();
@@ -101,4 +114,14 @@ export async function getActiveStories() {
         console.error("Error fetching active stories:", error);
         return [];
     }
+}
+
+function chunkArray(array: any[], size: number) {
+    const chunked = [];
+    let index = 0;
+    while (index < array.length) {
+        chunked.push(array.slice(index, size + index));
+        index += size;
+    }
+    return chunked;
 }
