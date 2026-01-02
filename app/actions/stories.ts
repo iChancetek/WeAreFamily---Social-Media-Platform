@@ -57,12 +57,19 @@ export async function getActiveStories() {
                         .orderBy("expiresAt", "asc") // Need index for this: authorId + expiresAt
                         .get()
                         .then(snap => snap.docs)
-                        .catch(err => {
-                            console.error("Family stories query failed:", err);
-                            // Fallback? If index missing, 'in' query might fail.
-                            // We can try fetching by authorId and filtering in memory if needed, but that's heavy.
-                            // Let's assume index creation or simple fail-safe.
-                            return [];
+                        .catch(async err => {
+                            console.warn("Family stories ordered query failed (likely missing index), trying fallback:", err);
+                            // Fallback: Query WITHOUT orderBy
+                            try {
+                                const fallbackSnap = await adminDb.collection("stories")
+                                    .where("authorId", "in", chunk)
+                                    .where("expiresAt", ">", now)
+                                    .get();
+                                return fallbackSnap.docs;
+                            } catch (fallbackErr) {
+                                console.error("Family stories fallback query also failed:", fallbackErr);
+                                return [];
+                            }
                         })
                 );
             });
