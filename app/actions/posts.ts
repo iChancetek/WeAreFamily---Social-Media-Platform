@@ -176,6 +176,10 @@ export async function getPosts() {
 
         // 1. Personal Feed (Self + Family)
         const allowedAuthorIds = [user.id, ...familyIds];
+        console.log(`[getPosts] User: ${user.id} (${user.displayName})`);
+        console.log(`[getPosts] Family IDs found: ${familyIds.length}`, familyIds);
+        console.log(`[getPosts] Total allowed authors: ${allowedAuthorIds.length}`);
+
         const queries: Promise<any>[] = [];
 
         if (allowedAuthorIds.length > 0) {

@@ -10,6 +10,8 @@ import { getFamilyStatus } from "@/app/actions/family";
 import { getUserPosts } from "@/app/actions/posts";
 import { Lock } from "lucide-react";
 
+import { ProfileTabs } from "@/components/profile/profile-tabs";
+
 export const dynamic = 'force-dynamic';
 
 export default async function ProfilePage({ params }: { params: Promise<{ userId: string }> }) {
@@ -56,11 +58,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
     const userPosts = hasAccess ? await getUserPosts(userId) : [];
     console.log(`Fetched ${userPosts.length} posts for profile ${userId}`);
 
+    const { getUserFamilyMembers } = await import("@/app/actions/family");
+    const userFamily = hasAccess ? await getUserFamilyMembers(userId) : [];
+
     return (
         <MainLayout>
             <ProfileHeader user={user} isCurrentUser={isOwnProfile} />
             <div className="mt-8">
-                <h2 className="text-xl font-bold mb-4">Personal Timeline</h2>
                 {!hasAccess ? (
                     <div className="flex flex-col items-center justify-center p-10 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
                         <div className="bg-slate-200 dark:bg-slate-800 p-4 rounded-full mb-4">
@@ -71,16 +75,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
                             You must be family to view {user.displayName || "this user"}'s posts and photos. Send a family request to connect!
                         </p>
                     </div>
-                ) : userPosts.length === 0 ? (
-                    <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900">
-                        <p className="text-gray-500 mb-2">No posts yet.</p>
-                    </div>
                 ) : (
-                    <div className="space-y-4">
-                        {userPosts.map(post => (
-                            <PostCard key={post.id} post={post} />
-                        ))}
-                    </div>
+                    <ProfileTabs
+                        posts={userPosts}
+                        familyMembers={userFamily}
+                        isOwnProfile={isOwnProfile}
+                        currentUserId={currentUser.id}
+                    />
                 )}
             </div>
         </MainLayout >

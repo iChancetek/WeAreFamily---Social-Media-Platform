@@ -96,6 +96,7 @@ export async function acceptFamilyRequest(requestId: string) {
     await batch.commit();
 
     revalidatePath('/family');
+    revalidatePath('/'); // Refresh home feed to show new posts
 }
 
 export async function rejectFamilyRequest(requestId: string) {
@@ -124,6 +125,7 @@ export async function rejectFamilyRequest(requestId: string) {
     }
 
     revalidatePath('/family');
+    revalidatePath('/');
 }
 
 export async function cancelFamilyRequest(requestId: string) {
@@ -152,6 +154,7 @@ export async function cancelFamilyRequest(requestId: string) {
     }
 
     revalidatePath('/family');
+    revalidatePath('/');
 }
 
 export async function denyFamilyRequest(requestId: string) {
@@ -159,6 +162,7 @@ export async function denyFamilyRequest(requestId: string) {
         status: 'rejected'
     });
     revalidatePath('/family')
+    revalidatePath('/')
 }
 
 // ... imports
@@ -400,4 +404,54 @@ export async function getFamilyStatus(targetUserId: string): Promise<FamilyStatu
     // Received rejected? user shouldn't probably know? or yes?
 
     return { status: 'none' };
+}
+
+export async function getUserFamilyMembers(targetUserId: string) {
+    const currentUser = await getUserProfile();
+    if (!currentUser) return [];
+
+    // 1. Check permissions
+    // Allow if: Own Profile OR Admin OR Accepted Family
+    const isOwnProfile = currentUser.id === targetUserId;
+    const isAdmin = currentUser.role === 'admin';
+    let hasAccess = isOwnProfile || isAdmin;
+
+    if (!hasAccess) {
+        const familyStatus = await getFamilyStatus(targetUserId);
+        if (familyStatus.status === 'accepted') {
+            hasAccess = true;
+        }
+    }
+
+    if (!hasAccess) {
+        // Return empty or throw? Return empty for safety so UI just shows nothing.
+        return [];
+    }
+
+    // 2. Fetch Family Members of the TARGET user
+    const familyIds = await getFamilyMemberIds(targetUserId);
+
+    // 3. Hydrate details
+    const familyMembers = await Promise.all(
+        familyIds.map(async id => {
+            const userDoc = await adminDb.collection("users").doc(id).get();
+            if (userDoc.exists) {
+                const data = userDoc.data()!;
+                return {
+                    id: userDoc.id,
+                    ...data,
+                    // Sanitize sensitive fields? 
+                    // Family members can generally see other family members' basic info.
+                    // Let's stick to standard public profile fields.
+                    displayName: data.displayName,
+                    imageUrl: data.imageUrl,
+                    email: data.email, // Maybe? 
+                    createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+                };
+            }
+            return null;
+        })
+    );
+
+    return sanitizeData(familyMembers.filter(Boolean));
 }
