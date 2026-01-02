@@ -1,4 +1,5 @@
 "use client"
+import { useRouter } from "next/navigation"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -25,6 +26,7 @@ import { updateAccountSettings } from "@/app/actions/settings"
 import { useTheme } from "next-themes"
 import { useClerk } from "@clerk/nextjs"
 import { Shield } from "lucide-react"
+import { useLanguage } from "@/components/language-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect } from "react"
 
@@ -44,8 +46,10 @@ interface AccountFormProps {
 }
 
 export function AccountForm({ user }: AccountFormProps) {
+    const router = useRouter()
     const { setTheme } = useTheme()
     const { openUserProfile } = useClerk()
+    const { setLanguage, t } = useLanguage()
 
     const form = useForm<AccountFormValues>({
         resolver: zodResolver(accountFormSchema),
@@ -70,7 +74,11 @@ export function AccountForm({ user }: AccountFormProps) {
             if (data.theme) {
                 setTheme(data.theme)
             }
+            if (data.language) {
+                setLanguage(data.language as 'en' | 'es')
+            }
             toast.success("Account settings updated")
+            router.refresh()
         } catch {
             toast.error("Failed to update settings")
         }
@@ -79,9 +87,9 @@ export function AccountForm({ user }: AccountFormProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Account</CardTitle>
+                <CardTitle>{t("settings.account.title")}</CardTitle>
                 <CardDescription>
-                    Update your account preferences.
+                    {t("settings.account.desc")}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -92,7 +100,7 @@ export function AccountForm({ user }: AccountFormProps) {
                             name="language"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Language</FormLabel>
+                                    <FormLabel>{t("settings.language")}</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
                                             <SelectTrigger>
@@ -105,7 +113,7 @@ export function AccountForm({ user }: AccountFormProps) {
                                         </SelectContent>
                                     </Select>
                                     <FormDescription>
-                                        This is the language that will be used in the dashboard.
+                                        {t("settings.language.desc")}
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
@@ -116,7 +124,7 @@ export function AccountForm({ user }: AccountFormProps) {
                             name="theme"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Theme</FormLabel>
+                                    <FormLabel>{t("settings.theme")}</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
                                             <SelectTrigger>
@@ -130,7 +138,7 @@ export function AccountForm({ user }: AccountFormProps) {
                                         </SelectContent>
                                     </Select>
                                     <FormDescription>
-                                        Select the theme for the dashboard.
+                                        {t("settings.theme.desc")}
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
@@ -138,7 +146,7 @@ export function AccountForm({ user }: AccountFormProps) {
                         />
 
                         <div className="pt-4 border-t border-border">
-                            <FormLabel className="mb-2 block">Security</FormLabel>
+                            <FormLabel className="mb-2 block">{t("settings.security")}</FormLabel>
                             <Button
                                 type="button"
                                 variant="outline"
@@ -146,14 +154,14 @@ export function AccountForm({ user }: AccountFormProps) {
                                 className="w-full sm:w-auto gap-2"
                             >
                                 <Shield className="w-4 h-4" />
-                                Manage Password & Security
+                                {t("settings.manageSecurity")}
                             </Button>
                             <FormDescription className="mt-2">
-                                Change your password, enable 2FA, and manage connected accounts.
+                                {t("settings.security.desc")}
                             </FormDescription>
                         </div>
 
-                        <Button type="submit">Update account</Button>
+                        <Button type="submit">{t("settings.updateAccount")}</Button>
                     </form>
                 </Form>
             </CardContent>

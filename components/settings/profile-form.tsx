@@ -1,5 +1,7 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -20,6 +22,7 @@ import { updateProfile } from "@/app/actions/settings"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLanguage } from "@/components/language-context";
 
 const profileFormSchema = z.object({
     displayName: z.string().min(2, {
@@ -43,6 +46,7 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ user }: ProfileFormProps) {
+    const router = useRouter()
     const [imageUrl, setImageUrl] = useState<string | undefined>(user.imageUrl || undefined);
     const [coverUrl, setCoverUrl] = useState<string | undefined>(user.coverUrl || undefined);
     const [coverType, setCoverType] = useState<'image' | 'video' | undefined>(user.coverType as 'image' | 'video' || undefined);
@@ -65,17 +69,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 coverType: coverType
             })
             toast.success("Profile updated")
+            router.refresh()
         } catch {
             toast.error("Failed to update profile")
         }
     }
 
+    const { t } = useLanguage();
+
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Profile</CardTitle>
+                <CardTitle>{t("settings.profile.title")}</CardTitle>
                 <CardDescription>
-                    Update your public profile information.
+                    {t("settings.profile.desc")}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -87,7 +94,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                 <AvatarFallback>JD</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col gap-2">
-                                <FormLabel>Profile Picture / Video</FormLabel>
+                                <FormLabel>{t("settings.profilePic")}</FormLabel>
                                 <div className="flex items-center gap-2">
                                     <Input
                                         type="file"
@@ -118,7 +125,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <FormLabel>Cover Photo / Video</FormLabel>
+                            <FormLabel>{t("settings.cover")}</FormLabel>
                             {coverUrl && (
                                 <div className="relative w-full h-32 rounded-md overflow-hidden bg-muted mb-2">
                                     {coverUrl.includes("mp4") || coverUrl.includes("webm") ? (
@@ -160,12 +167,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
                             name="displayName"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Display Name</FormLabel>
+                                    <FormLabel>{t("settings.displayName")}</FormLabel>
                                     <FormControl>
                                         <Input placeholder="John Doe" {...field} />
                                     </FormControl>
                                     <FormDescription>
-                                        This is your public display name.
+                                        {t("settings.displayName.desc")}
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
@@ -176,7 +183,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                             name="bio"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Bio</FormLabel>
+                                    <FormLabel>{t("settings.bio")}</FormLabel>
                                     <FormControl>
                                         <Textarea
                                             placeholder="Tell us a little bit about yourself"
@@ -185,13 +192,13 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                         />
                                     </FormControl>
                                     <FormDescription>
-                                        You can @mention other users and organizations to link to them.
+                                        {t("settings.bio.desc")}
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit">Update profile</Button>
+                        <Button type="submit">{t("settings.updateProfile")}</Button>
                     </form>
                 </Form>
             </CardContent>
