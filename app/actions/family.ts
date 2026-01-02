@@ -16,13 +16,34 @@ export async function sendFamilyRequest(receiverId: string) {
     if (user.id === receiverId) throw new Error("Cannot add yourself")
 
     // Check if request already exists
-    const existing = await adminDb.collection("familyRequests")
-        .where("senderId", "==", user.id)
-        .where("receiverId", "==", receiverId)
-        .get();
+    // Check if request already exists (in either direction)
+    const [existingSent, existingReceived] = await Promise.all([
+        adminDb.collection("familyRequests")
+            .where("senderId", "==", user.id)
+            .where("receiverId", "==", receiverId)
+            .get(),
+        adminDb.collection("familyRequests")
+            .where("senderId", "==", receiverId)
+            .where("receiverId", "==", user.id)
+            .get()
+    ]);
 
-    if (!existing.empty) {
-        throw new Error("Request already exists");
+    if (!existingSent.empty || !existingReceived.empty) {
+        const status = !existingSent.empty ? existingSent.docs[0].data().status : existingReceived.docs[0].data().status;
+        if (status === 'accepted') throw new Error("You are already family");
+        if (status === 'pending') throw new Error("A request is already pending between you");
+        if (!existingSent.empty && status === 'rejected') {
+            // Allow resending if previously rejected? Maybe. But for now let's block to avoid spam.
+            // Or maybe we treat rejected as 'none' here to allow retry? 
+            // Logic: If I sent it and it was rejected, I probably shouldn't spam.
+            throw new Error("Request was rejected previously.");
+        }
+        // If received and rejected, maybe I can try again? 
+        // Let's safe block for now.
+        // Actually, if existing reverse request exists, we should tell them to accept it!
+        if (!existingReceived.empty && status === 'pending') {
+            throw new Error("This person already sent you a request. Please accept it.");
+        }
     }
 
     const docRef = await adminDb.collection("familyRequests").add({
@@ -345,24 +366,38 @@ export async function getFamilyStatus(targetUserId: string): Promise<FamilyStatu
     const user = await getUserProfile();
     if (!user) return { status: 'none' } as FamilyStatus;
 
-    const sentSnapshot = await adminDb.collection("familyRequests")
-        .where("senderId", "==", user.id)
-        .where("receiverId", "==", targetUserId)
-        .get();
+    const [sentSnapshot, receivedSnapshot] = await Promise.all([
+        adminDb.collection("familyRequests")
+            .where("senderId", "==", user.id)
+            .where("receiverId", "==", targetUserId)
+            .get(),
+        adminDb.collection("familyRequests")
+            .where("senderId", "==", targetUserId)
+            .where("receiverId", "==", user.id)
+            .get()
+    ]);
 
-    const receivedSnapshot = await adminDb.collection("familyRequests")
-        .where("senderId", "==", targetUserId)
-        .where("receiverId", "==", user.id)
-        .get();
+    const sentData = !sentSnapshot.empty ? sentSnapshot.docs[0].data() : null;
+    const receivedData = !receivedSnapshot.empty ? receivedSnapshot.docs[0].data() : null;
 
-    if (!sentSnapshot.empty) {
-        const data = sentSnapshot.docs[0].data();
-        return { status: data.status, requestId: sentSnapshot.docs[0].id } as FamilyStatus;
-    }
-    if (!receivedSnapshot.empty) {
-        const data = receivedSnapshot.docs[0].data();
-        return { status: data.status, requestId: receivedSnapshot.docs[0].id } as FamilyStatus;
-    }
+    // Check for ANY accepted status first
+    if (sentData?.status === 'accepted') return { status: 'accepted', requestId: sentSnapshot.docs[0].id };
+    if (receivedData?.status === 'accepted') return { status: 'accepted', requestId: receivedSnapshot.docs[0].id };
 
-    return { status: 'none' } as FamilyStatus;
+    // Then check for pending logic
+    // If I sent a request, I see 'pending_sent'
+    if (sentData?.status === 'pending') return { status: 'pending_sent', requestId: sentSnapshot.docs[0].id };
+
+    // If I received a request, I see 'pending_received' (or just 'pending' which UI interprets)
+    // The UI likely expects 'pending' or 'pending_received'. 
+    // Looking at family-request-button.tsx might help, but let's stick to standard 'pending' or differentiate.
+    // Existing code returned raw status. 'pending' usually implies "I can accept it" or "Waiting".
+    // If received, I CAN accept it.
+    if (receivedData?.status === 'pending') return { status: 'pending_received', requestId: receivedSnapshot.docs[0].id };
+
+    // If rejected?
+    if (sentData?.status === 'rejected') return { status: 'rejected', requestId: sentSnapshot.docs[0].id };
+    // Received rejected? user shouldn't probably know? or yes?
+
+    return { status: 'none' };
 }
