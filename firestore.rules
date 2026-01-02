@@ -53,10 +53,15 @@ service cloud.firestore {
       }
     }
 
-    // Posts Collection - Only visible to family members
+    // Posts Collection - Users can always see their own posts
     match /posts/{postId} {
-      // Only family members can read posts, or admins
-      allow read: if isAuthenticated() && (isFamily(resource.data.authorId) || isOwner(resource.data.authorId) || isAdmin());
+      // Read: Allow if user is the author, OR is family with the author, OR is admin
+      // IMPORTANT: Users must ALWAYS be able to see their own posts
+      allow read: if isAuthenticated() && (
+        isOwner(resource.data.authorId) || 
+        isFamily(resource.data.authorId) || 
+        isAdmin()
+      );
       
       // Create: Must be authenticated and set own authorId
       allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
