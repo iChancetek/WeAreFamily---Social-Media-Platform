@@ -7,7 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { createPost } from "@/app/actions/posts";
 import { generatePostContent } from "@/app/actions/ai";
-import { uploadFile } from "@/app/actions/upload";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
 import { ImageIcon, Loader2, Send, Sparkles, X } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
@@ -59,12 +60,15 @@ export function CreatePost() {
         if (e.target.files && e.target.files[0]) {
             setIsUploading(true);
             try {
-                const formData = new FormData();
-                formData.append('file', e.target.files[0]);
-                const url = await uploadFile(formData);
+                const file = e.target.files[0];
+                const storageRef = ref(storage, `uploads/${Date.now()}-${file.name}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(snapshot.ref);
+
                 setMediaUrls(prev => [...prev, url]);
                 toast.success("Photo uploaded! 📸");
-            } catch {
+            } catch (error) {
+                console.error("Upload failed", error);
                 toast.error("Upload failed");
             } finally {
                 setIsUploading(false);
