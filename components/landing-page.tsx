@@ -16,7 +16,7 @@ export function LandingPage() {
                             <Heart className="w-7 h-7 text-blue-600" fill="currentColor" />
                             <div>
                                 <div className="font-bold text-2xl text-gray-900 tracking-tight">Famio</div>
-                                <div className="text-xs text-gray-600 font-medium -mt-1">by WeAreFamily</div>
+                                <div className="text-xs text-gray-600 font-medium -mt-1">by ChanceTEK</div>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -149,12 +149,12 @@ export function LandingPage() {
                             <Heart className="w-6 h-6 text-blue-600" fill="currentColor" />
                             <div>
                                 <span className="font-bold text-gray-900 text-lg">Famio</span>
-                                <span className="text-gray-500 text-sm ml-2">by WeAreFamily</span>
+                                <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>
                             </div>
                         </div>
                         <div className="text-center space-y-2">
                             <p className="text-gray-600 text-sm">
-                                © 2026 Famio by WeAreFamily. All Rights Reserved.
+                                © 2026 Famio by ChanceTEK. All Rights Reserved.
                             </p>
                             <p className="text-gray-500 text-xs">
                                 Developed by Chancellor Minus | ChanceTEK LLC | iChanceTEK
