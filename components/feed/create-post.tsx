@@ -33,6 +33,9 @@ export function CreatePost() {
             setContent("");
             setMediaUrls([]);
             toast.success("Moment shared successfully! ❤️");
+
+            // Refresh the page to show the new post
+            window.location.reload();
         } catch {
             toast.error("Failed to share moment. Please try again.");
         } finally {
