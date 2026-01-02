@@ -6,7 +6,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
 import { sanitizeData } from "@/lib/serialization";
 
-export type NotificationType = 'like' | 'comment' | 'group_invite' | 'follow' | 'mention';
+export type NotificationType = 'like' | 'comment' | 'group_invite' | 'follow' | 'mention' | 'admin_action' | 'family_request';
 
 export type Notification = {
     id: string;
