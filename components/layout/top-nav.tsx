@@ -19,7 +19,7 @@ export function TopNav({ className }: { className?: string }) {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-72">
-                    <Sidebar />
+                    <Sidebar className="static w-full h-full border-none" />
                 </SheetContent>
             </Sheet>
         </header>

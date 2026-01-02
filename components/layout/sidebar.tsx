@@ -12,36 +12,18 @@ import { useLanguage } from "@/components/language-context";
 
 interface SidebarProps {
     isAdmin?: boolean;
+    className?: string;
 }
 
-export function Sidebar({ isAdmin }: SidebarProps) {
+export function Sidebar({ isAdmin, className }: SidebarProps) {
     const pathname = usePathname();
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
 
-    // Get user's first name from profile or display name
-    const firstName = profile?.displayName?.split(' ')[0] || profile?.email?.split('@')[0] || t("nav.profile");
-
-    // Simplified links for now, removing translation dependency to fix build quickly
-    const links = [
-        { href: "/", label: t("nav.home"), icon: Home },
-        { href: "/profile", label: firstName, icon: Users },
-        { href: "/family", label: t("nav.family"), icon: Users },
-        { href: "/groups", label: t("nav.groups"), icon: Tent },
-        { href: "/branding", label: t("nav.branding"), icon: Briefcase },
-        { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
-        { href: "/notifications", label: t("nav.notifications"), icon: Bell },
-        { href: "/events", label: t("nav.events"), icon: Ticket },
-        { href: "/gallery", label: t("nav.gallery"), icon: ImageIcon },
-        { href: "/settings", label: t("nav.settings"), icon: Settings },
-    ];
-
-    if (isAdmin) {
-        links.push({ href: "/admin", label: t("nav.admin"), icon: Shield });
-    }
+    // ... (rest of logic)
 
     return (
-        <div className="flex flex-col h-full py-4 bg-white dark:bg-slate-950 border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-50">
+        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-slate-950 border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-50", className)}>
             <div className="px-6 py-4">
                 <Link href="/" className="flex items-center gap-2">
                     <Heart className="w-8 h-8 fill-primary text-primary" />
