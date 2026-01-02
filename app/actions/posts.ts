@@ -8,9 +8,11 @@ import { sanitizeData } from "@/lib/serialization";
 
 export async function createPost(content: string, mediaUrls: string[] = []) {
     const user = await getUserProfile()
-    if (!user || user.role === 'pending') {
+    if (!user) {
         throw new Error("Unauthorized")
     }
+
+    // Allow all authenticated users to post (removed pending role check for production)
 
     await adminDb.collection("posts").add({
         authorId: user.id,
