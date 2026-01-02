@@ -12,9 +12,11 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
 import { ImageIcon, Loader2, Send, Sparkles, X } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
+import { useLanguage } from "@/components/language-context";
 
 export function CreatePost() {
     const { user } = useAuth();
+    const { t } = useLanguage();
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -86,8 +88,8 @@ export function CreatePost() {
                     </Avatar>
                     <div className="flex-1 space-y-3">
                         <Textarea
-                            placeholder={`What's on your mind, ${user?.displayName?.split(' ')[0] || 'Family'}?`}
-                            className="min-h-[80px] bg-gray-100 hover:bg-gray-200 focus:bg-white border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
+                            placeholder={t("feed.placeholder")}
+                            className="min-h-[80px] bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 focus:bg-white dark:focus:bg-slate-900 border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                         />
@@ -145,7 +147,7 @@ export function CreatePost() {
                                 className="bg-primary hover:bg-blue-600 text-white font-semibold px-8"
                             >
                                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                                Post
+                                {t("btn.post")}
                             </Button>
                         </div>
                     </div>

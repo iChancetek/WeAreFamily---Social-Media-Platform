@@ -8,6 +8,7 @@ import { LandingPage } from "@/components/landing-page";
 
 import { BirthdayModal } from "@/components/birthdays/birthday-modal";
 
+import { WelcomeHeader } from "@/components/feed/welcome-header";
 import { StoriesTray } from "@/components/stories/stories-tray";
 
 export const dynamic = 'force-dynamic';
@@ -36,9 +37,7 @@ export default async function Home() {
   return (
     <MainLayout>
       <div className="pb-8">
-        <h1 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-blue-800 to-gray-600 dark:from-white dark:via-blue-100 dark:to-gray-400 animate-in fade-in slide-in-from-left-4 duration-700">
-          Welcome Home, {profile?.firstName || user.displayName}!
-        </h1>
+        <WelcomeHeader displayName={profile?.firstName || user.displayName || "Family"} />
         <BirthdayModal hasBirthday={!!dbUser.birthday} />
         <StoriesTray />
         <CreatePost />

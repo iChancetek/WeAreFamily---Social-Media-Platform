@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useLanguage } from "@/components/language-context";
 
 interface SidebarProps {
     isAdmin?: boolean;
@@ -16,23 +17,24 @@ interface SidebarProps {
 export function Sidebar({ isAdmin }: SidebarProps) {
     const pathname = usePathname();
     const { user, signOut } = useAuth();
+    const { t } = useLanguage();
 
     // Simplified links for now, removing translation dependency to fix build quickly
     const links = [
-        { href: "/", label: "Home", icon: Home },
-        { href: "/profile", label: "Profile", icon: Users }, // Point to dedicated profile
-        { href: "/family", label: "Family", icon: Users },
-        { href: "/groups", label: "Groups", icon: Tent },
-        { href: "/branding", label: "Branding", icon: Briefcase },
-        { href: "/messages", label: "Messages", icon: MessageSquare },
-        { href: "/notifications", label: "Notifications", icon: Bell },
-        { href: "/events", label: "Events", icon: Ticket },
-        { href: "/gallery", label: "Gallery", icon: ImageIcon },
-        { href: "/settings", label: "Settings", icon: Settings },
+        { href: "/", label: t("nav.home"), icon: Home },
+        { href: "/profile", label: t("nav.profile"), icon: Users },
+        { href: "/family", label: t("nav.family"), icon: Users },
+        { href: "/groups", label: t("nav.groups"), icon: Tent },
+        { href: "/branding", label: t("nav.branding"), icon: Briefcase },
+        { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
+        { href: "/notifications", label: t("nav.notifications"), icon: Bell },
+        { href: "/events", label: t("nav.events"), icon: Ticket },
+        { href: "/gallery", label: t("nav.gallery"), icon: ImageIcon },
+        { href: "/settings", label: t("nav.settings"), icon: Settings },
     ];
 
     if (isAdmin) {
-        links.push({ href: "/admin", label: "Admin", icon: Shield });
+        links.push({ href: "/admin", label: t("nav.admin"), icon: Shield });
     }
 
     return (
@@ -75,7 +77,7 @@ export function Sidebar({ isAdmin }: SidebarProps) {
                 <div className="p-4 border-t border-border mt-auto">
                     <Button variant="ghost" className="w-full justify-start gap-3 text-red-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20" onClick={() => signOut()}>
                         <LogOut className="h-4 w-4" />
-                        Sign Out
+                        {t("nav.signout")}
                     </Button>
                 </div>
             </div>

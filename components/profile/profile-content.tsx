@@ -90,14 +90,14 @@ export function ProfileContent({ user }: ProfileContentProps) {
         <div className="space-y-6">
             <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Profile</h2>
+                    <h2 className="text-2xl font-bold tracking-tight">{t("profile.title")}</h2>
                     <p className="text-muted-foreground">
-                        Manage your personal identity on the platform.
+                        {t("settings.profile.desc")}
                     </p>
                 </div>
                 <Button variant="outline" onClick={() => router.push('/')} className="gap-2">
                     <ArrowLeft className="w-4 h-4" />
-                    Back
+                    {t("profile.back")}
                 </Button>
             </div>
 
@@ -231,7 +231,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
                                         <FormControl>
                                             <Input type="text" placeholder="MM-DD" {...field} />
                                         </FormControl>
-                                        <FormDescription>MM-DD (e.g., 12-25). Used for automated birthday wishes!</FormDescription>
+                                        <FormDescription>MM-DD (e.g., 12-25)</FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}

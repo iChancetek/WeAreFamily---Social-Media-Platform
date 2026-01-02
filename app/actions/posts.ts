@@ -375,3 +375,54 @@ export async function deletePost(postId: string) {
 
     revalidatePath('/')
 }
+
+export async function getUserPosts(userId: string) {
+    try {
+        const postsSnapshot = await adminDb.collection("posts")
+            .where("authorId", "==", userId)
+            .orderBy("createdAt", "desc")
+            .limit(50)
+            .get();
+
+        const posts = await Promise.all(postsSnapshot.docs.map(async (doc) => {
+            const post = doc.data();
+            const authorDoc = await adminDb.collection("users").doc(post.authorId).get();
+            const author = authorDoc.exists ? {
+                id: authorDoc.id,
+                ...authorDoc.data()
+            } : null;
+
+            // Fetch comments
+            const commentsRef = adminDb.collection("posts").doc(doc.id).collection("comments");
+            const commentsSnapshot = await commentsRef.orderBy("createdAt", "asc").get();
+            const comments = await Promise.all(commentsSnapshot.docs.map(async (cDoc) => {
+                const cData = cDoc.data();
+                const cAuthorDoc = await adminDb.collection("users").doc(cData.authorId).get();
+                return {
+                    id: cDoc.id,
+                    ...cData,
+                    author: cAuthorDoc.exists ? {
+                        id: cAuthorDoc.id,
+                        displayName: cAuthorDoc.data()?.displayName,
+                        imageUrl: cAuthorDoc.data()?.imageUrl
+                    } : null,
+                    createdAt: cData.createdAt?.toDate() || new Date()
+                };
+            }));
+
+            return sanitizeData({
+                id: doc.id,
+                ...post,
+                author,
+                comments,
+                type: 'personal',
+                createdAt: post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt || Date.now())
+            });
+        }));
+
+        return posts;
+    } catch (error) {
+        console.error("Error fetching user posts:", error);
+        return [];
+    }
+}

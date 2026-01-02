@@ -1,110 +1,100 @@
-'use client'
+"use client"
 
-import { BlockButton } from "@/components/profile/block-button";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Edit, Mail } from "lucide-react";
-import Link from "next/link";
-
-import { FamilyRequestButton } from "@/components/family/family-request-button";
-import { FamilyStatus } from "@/app/actions/family";
-import { checkOrCreateChat } from "@/app/actions/chat";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
-
-type User = {
-    id: string;
-    email: string;
-    profileData: unknown;
-    displayName?: string | null;
-    bio?: string | null;
-    imageUrl?: string | null;
-    coverUrl?: string | null;
-    coverType?: string | null;
-}
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { useLanguage } from "@/components/language-context"
+import { Edit2 } from "lucide-react"
+import { useState } from "react"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { ProfileContent } from "./profile-content"
 
 interface ProfileHeaderProps {
-    user: User;
-    isOwnProfile: boolean;
-    familyStatus: FamilyStatus;
+    user: {
+        id: string;
+        displayName?: string | null;
+        imageUrl?: string | null;
+        coverUrl?: string | null;
+        coverType?: string | null;
+        bio?: string | null;
+    };
+    isCurrentUser?: boolean;
 }
 
-export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeaderProps) {
-    const router = useRouter();
-    const [isMessaging, setIsMessaging] = useState(false);
+export function ProfileHeader({ user, isCurrentUser }: ProfileHeaderProps) {
+    const { t } = useLanguage()
+    const [isEditing, setIsEditing] = useState(false)
 
-    const handleMessage = async () => {
-        setIsMessaging(true);
-        try {
-            const chatId = await checkOrCreateChat(user.id);
-            router.push(`/messages?chatId=${chatId}`);
-        } catch (error) {
-            console.error("Failed to start chat", error);
-        } finally {
-            setIsMessaging(false);
-        }
-    };
-
-    const profile = user.profileData as { bio?: string, imageUrl?: string } | null;
-    const name = user.displayName || user.email;
-    const initials = name.slice(0, 2).toUpperCase();
-
-    // Prioritize root fields, fallback to legacy profileData
-    const bio = user.bio || profile?.bio || "No bio yet";
-    const imageUrl = user.imageUrl || profile?.imageUrl;
+    const initials = user.displayName?.slice(0, 2).toUpperCase() || "U"
 
     return (
         <div className="relative mb-8">
-            {/* Cover Image */}
-            <div className="h-48 md:h-64 bg-gradient-to-r from-blue-400 to-indigo-500 w-full object-cover">
-                {user.coverUrl && (
-                    <img src={user.coverUrl} alt="Cover" className="w-full h-full object-cover" />
+            {/* Cover Photo/Video */}
+            <div className="relative h-48 md:h-64 rounded-xl overflow-hidden bg-muted group">
+                {user.coverUrl ? (
+                    user.coverType === 'video' ? (
+                        <video
+                            src={user.coverUrl}
+                            className="w-full h-full object-cover"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                        />
+                    ) : (
+                        <img
+                            src={user.coverUrl}
+                            alt="Cover"
+                            className="w-full h-full object-cover"
+                        />
+                    )
+                ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-blue-500/20 to-purple-500/20" />
                 )}
             </div>
 
-            <div className="container px-4 mx-auto">
-                <div className="relative -mt-12 flex flex-col md:flex-row items-end md:items-center gap-4">
-                    <Avatar className="w-24 h-24 border-4 border-white shadow-sm ring-2 ring-rose-50">
-                        <AvatarImage src={imageUrl} />
-                        <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 mb-2">
-                        <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
-                        <p className="text-gray-500 text-sm">{bio}</p>
+            {/* Avatar & Profile Info */}
+            <div className="px-4 -mt-12 sm:-mt-16 sm:px-6 relative z-10">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between sm:space-x-5">
+                    <div className="flex">
+                        <Avatar className="h-24 w-24 sm:h-32 sm:w-32 rounded-full ring-4 ring-white dark:ring-slate-950 bg-white">
+                            <AvatarImage src={user.imageUrl || undefined} className="object-cover" />
+                            <AvatarFallback className="text-2xl font-bold">{initials}</AvatarFallback>
+                        </Avatar>
                     </div>
-                    <div className="flex gap-2 mb-4 md:mb-2 items-center">
-                        {!isOwnProfile && (
-                            <>
-                                <FamilyRequestButton
-                                    targetUserId={user.id}
-                                    initialStatus={familyStatus}
-                                    initialRequestId={familyStatus.requestId}
-                                    className="h-9"
-                                />
-                                <Button
-                                    variant="outline"
-                                    className="h-9"
-                                    disabled={isMessaging}
-                                    onClick={handleMessage}
-                                >
-                                    {isMessaging ? <Loader2 className="w-4 h-4 animate-spin" /> : "Message"}
-                                </Button>
-                                <BlockButton targetUserId={user.id} />
-                            </>
-                        )}
-                        {isOwnProfile && (
-                            <Link href="/settings">
-                                <Button variant="outline" className="gap-2 h-9">
-                                    <Edit className="w-4 h-4" />
-                                    Edit Profile
-                                </Button>
-                            </Link>
-                        )}
+                    <div className="mt-6 sm:flex-1 sm:min-w-0 sm:flex sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
+                        <div className="sm:hidden 2xl:block mt-6 min-w-0 flex-1">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">
+                                {user.displayName}
+                            </h1>
+                        </div>
+                        <div className="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+                            {isCurrentUser && (
+                                <Dialog open={isEditing} onOpenChange={setIsEditing}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline" className="gap-2">
+                                            <Edit2 className="h-4 w-4" />
+                                            {t("profile.edit")}
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                                        <ProfileContent user={user as any} />
+                                    </DialogContent>
+                                </Dialog>
+                            )}
+                        </div>
                     </div>
                 </div>
+                <div className="hidden sm:block 2xl:hidden mt-6 min-w-0 flex-1">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">
+                        {user.displayName}
+                    </h1>
+                </div>
+
+                {user.bio && (
+                    <p className="mt-4 text-gray-600 dark:text-gray-400 max-w-2xl">
+                        {user.bio}
+                    </p>
+                )}
             </div>
         </div>
     )

@@ -27,6 +27,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { createPost, toggleReaction, addComment, deletePost, ReactionType } from "@/app/actions/posts";
+import { useLanguage } from "@/components/language-context";
 import { Heart, MessageCircle, Share2, Trash2, Send, Sparkles, Repeat2 } from "lucide-react";
 import { getReactionIcon, getReactionLabel, getReactionColor, ReactionSelector } from "./reaction-selector";
 import {
@@ -71,6 +72,7 @@ type Post = {
 }
 
 export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: string }) {
+    const { t } = useLanguage();
     const author = post.author;
     const profile = author ? {
         displayName: author.displayName || author.email || "Unknown",
@@ -112,7 +114,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
             // Revert on failure
             setCurrentMyReaction(currentMyReaction);
             setAllReactions(reactionsMap);
-            toast.error("Failed to update reaction");
+            toast.error(t("profile.update.error") || "Failed to update reaction");
         }
     };
 
@@ -123,9 +125,9 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
         try {
             await addComment(post.id, commentText, post.type || 'personal', post.context?.id);
             setCommentText("");
-            toast.success("Comment added!");
+            toast.success(t("feed.comment.success") || "Comment added!");
         } catch {
-            toast.error("Failed to add comment");
+            toast.error(t("feed.comment.error") || "Failed to add comment");
         }
     };
 
@@ -133,9 +135,9 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
         try {
             const url = `${window.location.origin}/post/${post.id}`;
             await navigator.clipboard.writeText(url);
-            toast.success("Link copied to clipboard! 📋");
+            toast.success(t("feed.share.copy.success") || "Link copied to clipboard! 📋");
         } catch {
-            toast.error("Failed to copy link");
+            toast.error(t("feed.share.copy.error") || "Failed to copy link");
         }
     };
 
@@ -161,9 +163,9 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
         try {
             const repostContent = `🔄 Reposted from ${name}:\n\n${post.content}`;
             await createPost(repostContent, post.mediaUrls || []);
-            toast.success("Shared to your feed! 🔄");
+            toast.success(t("feed.repost.success") || "Shared to your feed! 🔄");
         } catch {
-            toast.error("Failed to repost");
+            toast.error(t("feed.repost.error") || "Failed to repost");
         }
     };
 
@@ -171,9 +173,9 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
         setIsDeleting(true);
         try {
             await deletePost(post.id);
-            toast.success("Post deleted");
+            toast.success(t("feed.delete.success") || "Post deleted");
         } catch {
-            toast.error("Failed to delete post");
+            toast.error(t("feed.delete.error") || "Failed to delete post");
             setIsDeleting(false);
         }
     };
