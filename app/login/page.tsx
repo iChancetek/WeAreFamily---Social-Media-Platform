@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import "@/lib/firebase"
 
-import { createSession } from "@/app/actions/auth";
+import { createSession, syncUserToDb } from "@/app/actions/auth";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("")
@@ -27,7 +27,12 @@ export default function LoginPage() {
         try {
             const auth = getAuth()
             const userCredential = await signInWithEmailAndPassword(auth, email, password)
-            await createSession(userCredential.user.uid)
+            const user = userCredential.user
+
+            // Ensure user exists in database (handles both new and existing users)
+            await syncUserToDb(user.uid, user.email!, user.displayName || user.email!.split('@')[0])
+            await createSession(user.uid)
+
             toast.success("Welcome back!")
             router.push("/")
             router.refresh() // Ensure server components re-run
@@ -45,7 +50,12 @@ export default function LoginPage() {
             const auth = getAuth()
             const provider = new GoogleAuthProvider()
             const userCredential = await signInWithPopup(auth, provider)
-            await createSession(userCredential.user.uid)
+            const user = userCredential.user
+
+            // Ensure user exists in database
+            await syncUserToDb(user.uid, user.email!, user.displayName || user.email!.split('@')[0])
+            await createSession(user.uid)
+
             toast.success("Welcome back!")
             router.push("/")
             router.refresh()
