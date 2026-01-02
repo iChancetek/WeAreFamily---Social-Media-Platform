@@ -27,6 +27,9 @@ env:
     secret: CLERK_SECRET_KEY
   - variable: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
     secret: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+    availability:
+      - BUILD
+      - RUNTIME
   - variable: OPENAI_API_KEY
     secret: OPENAI_API_KEY
   - variable: CLERK_WEBHOOK_SECRET
