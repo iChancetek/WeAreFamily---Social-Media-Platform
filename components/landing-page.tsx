@@ -3,7 +3,7 @@
 // Updated: 2026-01-02 09:52 - ChanceTEK branding v2
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Heart, Shield, Users, Globe, CheckCircle } from "lucide-react"
+import { Heart, Shield, Users, Globe, CheckCircle, Sparkles } from "lucide-react"
 import Image from "next/image"
 
 export function LandingPage() {
@@ -47,10 +47,14 @@ export function LandingPage() {
                         <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-gray-900 tracking-tight mb-4">
                             Famio
                         </h1>
-                        <p className="text-2xl md:text-3xl font-semibold text-blue-600 mb-6">
+                        <p className="text-2xl md:text-3xl font-semibold text-blue-600 mb-4">
                             Connect with Your Family and Friends.<br />
                             We Are One Family
                         </p>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-full mb-6">
+                            <Sparkles className="w-5 h-5 text-blue-600" />
+                            <span className="text-sm font-semibold text-blue-700">Powered by AI</span>
+                        </div>
                         <p className="max-w-3xl mx-auto text-xl md:text-2xl text-gray-600 mb-10 leading-relaxed font-normal">
                             A private, secure platform designed exclusively for families to share moments,
                             plan events, and stay connected with the people who matter most.
@@ -61,8 +65,8 @@ export function LandingPage() {
                                     Join Famio
                                 </Button>
                             </Link>
-                            <Link href="/login">
-                                <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold">
+                            <Link href="/learn-more">
+                                <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold">
                                     Learn More
                                 </Button>
                             </Link>
