@@ -29,14 +29,14 @@ export async function syncUserToDb(uid: string, email: string, displayName: stri
             await userRef.set({
                 email: email,
                 displayName: displayName,
-                role: email === "chancellor@ichancetek" ? "admin" : "member", // Auto-promote admin
+                role: email === "chancellor@ichancetek.com" ? "admin" : "member", // Auto-promote admin
                 isActive: true,
                 createdAt: FieldValue.serverTimestamp(),
             });
         } else {
             // Check if we need to promote existing user
             const userData = userDoc.data();
-            if (email === "chancellor@ichancetek" && userData?.role !== "admin") {
+            if (email === "chancellor@ichancetek.com" && userData?.role !== "admin") {
                 await userRef.update({ role: "admin" });
             }
         }
