@@ -29,15 +29,19 @@ export default function LoginPage() {
             const userCredential = await signInWithEmailAndPassword(auth, email, password)
             const user = userCredential.user
 
+            console.log("User authenticated, syncing to database...")
             // Ensure user exists in database (handles both new and existing users)
             await syncUserToDb(user.uid, user.email!, user.displayName || user.email!.split('@')[0])
+
+            console.log("Creating session cookie...")
             await createSession(user.uid)
 
             toast.success("Welcome back!")
             router.push("/")
             router.refresh() // Ensure server components re-run
         } catch (error: any) {
-            console.error(error)
+            console.error("Login error:", error)
+            console.error("Error details:", { message: error.message, code: error.code, stack: error.stack })
             toast.error(error.message || "Failed to login")
         } finally {
             setIsLoading(false)
