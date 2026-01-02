@@ -144,6 +144,8 @@ export async function getPosts() {
         // The user reported that before migration, posts were working perfectly (implying global visibility or lost family connections).
         // Since we relaxed Firestore rules to allow all posts, the feed should also show all post.
 
+        const queries: Promise<any>[] = [];
+
         queries.push(
             adminDb.collection("posts")
                 .orderBy("createdAt", "desc")
