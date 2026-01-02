@@ -1,119 +1,103 @@
-'use client'
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { CalendarIcon, Loader2, Plus } from "lucide-react"
-import { createEvent } from "@/app/actions/events"
-import { toast } from "sonner"
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { createEvent } from "@/app/actions/events";
+import { toast } from "sonner";
+import { Loader2, Plus, Calendar } from "lucide-react";
 
 export function CreateEventDialog() {
-    const [open, setOpen] = useState(false)
-    const [title, setTitle] = useState("")
-    const [date, setDate] = useState<Date>()
-    const [location, setLocation] = useState("")
-    const [description, setDescription] = useState("")
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [open, setOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        title: "",
+        location: "",
+        description: "",
+        date: "" // YYYY-MM-DDTHH:mm
+    });
 
     const handleSubmit = async () => {
-        if (!title || !date) return;
+        if (!formData.title || !formData.date) {
+            toast.error("Title and Date are required");
+            return;
+        }
 
         setIsSubmitting(true);
         try {
             await createEvent({
-                title,
-                date,
-                location,
-                description
+                ...formData,
+                date: new Date(formData.date)
             });
+            toast.success("Event created! 🎉");
             setOpen(false);
-            setTitle("");
-            setDate(undefined);
-            setLocation("");
-            setDescription("");
-            toast.success("Event created successfully! 🎉");
+            setFormData({ title: "", location: "", description: "", date: "" });
         } catch {
-            toast.error("Failed to create event.");
+            toast.error("Failed to create event");
         } finally {
             setIsSubmitting(false);
         }
-    }
+    };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-rose-500 hover:bg-rose-600 text-white gap-2">
-                    <Plus className="w-4 h-4" /> Plan Event
+                <Button className="gap-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white border-0 shadow-lg shadow-pink-500/20">
+                    <Plus className="w-4 h-4" />
+                    New Event
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Plan a Family Event</DialogTitle>
-                    <DialogDescription>
-                        Create a new event for everyone to see.
-                    </DialogDescription>
+                    <DialogTitle>Plan a Gathering</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
                         <Label htmlFor="title">Event Title</Label>
-                        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Mom's Birthday Dinner" />
+                        <Input
+                            id="title"
+                            placeholder="e.g. Grandma's 80th Birthday"
+                            value={formData.title}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Date</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                        "w-full justify-start text-left font-normal",
-                                        !date && "text-muted-foreground"
-                                    )}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                    mode="single"
-                                    selected={date}
-                                    onSelect={setDate}
-                                    initialFocus
-                                />
-                            </PopoverContent>
-                        </Popover>
+                        <Label htmlFor="date">Date & Time</Label>
+                        <Input
+                            id="date"
+                            type="datetime-local"
+                            value={formData.date}
+                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="location">Location</Label>
-                        <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Grandma's House" />
+                        <Input
+                            id="location"
+                            placeholder="e.g. The Old Family House"
+                            value={formData.location}
+                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="description">Description (Optional)</Label>
-                        <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Add some details..." />
+                        <Label htmlFor="description">Details</Label>
+                        <Textarea
+                            id="description"
+                            placeholder="Add details about food, dress code, etc."
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        />
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button onClick={handleSubmit} disabled={!title || !date || isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Create Event
+                    <Button onClick={handleSubmit} disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Event"}
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-    )
+    );
 }

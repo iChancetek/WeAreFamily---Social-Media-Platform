@@ -1,16 +1,40 @@
-'use server'
+"use server";
 
-import { db } from "@/db"
-import { events } from "@/db/schema"
-import { getUserProfile } from "@/lib/auth"
-import { desc, eq } from "drizzle-orm"
-import { revalidatePath } from "next/cache"
+import { db } from "@/db";
+import { events, users } from "@/db/schema";
+import { eq, desc, inArray } from "drizzle-orm";
+import { getUserProfile } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
-export async function createEvent(data: { title: string, description?: string, date: Date, location?: string }) {
-    const user = await getUserProfile()
-    if (!user || user.role === 'pending') {
-        throw new Error("Unauthorized")
-    }
+export type Event = {
+    id: number;
+    title: string;
+    description: string | null;
+    date: Date;
+    location: string | null;
+    creatorId: string;
+    attendees: string[]; // User IDs
+    createdAt: Date;
+    creator?: {
+        displayName: string | null;
+        imageUrl: string | null;
+    };
+    attendeeProfiles?: {
+        displayName: string | null;
+        imageUrl: string | null;
+    }[];
+}
+
+export type EventForm = {
+    title: string;
+    description?: string;
+    date: Date;
+    location?: string;
+}
+
+export async function createEvent(data: EventForm) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
 
     await db.insert(events).values({
         creatorId: user.id,
@@ -19,50 +43,73 @@ export async function createEvent(data: { title: string, description?: string, d
         date: data.date,
         location: data.location,
         attendees: [user.id], // Creator attends by default
-    })
+    });
 
-    revalidatePath('/events')
+    revalidatePath("/events");
+    return { success: true };
+}
+
+export async function getEvents(): Promise<Event[]> {
+    const rawEvents = await db.select().from(events).orderBy(desc(events.date));
+
+    // Allow fetching user profiles for creator and attendees
+    // For efficiency, we collect all unique user IDs involved
+    const allUserIds = new Set<string>();
+    rawEvents.forEach(e => {
+        allUserIds.add(e.creatorId);
+        (e.attendees as string[] || []).forEach(a => allUserIds.add(a));
+    });
+
+    const userList = await db.select().from(users).where(inArray(users.id, Array.from(allUserIds)));
+    const userMap = new Map(userList.map(u => {
+        const profile = u.profileData as any;
+        return [u.id, {
+            displayName: u.displayName || profile?.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : "Family Member"),
+            imageUrl: u.imageUrl || profile?.imageUrl || null
+        }];
+    }));
+
+    return rawEvents.map(e => ({
+        ...e,
+        attendees: (e.attendees as string[]) || [],
+        creator: userMap.get(e.creatorId),
+        attendeeProfiles: (e.attendees as string[] || []).map(id => userMap.get(id)).filter(Boolean) as any[]
+    }));
 }
 
 export async function joinEvent(eventId: number) {
-    const user = await getUserProfile()
-    if (!user || user.role === 'pending') {
-        throw new Error("Unauthorized")
-    }
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
 
-    // This is a bit tricky with JSON arrays in simplistic SQL. 
-    // Ideally we'd have a separate table for attendees, but schema says jsonb array.
-    // Drizzle with Postgres can update jsonb content but it's raw SQL often.
-    // For simplicity, fetch, update, save. (Concurrency warning: simplistic)
-
-    // Better: separate table `event_attendees`? 
-    // Prompt Implementation Plan kept it simple. I'll stick to JSONB for now but use a read-modify-write (optimistic ignored for now).
-    // Or I can just append if postgres allows easily. 
-    // Let's use a simpler approach: Read, Check, Write.
-
-    const event = await db.query.events.findFirst({
-        where: eq(events.id, eventId)
-    });
-
+    const [event] = await db.select().from(events).where(eq(events.id, eventId));
     if (!event) throw new Error("Event not found");
 
-    const currentAttendees = event.attendees || [];
-    if (currentAttendees.includes(user.id)) return; // Already joined
+    const currentAttendees = (event.attendees as string[]) || [];
 
-    await db.update(events)
-        .set({ attendees: [...currentAttendees, user.id] })
-        .where(eq(events.id, eventId));
-
-    revalidatePath('/events');
-}
-
-export async function getEvents() {
-    const user = await getUserProfile()
-    if (!user || user.role === 'pending') {
-        throw new Error("Unauthorized")
+    if (!currentAttendees.includes(user.id)) {
+        await db.update(events)
+            .set({ attendees: [...currentAttendees, user.id] })
+            .where(eq(events.id, eventId));
     }
 
-    return await db.query.events.findMany({
-        orderBy: [desc(events.date)]
-    });
+    revalidatePath("/events");
+    return { success: true };
+}
+
+export async function leaveEvent(eventId: number) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const [event] = await db.select().from(events).where(eq(events.id, eventId));
+    if (!event) throw new Error("Event not found");
+
+    const currentAttendees = (event.attendees as string[]) || [];
+    const newAttendees = currentAttendees.filter(id => id !== user.id);
+
+    await db.update(events)
+        .set({ attendees: newAttendees })
+        .where(eq(events.id, eventId));
+
+    revalidatePath("/events");
+    return { success: true };
 }
