@@ -25,7 +25,7 @@ import {
 type User = {
     id: string
     email: string
-    role: "admin" | "member" | "pending"
+    role: "admin" | "member" | "pending" | "rejected"
     isActive: boolean
     displayName: string | null
     imageUrl: string | null
@@ -46,7 +46,7 @@ export function UserList({ users }: { users: User[] }) {
     const handleReject = async (id: string) => {
         try {
             await rejectUser(id)
-            toast.success("Family Member rejected (set to pending)")
+            toast.success("Family Member rejected")
         } catch {
             toast.error("Failed to reject")
         }
@@ -121,14 +121,14 @@ export function UserList({ users }: { users: User[] }) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        {user.role === 'pending' && (
+                                        {(user.role === 'pending' || user.role === 'rejected') && (
                                             <DropdownMenuItem onClick={() => handleApprove(user.id)}>
                                                 <Check className="mr-2 h-4 w-4 text-green-600" /> Approve
                                             </DropdownMenuItem>
                                         )}
-                                        {user.role !== 'pending' && user.role !== 'admin' && (
+                                        {user.role !== 'rejected' && user.role !== 'admin' && (
                                             <DropdownMenuItem onClick={() => handleReject(user.id)}>
-                                                <X className="mr-2 h-4 w-4 text-orange-600" /> Revoke Access (Pending)
+                                                <X className="mr-2 h-4 w-4 text-red-600" /> {user.role === 'pending' ? 'Reject' : 'Revoke Access'}
                                             </DropdownMenuItem>
                                         )}
                                         {user.role !== 'admin' && (

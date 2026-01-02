@@ -26,10 +26,13 @@ export async function syncUserToDb(uid: string, email: string, displayName: stri
         const userDoc = await userRef.get();
 
         if (!userDoc.exists) {
+            // Default to 'pending' unless it's the specific admin email
+            const role = email === "chancellor@ichancetek.com" ? "admin" : "pending";
+
             await userRef.set({
                 email: email,
                 displayName: displayName,
-                role: email === "chancellor@ichancetek.com" ? "admin" : "member", // Auto-promote admin
+                role: role,
                 isActive: true,
                 createdAt: FieldValue.serverTimestamp(),
             });

@@ -32,7 +32,7 @@ export default async function GalleryPage() {
                 <p className="text-center text-gray-500 py-10">No photos shared yet.</p>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {mediaItems.map((item, idx) => (
+                    {mediaItems.map((item: any, idx: number) => (
                         <div key={`${item.postId}-${idx}`} className="aspect-square rounded-lg overflow-hidden relative group">
                             <img src={item.url} alt="Gallery item" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                         </div>

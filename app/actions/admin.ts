@@ -21,7 +21,7 @@ export async function rejectUser(userId: string) {
         throw new Error("Unauthorized")
     }
 
-    await adminDb.collection("users").doc(userId).update({ role: 'pending' });
+    await adminDb.collection("users").doc(userId).update({ role: 'rejected' });
 
     revalidatePath('/admin')
 }
