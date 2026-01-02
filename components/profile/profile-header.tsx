@@ -21,6 +21,7 @@ type User = {
     profileData: unknown;
     displayName?: string | null;
     bio?: string | null;
+    imageUrl?: string | null;
     coverUrl?: string | null;
     coverType?: string | null;
 }
@@ -51,6 +52,10 @@ export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeade
     const name = user.displayName || user.email;
     const initials = name.slice(0, 2).toUpperCase();
 
+    // Prioritize root fields, fallback to legacy profileData
+    const bio = user.bio || profile?.bio || "No bio yet";
+    const imageUrl = user.imageUrl || profile?.imageUrl;
+
     return (
         <div className="relative mb-8">
             {/* Cover Image */}
@@ -63,12 +68,12 @@ export function ProfileHeader({ user, isOwnProfile, familyStatus }: ProfileHeade
             <div className="container px-4 mx-auto">
                 <div className="relative -mt-12 flex flex-col md:flex-row items-end md:items-center gap-4">
                     <Avatar className="w-24 h-24 border-4 border-white shadow-sm ring-2 ring-rose-50">
-                        <AvatarImage src={profile?.imageUrl || undefined} />
+                        <AvatarImage src={imageUrl} />
                         <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 mb-2">
                         <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
-                        <p className="text-gray-500 text-sm">{profile?.bio || "No bio yet"}</p>
+                        <p className="text-gray-500 text-sm">{bio}</p>
                     </div>
                     <div className="flex gap-2 mb-4 md:mb-2 items-center">
                         {!isOwnProfile && (
