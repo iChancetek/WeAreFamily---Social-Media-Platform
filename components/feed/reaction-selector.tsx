@@ -9,6 +9,8 @@ const REACTIONS: { type: ReactionType; label: string; emoji: string; color: stri
     { type: 'excellent', label: 'Excellent', emoji: '🌟', color: 'text-yellow-500' },
     { type: 'hugs', label: 'Hugs', emoji: '🤗', color: 'text-orange-500' },
     { type: 'thinking_of_you', label: 'Thinking of you', emoji: '💖', color: 'text-pink-500' },
+    { type: 'vibe', label: "That's a Vibe", emoji: '😎', color: 'text-purple-500' },
+    { type: 'positive_energy', label: 'Positive Energy', emoji: '✨', color: 'text-yellow-400' },
 ];
 
 interface ReactionSelectorProps {

@@ -38,7 +38,7 @@ export async function createPost(content: string, mediaUrls: string[] = []) {
 }
 
 export type PostType = 'personal' | 'group' | 'branding';
-export type ReactionType = 'brilliant' | 'excellent' | 'hugs' | 'thinking_of_you';
+export type ReactionType = 'brilliant' | 'excellent' | 'hugs' | 'thinking_of_you' | 'vibe' | 'positive_energy';
 
 export async function toggleReaction(
     postId: string,

@@ -126,13 +126,14 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
         },
     })
 
-    // Listen to theme changes
+    // Listen to theme changes - Only apply if user interacts (form is dirty) to avoid overriding local preference on mount
     const themeValue = accountForm.watch("theme")
+    const { isDirty: isAccountDirty } = accountForm.formState
     useEffect(() => {
-        if (themeValue) {
+        if (themeValue && isAccountDirty) {
             setTheme(themeValue)
         }
-    }, [themeValue, setTheme])
+    }, [themeValue, setTheme, isAccountDirty])
 
     // --- Submit Handlers ---
     async function onProfileSubmit(data: ProfileFormValues) {

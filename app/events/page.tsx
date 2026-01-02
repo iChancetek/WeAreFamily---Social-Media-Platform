@@ -19,15 +19,15 @@ export default async function EventsPage() {
             <div className="space-y-8">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Family Events</h1>
-                        <p className="text-slate-500 dark:text-slate-400">Plan reunions, dinners, and birthday parties!</p>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">Family Events</h1>
+                        <p className="text-muted-foreground">Plan reunions, dinners, and birthday parties!</p>
                     </div>
                     <CreateEventDialog />
                 </div>
 
                 {events.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-white/5 rounded-2xl border border-dashed border-gray-200 dark:border-white/10">
-                        <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-4 text-blue-500">
+                    <div className="flex flex-col items-center justify-center py-16 bg-card rounded-2xl border border-dashed border-border">
+                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
                             <CalendarDays className="w-8 h-8" />
                         </div>
                         <h3 className="text-xl font-semibold mb-2">No upcoming events</h3>

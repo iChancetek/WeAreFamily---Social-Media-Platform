@@ -43,7 +43,7 @@ export default async function ProfilePage() {
                                 <PostCard key={post.id} post={post as any} currentUserId={user.id} />
                             ))
                         ) : (
-                            <div className="bg-white dark:bg-slate-900 rounded-xl p-12 text-center border border-dashed border-gray-200 dark:border-white/10">
+                            <div className="bg-white dark:bg-card rounded-xl p-12 text-center border border-dashed border-gray-200 dark:border-white/10">
                                 <p className="text-muted-foreground">No posts yet. Share your first moment!</p>
                             </div>
                         )}

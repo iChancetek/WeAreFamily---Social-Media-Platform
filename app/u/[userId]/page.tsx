@@ -66,8 +66,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
             <ProfileHeader user={user} isCurrentUser={isOwnProfile} />
             <div className="mt-8">
                 {!hasAccess ? (
-                    <div className="flex flex-col items-center justify-center p-10 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
-                        <div className="bg-slate-200 dark:bg-slate-800 p-4 rounded-full mb-4">
+                    <div className="flex flex-col items-center justify-center p-10 bg-slate-50 dark:bg-card rounded-lg border border-slate-200 dark:border-border text-center">
+                        <div className="bg-slate-200 dark:bg-muted p-4 rounded-full mb-4">
                             <Lock className="w-8 h-8 text-slate-500" />
                         </div>
                         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Private Profile</h3>

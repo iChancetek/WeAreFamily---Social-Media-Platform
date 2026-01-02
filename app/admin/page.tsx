@@ -112,19 +112,19 @@ export default async function AdminPage() {
                 {/* Charts */}
                 <AdminCharts registrationData={registrationData} roleData={roleData} />
 
-                <div className="bg-white dark:bg-slate-950 rounded-lg shadow p-6 mb-6">
+                <div className="bg-white dark:bg-card rounded-lg shadow p-6 mb-6">
                     <h2 className="text-xl font-semibold mb-4">Actions</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <BirthdayTrigger />
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-950 rounded-lg shadow p-6 mb-6">
+                <div className="bg-white dark:bg-card rounded-lg shadow p-6 mb-6">
                     <h2 className="text-xl font-semibold mb-4">User Management</h2>
                     <UserList users={allUsers} />
                 </div>
 
-                <div className="bg-white dark:bg-slate-950 rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-card rounded-lg shadow p-6">
                     <h2 className="text-xl font-semibold mb-4">Audit Logs</h2>
                     <AuditLogViewer />
                 </div>
