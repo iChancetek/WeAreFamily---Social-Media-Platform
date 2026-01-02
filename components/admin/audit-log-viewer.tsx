@@ -31,10 +31,12 @@ export function AuditLogViewer() {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                console.log("Fetching audit logs...");
                 const [logsData, statsData] = await Promise.all([
                     getAuditLogs({ limit: 100 }),
                     getAuditStats()
                 ])
+                console.log("Logs fetched:", logsData?.length);
                 setLogs(logsData as AuditLog[])
                 setStats(statsData)
             } catch (error) {

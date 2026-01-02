@@ -77,7 +77,10 @@ export async function logAuditEvent(
 ) {
     try {
         const user = await getUserProfile();
-        if (!user) return; // Don't log if no user context
+        if (!user) {
+            console.warn("[logAuditEvent] Skipped: No user context");
+            return;
+        }
 
         const auditEntry: Omit<AuditLogEntry, "timestamp"> = {
             userId: user.id,
@@ -91,13 +94,16 @@ export async function logAuditEvent(
             details: options?.details,
         };
 
-        await adminDb.collection("auditLogs").add({
+        const docRef = await adminDb.collection("auditLogs").add({
             ...auditEntry,
             timestamp: FieldValue.serverTimestamp(),
         });
+
+        console.log(`[logAuditEvent] Success: ${action} (${docRef.id})`);
+
     } catch (error) {
         // Don't throw - audit logging shouldn't break the app
-        console.error("Failed to log audit event:", error);
+        console.error("[logAuditEvent] FAILED:", error);
     }
 }
 
@@ -139,14 +145,21 @@ export async function getAuditLogs(options?: {
 
     const snapshot = await query.get();
 
-    return snapshot.docs.map((doc) => {
+    console.log(`[getAuditLogs] Found ${snapshot.size} logs`);
+
+    // Import sanitizeData to ensure clean serialization for Client Components
+    const { sanitizeData } = await import("@/lib/serialization");
+
+    const logs = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
             id: doc.id,
             ...data,
-            timestamp: data.timestamp?.toDate() || new Date(),
+            timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : new Date(data.timestamp || Date.now()),
         };
     });
+
+    return sanitizeData(logs);
 }
 
 /**
