@@ -3,6 +3,7 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { sanitizeData } from "@/lib/serialization";
 
 export type FamilyStatus = {
     status: 'none' | 'pending' | 'accepted' | 'rejected' | 'pending_sent' | 'pending_received';
@@ -141,8 +142,7 @@ export async function denyFamilyRequest(requestId: string) {
 
 // ... imports
 
-// Helper for serialization
-const serialize = (data: any) => JSON.parse(JSON.stringify(data));
+// Helper for serialization removed in favor of @/lib/serialization
 
 // ... send, accept, reject, cancel, deny ...
 
@@ -197,8 +197,8 @@ export async function getFamilyRequests() {
     }));
 
     return {
-        incoming: incomingRequests,
-        sent: sentRequests
+        incoming: sanitizeData(incomingRequests),
+        sent: sanitizeData(sentRequests)
     };
 }
 
@@ -228,13 +228,11 @@ export async function searchFamilyMembers(searchTerm: string) {
     }
 
     const allUsers = usersSnapshot.docs.map(doc => {
-        const data = doc.data();
         return {
             id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+            ...doc.data()
         };
-    }) as any;
+    });
 
     const filteredUsers = allUsers.filter((u: any) => {
         if (blockedIds.has(u.id)) return false;
@@ -258,7 +256,7 @@ export async function searchFamilyMembers(searchTerm: string) {
         };
     }));
 
-    return usersWithStatus;
+    return sanitizeData(usersWithStatus);
 }
 
 // Alias for backward compatibility
@@ -287,7 +285,7 @@ export async function getFamilyMembers() {
         })
     );
 
-    return familyMembers.filter(Boolean);
+    return sanitizeData(familyMembers.filter(Boolean));
 }
 
 export async function getFamilyMemberIds(userId: string) {

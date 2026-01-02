@@ -24,7 +24,7 @@ export function Sidebar({ isAdmin, className }: SidebarProps) {
 
     const links = [
         { href: "/", label: "Home", icon: Home },
-        { href: "/profile", label: "Profile", icon: User },
+        { href: "/profile", label: profile?.displayName || "Profile", icon: User },
         { href: "/family", label: "Family", icon: Users },
         { href: "/groups", label: "Groups", icon: Tent },
         { href: "/messages", label: "Messages", icon: MessageSquare },
