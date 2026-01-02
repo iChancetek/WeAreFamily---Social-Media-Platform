@@ -84,9 +84,14 @@ export async function getChats(): Promise<ChatSession[]> {
             .orderBy("lastMessageAt", "desc")
             .get();
     } catch (e) {
-        console.error("Error fetching chats (maybe missing index):", e);
-        return [];
+        console.warn("Index likely missing for getChats, falling back to unordered query:", e);
+        // Fallback: Fetch without ordering, then sort in memory
+        chatsSnapshot = await adminDb.collection("chats")
+            .where("participants", "array-contains", myId)
+            .get();
     }
+
+    if (chatsSnapshot.empty) return [];
 
     // Enrich with other user details
     const enrichedChats = await Promise.all(chatsSnapshot.docs.map(async (chatDoc) => {
@@ -126,6 +131,13 @@ export async function getChats(): Promise<ChatSession[]> {
             lastMessageAt: chatData.lastMessageAt
         });
     }));
+
+    // Sort in memory to ensure correct order even if fallback was used
+    enrichedChats.sort((a, b) => {
+        const dateA = a.lastMessageAt?.toDate ? a.lastMessageAt.toDate() : new Date(0);
+        const dateB = b.lastMessageAt?.toDate ? b.lastMessageAt.toDate() : new Date(0);
+        return dateB.getTime() - dateA.getTime();
+    });
 
     return enrichedChats;
 }
