@@ -30,6 +30,8 @@ export default function LoginPage() {
         setIsLoading(true)
         try {
             const auth = getAuth()
+            const { setPersistence, browserLocalPersistence } = await import("firebase/auth");
+            await setPersistence(auth, browserLocalPersistence);
             const userCredential = await signInWithEmailAndPassword(auth, email, password)
             const user = userCredential.user
 
