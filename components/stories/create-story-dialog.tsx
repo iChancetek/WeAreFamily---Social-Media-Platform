@@ -8,6 +8,8 @@ import { createStory } from "@/app/actions/stories";
 import { useAuth } from "@/components/auth-provider";
 import { toast } from "sonner";
 import { Loader2, Plus, Image as ImageIcon, X } from "lucide-react";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface CreateStoryDialogProps {
     children?: React.ReactNode;
@@ -25,18 +27,20 @@ export function CreateStoryDialog({ children }: CreateStoryDialogProps) {
     const { user } = useAuth(); // Need user for path
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0] && user) {
+        if (!user) {
+            toast.error("You must be logged in to create a story.");
+            return;
+        }
+
+        if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             const type = file.type.startsWith('video/') ? 'video' : 'image';
 
             setIsUploading(true);
             try {
-                const { storage } = await import("@/lib/firebase");
-                const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
-
                 // Create a unique reference
                 const timestamp = Date.now();
-                const storageRef = ref(storage, `stories/${user.uid}/${timestamp}-${file.name}`);
+                const storageRef = ref(storage, `users/${user.uid}/stories/${timestamp}-${file.name}`);
 
                 await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(storageRef);

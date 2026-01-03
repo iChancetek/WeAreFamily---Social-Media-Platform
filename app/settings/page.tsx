@@ -15,6 +15,10 @@ export default async function SettingsPage() {
 
     const blockedUsers = await getBlockedUsers();
 
+    console.log("[SettingsPage] User ID:", user.id);
+    console.log("[SettingsPage] isInvisible:", user.isInvisible);
+    console.log("[SettingsPage] Blocked Users Count:", blockedUsers.length);
+
     return (
         <MainLayout className="max-w-4xl">
             <div className="pb-16 pt-6">

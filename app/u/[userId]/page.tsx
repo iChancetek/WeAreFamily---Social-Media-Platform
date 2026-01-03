@@ -61,9 +61,18 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
     const { getUserFamilyMembers } = await import("@/app/actions/family");
     const userFamily = hasAccess ? await getUserFamilyMembers(userId) : [];
 
+    // Check if user is blocked by current user
+    const { getBlockedUsers } = await import("@/app/actions/security");
+    const blockedQueue = await getBlockedUsers();
+    const isBlocked = blockedQueue.some(u => u.id === userId);
+
     return (
         <MainLayout>
-            <ProfileHeader user={user} isCurrentUser={isOwnProfile} />
+            <ProfileHeader
+                user={user}
+                isCurrentUser={isOwnProfile}
+                isBlocked={isBlocked}
+            />
             <div className="mt-8">
                 {!hasAccess ? (
                     <div className="flex flex-col items-center justify-center p-10 bg-slate-50 dark:bg-card rounded-lg border border-slate-200 dark:border-border text-center">

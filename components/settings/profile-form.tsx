@@ -34,6 +34,8 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { ArrowLeft } from "lucide-react"
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const profileFormSchema = z.object({
     displayName: z.string().min(2, {
@@ -94,8 +96,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
         }
     }
 
+    const { isDirty } = form.formState;
+
     const handleExit = () => {
-        if (form.formState.isDirty) {
+        if (isDirty) {
             setShowExitDialog(true);
         } else {
             router.push('/');
@@ -148,9 +152,22 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                             if (!file) return;
 
                                             try {
+                                                const { getAuth } = await import("firebase/auth");
+                                                const auth = getAuth();
+                                                const currentUser = auth.currentUser;
+
+                                                if (!currentUser) {
+                                                    toast.error("Authentication error: You appear to be logged out on the client. Please refresh page or re-login.");
+                                                    return;
+                                                }
+
+                                                if (currentUser.uid !== user.id) {
+                                                    console.error(`Auth Mismatch: Client(${currentUser.uid}) vs Prop(${user.id})`);
+                                                    toast.error("Security mismatch. Please refresh the page.");
+                                                    return;
+                                                }
+
                                                 toast.info("Uploading...");
-                                                const { storage } = await import("@/lib/firebase");
-                                                const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
 
                                                 const storageRef = ref(storage, `users/${user.id}/profile/${file.name}`);
                                                 await uploadBytes(storageRef, file);
@@ -193,8 +210,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
                                     try {
                                         toast.info("Uploading cover...");
-                                        const { storage } = await import("@/lib/firebase");
-                                        const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
 
                                         const storageRef = ref(storage, `users/${user.id}/cover/${file.name}`);
                                         await uploadBytes(storageRef, file);

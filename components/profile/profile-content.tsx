@@ -23,6 +23,9 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/components/language-context"
 import { ArrowLeft } from "lucide-react"
+import { storage } from "@/lib/firebase"
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+
 
 const profileFormSchema = z.object({
     displayName: z.string().min(2, {
@@ -47,15 +50,17 @@ interface ProfileContentProps {
         bio?: string | null;
         birthday?: string | null;
     }
+    onClose?: () => void;
 }
 
-export function ProfileContent({ user }: ProfileContentProps) {
+export function ProfileContent({ user, onClose }: ProfileContentProps) {
     const router = useRouter()
     const { t } = useLanguage()
 
     const [imageUrl, setImageUrl] = useState<string | undefined>(user.imageUrl || undefined)
     const [coverUrl, setCoverUrl] = useState<string | undefined>(user.coverUrl || undefined)
     const [coverType, setCoverType] = useState<'image' | 'video' | undefined>(user.coverType as 'image' | 'video' || undefined)
+    const [showExitDialog, setShowExitDialog] = useState(false)
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
@@ -81,9 +86,63 @@ export function ProfileContent({ user }: ProfileContentProps) {
             form.reset({ ...data, imageUrl, coverUrl, coverType, birthday: data.birthday })
             toast.success("Profile updated")
             router.refresh()
+            if (onClose) onClose();
         } catch {
             toast.error("Failed to update profile")
         }
+    }
+
+    // State for in-place confirmation to avoid z-index/portal issues
+    const [confirmingExit, setConfirmingExit] = useState(false);
+
+    // Unsaved changes logic
+    const { isDirty } = form.formState;
+
+    const handleExit = () => {
+        if (form.formState.isDirty) {
+            setConfirmingExit(true);
+        } else {
+            if (onClose) onClose();
+            else router.back();
+        }
+    };
+
+    const handleDiscardAndExit = () => {
+        if (onClose) onClose();
+        else router.back();
+    };
+
+    const handleSaveAndExit = async () => {
+        await form.handleSubmit(async (data) => {
+            await onSubmit(data);
+        })();
+    };
+
+    if (confirmingExit) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-bold tracking-tight text-red-600">Unsaved Changes</h2>
+                </div>
+                <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
+                    <CardHeader>
+                        <CardTitle>You have unsaved changes</CardTitle>
+                        <CardDescription>
+                            If you leave now, your changes will be lost. What would you like to do?
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-3">
+                        <Button onClick={handleSaveAndExit} className="w-full">Save & Exit</Button>
+                        <Button variant="outline" onClick={handleDiscardAndExit} className="w-full border-red-200 hover:bg-red-100 hover:text-red-900 dark:hover:bg-red-900/40">
+                            Discard Changes & Exit
+                        </Button>
+                        <Button variant="ghost" onClick={() => setConfirmingExit(false)} className="w-full">
+                            Keep Editing
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        )
     }
 
     return (
@@ -95,7 +154,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
                         {t("settings.profile.desc")}
                     </p>
                 </div>
-                <Button variant="outline" onClick={() => router.push('/')} className="gap-2">
+                <Button type="button" variant="outline" onClick={handleExit} className="gap-2">
                     <ArrowLeft className="w-4 h-4" />
                     {t("profile.back")}
                 </Button>
@@ -125,16 +184,21 @@ export function ProfileContent({ user }: ProfileContentProps) {
                                                 if (!file) return;
 
                                                 try {
+                                                    const { getAuth } = await import("firebase/auth");
+                                                    const auth = getAuth();
+                                                    if (!auth.currentUser) {
+                                                        toast.error("Client session invalid. Please refresh.");
+                                                        return;
+                                                    }
+
                                                     toast.info("Uploading...");
-                                                    const { storage } = await import("@/lib/firebase");
-                                                    const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
 
                                                     const storageRef = ref(storage, `users/${user.id}/profile/${file.name}`);
                                                     await uploadBytes(storageRef, file);
                                                     const url = await getDownloadURL(storageRef);
 
                                                     setImageUrl(url);
-                                                    form.setValue('imageUrl', url, { shouldDirty: true });
+                                                    form.setValue('imageUrl', url, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
                                                     toast.success("Upload complete");
                                                 } catch (error: any) {
                                                     console.error("Upload failed", error);
@@ -152,7 +216,14 @@ export function ProfileContent({ user }: ProfileContentProps) {
                                 {coverUrl && (
                                     <div className="relative w-full h-32 rounded-md overflow-hidden bg-muted mb-2">
                                         {coverUrl.includes("mp4") || coverUrl.includes("webm") ? (
-                                            <video src={coverUrl} className="w-full h-full object-cover" autoPlay loop muted />
+                                            <video
+                                                src={coverUrl}
+                                                className="w-full h-full object-cover"
+                                                style={{ objectPosition: 'center 10%' }}
+                                                autoPlay
+                                                loop
+                                                muted
+                                            />
                                         ) : (
                                             <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
                                         )}
@@ -167,19 +238,19 @@ export function ProfileContent({ user }: ProfileContentProps) {
 
                                         try {
                                             toast.info("Uploading cover...");
-                                            const { storage } = await import("@/lib/firebase");
-                                            const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
 
                                             const storageRef = ref(storage, `users/${user.id}/cover/${file.name}`);
                                             await uploadBytes(storageRef, file);
                                             const url = await getDownloadURL(storageRef);
 
                                             setCoverUrl(url);
-                                            const type = file.type.startsWith('video') ? 'video' : 'image';
+                                            // Enhanced video detection: Check MIME type OR file extension
+                                            const isVideo = file.type.startsWith('video') || file.name.toLowerCase().endsWith('.mov') || file.name.toLowerCase().endsWith('.mp4');
+                                            const type = isVideo ? 'video' : 'image';
                                             setCoverType(type);
 
-                                            form.setValue('coverUrl', url, { shouldDirty: true });
-                                            form.setValue('coverType', type, { shouldDirty: true });
+                                            form.setValue('coverUrl', url, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+                                            form.setValue('coverType', type, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
 
                                             toast.success("Cover uploaded");
                                         } catch (error: any) {
@@ -241,6 +312,6 @@ export function ProfileContent({ user }: ProfileContentProps) {
                     </Form>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     )
 }

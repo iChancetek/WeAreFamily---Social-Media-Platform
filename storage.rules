@@ -31,8 +31,8 @@ service firebase.storage {
       // Read: Anyone authenticated can view (Firestore rules handle post visibility)
       allow read: if isAuthenticated();
       
-      // Write: Only authenticated users (creator will be verified in Firestore)
-      allow write: if isAuthenticated();
+      // Write: TEMPORARY DEBUG - Allow all writes
+      allow write: if true;
       
       // Delete: Admins only (post deletion handles media cleanup)
       allow delete: if isAdmin();

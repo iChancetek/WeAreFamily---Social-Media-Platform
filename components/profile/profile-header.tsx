@@ -7,6 +7,7 @@ import { Edit2 } from "lucide-react"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { ProfileContent } from "./profile-content"
+import { BlockButton } from "@/components/profile/block-button"
 
 interface ProfileHeaderProps {
     user: {
@@ -18,9 +19,10 @@ interface ProfileHeaderProps {
         bio?: string | null;
     };
     isCurrentUser?: boolean;
+    isBlocked?: boolean;
 }
 
-export function ProfileHeader({ user, isCurrentUser }: ProfileHeaderProps) {
+export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderProps) {
     const { t } = useLanguage()
     const [isEditing, setIsEditing] = useState(false)
 
@@ -35,6 +37,7 @@ export function ProfileHeader({ user, isCurrentUser }: ProfileHeaderProps) {
                         <video
                             src={user.coverUrl}
                             className="w-full h-full object-cover"
+                            style={{ objectPosition: 'center 10%' }}
                             autoPlay
                             loop
                             muted
@@ -68,19 +71,29 @@ export function ProfileHeader({ user, isCurrentUser }: ProfileHeaderProps) {
                             </h1>
                         </div>
                         <div className="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-                            {isCurrentUser && (
-                                <Dialog open={isEditing} onOpenChange={setIsEditing}>
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" className="gap-2">
-                                            <Edit2 className="h-4 w-4" />
-                                            {t("profile.edit")}
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                                        <ProfileContent user={user as any} />
-                                    </DialogContent>
-                                </Dialog>
-                            )}
+                            <div className="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+                                {isCurrentUser ? (
+                                    <Dialog open={isEditing} onOpenChange={setIsEditing}>
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline" className="gap-2">
+                                                <Edit2 className="h-4 w-4" />
+                                                {t("profile.edit")}
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                                            <ProfileContent
+                                                user={user as any}
+                                                onClose={() => setIsEditing(false)}
+                                            />
+                                        </DialogContent>
+                                    </Dialog>
+                                ) : (
+                                    <BlockButton
+                                        targetUserId={user.id}
+                                        isBlocked={isBlocked}
+                                    />
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

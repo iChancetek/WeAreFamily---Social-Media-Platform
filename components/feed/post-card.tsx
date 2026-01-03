@@ -47,7 +47,11 @@ import {
     Repeat2,
     MoreHorizontal,
     Pencil,
-    Archive
+    Archive,
+    Youtube,
+    Image as ImageIcon,
+    Loader2,
+    X
 } from "lucide-react";
 import { getReactionIcon, getReactionLabel, getReactionColor, ReactionSelector } from "./reaction-selector";
 import {
@@ -55,6 +59,11 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { useAuth } from "@/components/auth-provider";
+import { useRef } from "react";
+
+// Alias YoutubeIcon for clarity if desired, or just use Youtube
+const YoutubeIcon = Youtube;
 
 type Comment = {
     id: string;
@@ -69,12 +78,19 @@ type Comment = {
     } | null;
 }
 
+// Helper to get YouTube ID from URL
+function getYoutubeId(url: string) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
 function CommentItem({
     comment,
     post,
     currentUserId
 }: {
-    comment: Comment,
+    comment: Comment & { mediaUrl?: string, youtubeUrl?: string }, // Extend type locally if needed or rely on parent
     post: Post,
     currentUserId?: string
 }) {
@@ -125,20 +141,62 @@ function CommentItem({
                 <AvatarImage src={authorImage} />
                 <AvatarFallback>{authorName.charAt(0)}</AvatarFallback>
             </Avatar>
-            <div className="flex-1 space-y-1">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+            <div className="flex-1 space-y-2">
+                <div className="bg-muted/50 rounded-2xl px-4 py-2">
+                    <div className="flex items-center justify-between mb-1">
                         <span className="font-semibold text-sm">{authorName}</span>
                         <span className="text-xs text-gray-500">{formatDistanceToNow(comment.createdAt, { addSuffix: true })}</span>
                     </div>
+
+                    {isEditing ? (
+                        <div className="flex gap-2 items-center">
+                            <Input
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                className="h-8 text-sm"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleSaveEdit();
+                                    if (e.key === 'Escape') setIsEditing(false);
+                                }}
+                            />
+                            <Button size="sm" onClick={handleSaveEdit} className="h-8">Save</Button>
+                            <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8">Cancel</Button>
+                        </div>
+                    ) : (
+                        <p className="text-foreground leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+                    )}
+                </div>
+
+                {/* Media Attachments */}
+                {comment.mediaUrl && (
+                    <div className="mt-2 rounded-xl overflow-hidden max-w-sm border border-border">
+                        <img src={comment.mediaUrl} alt="Comment attachment" className="w-full h-auto" />
+                    </div>
+                )}
+                {comment.youtubeUrl && getYoutubeId(comment.youtubeUrl) && (
+                    <div className="mt-2 rounded-xl overflow-hidden max-w-sm aspect-video border border-border">
+                        <iframe
+                            width="100%"
+                            height="100%"
+                            src={`https://www.youtube.com/embed/${getYoutubeId(comment.youtubeUrl)}`}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="w-full h-full"
+                        />
+                    </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 pl-2">
                     {isAuthor && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover/comment:opacity-100 transition-opacity">
-                                    <MoreHorizontal className="w-3 h-3" />
+                                <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground">
+                                    More
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="start">
                                 <DropdownMenuItem onClick={() => setIsEditing(true)}>
                                     <Pencil className="w-3 h-3 mr-2" />
                                     Edit
@@ -155,25 +213,6 @@ function CommentItem({
                         </DropdownMenu>
                     )}
                 </div>
-
-                {isEditing ? (
-                    <div className="flex gap-2 items-center">
-                        <Input
-                            value={editContent}
-                            onChange={(e) => setEditContent(e.target.value)}
-                            className="h-8 text-sm"
-                            autoFocus
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') handleSaveEdit();
-                                if (e.key === 'Escape') setIsEditing(false);
-                            }}
-                        />
-                        <Button size="sm" onClick={handleSaveEdit} className="h-8">Save</Button>
-                        <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8">Cancel</Button>
-                    </div>
-                ) : (
-                    <p className="text-foreground">{editContent}</p>
-                )}
             </div>
         </div>
     );
@@ -221,7 +260,15 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
     const [allReactions, setAllReactions] = useState<Record<string, ReactionType>>(reactionsMap);
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
+    const [commentMediaUrl, setCommentMediaUrl] = useState<string | null>(null);
+    const [commentYoutubeUrl, setCommentYoutubeUrl] = useState("");
+    const [showYoutubeInput, setShowYoutubeInput] = useState(false);
+    const [isUploadingComment, setIsUploadingComment] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Import storage for comment uploads
+    const { user } = useAuth(); // We need auth context for upload checks
+    const commentFileInputRef = useRef<HTMLInputElement>(null);
 
     const handleReaction = async (type: ReactionType) => {
         // Optimistic update
@@ -251,14 +298,55 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
 
 
     const handleComment = async () => {
-        if (!commentText.trim()) return;
+        if (!commentText.trim() && !commentMediaUrl && !commentYoutubeUrl) return;
 
         try {
-            await addComment(post.id, commentText, post.type || 'personal', post.context?.id);
+            await addComment(post.id, commentText, post.type || 'personal', post.context?.id, commentMediaUrl || undefined, commentYoutubeUrl || undefined);
             setCommentText("");
+            setCommentMediaUrl(null);
+            setCommentYoutubeUrl("");
+            setShowYoutubeInput(false);
             toast.success(t("feed.comment.success") || "Comment added!");
         } catch {
             toast.error(t("feed.comment.error") || "Failed to add comment");
+        }
+    };
+
+    const handleCommentFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!user) {
+            toast.error("Please log in.");
+            return;
+        }
+
+        if (e.target.files && e.target.files[0]) {
+            setIsUploadingComment(true);
+            try {
+                const file = e.target.files[0];
+
+                // Strict SDK Auth Check
+                const { getAuth } = await import("firebase/auth");
+                const auth = getAuth();
+                if (!auth.currentUser) {
+                    toast.error("Auth sync error. Please refresh.");
+                    return;
+                }
+
+                const { storage } = await import("@/lib/firebase");
+                const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+
+                // Use 'posts/' path as per our fix
+                const storageRef = ref(storage, `posts/${user.uid}/comments/${Date.now()}-${file.name}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(snapshot.ref);
+
+                setCommentMediaUrl(url);
+                toast.success("Image attached");
+            } catch (error: any) {
+                console.error("Comment upload failed", error);
+                toast.error("Upload failed");
+            } finally {
+                setIsUploadingComment(false);
+            }
         }
     };
 
@@ -470,13 +558,40 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                     onKeyDown={(e) => e.key === 'Enter' && handleComment()}
                                 />
                                 <div className="absolute right-1 top-1 flex gap-1">
+                                    <input
+                                        type="file"
+                                        hidden
+                                        ref={commentFileInputRef}
+                                        accept="image/*"
+                                        onChange={handleCommentFileSelect}
+                                    />
+
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className={cn("h-7 w-7 rounded-full", showYoutubeInput ? "text-red-500 bg-red-50" : "text-muted-foreground hover:bg-muted")}
+                                        onClick={() => setShowYoutubeInput(!showYoutubeInput)}
+                                        title="Add YouTube Video"
+                                    >
+                                        <YoutubeIcon className="w-4 h-4" />
+                                    </Button>
+
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className={cn("h-7 w-7 rounded-full", commentMediaUrl ? "text-blue-500 bg-blue-50" : "text-muted-foreground hover:bg-muted")}
+                                        onClick={() => commentFileInputRef.current?.click()}
+                                        disabled={isUploadingComment}
+                                        title="Upload Photo"
+                                    >
+                                        {isUploadingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+                                    </Button>
+
                                     <Button
                                         size="icon"
                                         variant="ghost"
                                         className="h-7 w-7 text-purple-500 hover:bg-purple-100 rounded-full"
                                         onClick={async () => {
-                                            if (commentText) return; // Don't overwrite if user typed something? Or maybe append?
-                                            // Actually let's just generate fresh.
                                             try {
                                                 const suggestion = await generateCommentSuggestion(post.content);
                                                 setCommentText(suggestion);
@@ -494,12 +609,37 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                         variant="ghost"
                                         className="h-7 w-7 text-primary hover:bg-primary/10 rounded-full"
                                         onClick={handleComment}
-                                        disabled={!commentText.trim()}
+                                        disabled={(!commentText.trim() && !commentMediaUrl && !commentYoutubeUrl) || isUploadingComment}
                                     >
                                         <Send className="w-4 h-4" />
                                     </Button>
                                 </div>
                             </div>
+
+                            {/* Attachments Preview Area */}
+                            {(showYoutubeInput || commentMediaUrl || commentYoutubeUrl) && (
+                                <div className="mt-2 pl-10 space-y-2">
+                                    {showYoutubeInput && (
+                                        <Input
+                                            placeholder="Paste YouTube Link..."
+                                            className="h-8 text-xs"
+                                            value={commentYoutubeUrl}
+                                            onChange={(e) => setCommentYoutubeUrl(e.target.value)}
+                                        />
+                                    )}
+                                    {commentMediaUrl && (
+                                        <div className="relative inline-block">
+                                            <img src={commentMediaUrl} className="h-20 w-auto rounded-md border" alt="Preview" />
+                                            <button
+                                                onClick={() => setCommentMediaUrl(null)}
+                                                className="absolute -top-1 -right-1 bg-black text-white rounded-full p-0.5"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

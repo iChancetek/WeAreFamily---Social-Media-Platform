@@ -14,6 +14,8 @@ import { ImageIcon, Loader2, Send, Sparkles, X } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useLanguage } from "@/components/language-context";
 
+import { DebugUploader } from "@/components/debug-uploader";
+
 export function CreatePost() {
     const { user } = useAuth();
     const { t } = useLanguage();
@@ -22,6 +24,7 @@ export function CreatePost() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
+    const [lastUploadError, setLastUploadError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleSubmit = async () => {
@@ -63,19 +66,64 @@ export function CreatePost() {
     }
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        setLastUploadError(null);
+        // 1. Initial UI check
+        if (!user) {
+            toast.error("Please log in to share a moment.");
+            return;
+        }
+
         if (e.target.files && e.target.files[0]) {
             setIsUploading(true);
             try {
                 const file = e.target.files[0];
-                const storageRef = ref(storage, `uploads/${Date.now()}-${file.name}`);
+
+                // 2. Strict SDK Auth Check (Fixes "User does not have permission")
+                const { getAuth } = await import("firebase/auth");
+                const auth = getAuth();
+                // Ensure we have a valid firebase user token before attempting upload
+                if (!auth.currentUser) {
+                    const msg = "Firebase SDK not authenticated. Storage rules will reject.";
+                    console.error(msg);
+                    setLastUploadError(msg);
+                    toast.error("Authentication broken. Refresh page.");
+                    return;
+                }
+
+                const userId = user.uid || (user as any).id;
+                console.log("DEBUG: Uploading as User:", userId);
+
+                // Switch to 'users' path which we KNOW works for profile pictures
+                // Path: users/{userId}/posts/{timestamp}-{filename}
+                const storageRef = ref(storage, `users/${userId}/posts/${Date.now()}-${file.name}`);
                 const snapshot = await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(snapshot.ref);
 
                 setMediaUrls(prev => [...prev, url]);
                 toast.success("Photo uploaded! 📸");
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Upload failed", error);
-                toast.error("Upload failed");
+
+                // robust error extraction
+                const debugObj = {
+                    message: error.message || "Unknown error",
+                    code: error.code || "No code",
+                    name: error.name,
+                    stack: error.stack
+                };
+
+                const fullError = JSON.stringify(debugObj, null, 2);
+                window.alert("UPLOAD ERROR:\n" + fullError); // FORCE ALERT TO USER
+                setLastUploadError(fullError);
+
+                // Detailed error messaging
+                if (error.code === 'storage/unauthorized') {
+                    toast.error("Permission denied. rules rejected.");
+                } else if (error.code === 'storage/canceled') {
+                    toast.error("Upload canceled.");
+                } else {
+                    toast.error(`Upload failed: ${debugObj.message}`);
+                }
             } finally {
                 setIsUploading(false);
             }
@@ -90,7 +138,11 @@ export function CreatePost() {
                         <AvatarImage src={user?.photoURL || undefined} />
                         <AvatarFallback>{user?.displayName?.charAt(0)}</AvatarFallback>
                     </Avatar>
+                    import {DebugUploader} from "@/components/debug-uploader";
+
+                    // ... inside CreatePost
                     <div className="flex-1 space-y-3">
+                        <DebugUploader />
                         <Textarea
                             placeholder={t("feed.placeholder")}
                             className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
@@ -144,6 +196,14 @@ export function CreatePost() {
                                     <span className="text-[15px] font-semibold text-gray-600">Magic AI</span>
                                 </Button>
                             </div>
+
+                            {lastUploadError && (
+                                <div className="text-red-500 text-xs mt-2 bg-red-50 p-2 rounded break-all whitespace-pre-wrap">
+                                    <p className="font-bold">DEBUG INFO:</p>
+                                    <p>Bucket: {storage.app.options.storageBucket}</p>
+                                    <p>Error: {lastUploadError}</p>
+                                </div>
+                            )}
 
                             <Button
                                 onClick={handleSubmit}

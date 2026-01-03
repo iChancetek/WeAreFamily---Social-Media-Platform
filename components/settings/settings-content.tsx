@@ -98,12 +98,17 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
     // const { openUserProfile } = useClerk() // Removed Clerk
     const [showExitDialog, setShowExitDialog] = useState(false)
 
+    console.log("[SettingsContent] user prop:", user);
+    console.log("[SettingsContent] blockedUsers prop:", blockedUsers);
+    console.log("[SettingsContent] isInvisible initial state:", user.isInvisible);
+
     // --- Profile Form State ---
     const [imageUrl, setImageUrl] = useState<string | undefined>(user.imageUrl || undefined)
     const [coverUrl, setCoverUrl] = useState<string | undefined>(user.coverUrl || undefined)
     const [coverType, setCoverType] = useState<'image' | 'video' | undefined>(user.coverType as 'image' | 'video' || undefined)
     const [isInvisible, setIsInvisible] = useState(user.isInvisible || false);
     const [blockedList, setBlockedList] = useState(blockedUsers);
+    const [searchResults, setSearchResults] = useState<any[]>([]);
 
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
@@ -264,7 +269,57 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="flex items-center justify-between">
+                            {/* 1. Block Search (Moved to Top) */}
+                            <div className="space-y-4">
+                                <Label className="text-base">Block a Person</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="Search by name..."
+                                        onChange={async (e) => {
+                                            const q = e.target.value;
+                                            if (q.length >= 2) {
+                                                const { searchUsers } = await import("@/app/actions/user"); // Keep dynamic or move to top? Let's keep for now but simplify structure
+                                                const results = await searchUsers(q);
+                                                const unblockedResults = results.filter(r => !blockedList.some(b => b.id === r.id));
+                                                setSearchResults(unblockedResults);
+                                            } else {
+                                                setSearchResults([]);
+                                            }
+                                        }}
+                                    />
+                                </div>
+                                {searchResults.length > 0 && (
+                                    <div className="border rounded-md divide-y max-h-48 overflow-y-auto">
+                                        {searchResults.map(u => (
+                                            <div key={u.id} className="p-2 flex justify-between items-center bg-card hover:bg-muted/50">
+                                                <div className="flex items-center gap-2">
+                                                    <Avatar className="w-8 h-8">
+                                                        <AvatarImage src={u.imageUrl} />
+                                                        <AvatarFallback>{u.displayName?.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="text-sm font-medium">{u.displayName}</span>
+                                                </div>
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    onClick={async () => {
+                                                        const { blockUser } = await import("@/app/actions/security");
+                                                        await blockUser(u.id);
+                                                        setBlockedList(prev => [...prev, { ...u, profileData: u } as any]);
+                                                        setSearchResults(prev => prev.filter(r => r.id !== u.id));
+                                                        toast.error(`Blocked ${u.displayName}`);
+                                                    }}
+                                                >
+                                                    Block
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 2. Invisible Mode */}
+                            <div className="flex items-center justify-between pt-4 border-t border-border">
                                 <div className="space-y-0.5">
                                     <Label className="text-base">Invisible Mode</Label>
                                     <p className="text-sm text-muted-foreground">
@@ -277,7 +332,8 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                 />
                             </div>
 
-                            <div className="space-y-4">
+                            {/* 3. Blocked List */}
+                            <div className="space-y-4 pt-4 border-t border-border">
                                 <Label className="text-base">Blocked Family Members</Label>
                                 {blockedList.length === 0 ? (
                                     <p className="text-sm text-muted-foreground">You haven't blocked anyone.</p>

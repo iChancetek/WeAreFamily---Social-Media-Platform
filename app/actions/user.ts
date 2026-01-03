@@ -20,3 +20,21 @@ export async function updateBirthday(birthday: string) {
     revalidatePath("/");
     return { success: true };
 }
+
+export async function searchUsers(query: string) {
+    if (!query || query.length < 2) return [];
+
+    const user = await getUserProfile();
+    if (!user) return [];
+
+    // Simple prefix search
+    const snapshot = await adminDb.collection("users")
+        .where("displayName", ">=", query)
+        .where("displayName", "<=", query + "\uf8ff")
+        .limit(10)
+        .get();
+
+    return snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as any))
+        .filter(u => u.id !== user.id);
+}

@@ -112,7 +112,9 @@ export async function addComment(
     postId: string,
     content: string,
     postType: PostType = 'personal',
-    contextId?: string
+    contextId?: string,
+    mediaUrl?: string,
+    youtubeUrl?: string
 ) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
@@ -143,6 +145,8 @@ export async function addComment(
     await commentsRef.add({
         authorId: user.id,
         content,
+        mediaUrl: mediaUrl || null,
+        youtubeUrl: youtubeUrl || null,
         createdAt: FieldValue.serverTimestamp(),
     });
 
