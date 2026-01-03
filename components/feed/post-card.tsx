@@ -64,7 +64,7 @@ import { useAuth } from "@/components/auth-provider";
 
 import dynamic from "next/dynamic";
 
-const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
+const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
 
 // Helper to detect video URLs
 function isUrlVideo(url: string | null | undefined): boolean {
