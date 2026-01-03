@@ -674,7 +674,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                         onClick={() => setShowYoutubeInput(!showYoutubeInput)}
                                         title="Add YouTube Video"
                                     >
-                                        <YoutubeIcon className="w-4 h-4" />
+                                        <Youtube className="w-4 h-4" />
                                     </Button>
 
                                     <Button
