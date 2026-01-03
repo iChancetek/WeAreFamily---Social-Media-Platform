@@ -101,6 +101,8 @@ export default function LoginPage() {
         setIsLoading(true)
         try {
             const auth = getAuth()
+            const { setPersistence, browserLocalPersistence } = await import("firebase/auth");
+            await setPersistence(auth, browserLocalPersistence);
             const provider = new GoogleAuthProvider()
             const userCredential = await signInWithPopup(auth, provider)
             const user = userCredential.user

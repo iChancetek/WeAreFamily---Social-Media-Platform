@@ -40,6 +40,8 @@ export default function SignupPage() {
         setIsLoading(true)
         try {
             const auth = getAuth()
+            const { setPersistence, browserLocalPersistence } = await import("firebase/auth");
+            await setPersistence(auth, browserLocalPersistence);
             const userCredential = await createUserWithEmailAndPassword(auth, email, password)
             const user = userCredential.user
 
