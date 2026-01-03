@@ -10,10 +10,16 @@ let SERVICE_ACCOUNT: any;
 
 try {
     // Attempt to load local secrets for development
-    // This file is gitignored and only exists locally
-    const secrets = require('./firebase-secrets');
-    SERVICE_ACCOUNT = secrets.SERVICE_ACCOUNT;
+    // Using explicit condition to help bundlers ignore this in production
+    if (process.env.NODE_ENV === 'development') {
+        const secrets = require('./firebase-secrets');
+        SERVICE_ACCOUNT = secrets.SERVICE_ACCOUNT;
+    }
 } catch (e) {
+    // Ignore missing secrets in dev or prod fallback
+}
+
+if (!SERVICE_ACCOUNT) {
     // Fallback to Environment Variables for Production (Vercel/CI)
     SERVICE_ACCOUNT = {
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "we-are-family-221",
