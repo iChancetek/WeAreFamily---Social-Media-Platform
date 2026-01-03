@@ -215,7 +215,7 @@ function CommentItem({
                             width="100%"
                             height="100%"
                             controls
-                            onError={(e) => toast.error("Could not play video", { description: "Try opening it directly." })}
+                            onError={() => toast.error("Could not play video", { description: "Try opening it directly." })}
                         />
                         <a
                             href={comment.youtubeUrl}
@@ -506,7 +506,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                         width="100%"
                                         height="100%"
                                         controls
-                                        onError={(e) => toast.error("Could not play video", { description: "Try opening it directly." })}
+                                        onError={() => toast.error("Could not play video", { description: "Try opening it directly." })}
                                     />
                                 </div>
                                 <a
@@ -536,7 +536,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                         playsInline
                                         preload="metadata"
                                         className="w-full h-auto max-h-[600px] object-contain"
-                                        onError={(e) => {
+                                        onError={(e: any) => {
                                             console.error("Video error:", e);
                                             toast.error("Video playback failed", { description: "Try the 'Open Video' button." });
                                         }}
