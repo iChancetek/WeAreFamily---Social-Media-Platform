@@ -496,7 +496,8 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
 
                 {/* Auto-embed YouTube if link detected in content */}
                 {(() => {
-                    const ytMatch = post.content.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s]+/);
+                    // Capture URL but exclude trailing punctuation commonly found in sentences
+                    const ytMatch = post.content.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s]+(?<![.,!?])/);
                     if (ytMatch) {
                         return (
                             <div className="mt-3 rounded-xl overflow-hidden border border-border bg-black relative group">
