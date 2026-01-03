@@ -43,7 +43,7 @@ export function DebugUploader() {
             addLog("Starting uploadBytes with metadata...");
             const metadata = { contentType: file.type };
             const snapshot = await uploadBytes(storageRef, file, metadata);
-            addLog(`UPLOAD SUCCESS! bytes: ${snapshot.bytesTransferred}`);
+            addLog(`UPLOAD SUCCESS! bytes: ${snapshot.metadata.size}`);
 
             const url = await getDownloadURL(snapshot.ref);
             addLog(`URL: ${url}`);
