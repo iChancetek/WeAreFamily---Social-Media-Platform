@@ -91,12 +91,25 @@ export function CreatePost() {
                 }
 
                 const userId = user.uid || (user as any).id;
+                if (!userId) {
+                    throw new Error("User ID is missing. Cannot upload.");
+                }
                 console.log("DEBUG: Uploading as User:", userId);
 
                 // Switch to 'users' path which we KNOW works for profile pictures
                 // Path: users/{userId}/posts/{timestamp}-{filename}
                 const storageRef = ref(storage, `users/${userId}/posts/${Date.now()}-${file.name}`);
-                const snapshot = await uploadBytes(storageRef, file);
+
+                // Explicitly set content type to ensure correct playback/serving
+                const metadata = {
+                    contentType: file.type || 'application/octet-stream',
+                    customMetadata: {
+                        originalName: file.name,
+                        uploadedBy: userId
+                    }
+                };
+
+                const snapshot = await uploadBytes(storageRef, file, metadata);
                 const url = await getDownloadURL(snapshot.ref);
 
                 setMediaUrls(prev => [...prev, url]);
@@ -138,9 +151,6 @@ export function CreatePost() {
                         <AvatarImage src={user?.photoURL || undefined} />
                         <AvatarFallback>{user?.displayName?.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    import {DebugUploader} from "@/components/debug-uploader";
-
-                    // ... inside CreatePost
                     <div className="flex-1 space-y-3">
                         <DebugUploader />
                         <Textarea

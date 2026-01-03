@@ -98,6 +98,12 @@ service firebase.storage {
       allow delete: if isAdmin();
     }
     
+    // Generic uploads folder (Fallback for 3rd party libs)
+    match /uploads/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
     // Deny all other paths
     match /{allPaths=**} {
       allow read, write: if false;

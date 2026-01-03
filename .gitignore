@@ -42,3 +42,6 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Local Secrets (Do not commit)
+lib/firebase-secrets.ts

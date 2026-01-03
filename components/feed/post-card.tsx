@@ -51,7 +51,8 @@ import {
     Youtube,
     Image as ImageIcon,
     Loader2,
-    X
+    X,
+    ExternalLink
 } from "lucide-react";
 import { getReactionIcon, getReactionLabel, getReactionColor, ReactionSelector } from "./reaction-selector";
 import {
@@ -60,10 +61,21 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAuth } from "@/components/auth-provider";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 
-// Alias YoutubeIcon for clarity if desired, or just use Youtube
-const YoutubeIcon = Youtube;
+const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
+
+// Helper to detect video URLs
+function isUrlVideo(url: string | null | undefined): boolean {
+    if (!url) return false;
+    // Remove query params (Firebase tokens)
+    const cleanUrl = url.split('?')[0].toLowerCase();
+    return cleanUrl.endsWith('.mp4') ||
+        cleanUrl.endsWith('.mov') ||
+        cleanUrl.endsWith('.webm') ||
+        cleanUrl.endsWith('.ogg');
+}
 
 type Comment = {
     id: string;
@@ -171,19 +183,49 @@ function CommentItem({
                 {/* Media Attachments */}
                 {comment.mediaUrl && (
                     <div className="mt-2 rounded-xl overflow-hidden max-w-sm border border-border">
-                        <img src={comment.mediaUrl} alt="Comment attachment" className="w-full h-auto" />
+                        {isUrlVideo(comment.mediaUrl) ? (
+                            <div className="relative group w-full bg-black">
+                                <video
+                                    src={comment.mediaUrl}
+                                    controls
+                                    playsInline
+                                    preload="metadata"
+                                    className="w-full h-auto max-h-[300px] object-contain"
+                                    onError={() => toast.error("Playback failed")}
+                                />
+                                <a
+                                    href={comment.mediaUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                    title="Open file directly"
+                                >
+                                    <ExternalLink className="w-4 h-4" />
+                                </a>
+                            </div>
+                        ) : (
+                            <img src={comment.mediaUrl} alt="Comment attachment" className="w-full h-auto" />
+                        )}
                     </div>
                 )}
                 {comment.youtubeUrl && getYoutubeId(comment.youtubeUrl) && (
-                    <div className="mt-2 rounded-xl overflow-hidden max-w-sm aspect-video border border-border">
-                        <iframe
+                    <div className="mt-2 rounded-xl overflow-hidden max-w-sm aspect-video border border-border relative group">
+                        <ReactPlayer
+                            url={`https://www.youtube.com/watch?v=${getYoutubeId(comment.youtubeUrl)}`}
                             width="100%"
                             height="100%"
-                            src={`https://www.youtube.com/embed/${getYoutubeId(comment.youtubeUrl)}`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="w-full h-full"
+                            controls
+                            onError={(e) => toast.error("Could not play video", { description: "Try opening it directly." })}
                         />
+                        <a
+                            href={comment.youtubeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Open on YouTube"
+                        >
+                            <ExternalLink className="w-4 h-4" />
+                        </a>
                     </div>
                 )}
 
@@ -334,8 +376,8 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                 const { storage } = await import("@/lib/firebase");
                 const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
 
-                // Use 'posts/' path as per our fix
-                const storageRef = ref(storage, `posts/${user.uid}/comments/${Date.now()}-${file.name}`);
+                // Use 'users/' path to match our working storage rules
+                const storageRef = ref(storage, `users/${user.uid}/comments/${Date.now()}-${file.name}`);
                 const snapshot = await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(snapshot.ref);
 
@@ -451,11 +493,70 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
             </CardHeader>
             <CardContent className="px-4 py-2">
                 <p className="whitespace-pre-wrap text-card-foreground text-[15px] leading-normal">{post.content}</p>
+
+                {/* Auto-embed YouTube if link detected in content */}
+                {(() => {
+                    const ytMatch = post.content.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s]+/);
+                    if (ytMatch) {
+                        return (
+                            <div className="mt-3 rounded-xl overflow-hidden border border-border bg-black relative group">
+                                <div className="aspect-video w-full">
+                                    <ReactPlayer
+                                        url={ytMatch[0]}
+                                        width="100%"
+                                        height="100%"
+                                        controls
+                                        onError={(e) => toast.error("Could not play video", { description: "Try opening it directly." })}
+                                    />
+                                </div>
+                                <a
+                                    href={ytMatch[0]}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                    title="Open on YouTube"
+                                >
+                                    <ExternalLink className="w-4 h-4" />
+                                </a>
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
+
                 {post.mediaUrls && post.mediaUrls.length > 0 && (
                     <div className="mt-3 -mx-4">
-                        {post.mediaUrls.map((url, idx) => (
-                            <img key={idx} src={url} alt="Post media" className="w-full h-auto object-cover max-h-[600px] border-t border-b border-border" />
-                        ))}
+                        {post.mediaUrls.map((url, idx) => {
+                            const isVideo = isUrlVideo(url);
+                            return isVideo ? (
+                                <div key={idx} className="relative group w-full bg-black border-t border-b border-border">
+                                    <video
+                                        src={url}
+                                        controls
+                                        playsInline
+                                        preload="metadata"
+                                        className="w-full h-auto max-h-[600px] object-contain"
+                                        onError={(e) => {
+                                            console.error("Video error:", e);
+                                            toast.error("Video playback failed", { description: "Try the 'Open Video' button." });
+                                        }}
+                                    >
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <a
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                        title="Open file directly"
+                                    >
+                                        <ExternalLink className="w-4 h-4" />
+                                    </a>
+                                </div>
+                            ) : (
+                                <img key={idx} src={url} alt="Post media" className="w-full h-auto object-cover max-h-[600px] border-t border-b border-border" />
+                            );
+                        })}
                     </div>
                 )}
 
@@ -562,7 +663,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                         type="file"
                                         hidden
                                         ref={commentFileInputRef}
-                                        accept="image/*"
+                                        accept="image/*,video/*,.mov"
                                         onChange={handleCommentFileSelect}
                                     />
 
@@ -582,7 +683,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                         className={cn("h-7 w-7 rounded-full", commentMediaUrl ? "text-blue-500 bg-blue-50" : "text-muted-foreground hover:bg-muted")}
                                         onClick={() => commentFileInputRef.current?.click()}
                                         disabled={isUploadingComment}
-                                        title="Upload Photo"
+                                        title="Upload Photo or Video"
                                     >
                                         {isUploadingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
                                     </Button>
