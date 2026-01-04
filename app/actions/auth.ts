@@ -63,8 +63,7 @@ export async function syncUserToDb(
             });
 
             // Send Automated Welcome Message
-            const { sendWelcomeMessage } = await import("./chat");
-            await sendWelcomeMessage(uid, displayName).catch(err => {
+            await sendWelcomeMessageInternal(uid, displayName).catch(err => {
                 console.error("Failed to send welcome message:", err);
             });
 
@@ -131,6 +130,91 @@ export async function notifyAdminNewUser(uid: string, email: string, displayName
         console.error("Error notifying admins:", error);
         // Don't throw - this shouldn't block the signup process
     }
+}
+
+
+// Internal helper to avoid circular dependency with chat.ts
+async function sendWelcomeMessageInternal(targetUserId: string, targetUserDisplayName: string) {
+    if (!adminDb) return;
+
+    // 1. Find Admin User
+    const adminQuery = await adminDb.collection("users")
+        .where("email", "==", "chancellor@ichancetek.com")
+        .limit(1)
+        .get();
+
+    if (adminQuery.empty) {
+        console.error("Welcome Message Error: Admin user 'chancellor@ichancetek.com' not found.");
+        return;
+    }
+
+    const adminUser = adminQuery.docs[0];
+    const adminId = adminUser.id;
+
+    if (adminId === targetUserId) return;
+
+    // 2. Check/Create Chat
+    const chatsSnapshot = await adminDb.collection("chats")
+        .where("participants", "array-contains", targetUserId)
+        .get();
+
+    // Find existing 1-on-1 chat with Admin
+    let chatDoc = chatsSnapshot.docs.find((chatDoc: any) => {
+        const chatData = chatDoc.data();
+        return !chatData.isGroup && chatData.participants.includes(adminId);
+    });
+
+    let chatId;
+    if (chatDoc) {
+        chatId = chatDoc.id;
+    } else {
+        const newChatRef = await adminDb.collection("chats").add({
+            participants: [targetUserId, adminId],
+            isGroup: false,
+            lastMessageAt: FieldValue.serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
+        });
+        chatId = newChatRef.id;
+    }
+
+    // 3. Send Message
+    const welcomeText = `Welcome to the Famio Family!
+
+Thank you for joining us — we’re excited to have you here. We hope you enjoy a wonderful experience on the Famio platform as you connect, share, and grow with the community.
+
+These are exciting times at Famio! We’re rolling out new enhancements and updates every week to make your experience even better.
+
+We truly appreciate you being part of the Famio Family.
+
+Best regards,
+Chancellor Minus
+Founder & CEO
+ChanceTEK | Famio`;
+
+    await adminDb.collection("chats").doc(chatId).collection("messages").add({
+        senderId: adminId,
+        content: welcomeText,
+        createdAt: FieldValue.serverTimestamp(),
+    });
+
+    await adminDb.collection("chats").doc(chatId).update({
+        lastMessageAt: FieldValue.serverTimestamp(),
+    });
+
+    // Notify logic (inlined simple create no-import to be safe or use raw db)
+    // We will simple write directly to db to avoid import cycle with notifications.ts if that is risky.
+    // notifications.ts imports lib/auth which is safe, but let's be 100% safe and write raw.
+    await adminDb.collection("notifications").add({
+        recipientId: targetUserId,
+        senderId: adminId,
+        type: 'message',
+        referenceId: chatId,
+        read: false,
+        createdAt: FieldValue.serverTimestamp(),
+        meta: { message: "You have a new message from Chancellor Minus" }
+    });
+
+    console.log(`[Internal] Welcome message sent to ${targetUserDisplayName} (${targetUserId}) from Admin.`);
 }
 
 export async function sendPasswordReset(email: string) {
