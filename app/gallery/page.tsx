@@ -1,8 +1,11 @@
+// This is fine, we will create the component in the next step.
+// For now, I'll just prep the page to use it.
 import { MainLayout } from "@/components/layout/main-layout";
 import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { sanitizeData } from "@/lib/serialization";
+import { GalleryGrid } from "@/components/gallery/gallery-grid";
 
 export const dynamic = 'force-dynamic';
 
@@ -56,27 +59,24 @@ export default async function GalleryPage() {
     });
 
     const mediaItems = allPosts.flatMap((post: any) =>
-        (post.mediaUrls || []).map((url: string) => ({ url, postId: post.id }))
+        (post.mediaUrls || []).map((url: string) => ({
+            url,
+            postId: post.id,
+            authorId: post.authorId
+        }))
     );
 
     return (
         <MainLayout>
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-foreground">Family Gallery</h1>
-                <p className="text-muted-foreground">Shared memories from everyone</p>
+                <p className="text-muted-foreground">Shared memories from everyone. (Deleting a photo deletes the post)</p>
             </div>
 
-            {mediaItems.length === 0 ? (
-                <p className="text-center text-gray-500 py-10">No photos shared yet.</p>
-            ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {mediaItems.map((item: any, idx: number) => (
-                        <div key={`${item.postId}-${idx}`} className="aspect-square rounded-lg overflow-hidden relative group">
-                            <img src={item.url} alt="Gallery item" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
-                        </div>
-                    ))}
-                </div>
-            )}
+            <GalleryGrid
+                items={mediaItems}
+                currentUserId={user.id}
+            />
         </MainLayout>
     )
 }

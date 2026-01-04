@@ -46,10 +46,16 @@ export function BottomNav() {
             {/* Menu Trigger for the rest of the items */}
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
-                    <button className="flex flex-col items-center justify-center p-2 text-muted-foreground hover:text-foreground rounded-lg transition-colors">
-                        <Menu className="w-6 h-6" />
-                        <span className="text-[10px] font-medium mt-1">Menu</span>
-                    </button>
+                    <>
+                        <Link href="/family" className="flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-foreground">
+                            <Users className="w-6 h-6" />
+                            <span className="text-[10px]">Family</span>
+                        </Link>
+                        <Link href="/members" className="flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-foreground">
+                            <Users className="w-6 h-6" />
+                            <span className="text-[10px]">Members</span>
+                        </Link>
+                    </>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-72">
                     <VisuallyHidden>

@@ -79,6 +79,7 @@ interface SettingsContentProps {
         theme?: string | null;
         birthday?: string | null;
         isInvisible?: boolean;
+        isPublicProfile?: boolean;
         email?: string | null;
     },
     blockedUsers: {
@@ -107,6 +108,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
     const [coverUrl, setCoverUrl] = useState<string | undefined>(user.coverUrl || undefined)
     const [coverType, setCoverType] = useState<'image' | 'video' | undefined>(user.coverType as 'image' | 'video' || undefined)
     const [isInvisible, setIsInvisible] = useState(user.isInvisible || false);
+    const [isPublicProfile, setIsPublicProfile] = useState(user.isPublicProfile || false);
     const [blockedList, setBlockedList] = useState(blockedUsers);
     const [searchResults, setSearchResults] = useState<any[]>([]);
 
@@ -178,6 +180,17 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
         } catch {
             setIsInvisible(!checked); // Revert on error
             toast.error("Failed to update visibility");
+        }
+    };
+
+    const handleTogglePublicProfile = async (checked: boolean) => {
+        setIsPublicProfile(checked);
+        try {
+            await updateAccountSettings({ isPublicProfile: checked });
+            toast.success(checked ? "Profile is now PUBLIC" : "Profile is now PRIVATE");
+        } catch {
+            setIsPublicProfile(!checked); // Revert on error
+            toast.error("Failed to update profile visibility");
         }
     };
 
@@ -329,6 +342,22 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                 <Switch
                                     checked={isInvisible}
                                     onCheckedChange={handleToggleInvisible}
+                                />
+                            </div>
+
+                            {/* 3. Public Profile */}
+                            <div className="flex items-center justify-between pt-4 border-t border-border">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base text-blue-600">Public Profile</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        Allow anyone to view your posts and photos.
+                                        <br />
+                                        <span className="text-xs text-amber-600 font-medium">Note: Private messages and settings remain secure.</span>
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={isPublicProfile}
+                                    onCheckedChange={handleTogglePublicProfile}
                                 />
                             </div>
 

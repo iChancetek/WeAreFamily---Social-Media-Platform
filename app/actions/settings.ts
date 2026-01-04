@@ -22,13 +22,14 @@ export async function updateProfile(data: { displayName?: string, bio?: string, 
     revalidatePath('/')
 }
 
-export async function updateAccountSettings(data: { language?: string, theme?: string }) {
+export async function updateAccountSettings(data: { language?: string, theme?: string, isPublicProfile?: boolean }) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
     await adminDb.collection("users").doc(user.id).update({
         ...(data.language !== undefined && { language: data.language }),
         ...(data.theme !== undefined && { theme: data.theme }),
+        ...(data.isPublicProfile !== undefined && { isPublicProfile: data.isPublicProfile }),
     });
 
     revalidatePath('/settings')

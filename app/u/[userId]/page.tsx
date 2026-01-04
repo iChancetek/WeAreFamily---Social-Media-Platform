@@ -30,29 +30,39 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
     const isOwnProfile = currentUser.id === userId;
     // Fetch family status
     const familyStatus = await getFamilyStatus(userId);
-    const hasAccess = isOwnProfile || familyStatus.status === 'accepted' || currentUser.role === 'admin';
+
+    // Privacy Logic: Owner OR Family OR Public Profile
+    const userData = userDoc.data()!;
+    const isPublicProfile = userData.isPublicProfile === true;
+
+    // STRICT ACCESS CHECK
+    const hasAccess = isOwnProfile || familyStatus.status === 'accepted' || currentUser.role === 'admin' || isPublicProfile;
 
     // Sanitize user data based on access
-    const userData = userDoc.data()!;
+    // If public but NOT family/owner, we show LIMITED data.
+    const isFamilyOrOwner = isOwnProfile || familyStatus.status === 'accepted' || currentUser.role === 'admin';
+    const showFullProfile = isFamilyOrOwner;
+
     const user = sanitizeData({
         id: userDoc.id,
         displayName: userData.displayName,
         imageUrl: userData.imageUrl,
-        // Only show full profile data if has access
-        ...(hasAccess ? userData : {}),
-        // Always allow cover photo? Or hide it? "photos" implies cover too potentially.
-        // Let's hide bio and cover if private as requested "info, data, etc".
-        // But keep coverUrl if we want the header to look okay-ish?
-        // User said "cannot have access to... photos". Cover IS a photo.
-        // Let's strip coverUrl and bio if !hasAccess.
-        coverUrl: hasAccess ? userData.coverUrl : null,
-        coverType: hasAccess ? userData.coverType : null,
-        bio: hasAccess ? userData.bio : null,
+        // Public Data (Allowed for everyone)
+        isPublicProfile: userData.isPublicProfile,
+
+        // Private Data (Only for Owner/Family)
+        ...(showFullProfile ? userData : {}),
+
+        // Explicit overrides for safety
+        coverUrl: showFullProfile ? userData.coverUrl : null,
+        coverType: showFullProfile ? userData.coverType : null,
+        bio: showFullProfile ? userData.bio : null,
+        email: showFullProfile ? userData.email : null,
     });
 
     // Fetch user posts
     console.log(`Checking profile access for viewer ${currentUser.id} to target ${userId}`);
-    console.log(`Access status: isOwn=${isOwnProfile}, family=${familyStatus.status}, role=${currentUser.role}`);
+    console.log(`Access status: isOwn=${isOwnProfile}, family=${familyStatus.status}, pub=${isPublicProfile}`);
     console.log(`Has Access: ${hasAccess}`);
 
     const userPosts = hasAccess ? await getUserPosts(userId) : [];
@@ -81,7 +91,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
                         </div>
                         <h3 className="text-lg font-semibold text-foreground">Private Profile</h3>
                         <p className="text-muted-foreground mt-2 max-w-sm">
-                            You must be family to view {user.displayName || "this user"}'s posts and photos. Send a family request to connect!
+                            This profile is private. You must be family to view {user.displayName || "this user"}'s posts and photos.
                         </p>
                     </div>
                 ) : (
