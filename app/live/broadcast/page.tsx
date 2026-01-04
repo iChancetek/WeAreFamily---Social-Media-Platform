@@ -6,8 +6,9 @@ import { startSession } from "@/app/actions/rtc"
 import { BroadcastView } from "@/components/rtc/broadcast-view"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Video, Loader2 } from "lucide-react"
+import { Video, Loader2, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
+import Link from "next/link"
 
 export default function BroadcastPage() {
     const router = useRouter()
@@ -40,6 +41,14 @@ export default function BroadcastPage() {
 
     return (
         <div className="container mx-auto p-6 max-w-2xl">
+            <div className="mb-4">
+                <Link href="/live">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Live
+                    </Button>
+                </Link>
+            </div>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-center text-2xl">Start Your Broadcast</CardTitle>
