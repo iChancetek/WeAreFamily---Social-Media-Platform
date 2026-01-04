@@ -1,11 +1,10 @@
-
 import { MainLayout } from "@/components/layout/main-layout";
-import { FullScreenChat } from "@/components/ai/full-screen-chat";
+import { ChatInterface } from "@/components/ai/chat-interface";
 
 export default function ChatPage() {
     return (
         <MainLayout>
-            <FullScreenChat />
+            <ChatInterface />
         </MainLayout>
     );
 }
