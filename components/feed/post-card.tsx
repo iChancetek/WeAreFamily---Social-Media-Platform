@@ -631,6 +631,18 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                 <Share2 className="w-4 h-4" />
                                 Share Externally
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    // Trigger a custom event that the AI Assistant can listen to
+                                    // Or for now, just copy to clipboard with a special prompt
+                                    navigator.clipboard.writeText(`Context: ${post.content}\n\nTask: Please explain or summarize this.`);
+                                    toast.info("Post copied to clipboard! Open AI Assistant to discuss it. 🧠");
+                                }}
+                                className="gap-2 cursor-pointer text-blue-600 focus:text-blue-600"
+                            >
+                                <Sparkles className="w-4 h-4" />
+                                Ask AI about this...
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { createPost } from "@/app/actions/posts";
-import { generatePostContent } from "@/app/actions/ai";
+import { chatWithAgent } from "@/app/actions/ai-agents"; // UPDATED IMPORT
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
@@ -55,8 +55,12 @@ export function CreatePost() {
 
         setIsGenerating(true);
         try {
-            const magicText = await generatePostContent(content);
-            setContent(magicText);
+            // Use the 'general' agent for creative writing
+            const magicText = await chatWithAgent(
+                `Write a warm, engaging social media post about: "${content}". Use emojis. Keep it under 280 chars.`,
+                'general'
+            );
+            setContent(magicText || content);
             toast.success("Magic applied! ✨");
         } catch {
             toast.error("Magic failed. Try again!");

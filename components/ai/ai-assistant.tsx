@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Sparkles, Send, X, MessageCircle, Bot, User, Loader2, Database } from "lucide-react"
-import { chatWithAI, seedKnowledgeBase } from "@/app/actions/ai"
+import { chatWithAgent, AgentMode, seedKnowledgeBase } from "@/app/actions/ai-agents" // UPDATED IMPORT
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -17,8 +17,9 @@ type Message = {
 
 export function AIAssistant() {
     const [isOpen, setIsOpen] = useState(false)
+    const [selectedMode, setSelectedMode] = useState<AgentMode>('general') // NEW STATE
     const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: "Hi! I'm the Famio AI. 👋 Ask me anything about the platform!" }
+        { role: 'assistant', content: "Hi! I'm the Famio Universal Intelligence. 🧠 Choose a mode or just chat!" }
     ])
     const [inputValue, setInputValue] = useState("")
     const [isLoading, setIsLoading] = useState(false)
@@ -32,6 +33,32 @@ export function AIAssistant() {
         }
     }, [messages, isOpen])
 
+    // Listen for custom "Open AI" events from other components
+    useEffect(() => {
+        const handleOpenAI = (e: any) => {
+            const { context, type } = e.detail || {};
+            setIsOpen(true);
+
+            if (context) {
+                // Add context as a user message, effectively "quoting" the post
+                const contextMsg = `[Shared Context]: "${context.substring(0, 200)}${context.length > 200 ? '...' : ''}"`;
+
+                // Don't duplicate if already the last message
+                setMessages(prev => {
+                    if (prev[prev.length - 1].content === contextMsg) return prev;
+                    return [
+                        ...prev,
+                        { role: 'user', content: contextMsg },
+                        { role: 'assistant', content: "I see the context. What would you like to know? (Summarize, Explain, etc.)" }
+                    ];
+                });
+            }
+        };
+
+        window.addEventListener('famio:open-ai', handleOpenAI);
+        return () => window.removeEventListener('famio:open-ai', handleOpenAI);
+    }, []);
+
     const handleSendMessage = async (e?: React.FormEvent) => {
         e?.preventDefault()
         if (!inputValue.trim() || isLoading) return
@@ -42,7 +69,7 @@ export function AIAssistant() {
         setIsLoading(true)
 
         try {
-            const response = await chatWithAI(userMsg)
+            const response = await chatWithAgent(userMsg, selectedMode) // UPDATED CALL
             setMessages(prev => [...prev, { role: 'assistant', content: response || "I couldn't find an answer to that." }])
         } catch (error) {
             console.error(error)
@@ -73,26 +100,48 @@ export function AIAssistant() {
                 isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 h-0 w-0 overflow-hidden"
             )}>
                 <Card className="w-[350px] md:w-[400px] h-[500px] shadow-2xl border-blue-200 flex flex-col bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm">
-                    <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-xl p-4 flex flex-row items-center justify-between shrink-0">
-                        <div className="flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-yellow-300" />
-                            <CardTitle className="text-lg">Famio Assistant</CardTitle>
+                    <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-xl p-4 flex flex-col gap-3 shrink-0">
+                        <div className="flex flex-row items-center justify-between w-full">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-yellow-300" />
+                                <CardTitle className="text-lg">Famio Intelligence</CardTitle>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 text-white/50 hover:text-white hover:bg-white/20"
+                                    onClick={handleSeed}
+                                    title="Refresh Knowledge Base"
+                                    disabled={isSeeding}
+                                >
+                                    {isSeeding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Database className="w-3 h-3" />}
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/20" onClick={() => setIsOpen(false)}>
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                            {/* Hidden 'Power User' feature to re-seed DB */}
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6 text-white/50 hover:text-white hover:bg-white/20"
-                                onClick={handleSeed}
-                                title="Refresh Knowledge Base"
-                                disabled={isSeeding}
-                            >
-                                {isSeeding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Database className="w-3 h-3" />}
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/20" onClick={() => setIsOpen(false)}>
-                                <X className="w-4 h-4" />
-                            </Button>
+
+                        {/* Mode Selector */}
+                        <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+                            {(['general', 'tutor', 'executive', 'biographer', 'architect'] as AgentMode[]).map((mode) => (
+                                <button
+                                    key={mode}
+                                    onClick={() => {
+                                        setSelectedMode(mode);
+                                        setMessages(prev => [...prev, { role: 'assistant', content: `Activated: ${mode.toUpperCase()} Mode 🔄` }]);
+                                    }}
+                                    className={cn(
+                                        "px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+                                        selectedMode === mode
+                                            ? "bg-white text-blue-600 shadow-sm"
+                                            : "bg-white/10 text-white hover:bg-white/20"
+                                    )}
+                                >
+                                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                                </button>
+                            ))}
                         </div>
                     </CardHeader>
 

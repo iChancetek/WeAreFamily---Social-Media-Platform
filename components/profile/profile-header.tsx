@@ -3,11 +3,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-context"
-import { Edit2 } from "lucide-react"
+import { Edit2, BookHeart } from "lucide-react"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { ProfileContent } from "./profile-content"
 import { BlockButton } from "@/components/profile/block-button"
+import { toast } from "sonner"
 
 interface ProfileHeaderProps {
     user: {
@@ -71,8 +72,26 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                             </h1>
                         </div>
                         <div className="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-                            <div className="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-                                {isCurrentUser ? (
+                            {isCurrentUser ? (
+                                <div className="flex gap-2 w-full sm:w-auto">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1 sm:flex-none gap-2 border-blue-500/20 hover:bg-blue-500/5 text-blue-600 dark:text-blue-400"
+                                        onClick={() => {
+                                            const event = new CustomEvent('famio:open-ai', {
+                                                detail: {
+                                                    mode: 'biographer',
+                                                    context: "I want to record a memory for my legacy.",
+                                                    type: 'biographer_start'
+                                                }
+                                            });
+                                            window.dispatchEvent(event);
+                                            toast.success("Biographer initialized 🖋️");
+                                        }}
+                                    >
+                                        <BookHeart className="h-4 w-4" />
+                                        Record Memory
+                                    </Button>
                                     <Dialog open={isEditing} onOpenChange={setIsEditing}>
                                         <DialogTrigger asChild>
                                             <Button variant="outline" className="gap-2">
@@ -87,13 +106,13 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                             />
                                         </DialogContent>
                                     </Dialog>
-                                ) : (
-                                    <BlockButton
-                                        targetUserId={user.id}
-                                        isBlocked={isBlocked}
-                                    />
-                                )}
-                            </div>
+                                </div>
+                            ) : (
+                                <BlockButton
+                                    targetUserId={user.id}
+                                    isBlocked={isBlocked}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
