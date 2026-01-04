@@ -39,15 +39,18 @@ const firebaseAdminConfig = {
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "we-are-family-221.firebasestorage.app",
 };
 
-export function getAdminApp() {
-    if (getApps().length === 0) {
-        return initializeApp(firebaseAdminConfig);
+let app;
+try {
+    if (!getApps().length) {
+        app = initializeApp(firebaseAdminConfig);
+    } else {
+        app = getApp();
     }
-    return getApp();
+} catch (error) {
+    console.error("Firebase Admin Initialization Error:", error);
+    // Return a dummy app/db to prevent module crash, subsequent calls will fail but we'll see the log
 }
 
-const adminApp = getAdminApp();
-
-export const adminDb = getFirestore(adminApp);
-export const adminAuth = getAuth(adminApp);
-export const adminStorage = getStorage(adminApp);
+export const adminAuth = app ? getAuth(app) : {} as any;
+export const adminDb = app ? getFirestore(app) : {} as any;
+export const adminStorage = app ? getStorage(app) : {} as any;
