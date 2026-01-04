@@ -66,7 +66,10 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                 <Link
                     href="/"
                     className="flex items-center gap-2 cursor-pointer"
-                    onClick={onLinkClick}
+                    onClick={() => {
+                        console.log("MOBILE SIDEBAR: Home Clicked");
+                        onLinkClick?.();
+                    }}
                 >
                     <Heart className="w-8 h-8 fill-primary text-primary" />
                     <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
@@ -87,7 +90,10 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    onClick={onLinkClick}
+                                    onClick={(e) => {
+                                        console.log(`MOBILE SIDEBAR: Clicked ${link.label}`);
+                                        onLinkClick?.();
+                                    }}
                                     className={cn(
                                         "flex items-center gap-3 w-full text-base font-medium transition-colors h-11 rounded-xl px-3 relative my-1",
                                         isActive
