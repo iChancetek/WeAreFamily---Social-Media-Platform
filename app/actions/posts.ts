@@ -330,8 +330,8 @@ export async function getPosts() {
                         .orderBy("createdAt", "desc")
                         .limit(20)
                         .get()
-                        .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' })))
-                        .catch(async err => {
+                        .then((snap: any) => snap.docs.map((d: any) => ({ ...d.data(), id: d.id, type: 'personal' })))
+                        .catch(async (err: any) => {
                             console.warn("Family posts ordered query failed (likely missing index), trying fallback:", err);
                             // Fallback: Query WITHOUT orderBy, then sort in memory.
                             // 'in' query works without index if no orderBy is present.
@@ -340,7 +340,7 @@ export async function getPosts() {
                                     .where("authorId", "in", chunk)
                                     .limit(20) // Still limit to avoid massive fetch
                                     .get();
-                                return fallbackSnap.docs.map(d => ({ ...d.data(), id: d.id, type: 'personal' }));
+                                return fallbackSnap.docs.map((d: any) => ({ ...d.data(), id: d.id, type: 'personal' }));
                             } catch (fallbackErr) {
                                 console.error("Family posts fallback query also failed:", fallbackErr);
                                 return [];
@@ -367,8 +367,8 @@ export async function getPosts() {
                         .orderBy("createdAt", "desc")
                         .limit(20)
                         .get()
-                        .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'group' })))
-                        .catch(err => {
+                        .then((snap: any) => snap.docs.map((d: any) => ({ ...d.data(), id: d.id, type: 'group' })))
+                        .catch((err: any) => {
                             console.error("Group posts query failed:", err);
                             return [];
                         })
@@ -388,8 +388,8 @@ export async function getPosts() {
                         .orderBy("createdAt", "desc")
                         .limit(20)
                         .get()
-                        .then(snap => snap.docs.map(d => ({ ...d.data(), id: d.id, type: 'branding' })))
-                        .catch(err => {
+                        .then((snap: any) => snap.docs.map((d: any) => ({ ...d.data(), id: d.id, type: 'branding' })))
+                        .catch((err: any) => {
                             console.error("Branding posts query failed:", err);
                             return [];
                         })
@@ -494,7 +494,7 @@ export async function getPosts() {
                 commentsSnapshot = await commentsRef.get();
             }
 
-            const comments = await Promise.all(commentsSnapshot.docs.map(async (cDoc) => {
+            const comments = await Promise.all(commentsSnapshot.docs.map(async (cDoc: any) => {
                 const cData = cDoc.data();
                 const cAuthorDoc = await adminDb.collection("users").doc(cData.authorId).get();
                 return {
@@ -615,7 +615,7 @@ export async function getUserPosts(userId: string) {
                 .get();
         }
 
-        const posts = await Promise.all(postsSnapshot.docs.map(async (doc) => {
+        const posts = await Promise.all(postsSnapshot.docs.map(async (doc: any) => {
             const post = doc.data();
             const authorDoc = await adminDb.collection("users").doc(post.authorId).get();
             const author = authorDoc.exists ? {
@@ -633,7 +633,7 @@ export async function getUserPosts(userId: string) {
                 commentsSnapshot = await commentsRef.get();
             }
 
-            const comments = await Promise.all(commentsSnapshot.docs.map(async (cDoc) => {
+            const comments = await Promise.all(commentsSnapshot.docs.map(async (cDoc: any) => {
                 const cData = cDoc.data();
                 const cAuthorDoc = await adminDb.collection("users").doc(cData.authorId).get();
                 return {

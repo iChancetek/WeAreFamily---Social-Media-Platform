@@ -98,7 +98,7 @@ export async function notifyAdminNewUser(uid: string, email: string, displayName
         // (createNotification relies on getUserProfile() which might be flaky in this specific exact moment)
         const timestamp = FieldValue.serverTimestamp();
 
-        const notificationPromises = adminsSnapshot.docs.map(adminDoc =>
+        const notificationPromises = adminsSnapshot.docs.map((adminDoc: any) =>
             adminDb.collection("notifications").add({
                 recipientId: adminDoc.id,
                 senderId: uid, // The new user is the sender

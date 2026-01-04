@@ -55,7 +55,7 @@ export async function unblockUser(userId: string) {
         .get();
 
     const batch = adminDb.batch();
-    blockedSnapshot.docs.forEach((doc) => {
+    blockedSnapshot.docs.forEach((doc: any) => {
         batch.delete(doc.ref);
     });
     await batch.commit();
@@ -81,7 +81,7 @@ export async function getBlockedUsers() {
 
     // Fetch user details for each blocked user
     const blockedUsers = await Promise.all(
-        blockedSnapshot.docs.map(async (blockDoc) => {
+        blockedSnapshot.docs.map(async (blockDoc: any) => {
             const blockData = blockDoc.data();
             const userDoc = await adminDb.collection("users").doc(blockData.blockedId).get();
             if (userDoc.exists) {

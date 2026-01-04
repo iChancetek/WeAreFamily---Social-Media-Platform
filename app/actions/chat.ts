@@ -49,7 +49,7 @@ export async function checkOrCreateChat(targetUserId: string) {
         .get();
 
     // Find existing 1-on-1 chat
-    const existingChat = chatsSnapshot.docs.find(chatDoc => {
+    const existingChat = chatsSnapshot.docs.find((chatDoc: any) => {
         const chatData = chatDoc.data();
         return !chatData.isGroup &&
             chatData.participants.includes(targetUserId);
@@ -107,7 +107,7 @@ export async function getChats(): Promise<ChatSession[]> {
     if (chatsSnapshot.empty) return [];
 
     // Enrich with other user details
-    const enrichedChats = await Promise.all(chatsSnapshot.docs.map(async (chatDoc) => {
+    const enrichedChats = await Promise.all(chatsSnapshot.docs.map(async (chatDoc: any) => {
         const chatData = chatDoc.data();
         const participants = chatData.participants || [];
         const otherId = participants.find((id: string) => id !== myId);
@@ -182,7 +182,7 @@ export async function getMessages(chatId: string): Promise<Message[]> {
         return [];
     }
 
-    return messagesSnapshot.docs.map(msgDoc => sanitizeData({
+    return messagesSnapshot.docs.map((msgDoc: any) => sanitizeData({
         id: msgDoc.id,
         ...msgDoc.data(),
     })) as Message[];
@@ -246,7 +246,7 @@ export async function sendWelcomeMessage(targetUserId: string, targetUserDisplay
         .get();
 
     // Find existing 1-on-1 chat with Admin
-    let chatDoc = chatsSnapshot.docs.find(chatDoc => {
+    let chatDoc = chatsSnapshot.docs.find((chatDoc: any) => {
         const chatData = chatDoc.data();
         return !chatData.isGroup && chatData.participants.includes(adminId);
     });

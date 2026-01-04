@@ -219,7 +219,7 @@ export async function getFamilyRequests() {
         .where("status", "==", 'pending')
         .get();
 
-    const incomingRequests = await Promise.all(incomingSnapshot.docs.map(async doc => {
+    const incomingRequests = await Promise.all(incomingSnapshot.docs.map(async (doc: any) => {
         const data = doc.data();
         const senderDoc = await adminDb.collection("users").doc(data.senderId).get();
 
@@ -246,7 +246,7 @@ export async function getFamilyRequests() {
         };
     }));
 
-    const sentRequests = await Promise.all(sentSnapshot.docs.map(async doc => {
+    const sentRequests = await Promise.all(sentSnapshot.docs.map(async (doc: any) => {
         const data = doc.data();
         const receiverDoc = await adminDb.collection("users").doc(data.receiverId).get();
 
@@ -296,7 +296,7 @@ export async function searchFamilyMembers(searchTerm: string) {
     const blockedIds = new Set<string>();
     if (currentUser) {
         const blockedSnapshot = await adminDb.collection("blockedUsers").get();
-        blockedSnapshot.docs.forEach(doc => {
+        blockedSnapshot.docs.forEach((doc: any) => {
             const data = doc.data();
             if (data.blockerId === currentUser.id || data.blockedId === currentUser.id) {
                 blockedIds.add(data.blockerId === currentUser.id ? data.blockedId : data.blockerId);
@@ -304,7 +304,7 @@ export async function searchFamilyMembers(searchTerm: string) {
         });
     }
 
-    const allUsers = usersSnapshot.docs.map(doc => {
+    const allUsers = usersSnapshot.docs.map((doc: any) => {
         return {
             id: doc.id,
             ...doc.data()
@@ -415,12 +415,12 @@ export async function getFamilyMemberIds(userId: string) {
     ]);
 
     const familyIds = new Set<string>();
-    sentSnapshot.docs.forEach(doc => familyIds.add(doc.data().receiverId));
-    receivedSnapshot.docs.forEach(doc => familyIds.add(doc.data().senderId));
+    sentSnapshot.docs.forEach((doc: any) => familyIds.add(doc.data().receiverId));
+    receivedSnapshot.docs.forEach((doc: any) => familyIds.add(doc.data().senderId));
 
     // Filter out blocked users
     const blockedSnapshot = await adminDb.collection("blockedUsers").get();
-    blockedSnapshot.docs.forEach(doc => {
+    blockedSnapshot.docs.forEach((doc: any) => {
         const data = doc.data();
         if (data.blockerId === userId || data.blockedId === userId) {
             familyIds.delete(data.blockerId === userId ? data.blockedId : data.blockerId);

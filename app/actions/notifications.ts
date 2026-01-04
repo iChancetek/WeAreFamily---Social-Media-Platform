@@ -70,7 +70,7 @@ export async function getNotifications() {
             .get();
     }
 
-    const notifications = await Promise.all(snapshot.docs.map(async (doc) => {
+    const notifications = await Promise.all(snapshot.docs.map(async (doc: any) => {
         const data = doc.data();
 
         // Hydrate sender info
@@ -117,7 +117,7 @@ export async function markAllAsRead() {
         .get();
 
     const batch = adminDb.batch();
-    snapshot.docs.forEach(doc => {
+    snapshot.docs.forEach((doc: any) => {
         batch.update(doc.ref, { read: true });
     });
 

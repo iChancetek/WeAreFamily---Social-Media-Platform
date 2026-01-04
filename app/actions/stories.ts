@@ -65,8 +65,8 @@ export async function getActiveStories() {
                         .where("expiresAt", ">", now)
                         .orderBy("expiresAt", "asc")
                         .get()
-                        .then(snap => snap.docs)
-                        .catch(async err => {
+                        .then((snap: any) => snap.docs)
+                        .catch(async (err: any) => {
                             console.warn("Family stories ordered query failed, trying robust fallback:", err);
                             // Fallback: Query ONLY by authorId, filter date in memory
                             // This avoids needing complex composite indexes for 'in' + 'range'
@@ -76,7 +76,7 @@ export async function getActiveStories() {
                                     .get(); // Fetch ALL stories for these authors
 
                                 const nowMillis = Date.now();
-                                return fallbackSnap.docs.filter(doc => {
+                                return fallbackSnap.docs.filter((doc: any) => {
                                     const data = doc.data();
                                     const exp = data.expiresAt?.toMillis ? data.expiresAt.toMillis() : 0;
                                     return exp > nowMillis;
@@ -96,7 +96,7 @@ export async function getActiveStories() {
         // Mock snapshot structure for compatibility with existing map logic
         const storiesSnapshot = { docs: storiesDocs };
 
-        const activeStoriesResults = await Promise.all(storiesSnapshot.docs.map(async (storyDoc) => {
+        const activeStoriesResults = await Promise.all(storiesSnapshot.docs.map(async (storyDoc: any) => {
             const storyData = storyDoc.data();
             const authorDoc = await adminDb.collection("users").doc(storyData.authorId).get();
             const author = authorDoc.exists ? {

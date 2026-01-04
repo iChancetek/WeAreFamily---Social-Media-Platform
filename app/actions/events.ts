@@ -62,7 +62,7 @@ export async function getEvents(): Promise<Event[]> {
 
         // Collect all unique user IDs
         const allUserIds = new Set<string>();
-        eventsSnapshot.docs.forEach(eventDoc => {
+        eventsSnapshot.docs.forEach((eventDoc: any) => {
             const eventData = eventDoc.data();
             allUserIds.add(eventData.creatorId);
             (eventData.attendees || []).forEach((id: string) => allUserIds.add(id));
@@ -82,7 +82,7 @@ export async function getEvents(): Promise<Event[]> {
         }));
 
         // Build events with enriched data
-        const events = eventsSnapshot.docs.map(eventDoc => {
+        const events = eventsSnapshot.docs.map((eventDoc: any) => {
             const eventData = eventDoc.data();
             const attendees = eventData.attendees || [];
 

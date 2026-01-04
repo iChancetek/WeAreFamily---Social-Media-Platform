@@ -56,7 +56,7 @@ export async function getGroups() {
     // In a real app, we might want to check membership for each group efficiently
     // For now, we'll just return the groups.
 
-    return groupsSnapshot.docs.map(doc => {
+    return groupsSnapshot.docs.map((doc: any) => {
         return sanitizeData({
             id: doc.id,
             ...doc.data()
@@ -176,7 +176,7 @@ export async function getGroupPosts(groupId: string) {
         .orderBy("createdAt", "desc")
         .get();
 
-    const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc) => {
+    const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc: any) => {
         const postData = postDoc.data();
 
         // Fetch author
@@ -209,7 +209,7 @@ export async function getJoinedGroupIds(userId: string) {
 
     const groupIds = new Set<string>();
 
-    snapshot.docs.forEach(doc => {
+    snapshot.docs.forEach((doc: any) => {
         // Doc path: groups/{groupId}/members/{userId}
         // doc.ref.parent is 'members' collection
         // doc.ref.parent.parent is 'groups/{groupId}' doc

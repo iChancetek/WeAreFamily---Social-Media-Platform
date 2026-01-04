@@ -45,7 +45,7 @@ export async function createBranding(data: { name: string; description: string; 
 export async function getBrandings() {
     const brandingsSnapshot = await adminDb.collection("pages").orderBy("createdAt", "desc").get();
 
-    return brandingsSnapshot.docs.map(doc => {
+    return brandingsSnapshot.docs.map((doc: any) => {
         return sanitizeData({
             id: doc.id,
             ...doc.data()
@@ -148,7 +148,7 @@ export async function getBrandingPosts(brandingId: string) {
         .orderBy("createdAt", "desc")
         .get();
 
-    const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc) => {
+    const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc: any) => {
         const postData = postDoc.data();
 
         // If postedAsBranding, Fetch Branding Details as Author
@@ -193,7 +193,7 @@ export async function getFollowedBrandingIds(userId: string) {
 
     const brandingIds = new Set<string>();
 
-    snapshot.docs.forEach(doc => {
+    snapshot.docs.forEach((doc: any) => {
         const brandingDoc = doc.ref.parent.parent;
         if (brandingDoc) {
             brandingIds.add(brandingDoc.id);
