@@ -1,12 +1,23 @@
 'use client'
 
-// Updated: 2026-01-02 09:52 - ChanceTEK branding v2
+// Updated: 2026-01-03 19:10 - Audio toggle added
+import { useState, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Heart, Shield, Users, Globe, CheckCircle, Sparkles } from "lucide-react"
+import { Heart, Shield, Users, Globe, CheckCircle, Sparkles, Volume2, VolumeX } from "lucide-react"
 import Image from "next/image"
 
 export function LandingPage() {
+    const [isMuted, setIsMuted] = useState(true);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    const toggleAudio = () => {
+        if (videoRef.current) {
+            videoRef.current.muted = !isMuted;
+            setIsMuted(!isMuted);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-white">
             {/* Navigation */}
@@ -40,15 +51,25 @@ export function LandingPage() {
             <section className="relative overflow-hidden min-h-[90vh] flex items-center bg-black">
                 {/* Background Video */}
                 <video
+                    ref={videoRef}
                     autoPlay
                     loop
-                    muted
+                    muted={isMuted} // React controls this property
                     playsInline
                     className="absolute inset-0 w-full h-full object-cover opacity-60"
                 >
                     <source src="/Create_a_highquality_1080p_202601031842.mp4" type="video/mp4" />
                 </video>
                 <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+
+                {/* Audio Control */}
+                <button
+                    onClick={toggleAudio}
+                    className="absolute bottom-8 right-8 z-30 p-3 rounded-full bg-black/40 hover:bg-black/60 text-white/80 hover:text-white backdrop-blur-sm border border-white/20 transition-all duration-200"
+                    title={isMuted ? "Unmute Video" : "Mute Video"}
+                >
+                    {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                </button>
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 w-full">
                     <div className="text-center">
