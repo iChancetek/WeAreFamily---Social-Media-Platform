@@ -293,5 +293,22 @@ service cloud.firestore {
       // Write: Server-only (via audit.ts)
       allow create, update, delete: if false;
     }
+
+    // Active Sessions (WebRTC Signaling)
+    match /active_sessions/{sessionId} {
+      // Allow reading session metadata (host, participants)
+      allow read: if isAuthenticated();
+      
+      // Write: Server-only (via rtc.ts actions)
+      allow create, update, delete: if false; 
+
+      match /signals/{signalId} {
+        // Only allow reading signals addressed to the user
+        allow read: if isAuthenticated() && resource.data.to == request.auth.uid;
+        
+        // Write: Server-only (via rtc.ts actions)
+        allow create, update, delete: if false;
+      }
+    }
   }
 }

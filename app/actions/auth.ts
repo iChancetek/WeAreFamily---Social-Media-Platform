@@ -29,6 +29,9 @@ export async function syncUserToDb(
     emailVerified: boolean = false
 ) {
     try {
+        if (!adminDb || !adminDb.collection) {
+            throw new Error("Firebase Admin DB not initialized");
+        }
         const userRef = adminDb.collection("users").doc(uid);
         const userDoc = await userRef.get();
 
