@@ -42,11 +42,11 @@ export default function RootLayout({
               <MessageNotificationProvider>
                 {children}
                 <Toaster />
-                {/* <CallOverlay /> */}
+                <CallOverlay />
               </MessageNotificationProvider>
             </LanguageProvider>
           </ThemeProvider>
-          {/* <AIAssistant /> */}
+          <AIAssistant />
         </body>
       </html>
     </AuthProvider>
