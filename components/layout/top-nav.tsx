@@ -11,7 +11,7 @@ export function TopNav({ className }: { className?: string }) {
     const [open, setOpen] = useState(false);
 
     return (
-        <header className={`flex items-center justify-between px-4 h-14 text-white ${className}`}>
+        <header className={`flex items-center justify-between px-4 h-14 text-white relative z-50 ${className}`}>
             <div className="flex items-center gap-2 font-bold text-lg text-primary">
                 <Heart className="w-5 h-5 fill-current" />
                 WeAreFamily
