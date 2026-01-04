@@ -31,17 +31,17 @@ export default async function AdminPage() {
     const oneMonthAgo = subDays(today, 30);
     const oneYearAgo = subYears(today, 1);
 
-    const newDaily = allUsers.filter(u => new Date(u.createdAt) >= today).length;
-    const newWeekly = allUsers.filter(u => new Date(u.createdAt) >= oneWeekAgo).length;
-    const newMonthly = allUsers.filter(u => new Date(u.createdAt) >= oneMonthAgo).length;
-    const newYearly = allUsers.filter(u => new Date(u.createdAt) >= oneYearAgo).length;
+    const newDaily = allUsers.filter((u: any) => new Date(u.createdAt) >= today).length;
+    const newWeekly = allUsers.filter((u: any) => new Date(u.createdAt) >= oneWeekAgo).length;
+    const newMonthly = allUsers.filter((u: any) => new Date(u.createdAt) >= oneMonthAgo).length;
+    const newYearly = allUsers.filter((u: any) => new Date(u.createdAt) >= oneYearAgo).length;
 
     // Prepare Chart Data (Last 7 Days Registration)
     const registrationData = [];
     for (let i = 6; i >= 0; i--) {
         const d = subDays(today, i);
         const dateStr = format(d, 'MMM dd');
-        const count = allUsers.filter(u => {
+        const count = allUsers.filter((u: any) => {
             const uDate = startOfDay(new Date(u.createdAt));
             return uDate.getTime() === d.getTime();
         }).length;
@@ -49,7 +49,7 @@ export default async function AdminPage() {
     }
 
     // Role Distribution
-    const roleCounts = allUsers.reduce((acc, curr) => {
+    const roleCounts = allUsers.reduce((acc: any, curr: any) => {
         acc[curr.role] = (acc[curr.role] || 0) + 1;
         return acc;
     }, {} as Record<string, number>);
