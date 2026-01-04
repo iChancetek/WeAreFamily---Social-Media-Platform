@@ -293,7 +293,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                             if (q.length >= 2) {
                                                 const { searchUsers } = await import("@/app/actions/user"); // Keep dynamic or move to top? Let's keep for now but simplify structure
                                                 const results = await searchUsers(q);
-                                                const unblockedResults = results.filter(r => !blockedList.some(b => b.id === r.id));
+                                                const unblockedResults = results.filter((r: any) => !blockedList.some(b => b.id === r.id));
                                                 setSearchResults(unblockedResults);
                                             } else {
                                                 setSearchResults([]);
