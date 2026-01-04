@@ -647,6 +647,18 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => {
+                                    const textToRead = post.content || "This post has no text content.";
+                                    const utterance = new SpeechSynthesisUtterance(textToRead);
+                                    window.speechSynthesis.speak(utterance);
+                                }}
+                                className="gap-2"
+                            >
+                                <Volume2 className="w-4 h-4" />
+                                Read Aloud
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                onClick={() => {
                                     window.dispatchEvent(new CustomEvent('famio:open-ai', {
                                         detail: { context: post.content, mode: 'biographer', type: 'post_context' }
                                     }));
@@ -813,6 +825,6 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                     </div>
                 )}
             </CardFooter>
-        </Card>
+        </Card >
     );
 }
