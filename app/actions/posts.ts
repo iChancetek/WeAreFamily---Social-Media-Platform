@@ -430,7 +430,7 @@ export async function getPosts() {
 
                 author = authorDoc.exists ? {
                     id: authorDoc.id,
-                    displayName: authorDoc.data()?.displayName,
+                    displayName: authorDoc.data()?.displayName || (authorDoc.data()?.profileData?.firstName ? `${authorDoc.data()?.profileData.firstName} ${authorDoc.data()?.profileData.lastName || ''}`.trim() : null) || authorDoc.data()?.email?.split('@')[0] || "Family Member",
                     imageUrl: authorDoc.data()?.imageUrl,
                     email: authorDoc.data()?.email,
                 } : null;
@@ -462,7 +462,7 @@ export async function getPosts() {
                 const authorDoc = await adminDb.collection("users").doc(post.authorId).get();
                 author = authorDoc.exists ? {
                     id: authorDoc.id,
-                    displayName: authorDoc.data()?.displayName,
+                    displayName: authorDoc.data()?.displayName || (authorDoc.data()?.profileData?.firstName ? `${authorDoc.data()?.profileData.firstName} ${authorDoc.data()?.profileData.lastName || ''}`.trim() : null) || authorDoc.data()?.email?.split('@')[0] || "Family Member",
                     imageUrl: authorDoc.data()?.imageUrl,
                     email: authorDoc.data()?.email,
                 } : null;

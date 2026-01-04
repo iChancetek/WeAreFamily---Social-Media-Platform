@@ -27,7 +27,7 @@ export default async function MembersDirectoryPage() {
         const data = doc.data();
         return sanitizeData({
             id: doc.id,
-            displayName: data.displayName || data.email?.split('@')[0],
+            displayName: data.displayName || (data.profileData?.firstName ? `${data.profileData.firstName} ${data.profileData.lastName || ''}`.trim() : null) || data.email?.split('@')[0] || "Family Member",
             email: data.email,
             imageUrl: data.imageUrl,
             role: data.role,

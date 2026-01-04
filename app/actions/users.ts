@@ -50,11 +50,19 @@ export async function getActiveUsers() {
             activeUsers = activeUsers.filter(u => !excludedIds.has(u.id));
         }
 
-        return activeUsers.map(u => ({
-            id: u.id,
-            displayName: u.displayName || "Family Member",
-            imageUrl: u.imageUrl || null,
-        }));
+        return activeUsers.map(u => {
+            const displayName = u.displayName ||
+                (u.profileData?.firstName ? `${u.profileData.firstName} ${u.profileData.lastName || ''}`.trim() : null) ||
+                u.email?.split('@')[0] ||
+                "Family Member";
+
+            return {
+                id: u.id,
+                displayName: displayName,
+                imageUrl: u.imageUrl || null,
+                profileData: u.profileData // Pass this through just in case
+            };
+        });
     } catch (error) {
         console.error("Error fetching active users:", error);
         return [];
