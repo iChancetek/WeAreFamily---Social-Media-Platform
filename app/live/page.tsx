@@ -1,16 +1,11 @@
 import { getActiveBroadcasts } from "@/app/actions/rtc"
-import { getUserProfile } from "@/lib/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Video, Users } from "lucide-react"
 import Link from "next/link"
-import { redirect } from "next/navigation"
 
 export default async function LivePage() {
-    const user = await getUserProfile()
-    if (!user) redirect("/login")
-
     const broadcasts = await getActiveBroadcasts()
 
     return (
