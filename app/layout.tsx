@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/components/language-context";
+import { AIAssistant } from "@/components/ai/ai-assistant";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700', '900'],
