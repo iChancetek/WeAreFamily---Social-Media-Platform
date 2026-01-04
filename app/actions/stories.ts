@@ -35,8 +35,10 @@ export async function createStory(mediaUrl: string, mediaType: 'image' | 'video'
         details: { mediaUrl: mediaUrl.substring(0, 50) } // don't log full url if long
     });
 
-    revalidatePath("/");
-    return { success: true };
+});
+
+revalidatePath("/", 'layout'); // Revalidate everything to be safe
+return { success: true };
 }
 
 export async function getActiveStories() {
@@ -61,18 +63,24 @@ export async function getActiveStories() {
                     adminDb.collection("stories")
                         .where("authorId", "in", chunk)
                         .where("expiresAt", ">", now)
-                        .orderBy("expiresAt", "asc") // Need index for this: authorId + expiresAt
+                        .orderBy("expiresAt", "asc")
                         .get()
                         .then(snap => snap.docs)
                         .catch(async err => {
-                            console.warn("Family stories ordered query failed (likely missing index), trying fallback:", err);
-                            // Fallback: Query WITHOUT orderBy
+                            console.warn("Family stories ordered query failed, trying robust fallback:", err);
+                            // Fallback: Query ONLY by authorId, filter date in memory
+                            // This avoids needing complex composite indexes for 'in' + 'range'
                             try {
                                 const fallbackSnap = await adminDb.collection("stories")
                                     .where("authorId", "in", chunk)
-                                    .where("expiresAt", ">", now)
-                                    .get();
-                                return fallbackSnap.docs;
+                                    .get(); // Fetch ALL stories for these authors
+
+                                const nowMillis = Date.now();
+                                return fallbackSnap.docs.filter(doc => {
+                                    const data = doc.data();
+                                    const exp = data.expiresAt?.toMillis ? data.expiresAt.toMillis() : 0;
+                                    return exp > nowMillis;
+                                });
                             } catch (fallbackErr) {
                                 console.error("Family stories fallback query also failed:", fallbackErr);
                                 return [];

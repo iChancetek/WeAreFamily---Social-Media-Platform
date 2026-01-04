@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Loader2, Plus, Image as ImageIcon, X } from "lucide-react";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useRouter } from "next/navigation";
 
 interface CreateStoryDialogProps {
     children?: React.ReactNode;
@@ -24,7 +25,8 @@ export function CreateStoryDialog({ children }: CreateStoryDialogProps) {
     const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { user } = useAuth(); // Need user for path
+    const { user } = useAuth();
+    const router = useRouter();
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!user) {
@@ -67,6 +69,7 @@ export function CreateStoryDialog({ children }: CreateStoryDialogProps) {
             setOpen(false);
             setMediaUrl(null);
             setMediaType(null);
+            router.refresh();
         } catch (err) {
             toast.error("Failed to post story");
             console.error(err);

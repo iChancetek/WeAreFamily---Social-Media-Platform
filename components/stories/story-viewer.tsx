@@ -183,8 +183,11 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
                                 className="max-h-full max-w-full object-contain"
                                 autoPlay
                                 playsInline
-                                muted // Required for autoPlay
+                                muted
+                                controls // Added manual controls
                                 onEnded={handleVideoEnded}
+                                onLoadStart={() => console.log("Video load start:", currentStory.mediaUrl)}
+                                onLoadedData={() => console.log("Video loaded data")}
                                 onTimeUpdate={(e) => {
                                     const video = e.currentTarget;
                                     if (video.duration) {
@@ -208,6 +211,13 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
                                 }}
                             />
                         )}
+
+                        {/* DEBUG OVERLAY (REMOVE LATER) */}
+                        <div className="absolute bottom-10 left-10 bg-black/70 text-white text-[10px] p-2 max-w-sm truncate pointer-events-none">
+                            <p>Type: {currentStory.mediaType}</p>
+                            <p>URL: {currentStory.mediaUrl}</p>
+                            <p>Err: {mediaError || 'None'}</p>
+                        </div>
 
                         {/* Unmute Button if Video */}
                         {currentStory.mediaType === 'video' && !mediaError && (
