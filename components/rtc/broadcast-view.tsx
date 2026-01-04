@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useAuth } from "@/components/auth-provider"
-import { sendSignal, endSession, updateSessionPrivacy } from "@/app/actions/rtc"
+import { sendSignal, endSession, updateSessionPrivacy, updateSessionHeartbeat } from "@/app/actions/rtc"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mic, MicOff, Video, VideoOff, PhoneOff, Users, Lock, Globe, ChevronLeft, ChevronRight } from "lucide-react"
@@ -30,6 +30,17 @@ export function BroadcastView({ sessionId, onEnd }: BroadcastViewProps) {
     const localVideoRef = useRef<HTMLVideoElement>(null)
     const localStreamRef = useRef<MediaStream | null>(null)
     const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map())
+
+    // Heartbeat Effect
+    useEffect(() => {
+        const interval = setInterval(() => {
+            updateSessionHeartbeat(sessionId).catch(console.error)
+        }, 30000) // 30 seconds
+
+        return () => clearInterval(interval)
+    }, [sessionId])
+
+
 
     useEffect(() => {
         startBroadcast()

@@ -52,6 +52,7 @@ export async function startSession(type: SessionType, targetUserId?: string, isP
         isPublic: type === "broadcast" ? isPublic : true, // Calls are always "public" to participants
         viewers: type === "broadcast" ? [] : undefined, // Track active viewers for broadcasts
         startedAt: FieldValue.serverTimestamp(),
+        lastActiveAt: FieldValue.serverTimestamp(), // Initialize heartbeat
     };
 
     const sessionRef = await adminDb.collection("active_sessions").add(sessionData);
@@ -155,17 +156,62 @@ export async function getActiveSession(sessionId: string) {
     } as RTCSession;
 }
 
+// Update session heartbeat
+export async function updateSessionHeartbeat(sessionId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    await adminDb.collection("active_sessions").doc(sessionId).update({
+        lastActiveAt: FieldValue.serverTimestamp(),
+    });
+}
+
 export async function getActiveBroadcasts() {
     const snapshot = await adminDb
         .collection("active_sessions")
         .where("type", "==", "broadcast")
         .where("status", "==", "active")
         .orderBy("startedAt", "desc")
-        .limit(20)
+        .limit(50)
         .get();
 
+    const now = Date.now();
+    const STALE_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+
+    const validDocs: any[] = [];
+
+    // Filter and cleanup stale sessions
+    for (const doc of snapshot.docs) {
+        const data = doc.data();
+
+        // Determine last activity time
+        // Use lastActiveAt if present, otherwise startedAt, otherwise assume stale
+        let lastActivityTime = 0;
+
+        if (data.lastActiveAt?.toDate) {
+            lastActivityTime = data.lastActiveAt.toDate().getTime();
+        } else if (data.startedAt?.toDate) {
+            lastActivityTime = data.startedAt.toDate().getTime();
+        } else {
+            // No timestamps? Mark as stale.
+            lastActivityTime = 0;
+        }
+
+        if (now - lastActivityTime > STALE_TIMEOUT) {
+            // Mark as ended
+            console.log(`Cleaning up stale session: ${doc.id}`);
+            await adminDb.collection("active_sessions").doc(doc.id).update({
+                status: "ended",
+                endedReason: "timeout"
+            });
+            continue;
+        }
+
+        validDocs.push(doc);
+    }
+
     const broadcasts = await Promise.all(
-        snapshot.docs.map(async (doc) => {
+        validDocs.map(async (doc) => {
             const data = doc.data();
 
             // Get host profile
