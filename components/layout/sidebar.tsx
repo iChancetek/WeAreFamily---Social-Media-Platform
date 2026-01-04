@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,6 +29,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
         { href: "/family", label: "Family", icon: Users },
         { href: "/groups", label: "Groups", icon: Tent },
         { href: "/messages", label: "Messages", icon: MessageSquare },
+        { href: "/live", label: "Live", icon: Video },
         { href: "/events", label: "Events", icon: Ticket },
         { href: "/gallery", label: "Gallery", icon: ImageIcon },
         { href: "/branding", label: "Branding", icon: Briefcase },
