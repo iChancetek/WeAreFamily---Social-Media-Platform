@@ -23,67 +23,96 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
 
     // ... (rest of logic)
 
-    const links = [
-        { href: "/", label: "Home", icon: Home },
-        { href: "/profile", label: profile?.displayName || "Profile", icon: User },
-        { href: "/family", label: "Family", icon: Users },
-        { href: "/groups", label: "Groups", icon: Tent },
-        { href: "/messages", label: "Messages", icon: MessageSquare },
-        { href: "/live", label: "Live", icon: Video },
-        { href: "/events", label: "Events", icon: Ticket },
-        { href: "/gallery", label: "Gallery", icon: ImageIcon },
-        { href: "/branding", label: "Branding", icon: Briefcase },
-        { href: "/notifications", label: "Notifications", icon: Bell },
-        { href: "/settings", label: "Settings", icon: Settings },
+    const groups = [
+        {
+            title: "Main",
+            items: [
+                { href: "/", label: "Home", icon: Home },
+                { href: "/profile", label: profile?.displayName || "Profile", icon: User },
+                { href: "/family", label: "Family", icon: Users },
+                { href: "/groups", label: "Groups", icon: Tent },
+            ]
+        },
+        {
+            title: "Social",
+            items: [
+                { href: "/messages", label: "Messages", icon: MessageSquare },
+                { href: "/live", label: "Live", icon: Video },
+                { href: "/events", label: "Events", icon: Ticket },
+                { href: "/gallery", label: "Gallery", icon: ImageIcon },
+            ]
+        },
+        {
+            title: "System",
+            items: [
+                { href: "/branding", label: "Branding", icon: Briefcase },
+                { href: "/notifications", label: "Notifications", icon: Bell },
+                { href: "/settings", label: "Settings", icon: Settings },
+            ]
+        }
     ];
 
     if (isAdmin) {
-        links.push({ href: "/admin", label: "Admin", icon: Shield });
+        groups.push({
+            title: "Admin",
+            items: [
+                { href: "/admin", label: "Admin", icon: Shield }
+            ]
+        });
     }
 
     return (
-        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-50", className)}>
-            <div className="px-6 py-4">
+        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-50 overflow-y-auto custom-scrollbar", className)}>
+            <div className="px-6 py-4 flex-shrink-0">
                 <Link href="/" className="flex items-center gap-2" onClick={onLinkClick}>
                     <Heart className="w-8 h-8 fill-primary text-primary" />
                     <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
                 </Link>
             </div>
-            <nav className="flex-1 px-2 mt-4 space-y-1">
-                {links.map((link) => {
-                    const isActive = pathname === link.href;
-                    return (
-                        <Link key={link.href} href={link.href} onClick={onLinkClick}>
-                            <Button
-                                variant="ghost"
-                                className={cn(
-                                    "w-full justify-start gap-4 text-base font-medium transition-colors h-12 rounded-full px-4 relative",
-                                    isActive
-                                        ? "bg-primary/10 text-primary font-bold"
-                                        : "text-foreground hover:bg-secondary hover:text-foreground"
-                                )}>
-                                <link.icon className={cn("w-6 h-6", isActive ? "text-primary" : "text-muted-foreground")} />
-                                {link.label}
-                                {link.href === '/notifications' && (
-                                    <div className="absolute top-2 left-6">
-                                        <NotificationBadge />
-                                    </div>
-                                )}
-                            </Button>
-                        </Link>
-                    )
-                })}
+
+            <nav className="flex-1 px-4 mt-2 space-y-6">
+                {groups.map((group, index) => (
+                    <div key={index} className="space-y-1">
+                        {group.title !== "Main" && (
+                            <h4 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                                {group.title}
+                            </h4>
+                        )}
+                        {group.items.map((link) => {
+                            const isActive = pathname === link.href;
+                            return (
+                                <Link key={link.href} href={link.href} onClick={onLinkClick} className="block">
+                                    <Button
+                                        variant="ghost"
+                                        className={cn(
+                                            "w-full justify-start gap-3 text-base font-medium transition-colors h-11 rounded-xl px-3 relative",
+                                            isActive
+                                                ? "bg-primary/10 text-primary font-bold"
+                                                : "text-foreground hover:bg-muted"
+                                        )}>
+                                        <link.icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
+                                        <span className="truncate">{link.label}</span>
+                                        {link.href === '/notifications' && (
+                                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                                <NotificationBadge />
+                                            </div>
+                                        )}
+                                    </Button>
+                                </Link>
+                            )
+                        })}
+                    </div>
+                ))}
             </nav>
-            <div className="px-2 mt-auto mb-4 space-y-2">
-                <div className="px-4">
+
+            <div className="px-4 mt-6 pt-4 border-t border-border flex-shrink-0 space-y-2">
+                <div className="px-2">
                     <ModeToggle />
                 </div>
-                <div className="p-4 border-t border-border mt-auto">
-                    <Button variant="ghost" className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-full" onClick={() => signOut()}>
-                        <LogOut className="h-4 w-4" />
-                        {t("nav.signout")}
-                    </Button>
-                </div>
+                <Button variant="ghost" className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl px-3" onClick={() => signOut()}>
+                    <LogOut className="h-5 w-5" />
+                    {t("nav.signout")}
+                </Button>
             </div>
         </div>
     );
