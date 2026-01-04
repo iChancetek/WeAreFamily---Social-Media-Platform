@@ -26,7 +26,7 @@ export function CreatePost() {
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [lastUploadError, setLastUploadError] = useState<string | null>(null);
-    const [lastUploadError, setLastUploadError] = useState<string | null>(null);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { isListening, startListening, stopListening, isSupported: isSpeechSupported } = useSpeechRecognition({

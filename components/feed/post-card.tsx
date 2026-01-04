@@ -56,7 +56,10 @@ import {
     Image as ImageIcon,
     Loader2,
     X,
-    ExternalLink
+    ExternalLink,
+    Volume2,
+    Mic,
+    MicOff
 } from "lucide-react";
 import { getReactionIcon, getReactionLabel, getReactionColor, ReactionSelector } from "./reaction-selector";
 import {
