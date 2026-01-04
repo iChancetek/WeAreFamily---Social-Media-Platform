@@ -38,7 +38,7 @@ export default async function Home() {
     <MainLayout>
       <div className="pb-8">
         <WelcomeHeader displayName={profile?.firstName || user.displayName || "Family"} />
-        {/* <BirthdayModal hasBirthday={!!dbUser.birthday} /> */}
+        <BirthdayModal hasBirthday={!!dbUser.birthday} />
         <StoriesTray />
         <CreatePost />
         <FeedList />

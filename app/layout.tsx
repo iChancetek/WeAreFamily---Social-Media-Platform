@@ -38,15 +38,15 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {/* <LanguageProvider> */}
-            {/* <MessageNotificationProvider> */}
-            {children}
-            {/* <Toaster /> */}
-            {/* <CallOverlay /> */}
-            {/* </MessageNotificationProvider> */}
-            {/* </LanguageProvider> */}
+            <LanguageProvider>
+              <MessageNotificationProvider>
+                {children}
+                <Toaster />
+                <CallOverlay />
+              </MessageNotificationProvider>
+            </LanguageProvider>
           </ThemeProvider>
-          {/* <AIAssistant /> */}
+          <AIAssistant />
         </body>
       </html>
     </AuthProvider>
