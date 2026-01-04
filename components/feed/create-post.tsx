@@ -14,7 +14,7 @@ import { ImageIcon, Loader2, Send, Sparkles, X } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useLanguage } from "@/components/language-context";
 
-import { DebugUploader } from "@/components/debug-uploader";
+
 
 export function CreatePost() {
     const { user } = useAuth();
@@ -152,7 +152,7 @@ export function CreatePost() {
                         <AvatarFallback>{user?.displayName?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-3">
-                        <DebugUploader />
+
                         <Textarea
                             placeholder={t("feed.placeholder")}
                             className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
