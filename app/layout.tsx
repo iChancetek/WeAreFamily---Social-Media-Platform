@@ -40,6 +40,7 @@ export default function RootLayout({
               <Toaster />
             </LanguageProvider>
           </ThemeProvider>
+          <AIAssistant />
         </body>
       </html>
     </AuthProvider>
