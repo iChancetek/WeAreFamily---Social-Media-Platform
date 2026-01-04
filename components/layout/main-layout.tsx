@@ -28,8 +28,8 @@ export async function MainLayout({ children, className }: { children: React.Reac
                     </div>
                 </main>
             </div>
-            {/* <RightSidebar className="border-l border-white/10 bg-transparent" /> */}
-            {/* <BirthdayOnboarding currentBirthday={user?.birthday || null} /> */}
+            <RightSidebar className="border-l border-white/10 bg-transparent" />
+            <BirthdayOnboarding currentBirthday={user?.birthday || null} />
             <BottomNav />
         </div>
     );
