@@ -114,7 +114,7 @@ export async function getActiveStories() {
             });
         }));
 
-        const activeStories = activeStoriesResults.filter(s => s !== null);
+        const activeStories = activeStoriesResults.filter((s: any) => s !== null);
 
         // Group stories by user
         const userStoriesMap = new Map();

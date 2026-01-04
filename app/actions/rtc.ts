@@ -325,7 +325,7 @@ export async function addViewer(sessionId: string) {
             .where("users", "array-contains", user.id)
             .get();
 
-        const isFamily = familySnapshot.docs.some(doc => {
+        const isFamily = familySnapshot.docs.some((doc: any) => {
             const data = doc.data();
             return data.users?.includes(sessionData?.hostId || "");
         });
