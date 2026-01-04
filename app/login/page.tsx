@@ -52,8 +52,10 @@ export default function LoginPage() {
             router.push("/")
             router.refresh()
         } catch (error: any) {
-            console.error("Login error:", error)
-            toast.error(error.message || "Failed to login")
+            console.error("Login Critical Failure:", error);
+            console.error("Error Code:", error.code);
+            console.error("Error Message:", error.message);
+            toast.error(`Login Failed: ${error.message} (${error.code || 'Unknown'})`);
         } finally {
             setIsLoading(false)
         }
@@ -184,8 +186,8 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white py-12">
-            <Card className="w-full max-w-md shadow-lg border-blue-100">
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 relative z-[10]">
+            <Card className="w-full max-w-md shadow-lg border-blue-100 relative z-[50]">
                 <CardHeader className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2 mb-2">
                         <Heart className="w-8 h-8 text-blue-600" fill="currentColor" />
