@@ -609,23 +609,52 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         <span className="text-[15px]">{t("btn.comment")}</span>
                     </Button>
 
-                    <Button
-                        variant="ghost"
-                        onClick={() => {
-                            const event = new CustomEvent('famio:open-ai', {
-                                detail: {
-                                    context: post.content,
-                                    type: 'post_context'
-                                }
-                            });
-                            window.dispatchEvent(event);
-                            toast.success("Opened in AI Assistant!");
-                        }}
-                        className="flex-1 gap-2 hover:bg-indigo-50 hover:text-indigo-600 h-9 font-medium text-muted-foreground rounded-md"
-                    >
-                        <Sparkles className="w-4 h-4" />
-                        <span className="text-[15px]">Ask AI</span>
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                className="flex-1 gap-2 hover:bg-indigo-50 hover:text-indigo-600 h-9 font-medium text-muted-foreground rounded-md transition-colors"
+                            >
+                                <Sparkles className="w-4 h-4" />
+                                <span className="text-[15px]">Ask AI</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center">
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    window.dispatchEvent(new CustomEvent('famio:open-ai', {
+                                        detail: { context: post.content, mode: 'executive', type: 'post_context' }
+                                    }));
+                                }}
+                                className="gap-2"
+                            >
+                                <Briefcase className="w-4 h-4" />
+                                Summarize (Executive)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    window.dispatchEvent(new CustomEvent('famio:open-ai', {
+                                        detail: { context: post.content, mode: 'tutor', type: 'post_context' }
+                                    }));
+                                }}
+                                className="gap-2"
+                            >
+                                <GraduationCap className="w-4 h-4" />
+                                Explain (Tutor)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    window.dispatchEvent(new CustomEvent('famio:open-ai', {
+                                        detail: { context: post.content, mode: 'biographer', type: 'post_context' }
+                                    }));
+                                }}
+                                className="gap-2"
+                            >
+                                <BookHeart className="w-4 h-4" />
+                                Save as Memory (Biographer)
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
