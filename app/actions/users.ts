@@ -31,15 +31,15 @@ export async function getActiveUsers() {
 
         // Filter out current user and blocked users
         let activeUsers = usersSnapshot.docs
-            .map(userDoc => ({ id: userDoc.id, ...userDoc.data() }) as any)
-            .filter(u => u.id !== currentUser?.id && u.isInvisible !== true);
+            .map((userDoc: any) => ({ id: userDoc.id, ...userDoc.data() }) as any)
+            .filter((u: any) => u.id !== currentUser?.id && u.isInvisible !== true);
 
         if (currentUser) {
             // Fetch blocked users
             const blockedSnapshot = await adminDb.collection("blockedUsers").get();
             const excludedIds = new Set<string>();
 
-            blockedSnapshot.docs.forEach(blockDoc => {
+            blockedSnapshot.docs.forEach((blockDoc: any) => {
                 const blockData = blockDoc.data();
                 if (blockData.blockerId === currentUser.id || blockData.blockedId === currentUser.id) {
                     excludedIds.add(blockData.blockerId);
@@ -47,10 +47,10 @@ export async function getActiveUsers() {
                 }
             });
 
-            activeUsers = activeUsers.filter(u => !excludedIds.has(u.id));
+            activeUsers = activeUsers.filter((u: any) => !excludedIds.has(u.id));
         }
 
-        return activeUsers.map(u => {
+        return activeUsers.map((u: any) => {
             const displayName = u.displayName ||
                 (u.profileData?.firstName ? `${u.profileData.firstName} ${u.profileData.lastName || ''}`.trim() : null) ||
                 u.email?.split('@')[0] ||

@@ -169,7 +169,7 @@ export async function getAuditLogs(options?: {
     // Import sanitizeData to ensure clean serialization for Client Components
     const { sanitizeData } = await import("@/lib/serialization");
 
-    const logs = snapshot.docs.map((doc) => {
+    const logs = snapshot.docs.map((doc: any) => {
         const data = doc.data();
         return {
             id: doc.id,
@@ -179,7 +179,7 @@ export async function getAuditLogs(options?: {
     });
 
     // Sort in memory to cover the fallback case
-    logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    logs.sort((a: any, b: any) => b.timestamp.getTime() - a.timestamp.getTime());
 
     // Apply strict filtering in memory for the fallback results (to mimic the failed query)
     const filteredLogs = logs.filter((log: any) => {
