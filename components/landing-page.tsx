@@ -37,44 +37,58 @@ export function LandingPage() {
             </nav>
 
             {/* Hero Section */}
-            <section className="relative bg-gradient-to-b from-blue-50 to-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+            <section className="relative overflow-hidden min-h-[90vh] flex items-center bg-black">
+                {/* Background Video */}
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover opacity-60"
+                >
+                    <source src="/Create_a_highquality_1080p_202601031842.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 w-full">
                     <div className="text-center">
-                        <div className="mb-4 inline-flex items-center gap-2 text-blue-600">
+                        <div className="mb-4 inline-flex items-center gap-2 text-blue-400">
                             <Heart className="w-8 h-8" fill="currentColor" />
                             <span className="text-sm font-semibold uppercase tracking-wider">WeAreFamily Presents</span>
                         </div>
-                        <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-gray-900 tracking-tight mb-4">
+                        <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-white tracking-tight mb-4 drop-shadow-lg">
                             Famio
                         </h1>
-                        <p className="text-2xl md:text-3xl font-semibold text-blue-600 mb-4">
+                        <p className="text-2xl md:text-3xl font-semibold text-blue-100 mb-6 drop-shadow-md">
                             Connect with Your Family and Friends.<br />
                             We Are One Family
                         </p>
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-full mb-6">
-                            <Sparkles className="w-5 h-5 text-blue-600" />
-                            <span className="text-sm font-semibold text-blue-700">Powered by AI</span>
+
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full mb-8">
+                            <Sparkles className="w-5 h-5 text-blue-300" />
+                            <span className="text-sm font-semibold text-blue-50">Powered by AI</span>
                         </div>
-                        <p className="max-w-3xl mx-auto text-xl md:text-2xl text-gray-600 mb-10 leading-relaxed font-normal">
+
+                        <p className="max-w-3xl mx-auto text-xl md:text-2xl text-gray-200 mb-10 leading-relaxed font-normal shadow-black drop-shadow-sm">
                             A private, secure platform designed exclusively for families to share moments,
                             plan events, and stay connected with the people who matter most.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <Link href="/signup">
-                                <Button size="lg" className="h-14 px-10 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md">
+                                <Button size="lg" className="h-14 px-10 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-900/50 border-0">
                                     Join Famio
                                 </Button>
                             </Link>
                             <Link href="/learn-more">
-                                <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold">
+                                <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm font-semibold">
                                     Learn More
                                 </Button>
                             </Link>
                         </div>
 
                         {/* Trust Badge */}
-                        <div className="mt-12 flex items-center justify-center gap-2 text-sm text-gray-600">
-                            <Shield className="w-5 h-5 text-blue-600" />
+                        <div className="mt-12 flex items-center justify-center gap-2 text-sm text-gray-300">
+                            <Shield className="w-5 h-5 text-blue-400" />
                             <span className="font-medium">Trusted by thousands of families worldwide</span>
                         </div>
                     </div>
