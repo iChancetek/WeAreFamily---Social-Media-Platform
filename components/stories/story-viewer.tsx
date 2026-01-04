@@ -31,15 +31,29 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
     const [currentUserIndex, setCurrentUserIndex] = useState(initialUserIndex);
     const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
     const [progress, setProgress] = useState(0);
+    const [mediaError, setMediaError] = useState<string | null>(null);
 
     const currentUser = initialStories[currentUserIndex];
     const currentStory = currentUser?.stories[currentStoryIndex];
+
+    useEffect(() => {
+        if (open) {
+            console.log("StoryViewer Open:", {
+                currentUserIndex,
+                currentStoryIndex,
+                user: currentUser?.user.displayName,
+                mediaUrl: currentStory?.mediaUrl,
+                mediaType: currentStory?.mediaType
+            });
+        }
+    }, [open, currentUserIndex, currentStoryIndex, currentUser, currentStory]);
 
     // Reset when user changes
     useEffect(() => {
         setCurrentUserIndex(initialUserIndex);
         setCurrentStoryIndex(0);
         setProgress(0);
+        setMediaError(null);
     }, [initialUserIndex, open]);
 
     // Navigate to next story/user
@@ -48,10 +62,12 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
         if (currentStoryIndex < currentUser.stories.length - 1) {
             setCurrentStoryIndex(prev => prev + 1);
             setProgress(0);
+            setMediaError(null);
         } else if (currentUserIndex < initialStories.length - 1) {
             setCurrentUserIndex(prev => prev + 1);
             setCurrentStoryIndex(0);
             setProgress(0);
+            setMediaError(null);
         } else {
             onOpenChange(false);
         }
@@ -63,12 +79,14 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
         if (currentStoryIndex > 0) {
             setCurrentStoryIndex(prev => prev - 1);
             setProgress(0);
+            setMediaError(null);
         } else if (currentUserIndex > 0) {
             const prevUser = initialStories[currentUserIndex - 1];
             if (prevUser) {
                 setCurrentUserIndex(prev => prev - 1);
                 setCurrentStoryIndex(prevUser.stories.length - 1);
                 setProgress(0);
+                setMediaError(null);
             }
         }
     }, [currentStoryIndex, currentUserIndex, initialStories, currentUser]);
@@ -152,12 +170,20 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
                     </div>
 
                     {/* Media */}
-                    <div className="flex-1 flex items-center justify-center bg-zinc-900">
-                        {currentStory.mediaType === 'video' ? (
+                    <div className="flex-1 flex items-center justify-center bg-zinc-900 relative">
+                        {mediaError ? (
+                            <div className="text-center p-6 text-white bg-red-500/10 rounded-xl border border-red-500/20">
+                                <p className="font-semibold text-red-400 mb-2">Failed to load story</p>
+                                <p className="text-xs text-white/50">{mediaError}</p>
+                            </div>
+                        ) : currentStory.mediaType === 'video' ? (
                             <video
+                                key={currentStory.id} // Re-mount on change
                                 src={currentStory.mediaUrl}
                                 className="max-h-full max-w-full object-contain"
                                 autoPlay
+                                playsInline
+                                muted // Required for autoPlay
                                 onEnded={handleVideoEnded}
                                 onTimeUpdate={(e) => {
                                     const video = e.currentTarget;
@@ -165,13 +191,40 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
                                         setProgress((video.currentTime / video.duration) * 100);
                                     }
                                 }}
+                                onError={(e) => {
+                                    console.error("Video load error", e);
+                                    setMediaError("Video format not supported or load failed");
+                                }}
                             />
                         ) : (
                             <img
+                                key={currentStory.id}
                                 src={currentStory.mediaUrl}
                                 className="max-h-full max-w-full object-contain animate-in fade-in zoom-in-95 duration-500"
                                 alt="Story"
+                                onError={(e) => {
+                                    console.error("Image load error", e);
+                                    setMediaError("Image failed to load");
+                                }}
                             />
+                        )}
+
+                        {/* Unmute Button if Video */}
+                        {currentStory.mediaType === 'video' && !mediaError && (
+                            <button
+                                className="absolute bottom-6 right-6 z-30 bg-black/50 p-2 rounded-full text-white hover:bg-black/70 backdrop-blur-md"
+                                onClick={(e) => {
+                                    const video = e.currentTarget.parentElement?.querySelector('video');
+                                    if (video) {
+                                        video.muted = !video.muted;
+                                        // Force UI update check if needed, or rely on browser native controls if we enabled them
+                                        // For now just toggle property.
+                                    }
+                                }}
+                            >
+                                {/* Simple text or icon indicating tap to unmute */}
+                                <span className="text-xs font-medium px-2">Unmute</span>
+                            </button>
                         )}
                     </div>
                 </div>
