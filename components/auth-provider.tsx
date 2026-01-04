@@ -55,6 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         }
                     });
 
+                    // Refresh to ensure Server Components reflect the session
+                    router.refresh();
+
                 } catch (error) {
                     console.error("Auth sync failed:", error);
                 }
