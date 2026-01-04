@@ -9,11 +9,11 @@ export async function getUserProfile() {
         const sessionUid = cookieStore.get("session_uid")?.value;
 
         if (!sessionUid) {
-            // console.log("[getUserProfile] No session cookie");
+            console.log("[getUserProfile] No session cookie found");
             return null;
         }
 
-        // console.log(`[getUserProfile] Fetching profile for ${sessionUid}`);
+        console.log(`[getUserProfile] Fetching profile for uid: ${sessionUid}`);
         const userDoc = await adminDb.collection("users").doc(sessionUid).get();
 
         if (!userDoc.exists) {
