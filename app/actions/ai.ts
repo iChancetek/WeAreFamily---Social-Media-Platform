@@ -142,25 +142,25 @@ export async function chatWithAI(userMessage: string) {
         }
 
         // 3. Perform Similarity Search in-memory
-        const docs = snapshot.docs.map(doc => ({
+        const docs = snapshot.docs.map((doc: any) => ({
             content: doc.data().content,
             embedding: doc.data().embedding,
             metadata: doc.data().metadata
         }));
 
-        const scoredDocs = docs.map(doc => ({
+        const scoredDocs = docs.map((doc: any) => ({
             ...doc,
             score: cosineSimilarity(userEmbedding, doc.embedding)
         }));
 
         // Get Top 3 most relevant chunks
-        scoredDocs.sort((a, b) => b.score - a.score);
+        scoredDocs.sort((a: any, b: any) => b.score - a.score);
         const topDocs = scoredDocs.slice(0, 3);
 
-        console.log("AI Context Found:", topDocs.map(d => d.metadata.title));
+        console.log("AI Context Found:", topDocs.map((d: any) => d.metadata.title));
 
         // 4. Generate Answer
-        const contextText = topDocs.map(d => `[${d.metadata.title}]: ${d.content}`).join("\n\n");
+        const contextText = topDocs.map((d: any) => `[${d.metadata.title}]: ${d.content}`).join("\n\n");
 
         const systemPrompt = `You are the Famio AI Assistant, a helpful guide for the Famio Family Social Platform.
         
