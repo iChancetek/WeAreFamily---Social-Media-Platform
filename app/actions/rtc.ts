@@ -56,7 +56,7 @@ export async function startSession(type: SessionType, targetUserId?: string) {
 
     // Log audit event
     await logAuditEvent(
-        type === "broadcast" ? "content.create" : "user.action",
+        type === "broadcast" ? "settings.update" : "message.sent",
         {
             targetType: "rtc_session",
             targetId: sessionRef.id,
