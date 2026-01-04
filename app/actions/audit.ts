@@ -217,3 +217,13 @@ export async function getAuditStats() {
         total: total.data().count,
     };
 }
+
+export async function generateTestLog() {
+    await logAuditEvent("settings.update", {
+        targetType: "system",
+        targetId: "test",
+        targetName: "Test Log Entry",
+        details: { message: "This is a test audit log to verify the system." }
+    });
+    return { success: true };
+}

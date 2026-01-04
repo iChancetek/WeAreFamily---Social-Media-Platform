@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { getAuditLogs, getAuditStats } from "@/app/actions/audit"
+import { getAuditLogs, getAuditStats, generateTestLog } from "@/app/actions/audit"
 import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow } from "date-fns"
-import { Loader2, Shield, Activity, Clock } from "lucide-react"
+import { Loader2, Shield, Activity, Clock, AlertTriangle, PlusCircle } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { toast } from "sonner"
 
 interface AuditLog {
     id: string;
@@ -26,27 +29,45 @@ export function AuditLogViewer() {
     const [logs, setLogs] = useState<AuditLog[]>([])
     const [stats, setStats] = useState<{ last24h: number; last7days: number; total: number } | null>(null)
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [filter, setFilter] = useState<string>("all")
+    const [generating, setGenerating] = useState(false)
+
+    const fetchData = async () => {
+        try {
+            setError(null)
+            console.log("Fetching audit logs...");
+            const [logsData, statsData] = await Promise.all([
+                getAuditLogs({ limit: 100 }),
+                getAuditStats()
+            ])
+            console.log("Logs fetched:", logsData?.length);
+            setLogs(logsData as AuditLog[])
+            setStats(statsData)
+        } catch (error: any) {
+            console.error("Failed to load audit logs:", error)
+            setError(error.message || "Failed to load logs")
+        } finally {
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                console.log("Fetching audit logs...");
-                const [logsData, statsData] = await Promise.all([
-                    getAuditLogs({ limit: 100 }),
-                    getAuditStats()
-                ])
-                console.log("Logs fetched:", logsData?.length);
-                setLogs(logsData as AuditLog[])
-                setStats(statsData)
-            } catch (error) {
-                console.error("Failed to load audit logs:", error)
-            } finally {
-                setLoading(false)
-            }
-        }
         fetchData()
     }, [])
+
+    const handleGenerateTestLog = async () => {
+        setGenerating(true)
+        try {
+            await generateTestLog()
+            toast.success("Test log generated!")
+            await fetchData()
+        } catch (error) {
+            toast.error("Failed to generate test log")
+        } finally {
+            setGenerating(false)
+        }
+    }
 
     const filteredLogs = filter === "all" ? logs : logs.filter(log => {
         if (filter === "admin") return log.action.startsWith("admin.")
@@ -107,26 +128,51 @@ export function AuditLogViewer() {
                 </Card>
             </div>
 
+            {/* Error Banner */}
+            {error && (
+                <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Error Loading Logs</AlertTitle>
+                    <AlertDescription>
+                        {error}
+                        <div className="mt-2">
+                            <span className="text-xs opacity-80">This usually means an index is missing or the collection is empty.</span>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+            )}
+
             {/* Filter & Logs */}
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <CardTitle>Activity Audit Log</CardTitle>
                             <CardDescription>Track all user and admin actions on the platform</CardDescription>
                         </div>
-                        <Select value={filter} onValueChange={setFilter}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Filter by type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Actions</SelectItem>
-                                <SelectItem value="admin">Admin Actions</SelectItem>
-                                <SelectItem value="security">Security</SelectItem>
-                                <SelectItem value="user">User Actions</SelectItem>
-                                <SelectItem value="content">Content</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleGenerateTestLog}
+                                disabled={generating}
+                            >
+                                {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                                Generate Test Entry
+                            </Button>
+                            <Select value={filter} onValueChange={setFilter}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Filter by type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Actions</SelectItem>
+                                    <SelectItem value="admin">Admin Actions</SelectItem>
+                                    <SelectItem value="security">Security</SelectItem>
+                                    <SelectItem value="user">User Actions</SelectItem>
+                                    <SelectItem value="content">Content</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent>
