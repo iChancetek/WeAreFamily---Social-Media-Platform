@@ -56,6 +56,11 @@ export async function syncUserToDb(
             await sendWelcomeMessage(uid, displayName).catch(err => {
                 console.error("Failed to send welcome message:", err);
             });
+
+            // Notify Admins
+            await notifyAdminNewUser(uid, email, displayName, firstName, lastName).catch(err => {
+                console.error("Failed to notify admins:", err);
+            });
         } else {
             // Check if we need to promote existing user
             const userData = userDoc.data();
@@ -69,15 +74,18 @@ export async function syncUserToDb(
     }
 }
 
-export async function notifyAdminNewUser(uid: string, email: string, fullName: string) {
+export async function notifyAdminNewUser(uid: string, email: string, displayName: string, firstName?: string, lastName?: string) {
     try {
+        const fullName = firstName ? `${firstName} ${lastName || ''}`.trim() : displayName;
+        const displayInfo = firstName ? `${displayName} (${fullName})` : displayName;
+
         // 1. Send Email to Chancellor via 'mail' collection (Trigger Email Extension)
         await adminDb.collection("mail").add({
             to: "chancellor@ichancetek.com",
             message: {
-                subject: `New Famio Member: ${fullName}`,
-                text: `A new user has joined Famio!\n\nName: ${fullName}\nEmail: ${email}\nUID: ${uid}\n\nThey have been auto-approved as a Member.`,
-                html: `<p>A new user has joined <strong>Famio</strong>!</p><ul><li><strong>Name:</strong> ${fullName}</li><li><strong>Email:</strong> ${email}</li><li><strong>UID:</strong> ${uid}</li></ul><p>They have been auto-approved as a Member.</p>`,
+                subject: `New Famio Member: ${displayInfo}`,
+                text: `A new user has joined Famio!\n\nDisplay Name: ${displayName}\nFull Name: ${fullName}\nEmail: ${email}\nUID: ${uid}\n\nThey have been auto-approved as a Member.`,
+                html: `<p>A new user has joined <strong>Famio</strong>!</p><ul><li><strong>Display Name:</strong> ${displayName}</li><li><strong>Full Name:</strong> ${fullName}</li><li><strong>Email:</strong> ${email}</li><li><strong>UID:</strong> ${uid}</li></ul><p>They have been auto-approved as a Member.</p>`,
             },
         });
 
@@ -100,9 +108,9 @@ export async function notifyAdminNewUser(uid: string, email: string, fullName: s
                 createdAt: timestamp,
                 meta: {
                     action: 'new_user_registration',
-                    userName: fullName,
+                    userName: displayName,
                     userEmail: email,
-                    message: `${fullName} has joined Famio.`
+                    message: `New User: ${displayInfo} has joined Famio.`
                 }
             })
         );
