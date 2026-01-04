@@ -80,20 +80,25 @@ export async function notifyAdminNewUser(uid: string, email: string, fullName: s
             .where("role", "==", "admin")
             .get();
 
-        const { createNotification } = await import("./notifications");
+        // We write directly to adminDb to ensure it works even if session isn't fully propagated yet
+        // (createNotification relies on getUserProfile() which might be flaky in this specific exact moment)
+        const timestamp = FieldValue.serverTimestamp();
 
         const notificationPromises = adminsSnapshot.docs.map(adminDoc =>
-            createNotification(
-                adminDoc.id,
-                'admin_action' as any,
-                uid,
-                {
+            adminDb.collection("notifications").add({
+                recipientId: adminDoc.id,
+                senderId: uid, // The new user is the sender
+                type: 'admin_action',
+                referenceId: uid, // Link to the new user
+                read: false,
+                createdAt: timestamp,
+                meta: {
                     action: 'new_user_registration',
                     userName: fullName,
                     userEmail: email,
-                    message: `New user ${fullName} (${email}) has joined.`
+                    message: `${fullName} has joined Famio.`
                 }
-            )
+            })
         );
 
         await Promise.all(notificationPromises);
