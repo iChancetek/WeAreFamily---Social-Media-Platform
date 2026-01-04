@@ -2,7 +2,7 @@
 
 import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
-import { getUserProfile } from "./users";
+import { getUserProfile } from "@/lib/auth";
 import { logAuditEvent } from "./audit";
 
 export type SessionType = "broadcast" | "call_video" | "call_audio";

@@ -1,5 +1,5 @@
 import { getActiveBroadcasts } from "@/app/actions/rtc"
-import { getUserProfile } from "@/app/actions/users"
+import { getUserProfile } from "@/lib/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
