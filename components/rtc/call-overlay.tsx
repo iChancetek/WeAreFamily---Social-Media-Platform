@@ -212,9 +212,9 @@ export function CallOverlay({ sessionId: initialSessionId, onClose }: CallOverla
     if (!user) return null
 
     return (
-        <div className="fixed inset-0 z-[40] bg-black/80 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[40] flex items-center justify-center p-4 pointer-events-none">
             {callState === "ringing" && (
-                <Card className="w-full max-w-md">
+                <Card className="w-full max-w-md pointer-events-auto shadow-2xl">
                     <CardHeader>
                         <CardTitle className="text-center">Incoming Call</CardTitle>
                     </CardHeader>
@@ -249,7 +249,7 @@ export function CallOverlay({ sessionId: initialSessionId, onClose }: CallOverla
             )}
 
             {(callState === "connecting" || callState === "active") && (
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full pointer-events-auto bg-black/80">
                     {/* Remote Video (Full Screen) */}
                     <video
                         ref={remoteVideoRef}
