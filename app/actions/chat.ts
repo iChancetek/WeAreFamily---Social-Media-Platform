@@ -221,3 +221,86 @@ export async function sendMessage(chatId: string, content: string) {
     revalidatePath("/messages");
     return { success: true };
 }
+
+export async function sendWelcomeMessage(targetUserId: string, targetUserDisplayName: string) {
+    // 1. Find Admin User
+    const adminQuery = await adminDb.collection("users")
+        .where("email", "==", "chancellor@ichancetek.com")
+        .limit(1)
+        .get();
+
+    if (adminQuery.empty) {
+        console.error("Welcome Message Error: Admin user 'chancellor@ichancetek.com' not found.");
+        return;
+    }
+
+    const adminUser = adminQuery.docs[0];
+    const adminId = adminUser.id;
+
+    if (adminId === targetUserId) return; // Don't welcome yourself if you are the admin signing up
+
+    // 2. Check/Create Chat
+    // Use adminDb directly to bypass auth checks (since we are acting as system/admin)
+    const chatsSnapshot = await adminDb.collection("chats")
+        .where("participants", "array-contains", targetUserId)
+        .get();
+
+    // Find existing 1-on-1 chat with Admin
+    let chatDoc = chatsSnapshot.docs.find(chatDoc => {
+        const chatData = chatDoc.data();
+        return !chatData.isGroup && chatData.participants.includes(adminId);
+    });
+
+    let chatId;
+    if (chatDoc) {
+        chatId = chatDoc.id;
+    } else {
+        const newChatRef = await adminDb.collection("chats").add({
+            participants: [targetUserId, adminId],
+            isGroup: false,
+            lastMessageAt: FieldValue.serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
+        });
+        chatId = newChatRef.id;
+    }
+
+    // 3. Send Message
+    const welcomeText = `Welcome to the Famio Family!
+
+Thank you for joining us — we’re excited to have you here. We hope you enjoy a wonderful experience on the Famio platform as you connect, share, and grow with the community.
+
+These are exciting times at Famio! We’re rolling out new enhancements and updates every week to make your experience even better.
+
+We truly appreciate you being part of the Famio Family.
+
+Best regards,
+Chancellor Minus
+Founder & CEO
+ChanceTEK | Famio`;
+
+    await adminDb.collection("chats").doc(chatId).collection("messages").add({
+        senderId: adminId,
+        content: welcomeText,
+        createdAt: FieldValue.serverTimestamp(),
+    });
+
+    await adminDb.collection("chats").doc(chatId).update({
+        lastMessageAt: FieldValue.serverTimestamp(),
+    });
+
+    // Notify the user? We can try createNotification if needed, but the chat system usually handles it or the user sees it in messages.
+    // Let's ensure notification exists.
+    try {
+        const { createNotification } = await import("./notifications");
+        await createNotification(
+            targetUserId,
+            "message",
+            chatId,
+            { message: "You have a new message from Chancellor Minus" }
+        );
+    } catch (error) {
+        console.error("Failed to send welcome notification:", error);
+    }
+
+    console.log(`Welcome message sent to ${targetUserDisplayName} (${targetUserId}) from Admin.`);
+}
