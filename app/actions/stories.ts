@@ -33,7 +33,7 @@ export async function createStory(mediaUrl: string, mediaType: 'image' | 'video'
         targetType: "story",
         targetId: docRef.id,
         details: { mediaUrl: mediaUrl.substring(0, 50) } // don't log full url if long
-    } /* The closing '});' was removed as per instruction. This might lead to a syntax error if not intended. */);
+    });
 
 
 
