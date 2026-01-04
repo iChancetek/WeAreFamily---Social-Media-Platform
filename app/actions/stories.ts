@@ -35,10 +35,10 @@ export async function createStory(mediaUrl: string, mediaType: 'image' | 'video'
         details: { mediaUrl: mediaUrl.substring(0, 50) } // don't log full url if long
     });
 
-});
 
-revalidatePath("/", 'layout'); // Revalidate everything to be safe
-return { success: true };
+
+    revalidatePath("/", 'layout'); // Revalidate everything to be safe
+    return { success: true };
 }
 
 export async function getActiveStories() {
