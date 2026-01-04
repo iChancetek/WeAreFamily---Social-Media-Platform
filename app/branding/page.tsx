@@ -1,4 +1,4 @@
-import { getBrandings } from "@/app/actions/branding";
+import { getBrandings, Branding } from "@/app/actions/branding";
 import { CreateBrandingDialog } from "@/components/branding/create-branding-dialog";
 import { BrandingCard } from "@/components/branding/branding-card";
 import { MainLayout } from "@/components/layout/main-layout";
@@ -26,7 +26,7 @@ export default async function BrandingPage() {
             <Separator className="my-6" />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {brandings.map(branding => (
+                {brandings.map((branding: Branding) => (
                     <BrandingCard key={branding.id} branding={branding} />
                 ))}
             </div>
