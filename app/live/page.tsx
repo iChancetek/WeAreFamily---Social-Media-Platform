@@ -8,7 +8,7 @@ import Link from "next/link"
 // Force dynamic rendering to avoid build-time Firestore index requirement
 export const dynamic = 'force-dynamic'
 
-// Live broadcasts page - deployed 2026-01-04 03:16
+// Live broadcasts page - deployed 2026-01-04 03:40
 export default async function LivePage() {
     let broadcasts: any[] = []
     let error: string | null = null
