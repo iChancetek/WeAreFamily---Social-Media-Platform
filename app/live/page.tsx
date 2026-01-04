@@ -10,7 +10,15 @@ export const dynamic = 'force-dynamic'
 
 // Live broadcasts page - deployed 2026-01-04 02:30
 export default async function LivePage() {
-    const broadcasts = await getActiveBroadcasts()
+    let broadcasts = []
+    let error = null
+
+    try {
+        broadcasts = await getActiveBroadcasts()
+    } catch (err: any) {
+        console.error("Error loading broadcasts:", err)
+        error = err.message
+    }
 
     return (
         <div className="container mx-auto p-6 max-w-6xl">
@@ -27,7 +35,14 @@ export default async function LivePage() {
                 </Link>
             </div>
 
-            {broadcasts.length === 0 ? (
+            {error ? (
+                <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-16">
+                        <p className="text-destructive mb-4">Error loading broadcasts</p>
+                        <p className="text-sm text-muted-foreground">{error}</p>
+                    </CardContent>
+                </Card>
+            ) : broadcasts.length === 0 ? (
                 <Card>
                     <CardContent className="flex flex-col items-center justify-center py-16">
                         <Video className="h-16 w-16 text-muted-foreground mb-4" />
