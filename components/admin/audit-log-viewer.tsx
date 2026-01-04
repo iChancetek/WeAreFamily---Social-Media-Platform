@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { getAuditLogs, getAuditStats, generateTestLog } from "@/app/actions/audit"
+import { getAuditStats, generateTestLog } from "@/app/actions/audit"
 import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow } from "date-fns"
 import { Loader2, Shield, Activity, Clock, AlertTriangle, PlusCircle } from "lucide-react"
@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { toast } from "sonner"
+import { db } from "@/lib/firebase"
+import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore"
 
 interface AuditLog {
     id: string;
@@ -33,27 +35,38 @@ export function AuditLogViewer() {
     const [filter, setFilter] = useState<string>("all")
     const [generating, setGenerating] = useState(false)
 
-    const fetchData = async () => {
-        try {
-            setError(null)
-            console.log("Fetching audit logs...");
-            const [logsData, statsData] = await Promise.all([
-                getAuditLogs({ limit: 100 }),
-                getAuditStats()
-            ])
-            console.log("Logs fetched:", logsData?.length);
-            setLogs(logsData as AuditLog[])
-            setStats(statsData)
-        } catch (error: any) {
-            console.error("Failed to load audit logs:", error)
-            setError(error.message || "Failed to load logs")
-        } finally {
-            setLoading(false)
-        }
-    }
-
     useEffect(() => {
-        fetchData()
+        // Real-time listener for audit logs
+        const logsQuery = query(
+            collection(db, "auditLogs"),
+            orderBy("timestamp", "desc"),
+            limit(100)
+        )
+
+        const unsubscribe = onSnapshot(
+            logsQuery,
+            (snapshot) => {
+                const logsData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    timestamp: doc.data().timestamp?.toDate() || new Date(),
+                })) as AuditLog[]
+
+                setLogs(logsData)
+                setLoading(false)
+                setError(null)
+            },
+            (error) => {
+                console.error("Audit logs listener error:", error)
+                setError(error.message || "Failed to load logs")
+                setLoading(false)
+            }
+        )
+
+        // Fetch stats (not real-time)
+        getAuditStats().then(setStats).catch(console.error)
+
+        return () => unsubscribe()
     }, [])
 
     const handleGenerateTestLog = async () => {
@@ -61,7 +74,7 @@ export function AuditLogViewer() {
         try {
             await generateTestLog()
             toast.success("Test log generated!")
-            await fetchData()
+            // No need to fetch - real-time listener will update automatically
         } catch (error) {
             toast.error("Failed to generate test log")
         } finally {

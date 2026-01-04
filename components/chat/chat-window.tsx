@@ -6,16 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getMessages, sendMessage, Message, ChatSession } from "@/app/actions/chat";
-import { Send, Loader2, Smile } from "lucide-react";
+import { Send, Loader2, Smile, Phone, Video } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { startSession } from "@/app/actions/rtc";
+import { toast } from "sonner";
 
 interface ChatWindowProps {
     session: ChatSession;
     currentUserId: string;
+    onStartCall?: (sessionId: string) => void;
 }
 
-export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
+export function ChatWindow({ session, currentUserId, onStartCall }: ChatWindowProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState("");
     const [isSending, setIsSending] = useState(false);
@@ -75,6 +78,16 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
         }
     };
 
+    const handleStartCall = async (type: "call_video" | "call_audio") => {
+        try {
+            const result = await startSession(type, otherUser?.id);
+            onStartCall?.(result.sessionId);
+            toast.success(`${type === "call_video" ? "Video" : "Voice"} call started`);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to start call");
+        }
+    };
+
     return (
         <div className="flex flex-col h-full bg-white dark:bg-card rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm">
             {/* Header */}
@@ -83,11 +96,29 @@ export function ChatWindow({ session, currentUserId }: ChatWindowProps) {
                     <AvatarImage src={otherUser?.imageUrl || undefined} />
                     <AvatarFallback>{otherUser?.displayName?.charAt(0) || "?"}</AvatarFallback>
                 </Avatar>
-                <div>
+                <div className="flex-1">
                     <h3 className="font-semibold text-sm md:text-base text-foreground">
                         {otherUser?.displayName || "Family Member"}
                     </h3>
                     <p className="text-xs text-green-500 font-medium">Online</p>
+                </div>
+                <div className="flex gap-2">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleStartCall("call_audio")}
+                        className="text-muted-foreground hover:text-foreground"
+                    >
+                        <Phone className="h-5 w-5" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleStartCall("call_video")}
+                        className="text-muted-foreground hover:text-foreground"
+                    >
+                        <Video className="h-5 w-5" />
+                    </Button>
                 </div>
             </div>
 
