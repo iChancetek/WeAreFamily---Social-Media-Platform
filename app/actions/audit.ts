@@ -98,8 +98,11 @@ export async function logAuditEvent(
             details: options?.details,
         };
 
+        // Remove undefined values which Firestore doesn't support
+        const cleanEntry = JSON.parse(JSON.stringify(auditEntry));
+
         const docRef = await adminDb.collection("auditLogs").add({
-            ...auditEntry,
+            ...cleanEntry,
             timestamp: FieldValue.serverTimestamp(),
         });
 
@@ -157,8 +160,9 @@ export async function getAuditLogs(options?: {
         snapshot = await adminDb.collection("auditLogs")
             .limit(limit)
             .get();
-        // Note: For true scalability this needs indexes, but this unblocks the "feature broken" state
     }
+
+    if (!snapshot || snapshot.empty) return [];
 
     console.log(`[getAuditLogs] Found ${snapshot.size} logs`);
 
