@@ -10,8 +10,9 @@ import { chatWithAgent } from "@/app/actions/ai-agents"; // UPDATED IMPORT
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
-import { ImageIcon, Loader2, Send, Sparkles, X } from "lucide-react";
+import { ImageIcon, Loader2, Send, Sparkles, X, Mic, MicOff } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
+import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useLanguage } from "@/components/language-context";
 
 
@@ -25,7 +26,19 @@ export function CreatePost() {
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [lastUploadError, setLastUploadError] = useState<string | null>(null);
+    const [lastUploadError, setLastUploadError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const { isListening, startListening, stopListening, isSupported: isSpeechSupported } = useSpeechRecognition({
+        onResult: (result) => setContent(prev => {
+            // If empty, just set it regarding
+            if (!prev) return result;
+            // Avoid duplicate appends if hook returns partials aggressively, 
+            // but for simple cases, appending with space is fine.
+            // Note: Simplest reliable way is to let user type or speak linearly.
+            return prev + " " + result;
+        })
+    });
 
     const handleSubmit = async () => {
         if (!content.trim() && mediaUrls.length === 0) return;
@@ -161,8 +174,24 @@ export function CreatePost() {
                             placeholder={t("feed.placeholder")}
                             className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
                             value={content}
+                            placeholder={isListening ? t("feed.listening") || "Listening..." : t("feed.placeholder")}
+                            className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
+                            value={content}
                             onChange={(e) => setContent(e.target.value)}
                         />
+
+                        {isSpeechSupported && (
+                            <div className="absolute right-6 top-6">
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={isListening ? stopListening : startListening}
+                                    className={isListening ? "text-red-500 hover:bg-red-50 animate-pulse" : "text-gray-400 hover:text-gray-600"}
+                                >
+                                    {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                                </Button>
+                            </div>
+                        )}
 
                         {mediaUrls.length > 0 && (
                             <div className="flex gap-2 mb-2 overflow-x-auto">

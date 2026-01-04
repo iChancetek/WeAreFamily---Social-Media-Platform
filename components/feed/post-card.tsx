@@ -37,6 +37,7 @@ import {
     ReactionType
 } from "@/app/actions/posts";
 import { useLanguage } from "@/components/language-context";
+import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import {
     Heart,
     MessageCircle,
@@ -313,8 +314,11 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
 
     // Import storage for comment uploads
     const { user } = useAuth(); // We need auth context for upload checks
-    const commentFileInputRef = useRef<HTMLInputElement>(null);
+    const [commentFileInputRef] = useState<any>({ current: null }); // Placeholder ref, real one below
 
+    const { isListening: isCommentListening, startListening: startCommentListening, stopListening: stopCommentListening, isSupported: isSpeechSupported } = useSpeechRecognition({
+        onResult: (result) => setCommentText(prev => prev ? prev + " " + result : result)
+    });
     const handleReaction = async (type: ReactionType) => {
         // Optimistic update
         const isRemoving = currentMyReaction === type;
@@ -785,6 +789,16 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                     >
                                         <Sparkles className="w-4 h-4" />
                                     </Button>
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className={cn("h-7 w-7 rounded-full", isCommentListening ? "text-red-500 bg-red-50 animate-pulse" : "text-muted-foreground hover:bg-muted")}
+                                        onClick={isCommentListening ? stopCommentListening : startCommentListening}
+                                        title="Voice Input"
+                                    >
+                                        {isCommentListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                                    </Button>
+
                                     <Button
                                         size="icon"
                                         variant="ghost"
