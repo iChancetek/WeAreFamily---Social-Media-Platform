@@ -61,7 +61,7 @@ export default function SignupPage() {
             // Do NOT create session. Enforce verification.
             await auth.signOut();
 
-            toast.success("Account created! Please check your email to verify your account.")
+            toast.success("Account created! Please check your email (and Junk folder) to verify.")
             router.push("/login")
         } catch (error: any) {
             console.error(error)
@@ -168,11 +168,11 @@ export default function SignupPage() {
                         </div>
 
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-gray-700">
-                            <p className="font-semibold mb-1">Account Approval Process:</p>
+                            <p className="font-semibold mb-1">Next Steps:</p>
                             <ul className="text-xs space-y-1 text-gray-600">
-                                <li>• Verify your email address</li>
-                                <li>• Admin will review your request</li>
-                                <li>• You'll be notified once approved</li>
+                                <li>• Check your email to verify your account</li>
+                                <li>• <strong>Note:</strong> Check your Junk or Spam folder if you don't see it</li>
+                                <li>• You can login immediately after verification</li>
                             </ul>
                         </div>
 

@@ -200,7 +200,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
             const { getAuth, sendPasswordResetEmail } = await import("firebase/auth");
             const auth = getAuth();
             await sendPasswordResetEmail(auth, user.email);
-            toast.success("Password reset email sent to " + user.email);
+            toast.success("Password reset email sent!", { description: "Please check your inbox and Junk/Spam folder." });
         } catch (error: any) {
             console.error("Password reset error:", error);
             toast.error(error.message || "Failed to send reset email");

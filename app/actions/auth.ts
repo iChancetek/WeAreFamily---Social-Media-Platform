@@ -33,10 +33,9 @@ export async function syncUserToDb(
         const userDoc = await userRef.get();
 
         if (!userDoc.exists) {
-            // Default to 'pending' unless it's the specific admin email
-            // If they are admin email, they are instantly verified too
+            // Default to 'member' (auto-approve) unless it's the specific admin email
             const isAdmin = email === "chancellor@ichancetek.com";
-            const role = isAdmin ? "admin" : "pending";
+            const role = isAdmin ? "admin" : "member";
             const isVerified = isAdmin || emailVerified;
 
             await userRef.set({
@@ -66,14 +65,23 @@ export async function syncUserToDb(
 
 export async function notifyAdminNewUser(uid: string, email: string, fullName: string) {
     try {
-        // Get all admin users
+        // 1. Send Email to Chancellor via 'mail' collection (Trigger Email Extension)
+        await adminDb.collection("mail").add({
+            to: "chancellor@ichancetek.com",
+            message: {
+                subject: `New Famio Member: ${fullName}`,
+                text: `A new user has joined Famio!\n\nName: ${fullName}\nEmail: ${email}\nUID: ${uid}\n\nThey have been auto-approved as a Member.`,
+                html: `<p>A new user has joined <strong>Famio</strong>!</p><ul><li><strong>Name:</strong> ${fullName}</li><li><strong>Email:</strong> ${email}</li><li><strong>UID:</strong> ${uid}</li></ul><p>They have been auto-approved as a Member.</p>`,
+            },
+        });
+
+        // 2. Create In-App Notifications for all Admins
         const adminsSnapshot = await adminDb.collection("users")
             .where("role", "==", "admin")
             .get();
 
         const { createNotification } = await import("./notifications");
 
-        // Create notification for each admin
         const notificationPromises = adminsSnapshot.docs.map(adminDoc =>
             createNotification(
                 adminDoc.id,
@@ -83,7 +91,7 @@ export async function notifyAdminNewUser(uid: string, email: string, fullName: s
                     action: 'new_user_registration',
                     userName: fullName,
                     userEmail: email,
-                    message: `New user ${fullName} (${email}) has registered and is pending approval.`
+                    message: `New user ${fullName} (${email}) has joined.`
                 }
             )
         );

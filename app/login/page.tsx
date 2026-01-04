@@ -153,6 +153,7 @@ export default function LoginPage() {
                         <div className="p-4 bg-amber-50 rounded-lg border border-amber-100 text-sm text-amber-800">
                             <p className="font-semibold mb-1">Account requires verification</p>
                             <p>You must verify your email address before you can access your account.</p>
+                            <p className="mt-1 font-medium">Please check your Junk/Spam folder if you don't see the email.</p>
                         </div>
 
                         <Button
