@@ -39,27 +39,27 @@ import {
 import { useLanguage } from "@/components/language-context";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import {
-    Heart,
-    MessageCircle,
-    Share2,
-    Trash2,
-    Send,
-    Sparkles,
-    Briefcase,
-    GraduationCap,
-    BookHeart,
-    Repeat2,
-    MoreHorizontal,
-    Pencil,
     Archive,
-    Youtube,
+    BookHeart,
+    Briefcase,
+    ExternalLink,
+    GraduationCap,
+    Heart,
     Image as ImageIcon,
     Loader2,
-    X,
-    ExternalLink,
-    Volume2,
+    MessageCircle,
     Mic,
-    MicOff
+    MicOff,
+    MoreHorizontal,
+    Pencil,
+    Repeat2,
+    Send,
+    Share2,
+    Sparkles,
+    Trash2,
+    Volume2,
+    X,
+    Youtube
 } from "lucide-react";
 import { getReactionIcon, getReactionLabel, getReactionColor, ReactionSelector } from "./reaction-selector";
 import {
