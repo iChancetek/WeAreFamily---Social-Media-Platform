@@ -24,7 +24,7 @@ export async function checkAndCelebrateBirthdays() {
     const usersSnapshot = await adminDb.collection("users").get();
 
     const birthdayUsers = usersSnapshot.docs
-        .map(userDoc => ({ id: userDoc.id, ...userDoc.data() }) as any)
+        .map((userDoc: any) => ({ id: userDoc.id, ...userDoc.data() }) as any)
         .filter((u: any) => u.birthday === todayString && u.lastCelebratedYear !== currentYear);
 
     if (birthdayUsers.length === 0) {

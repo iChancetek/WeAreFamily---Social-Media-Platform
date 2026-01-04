@@ -35,6 +35,6 @@ export async function searchUsers(query: string) {
         .get();
 
     return snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() } as any))
+        .map((doc: any) => ({ id: doc.id, ...doc.data() } as any))
         .filter(u => u.id !== user.id);
 }
