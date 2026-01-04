@@ -73,7 +73,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
 
             <nav className="flex-1 px-4 mt-2 space-y-6">
                 {groups.map((group, index) => (
-                    <div key={index} className="space-y-1">
+                    <div key={group.title} className="space-y-1">
                         {group.title !== "Main" && (
                             <h4 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                                 {group.title}
@@ -82,15 +82,17 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                         {group.items.map((link) => {
                             const isActive = pathname === link.href;
                             return (
-                                <Link key={link.href} href={link.href} onClick={onLinkClick} className="block">
-                                    <Button
-                                        variant="ghost"
-                                        className={cn(
-                                            "w-full justify-start gap-3 text-base font-medium transition-colors h-11 rounded-xl px-3 relative",
-                                            isActive
-                                                ? "bg-primary/10 text-primary font-bold"
-                                                : "text-foreground hover:bg-muted"
-                                        )}>
+                                <Button
+                                    key={link.href}
+                                    variant="ghost"
+                                    asChild
+                                    className={cn(
+                                        "w-full justify-start gap-3 text-base font-medium transition-colors h-11 rounded-xl px-3 relative my-1",
+                                        isActive
+                                            ? "bg-primary/10 text-primary font-bold"
+                                            : "text-foreground hover:bg-muted"
+                                    )}>
+                                    <Link href={link.href} onClick={onLinkClick}>
                                         <link.icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
                                         <span className="truncate">{link.label}</span>
                                         {link.href === '/notifications' && (
@@ -98,8 +100,8 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                                                 <NotificationBadge />
                                             </div>
                                         )}
-                                    </Button>
-                                </Link>
+                                    </Link>
+                                </Button>
                             )
                         })}
                     </div>
