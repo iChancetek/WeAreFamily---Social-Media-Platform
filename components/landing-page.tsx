@@ -32,16 +32,16 @@ export function LandingPage() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Link href="/login">
-                                <Button variant="ghost" className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 font-medium">
+                            <Button variant="ghost" className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 font-medium" asChild>
+                                <Link href="/login">
                                     Sign In
-                                </Button>
-                            </Link>
-                            <Link href="/signup">
-                                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm">
+                                </Link>
+                            </Button>
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm" asChild>
+                                <Link href="/signup">
                                     Create Account
-                                </Button>
-                            </Link>
+                                </Link>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -95,16 +95,16 @@ export function LandingPage() {
                             plan events, and stay connected with the people who matter most.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <Link href="/signup">
-                                <Button size="lg" className="h-14 px-10 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-900/50 border-0">
+                            <Button size="lg" className="h-14 px-10 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-900/50 border-0" asChild>
+                                <Link href="/signup">
                                     Join Famio
-                                </Button>
-                            </Link>
-                            <Link href="/learn-more">
-                                <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm font-semibold">
+                                </Link>
+                            </Button>
+                            <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm font-semibold" asChild>
+                                <Link href="/learn-more">
                                     Learn More
-                                </Button>
-                            </Link>
+                                </Link>
+                            </Button>
                         </div>
 
                         {/* Trust Badge */}
@@ -173,11 +173,11 @@ export function LandingPage() {
                     <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
                         Join thousands of families who are already sharing, connecting, and creating memories together.
                     </p>
-                    <Link href="/signup">
-                        <Button size="lg" className="h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-lg">
+                    <Button size="lg" className="h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-lg" asChild>
+                        <Link href="/signup">
                             Get Started Free
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                 </div>
             </section>
 
