@@ -603,19 +603,38 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                     <Button
                         variant="ghost"
                         onClick={() => setShowComments(!showComments)}
-                        className="flex-1 gap-2 hover:bg-muted text-muted-foreground h-9 font-medium rounded-md"
+                        className="flex-1 gap-2 hover:bg-muted h-9 font-medium text-muted-foreground rounded-md"
                     >
                         <MessageCircle className="w-5 h-5" />
-                        <span className="text-[15px]">Comment</span>
+                        <span className="text-[15px]">{t("btn.comment")}</span>
                     </Button>
+
+                    <Button
+                        variant="ghost"
+                        onClick={() => {
+                            const event = new CustomEvent('famio:open-ai', {
+                                detail: {
+                                    context: post.content,
+                                    type: 'post_context'
+                                }
+                            });
+                            window.dispatchEvent(event);
+                            toast.success("Opened in AI Assistant!");
+                        }}
+                        className="flex-1 gap-2 hover:bg-indigo-50 hover:text-indigo-600 h-9 font-medium text-muted-foreground rounded-md"
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        <span className="text-[15px]">Ask AI</span>
+                    </Button>
+
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
-                                className="flex-1 gap-2 hover:bg-muted text-muted-foreground h-9 font-medium rounded-md"
+                                className="flex-1 gap-2 hover:bg-muted h-9 font-medium text-muted-foreground rounded-md transition-colors"
                             >
                                 <Share2 className="w-5 h-5" />
-                                <span className="text-[15px]">Share</span>
+                                <span className="text-[15px]">{t("btn.share")}</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

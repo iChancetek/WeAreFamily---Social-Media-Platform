@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Lock, Globe, Plus } from "lucide-react";
+import { Users, Lock, Globe, Plus, Sparkles } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { CreatePost } from "@/components/feed/create-post";
 // Note: CreatePost might need adjustment to support group posting context.
@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { PostCard } from "@/components/feed/post-card"; // Assuming this creates the post view
 import { GroupPostCreator } from "@/components/groups/group-post-creator"; // Will create this next
 import { JoinGroupButton } from "@/components/groups/join-group-button"; // Client component for actions
+import { GroupAITutorBanner } from "@/components/groups/group-ai-tutor-banner";
 
 export default async function GroupPage({ params }: { params: Promise<{ groupId: string }> }) {
     const { groupId } = await params;
@@ -76,6 +77,11 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
                         <>
                             {isMember && (
                                 <GroupPostCreator groupId={group.id} user={user!} />
+                            )}
+
+                            {/* AI Tutor Banner for School Groups */}
+                            {(group.name.toLowerCase().includes('school') || group.name.toLowerCase().includes('homework') || group.category.toLowerCase() === 'education') && (
+                                <GroupAITutorBanner />
                             )}
 
                             <div className="space-y-4">
