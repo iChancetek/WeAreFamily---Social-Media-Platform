@@ -150,6 +150,30 @@ export async function seedKnowledgeBase() {
             content: "Famio is a private, secure social platform built exclusively for families. It allows you to share moments, plan events, and stay connected with the people who matter most. It is powered by ChanceTEK."
         },
         {
+            title: "Multi-Modal AI Agents",
+            content: "Famio Universal Intelligence offers specialized AI modes: 1) General (Helpful Assistant), 2) Tutor (Explains simply for kids/students), 3) Executive (Concise summaries for busy pros), 4) Biographer (Interviews you to save memories), 5) Architect (Technical details)."
+        },
+        {
+            title: "Magic Draft",
+            content: "Found in the 'Create Post' box, the Magic Draft button (wand icon) uses AI to instantly write warm, engaging social media posts for you. You just type a rough idea, and it polishes it into a publish-ready message."
+        },
+        {
+            title: "Ask AI (Contextual)",
+            content: "On any post in the feed, you can click the Share menu and select 'Ask AI about this...'. This opens the AI Assistant with the post's content pre-loaded, allowing you to ask for summaries, explanations, or translations of that specific post."
+        },
+        {
+            title: "Biographer & Legacy Building",
+            content: "The 'Record Memory' button on your Profile page launches the Biographer Agent. It conducts a friendly interview to help you capture important life stories. These memories are preserved as part family legacy."
+        },
+        {
+            title: "Branding Pages",
+            content: "The Branding feature allows businesses, public figures, and organizations to create official pages. Users can follow Brands to see their updates. Brands are separate from personal profiles and have their own followers."
+        },
+        {
+            title: "Live Broadcasts",
+            content: "Famio Live allows you to stream video in real-time to your family. You can start a broadcast from the 'Live' tab. Viewers can chat in real-time. You can control privacy (Family Only vs Public) before starting."
+        },
+        {
             title: "Privacy & Security",
             content: "Famio uses End-to-End Encryption to keep data safe. Only family members you approve can see your content. Features include 'Public Profile' toggle (default off) and strict owner-only deletion rights for gallery photos."
         },
@@ -159,7 +183,7 @@ export async function seedKnowledgeBase() {
         },
         {
             title: "Groups",
-            content: "You can create Groups for specific branches of the family or interests (e.g., 'Cousins', 'Planning Committee'). Groups have their own posts and member lists."
+            content: "Groups allow for micro-communities (e.g., 'Cousins', 'Planning Committee'). You can join public groups or be invited to private ones. Groups have dedicated feeds and member lists."
         },
         {
             title: "Events",
@@ -168,10 +192,6 @@ export async function seedKnowledgeBase() {
         {
             title: "Gallery",
             content: "The Gallery organizes all your shared photos. IMPORTANT: Deleting a photo from the Gallery also deletes the original Post it was attached to. Only the owner of the photo can delete it."
-        },
-        {
-            title: "AI Features",
-            content: "Famio includes AI features like: 1) Content Generation (helping write posts/comments), 2) Automated Birthday Wishes, 3) This AI Assistant (RAG) to answer questions."
         },
         {
             title: "Account & Settings",
