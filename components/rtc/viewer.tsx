@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useAuth } from "@/components/auth-provider"
-import { sendSignal, getActiveSession } from "@/app/actions/rtc"
+import { sendSignal, getActiveSession, addViewer } from "@/app/actions/rtc"
 import { Button } from "@/components/ui/button"
 import { Loader2, PhoneOff } from "lucide-react"
 import { toast } from "sonner"
@@ -32,6 +32,9 @@ export function Viewer({ sessionId }: ViewerProps) {
 
     const joinStream = async () => {
         try {
+            // Add viewer to session (checks privacy and kicked status)
+            await addViewer(sessionId)
+
             // Get session info
             const session = await getActiveSession(sessionId)
             if (!session || session.status !== "active") {
@@ -98,6 +101,11 @@ export function Viewer({ sessionId }: ViewerProps) {
                             await pc.setRemoteDescription(new RTCSessionDescription({ type: "answer", sdp: signal.sdp }))
                         } else if (signal.type === "candidate") {
                             await pc.addIceCandidate(new RTCIceCandidate(signal.candidate))
+                        } else if (signal.type === "kicked") {
+                            // Host kicked this viewer
+                            toast.error("You have been removed from this broadcast")
+                            cleanup()
+                            router.push("/live")
                         }
                     }
                 }

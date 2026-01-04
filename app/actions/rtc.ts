@@ -18,14 +18,14 @@ export interface RTCSession {
 }
 
 export interface SignalPayload {
-    type: "offer" | "answer" | "candidate";
+    type: "offer" | "answer" | "candidate" | "kicked";
     sdp?: string;
     candidate?: any;
     from: string;
     to: string;
 }
 
-export async function startSession(type: SessionType, targetUserId?: string) {
+export async function startSession(type: SessionType, targetUserId?: string, isPublic: boolean = false) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
@@ -49,6 +49,8 @@ export async function startSession(type: SessionType, targetUserId?: string) {
         type,
         participants,
         status: "active",
+        isPublic: type === "broadcast" ? isPublic : true, // Calls are always "public" to participants
+        viewers: type === "broadcast" ? [] : undefined, // Track active viewers for broadcasts
         startedAt: FieldValue.serverTimestamp(),
     };
 
@@ -180,6 +182,119 @@ export async function getActiveBroadcasts() {
     );
 
     return broadcasts;
+}
+
+// Get active viewers for a broadcast session
+export async function getSessionViewers(sessionId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const sessionDoc = await adminDb.collection("active_sessions").doc(sessionId).get();
+    if (!sessionDoc.exists) throw new Error("Session not found");
+
+    const sessionData = sessionDoc.data();
+    if (sessionData?.hostId !== user.id) throw new Error("Not authorized");
+
+    const viewerIds = sessionData?.viewers || [];
+
+    // Get viewer profiles
+    const viewers = await Promise.all(
+        viewerIds.map(async (viewerId: string) => {
+            const viewerDoc = await adminDb.collection("users").doc(viewerId).get();
+            const viewerData = viewerDoc.data();
+            return {
+                id: viewerId,
+                displayName: viewerData?.displayName || "Unknown User",
+                imageUrl: viewerData?.imageUrl || viewerData?.profileData?.imageUrl,
+            };
+        })
+    );
+
+    return viewers;
+}
+
+// Kick a viewer from broadcast
+export async function kickViewer(sessionId: string, viewerId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const sessionDoc = await adminDb.collection("active_sessions").doc(sessionId).get();
+    if (!sessionDoc.exists) throw new Error("Session not found");
+
+    const sessionData = sessionDoc.data();
+    if (sessionData?.hostId !== user.id) throw new Error("Not authorized");
+
+    // Remove viewer from viewers array
+    await adminDb.collection("active_sessions").doc(sessionId).update({
+        viewers: FieldValue.arrayRemove(viewerId),
+        kickedViewers: FieldValue.arrayUnion(viewerId), // Track kicked viewers
+    });
+
+    // Send signal to viewer to disconnect
+    await sendSignal(sessionId, {
+        type: "kicked",
+        to: viewerId,
+    });
+
+    return { success: true };
+}
+
+// Update broadcast privacy setting
+export async function updateSessionPrivacy(sessionId: string, isPublic: boolean) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const sessionDoc = await adminDb.collection("active_sessions").doc(sessionId).get();
+    if (!sessionDoc.exists) throw new Error("Session not found");
+
+    const sessionData = sessionDoc.data();
+    if (sessionData?.hostId !== user.id) throw new Error("Not authorized");
+
+    await adminDb.collection("active_sessions").doc(sessionId).update({
+        isPublic,
+    });
+
+    return { success: true, isPublic };
+}
+
+// Add viewer to session (called when viewer joins)
+export async function addViewer(sessionId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const sessionDoc = await adminDb.collection("active_sessions").doc(sessionId).get();
+    if (!sessionDoc.exists) throw new Error("Session not found");
+
+    const sessionData = sessionDoc.data();
+
+    // Check if viewer was kicked
+    if (sessionData?.kickedViewers?.includes(user.id)) {
+        throw new Error("You have been removed from this broadcast");
+    }
+
+    // Check privacy settings
+    if (!sessionData?.isPublic) {
+        // Family-only broadcast - check if viewer is in host's family
+        const familySnapshot = await adminDb.collection("familyConnections")
+            .where("users", "array-contains", user.id)
+            .get();
+
+        const isFamily = familySnapshot.docs.some(doc => {
+            const data = doc.data();
+            return data.users?.includes(sessionData?.hostId || "");
+        });
+
+        if (!isFamily && sessionData?.hostId !== user.id) {
+            throw new Error("This is a family-only broadcast");
+        }
+    }
+
+    // Add viewer to viewers array
+    await adminDb.collection("active_sessions").doc(sessionId).update({
+        viewers: FieldValue.arrayUnion(user.id),
+    });
+
+    return { success: true };
 }
 
 export async function getIncomingCall(userId: string) {
