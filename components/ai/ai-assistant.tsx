@@ -46,7 +46,7 @@ export function AIAssistant() {
     if (!user) return null
 
     return (
-        <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[9999] flex flex-col items-end pointer-events-none">
+        <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[30] flex flex-col items-end pointer-events-none">
             {/* Chat Window */}
             <div className={cn(
                 "mb-4 transition-all duration-300 origin-bottom-right pointer-events-auto",
