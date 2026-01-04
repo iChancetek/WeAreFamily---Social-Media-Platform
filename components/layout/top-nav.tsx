@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu, Heart } from "lucide-react";
-import { Sidebar } from "./sidebar";
+import { MobileSidebar } from "./mobile-sidebar";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 export function TopNav({ className }: { className?: string }) {
@@ -27,7 +27,7 @@ export function TopNav({ className }: { className?: string }) {
                         <SheetTitle>Navigation Menu</SheetTitle>
                         <SheetDescription>Main navigation links</SheetDescription>
                     </VisuallyHidden>
-                    <Sidebar className="static w-full h-full border-none" onLinkClick={() => setOpen(false)} />
+                    <MobileSidebar className="w-full h-full" onLinkClick={() => setOpen(false)} />
                 </SheetContent>
             </Sheet>
         </header>
