@@ -222,12 +222,21 @@ export async function getFamilyRequests() {
     const incomingRequests = await Promise.all(incomingSnapshot.docs.map(async doc => {
         const data = doc.data();
         const senderDoc = await adminDb.collection("users").doc(data.senderId).get();
-        const sender = senderDoc.exists ? {
-            id: senderDoc.id,
-            displayName: senderDoc.data()?.displayName,
-            imageUrl: senderDoc.data()?.imageUrl,
-            email: senderDoc.data()?.email,
-        } : { email: 'Unknown' };
+
+        let sender = { email: 'Unknown', displayName: 'Unknown', imageUrl: null };
+        if (senderDoc.exists) {
+            const u = senderDoc.data();
+            const rawName = u?.displayName;
+            const profileName = u?.profileData?.firstName ? `${u.profileData.firstName} ${u.profileData.lastName || ''}`.trim() : null;
+            const emailName = u?.email?.split('@')[0];
+
+            sender = {
+                id: senderDoc.id,
+                email: u?.email,
+                imageUrl: u?.imageUrl,
+                displayName: (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Family Member")
+            } as any;
+        }
 
         return {
             id: doc.id,
@@ -240,12 +249,21 @@ export async function getFamilyRequests() {
     const sentRequests = await Promise.all(sentSnapshot.docs.map(async doc => {
         const data = doc.data();
         const receiverDoc = await adminDb.collection("users").doc(data.receiverId).get();
-        const receiver = receiverDoc.exists ? {
-            id: receiverDoc.id,
-            displayName: receiverDoc.data()?.displayName,
-            imageUrl: receiverDoc.data()?.imageUrl,
-            email: receiverDoc.data()?.email,
-        } : { email: 'Unknown' };
+
+        let receiver = { email: 'Unknown', displayName: 'Unknown', imageUrl: null };
+        if (receiverDoc.exists) {
+            const u = receiverDoc.data();
+            const rawName = u?.displayName;
+            const profileName = u?.profileData?.firstName ? `${u.profileData.firstName} ${u.profileData.lastName || ''}`.trim() : null;
+            const emailName = u?.email?.split('@')[0];
+
+            receiver = {
+                id: receiverDoc.id,
+                email: u?.email,
+                imageUrl: u?.imageUrl,
+                displayName: (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Family Member")
+            } as any;
+        }
 
         return {
             id: doc.id,
@@ -356,9 +374,15 @@ export async function getFamilyMembers() {
             const userDoc = await adminDb.collection("users").doc(id).get();
             if (userDoc.exists) {
                 const data = userDoc.data()!;
+                const rawName = data.displayName;
+                const profileName = data.profileData?.firstName ? `${data.profileData.firstName} ${data.profileData.lastName || ''}`.trim() : null;
+                const emailName = data.email?.split('@')[0];
+                const cleanName = (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Family Member");
+
                 return {
                     id: userDoc.id,
                     ...data,
+                    displayName: cleanName,
                     createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
                 };
             }
