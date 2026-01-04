@@ -18,8 +18,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-# Famio - Connect with Your Family and Friends
-<!-- Deployed: 2026-01-04 01:28 -->
+# WeAreFamily - Social Media Platform
+*Latest Deployment: Viewer Management & Mobile Fixes - 2026-01-04 04:10*
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
