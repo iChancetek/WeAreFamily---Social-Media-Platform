@@ -13,9 +13,11 @@ export function useSpeechRecognition({ onResult, onEnd }: UseSpeechRecognitionPr
     const [recognition, setRecognition] = useState<any>(null);
 
     useEffect(() => {
-        if (typeof window !== 'undefined' && (window as any).webkitSpeechRecognition) {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+        if (typeof window !== 'undefined' && SpeechRecognition) {
             setIsSupported(true);
-            const recognitionInstance = new (window as any).webkitSpeechRecognition();
+            const recognitionInstance = new SpeechRecognition();
             recognitionInstance.continuous = false;
             recognitionInstance.interimResults = true;
             recognitionInstance.lang = 'en-US';

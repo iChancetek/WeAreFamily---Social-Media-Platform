@@ -171,7 +171,7 @@ export function CreatePost() {
                     <div className="flex-1 space-y-3">
 
                         <Textarea
-                            placeholder={isListening ? t("feed.listening") || "Listening..." : t("feed.placeholder")}
+                            placeholder={isListening ? (t("feed.listening") || "Listening...") : (t("feed.placeholder") + " 🎙️")}
                             className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
