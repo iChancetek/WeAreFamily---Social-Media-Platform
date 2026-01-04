@@ -633,10 +633,14 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => {
-                                    // Trigger a custom event that the AI Assistant can listen to
-                                    // Or for now, just copy to clipboard with a special prompt
-                                    navigator.clipboard.writeText(`Context: ${post.content}\n\nTask: Please explain or summarize this.`);
-                                    toast.info("Post copied to clipboard! Open AI Assistant to discuss it. 🧠");
+                                    const event = new CustomEvent('famio:open-ai', {
+                                        detail: {
+                                            context: post.content,
+                                            type: 'post_context'
+                                        }
+                                    });
+                                    window.dispatchEvent(event);
+                                    toast.success("Opened in AI Assistant! 🧠", { duration: 1500 });
                                 }}
                                 className="gap-2 cursor-pointer text-blue-600 focus:text-blue-600"
                             >
