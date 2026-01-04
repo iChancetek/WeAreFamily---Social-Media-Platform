@@ -82,26 +82,25 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                         {group.items.map((link) => {
                             const isActive = pathname === link.href;
                             return (
-                                <Button
+                                <Link
                                     key={link.href}
-                                    variant="ghost"
-                                    asChild
+                                    href={link.href}
+                                    onClick={onLinkClick}
                                     className={cn(
-                                        "w-full justify-start gap-3 text-base font-medium transition-colors h-11 rounded-xl px-3 relative my-1",
+                                        "flex items-center gap-3 w-full text-base font-medium transition-colors h-11 rounded-xl px-3 relative my-1",
                                         isActive
                                             ? "bg-primary/10 text-primary font-bold"
                                             : "text-foreground hover:bg-muted"
-                                    )}>
-                                    <Link href={link.href} onClick={onLinkClick}>
-                                        <link.icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
-                                        <span className="truncate">{link.label}</span>
-                                        {link.href === '/notifications' && (
-                                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                                                <NotificationBadge />
-                                            </div>
-                                        )}
-                                    </Link>
-                                </Button>
+                                    )}
+                                >
+                                    <link.icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
+                                    <span className="truncate">{link.label}</span>
+                                    {link.href === '/notifications' && (
+                                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                            <NotificationBadge />
+                                        </div>
+                                    )}
+                                </Link>
                             )
                         })}
                     </div>
