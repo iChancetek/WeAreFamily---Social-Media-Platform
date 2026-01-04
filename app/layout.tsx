@@ -20,6 +20,23 @@ export const metadata: Metadata = {
   description: "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
 };
 
+function DebugClicker() {
+  const { toast } = require("sonner");
+  const { useEffect } = require("react");
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      console.log("GLOBAL CLICK:", target.tagName, target.className);
+      // toast.info(`Clicked: ${target.tagName} (See Console)`); 
+    };
+    window.addEventListener("click", handler, { capture: true }); // Capture phase to catch blocked clicks
+    return () => window.removeEventListener("click", handler, { capture: true });
+  }, []);
+
+  return null;
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -40,6 +57,7 @@ export default function RootLayout({
           >
             <LanguageProvider>
               <MessageNotificationProvider>
+                <DebugClicker />
                 {children}
                 <Toaster />
                 {/* <CallOverlay /> */}
