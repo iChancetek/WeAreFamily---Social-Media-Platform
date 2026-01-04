@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Video, Users } from "lucide-react"
 import Link from "next/link"
 
+// Live broadcasts page - updated 2026-01-04
 export default async function LivePage() {
     const broadcasts = await getActiveBroadcasts()
 
