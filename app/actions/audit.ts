@@ -177,7 +177,7 @@ export async function getAuditLogs(options?: {
     logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
     // Apply strict filtering in memory for the fallback results (to mimic the failed query)
-    const filteredLogs = logs.filter(log => {
+    const filteredLogs = logs.filter((log: any) => {
         if (options?.userId && log.userId !== options.userId) return false;
         if (options?.action && log.action !== options.action) return false;
         if (options?.startDate && log.timestamp < options.startDate) return false;
