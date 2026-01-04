@@ -101,7 +101,7 @@ export async function getActiveStories() {
             const authorDoc = await adminDb.collection("users").doc(storyData.authorId).get();
             const author = authorDoc.exists ? {
                 id: authorDoc.id,
-                displayName: authorDoc.data()?.displayName,
+                displayName: authorDoc.data()?.displayName || (authorDoc.data()?.profileData?.firstName ? `${authorDoc.data()?.profileData.firstName} ${authorDoc.data()?.profileData.lastName || ''}`.trim() : null) || authorDoc.data()?.email?.split('@')[0] || "Family Member",
                 imageUrl: authorDoc.data()?.imageUrl
             } : null;
 
