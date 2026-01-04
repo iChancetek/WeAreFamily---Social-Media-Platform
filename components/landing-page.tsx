@@ -3,7 +3,8 @@
 // Updated: 2026-01-03 19:10 - Audio toggle added
 import { useState, useRef } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { Heart, Shield, Users, Globe, CheckCircle, Sparkles, Volume2, VolumeX } from "lucide-react"
 import Image from "next/image"
 
@@ -32,16 +33,12 @@ export function LandingPage() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Button variant="ghost" className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 font-medium" asChild>
-                                <Link href="/login">
-                                    Sign In
-                                </Link>
-                            </Button>
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm" asChild>
-                                <Link href="/signup">
-                                    Create Account
-                                </Link>
-                            </Button>
+                            <Link href="/login" className={cn(buttonVariants({ variant: "ghost" }), "text-gray-700 hover:text-gray-900 hover:bg-gray-100 font-medium")}>
+                                Sign In
+                            </Link>
+                            <Link href="/signup" className={cn(buttonVariants(), "bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm")}>
+                                Create Account
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -56,11 +53,11 @@ export function LandingPage() {
                     loop
                     muted={isMuted} // React controls this property
                     playsInline
-                    className="absolute inset-0 w-full h-full object-cover opacity-60"
+                    className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none"
                 >
                     <source src="/Create_a_highquality_1080p_202601031842.mp4" type="video/mp4" />
                 </video>
-                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80 pointer-events-none" />
 
                 {/* Audio Control */}
                 <button
@@ -95,16 +92,12 @@ export function LandingPage() {
                             plan events, and stay connected with the people who matter most.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <Button size="lg" className="h-14 px-10 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-900/50 border-0" asChild>
-                                <Link href="/signup">
-                                    Join Famio
-                                </Link>
-                            </Button>
-                            <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm font-semibold" asChild>
-                                <Link href="/learn-more">
-                                    Learn More
-                                </Link>
-                            </Button>
+                            <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "h-14 px-10 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-900/50 border-0")}>
+                                Join Famio
+                            </Link>
+                            <Link href="/learn-more" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-14 px-10 text-lg border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm font-semibold")}>
+                                Learn More
+                            </Link>
                         </div>
 
                         {/* Trust Badge */}
@@ -173,11 +166,9 @@ export function LandingPage() {
                     <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
                         Join thousands of families who are already sharing, connecting, and creating memories together.
                     </p>
-                    <Button size="lg" className="h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-lg" asChild>
-                        <Link href="/signup">
-                            Get Started Free
-                        </Link>
-                    </Button>
+                    <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-lg")}>
+                        Get Started Free
+                    </Link>
                 </div>
             </section>
 
