@@ -15,7 +15,7 @@ export async function createSession(uid: string) {
         // If users have issues locally with production builds, this might be the cause.
         // Forcing secure: false to resolve login issues on localhost/http environments.
         // Revert this only when deploying to strict HTTPS production.
-        secure: false,
+        secure: process.env.NODE_ENV === "production",
         path: "/",
         maxAge: 60 * 60 * 24 * 30, // 30 days
         sameSite: 'lax' // Add explicit SameSite
