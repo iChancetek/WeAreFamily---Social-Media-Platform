@@ -10,8 +10,8 @@ export const dynamic = 'force-dynamic'
 
 // Live broadcasts page - deployed 2026-01-04 02:30
 export default async function LivePage() {
-    let broadcasts = []
-    let error = null
+    let broadcasts: any[] = []
+    let error: string | null = null
 
     try {
         broadcasts = await getActiveBroadcasts()
