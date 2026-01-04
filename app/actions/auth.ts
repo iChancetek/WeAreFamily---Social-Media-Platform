@@ -50,6 +50,12 @@ export async function syncUserToDb(
                 emailVerified: isVerified,
                 createdAt: FieldValue.serverTimestamp(),
             });
+
+            // Send Automated Welcome Message
+            const { sendWelcomeMessage } = await import("./chat");
+            await sendWelcomeMessage(uid, displayName).catch(err => {
+                console.error("Failed to send welcome message:", err);
+            });
         } else {
             // Check if we need to promote existing user
             const userData = userDoc.data();
