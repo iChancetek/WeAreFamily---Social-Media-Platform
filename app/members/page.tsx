@@ -23,7 +23,7 @@ export default async function MembersDirectoryPage() {
         .limit(50)
         .get();
 
-    let members = membersSnapshot.docs.map(doc => {
+    let members = membersSnapshot.docs.map((doc: any) => {
         const data = doc.data();
         return sanitizeData({
             id: doc.id,
@@ -37,7 +37,7 @@ export default async function MembersDirectoryPage() {
 
     // Filter out current user from display? Or keep them? Usually keep.
     // Filter out pending?
-    members = members.filter(m => m.role === 'member' || m.role === 'admin');
+    members = members.filter((m: any) => m.role === 'member' || m.role === 'admin');
 
     return (
         <MainLayout>

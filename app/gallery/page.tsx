@@ -46,7 +46,7 @@ export default async function GalleryPage() {
         // We will sort in memory below
     }
 
-    const allPosts = postsSnapshot.docs.map(doc => sanitizeData({
+    const allPosts = postsSnapshot.docs.map((doc: any) => sanitizeData({
         id: doc.id,
         ...doc.data()
     })) as any[];

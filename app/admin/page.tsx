@@ -22,7 +22,7 @@ export default async function AdminPage() {
     }
 
     const usersSnapshot = await adminDb.collection("users").orderBy("createdAt", "desc").get();
-    const allUsers = usersSnapshot.docs.map(doc => sanitizeData({ id: doc.id, ...doc.data() }));
+    const allUsers = usersSnapshot.docs.map((doc: any) => sanitizeData({ id: doc.id, ...doc.data() }));
 
     // Calculate Metrics
     const now = new Date();
