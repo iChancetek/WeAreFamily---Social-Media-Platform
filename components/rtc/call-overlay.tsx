@@ -209,6 +209,7 @@ export function CallOverlay({ sessionId: initialSessionId, onClose }: CallOverla
     }
 
     if (!callState) return null
+    if (!user) return null
 
     return (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">

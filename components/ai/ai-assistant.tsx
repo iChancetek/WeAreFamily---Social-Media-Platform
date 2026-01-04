@@ -8,8 +8,10 @@ import { seedKnowledgeBase } from "@/app/actions/ai-agents"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { ChatInterface } from "@/components/ai/chat-interface"
+import { useAuth } from "@/components/auth-provider"
 
 export function AIAssistant() {
+    const { user } = useAuth()
     const [isOpen, setIsOpen] = useState(false)
     const [externalContext, setExternalContext] = useState<string | null>(null)
     const [isSeeding, setIsSeeding] = useState(false)
@@ -40,6 +42,8 @@ export function AIAssistant() {
             setIsSeeding(false)
         }
     }
+
+    if (!user) return null
 
     return (
         <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[9999] flex flex-col items-end pointer-events-none">

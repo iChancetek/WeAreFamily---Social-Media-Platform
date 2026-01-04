@@ -5,8 +5,8 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/components/language-context";
-// import { AIAssistant } from "@/components/ai/ai-assistant";
-// import { CallOverlay } from "@/components/rtc/call-overlay";
+import { AIAssistant } from "@/components/ai/ai-assistant";
+import { CallOverlay } from "@/components/rtc/call-overlay";
 import { MessageNotificationProvider } from "@/components/messages/message-notification-provider";
 
 const roboto = Roboto({
@@ -42,11 +42,11 @@ export default function RootLayout({
               <MessageNotificationProvider>
                 {children}
                 <Toaster />
-                {/* <CallOverlay /> */}
+                <CallOverlay />
               </MessageNotificationProvider>
             </LanguageProvider>
           </ThemeProvider>
-          {/* <AIAssistant /> */}
+          <AIAssistant />
         </body>
       </html>
     </AuthProvider>
