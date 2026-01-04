@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/components/language-context";
 import { AIAssistant } from "@/components/ai/ai-assistant";
 import { CallOverlay } from "@/components/rtc/call-overlay";
+import { MessageNotificationProvider } from "@/components/messages/message-notification-provider";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700', '900'],
@@ -38,9 +39,11 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <LanguageProvider>
-              {children}
-              <Toaster />
-              <CallOverlay />
+              <MessageNotificationProvider>
+                {children}
+                <Toaster />
+                <CallOverlay />
+              </MessageNotificationProvider>
             </LanguageProvider>
           </ThemeProvider>
           <AIAssistant />
