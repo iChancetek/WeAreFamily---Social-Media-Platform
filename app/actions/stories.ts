@@ -58,7 +58,7 @@ export async function getActiveStories() {
 
         if (allowedAuthorIds.length > 0) {
             const chunks = chunkArray(allowedAuthorIds, 10);
-            chunks.forEach(chunk => {
+            chunks.forEach((chunk: any[]) => {
                 queries.push(
                     adminDb.collection("stories")
                         .where("authorId", "in", chunk)

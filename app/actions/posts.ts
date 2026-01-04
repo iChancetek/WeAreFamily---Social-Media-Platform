@@ -323,7 +323,7 @@ export async function getPosts() {
             // The chunkArray helper is available below.
             const chunks = chunkArray(allowedAuthorIds, 10);
 
-            chunks.forEach(chunk => {
+            chunks.forEach((chunk: any[]) => {
                 queries.push(
                     adminDb.collection("posts")
                         .where("authorId", "in", chunk)
@@ -360,7 +360,7 @@ export async function getPosts() {
 
         if (groupIds.length > 0) {
             const chunks = chunkArray(groupIds, 10);
-            chunks.forEach(chunk => {
+            chunks.forEach((chunk: any[]) => {
                 queries.push(
                     adminDb.collectionGroup("posts")
                         .where("groupId", "in", chunk)
@@ -381,7 +381,7 @@ export async function getPosts() {
         // `createBrandingPost` adds `brandingId`.
         if (brandingIds.length > 0) {
             const chunks = chunkArray(brandingIds, 10);
-            chunks.forEach(chunk => {
+            chunks.forEach((chunk: any[]) => {
                 queries.push(
                     adminDb.collectionGroup("posts")
                         .where("brandingId", "in", chunk)
@@ -567,7 +567,7 @@ export async function deletePost(postId: string) {
     // Delete all comments first
     const commentsSnapshot = await postRef.collection("comments").get();
     const batch = adminDb.batch();
-    commentsSnapshot.docs.forEach((doc) => {
+    commentsSnapshot.docs.forEach((doc: any) => {
         batch.delete(doc.ref);
     });
     // Add post deletion to batch
