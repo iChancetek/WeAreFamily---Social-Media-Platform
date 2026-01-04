@@ -23,7 +23,7 @@ export function BottomNav() {
     ];
 
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-gray-200 dark:border-white/10 px-4 py-2 flex justify-around items-center z-[60] pb-safe shadow-xl">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-gray-200 dark:border-white/10 px-4 py-2 flex justify-around items-center z-[60] pb-safe shadow-xl pointer-events-auto">
             {links.map((link) => {
                 const isActive = pathname === link.href;
                 return (
