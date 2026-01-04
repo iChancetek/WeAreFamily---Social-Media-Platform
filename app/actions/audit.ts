@@ -43,6 +43,7 @@ export type AuditAction =
     | "admin.promote_user"
     | "admin.disable_user"
     | "admin.enable_user"
+    | "admin.broadcast"
     | "settings.update"
     | "security.invisible_mode"
     | "event.join"

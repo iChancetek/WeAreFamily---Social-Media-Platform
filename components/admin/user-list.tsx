@@ -1,5 +1,5 @@
-'use client'
 
+import Link from "next/link"
 import {
     Table,
     TableBody,
@@ -96,8 +96,11 @@ export function UserList({ users }: { users: User[] }) {
                                     <AvatarFallback>{initials}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col">
-                                    <span className="font-medium">{name}</span>
+                                    <Link href={`/u/${user.id}`} className="font-medium hover:underline cursor-pointer text-blue-600 dark:text-blue-400">
+                                        {name}
+                                    </Link>
                                     <span className="text-xs text-gray-500">{user.email}</span>
+                                    <span className="text-xs text-muted-foreground select-all font-mono opacity-50 hover:opacity-100">{user.id}</span>
                                 </div>
                             </TableCell>
                             <TableCell>

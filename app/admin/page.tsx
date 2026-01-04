@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, Calendar } from "lucide-react";
 import { subDays, startOfDay, subYears, format } from "date-fns";
 import { sanitizeData } from "@/lib/serialization";
+import { BroadcastPanel } from "@/components/admin/broadcast-panel";
 
 export default async function AdminPage() {
     const user = await getUserProfile();
@@ -116,6 +117,7 @@ export default async function AdminPage() {
                     <h2 className="text-xl font-semibold mb-4">Actions</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <BirthdayTrigger />
+                        <BroadcastPanel />
                     </div>
                 </div>
 
