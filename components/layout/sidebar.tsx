@@ -63,9 +63,16 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     }
 
     return (
-        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-[60] overflow-y-auto custom-scrollbar pointer-events-auto", className)}>
+        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-[2147483647] overflow-y-auto custom-scrollbar pointer-events-auto", className)}>
             <div className="px-6 py-4 flex-shrink-0">
-                <Link href="/" className="flex items-center gap-2" onClick={onLinkClick}>
+                <Link
+                    href="/"
+                    className="flex items-center gap-2 pointer-events-auto cursor-pointer"
+                    onClick={() => {
+                        console.log("FAMIO HOME CLICKED - Sidebar is interactive");
+                        onLinkClick?.();
+                    }}
+                >
                     <Heart className="w-8 h-8 fill-primary text-primary" />
                     <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
                 </Link>

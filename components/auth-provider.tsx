@@ -38,11 +38,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setUser(firebaseUser)
                 try {
                     // Sync user to DB first
+                    console.log("[AuthProvider] Syncing user to DB:", firebaseUser.uid);
                     await syncUserToDb(
                         firebaseUser.uid,
                         firebaseUser.email || "",
                         firebaseUser.displayName || "Family Member"
                     );
+                    console.log("[AuthProvider] User synced.");
                     // Then create session
                     await createSession(firebaseUser.uid)
 
