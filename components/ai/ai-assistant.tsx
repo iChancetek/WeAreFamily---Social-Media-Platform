@@ -1,83 +1,32 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { Sparkles, Send, X, MessageCircle, Bot, User, Loader2, Database } from "lucide-react"
-import { chatWithAgent, AgentMode, seedKnowledgeBase } from "@/app/actions/ai-agents" // UPDATED IMPORT
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Sparkles, X, Database, Loader2 } from "lucide-react"
+import { seedKnowledgeBase } from "@/app/actions/ai-agents"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { ScrollArea } from "@/components/ui/scroll-area"
-
-type Message = {
-    role: 'user' | 'assistant';
-    content: string;
-}
+import { ChatInterface } from "@/components/ai/chat-interface"
 
 export function AIAssistant() {
     const [isOpen, setIsOpen] = useState(false)
-    const [selectedMode, setSelectedMode] = useState<AgentMode>('general') // NEW STATE
-    const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: "Hi! I'm the Famio Universal Intelligence. 🧠 Choose a mode or just chat!" }
-    ])
-    const [inputValue, setInputValue] = useState("")
-    const [isLoading, setIsLoading] = useState(false)
+    const [externalContext, setExternalContext] = useState<string | null>(null)
     const [isSeeding, setIsSeeding] = useState(false)
-    const scrollRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        // Auto-scroll to bottom
-        if (scrollRef.current) {
-            scrollRef.current.scrollIntoView({ behavior: "smooth" })
-        }
-    }, [messages, isOpen])
 
     // Listen for custom "Open AI" events from other components
     useEffect(() => {
         const handleOpenAI = (e: any) => {
-            const { context, type } = e.detail || {};
+            const { context } = e.detail || {};
             setIsOpen(true);
-
             if (context) {
-                // Add context as a user message, effectively "quoting" the post
-                const contextMsg = `[Shared Context]: "${context.substring(0, 200)}${context.length > 200 ? '...' : ''}"`;
-
-                // Don't duplicate if already the last message
-                setMessages(prev => {
-                    if (prev[prev.length - 1].content === contextMsg) return prev;
-                    return [
-                        ...prev,
-                        { role: 'user', content: contextMsg },
-                        { role: 'assistant', content: "I see the context. What would you like to know? (Summarize, Explain, etc.)" }
-                    ];
-                });
+                setExternalContext(context);
             }
         };
 
         window.addEventListener('famio:open-ai', handleOpenAI);
         return () => window.removeEventListener('famio:open-ai', handleOpenAI);
     }, []);
-
-    const handleSendMessage = async (e?: React.FormEvent) => {
-        e?.preventDefault()
-        if (!inputValue.trim() || isLoading) return
-
-        const userMsg = inputValue.trim()
-        setMessages(prev => [...prev, { role: 'user', content: userMsg }])
-        setInputValue("")
-        setIsLoading(true)
-
-        try {
-            const response = await chatWithAgent(userMsg, selectedMode) // UPDATED CALL
-            setMessages(prev => [...prev, { role: 'assistant', content: response || "I couldn't find an answer to that." }])
-        } catch (error) {
-            console.error(error)
-            setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error. Please try again." }])
-        } finally {
-            setIsLoading(false)
-        }
-    }
 
     const handleSeed = async () => {
         setIsSeeding(true)
@@ -99,108 +48,36 @@ export function AIAssistant() {
                 "mb-4 transition-all duration-300 origin-bottom-right pointer-events-auto",
                 isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 h-0 w-0 overflow-hidden"
             )}>
-                <Card className="w-[350px] md:w-[400px] h-[500px] shadow-2xl border-blue-200 flex flex-col bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm">
-                    <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-xl p-4 flex flex-col gap-3 shrink-0">
-                        <div className="flex flex-row items-center justify-between w-full">
-                            <div className="flex items-center gap-2">
-                                <Sparkles className="w-5 h-5 text-yellow-300" />
-                                <CardTitle className="text-lg">Famio Intelligence</CardTitle>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6 text-white/50 hover:text-white hover:bg-white/20"
-                                    onClick={handleSeed}
-                                    title="Refresh Knowledge Base"
-                                    disabled={isSeeding}
-                                >
-                                    {isSeeding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Database className="w-3 h-3" />}
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/20" onClick={() => setIsOpen(false)}>
-                                    <X className="w-4 h-4" />
-                                </Button>
-                            </div>
+                <Card className="w-[350px] md:w-[400px] h-[500px] shadow-2xl border-blue-200 flex flex-col bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm overflow-hidden">
+                    <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 flex flex-row items-center justify-between shrink-0">
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-yellow-300" />
+                            <CardTitle className="text-base">Famio Intelligence</CardTitle>
                         </div>
-
-                        {/* Mode Selector */}
-                        <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
-                            {(['general', 'tutor', 'executive', 'biographer', 'architect'] as AgentMode[]).map((mode) => (
-                                <button
-                                    key={mode}
-                                    onClick={() => {
-                                        setSelectedMode(mode);
-                                        setMessages(prev => [...prev, { role: 'assistant', content: `Activated: ${mode.toUpperCase()} Mode 🔄` }]);
-                                    }}
-                                    className={cn(
-                                        "px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
-                                        selectedMode === mode
-                                            ? "bg-white text-blue-600 shadow-sm"
-                                            : "bg-white/10 text-white hover:bg-white/20"
-                                    )}
-                                >
-                                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                                </button>
-                            ))}
+                        <div className="flex items-center gap-1">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-white/50 hover:text-white hover:bg-white/20"
+                                onClick={handleSeed}
+                                title="Refresh Knowledge Base"
+                                disabled={isSeeding}
+                            >
+                                {isSeeding ? <Loader2 className="w-3 h-3 animate-spin" /> : <Database className="w-3 h-3" />}
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/20" onClick={() => setIsOpen(false)}>
+                                <X className="w-4 h-4" />
+                            </Button>
                         </div>
                     </CardHeader>
 
-                    <CardContent className="flex-1 overflow-hidden p-0 relative">
-                        <ScrollArea className="h-full p-4">
-                            <div className="space-y-4">
-                                {messages.map((msg, idx) => (
-                                    <div key={idx} className={cn("flex gap-2", msg.role === 'user' ? "justify-end" : "justify-start")}>
-                                        {msg.role === 'assistant' && (
-                                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                                                <Bot className="w-5 h-5 text-blue-600" />
-                                            </div>
-                                        )}
-                                        <div className={cn(
-                                            "rounded-2xl px-4 py-2 max-w-[80%] text-sm",
-                                            msg.role === 'user'
-                                                ? "bg-blue-600 text-white rounded-tr-none"
-                                                : "bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 rounded-tl-none"
-                                        )}>
-                                            {msg.content}
-                                        </div>
-                                        {msg.role === 'user' && (
-                                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                                                <User className="w-5 h-5 text-indigo-600" />
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                                {isLoading && (
-                                    <div className="flex gap-2 justify-start">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <Bot className="w-5 h-5 text-blue-600" />
-                                        </div>
-                                        <div className="bg-gray-100 dark:bg-zinc-800 rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                                            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                                            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
-                                        </div>
-                                    </div>
-                                )}
-                                <div ref={scrollRef} />
-                            </div>
-                        </ScrollArea>
+                    <CardContent className="flex-1 overflow-hidden p-0 relative flex flex-col">
+                        <ChatInterface
+                            isCompact={true}
+                            externalContext={externalContext}
+                            onContextHandled={() => setExternalContext(null)}
+                        />
                     </CardContent>
-
-                    <CardFooter className="p-3 border-t bg-gray-50 dark:bg-zinc-900/50">
-                        <form onSubmit={handleSendMessage} className="flex gap-2 w-full">
-                            <Input
-                                placeholder="Ask about Famio..."
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                className="flex-1 bg-white dark:bg-zinc-950"
-                                disabled={isLoading}
-                            />
-                            <Button type="submit" size="icon" disabled={isLoading || !inputValue.trim()} className="bg-blue-600 hover:bg-blue-700">
-                                <Send className="w-4 h-4" />
-                            </Button>
-                        </form>
-                    </CardFooter>
                 </Card>
             </div>
 

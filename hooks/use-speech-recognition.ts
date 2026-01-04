@@ -16,42 +16,47 @@ export function useSpeechRecognition({ onResult, onEnd }: UseSpeechRecognitionPr
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
         if (typeof window !== 'undefined' && SpeechRecognition) {
-            setIsSupported(true);
-            const recognitionInstance = new SpeechRecognition();
-            recognitionInstance.continuous = false;
-            recognitionInstance.interimResults = true;
-            recognitionInstance.lang = 'en-US';
+            try {
+                const recognitionInstance = new SpeechRecognition();
+                recognitionInstance.continuous = false;
+                recognitionInstance.interimResults = true;
+                recognitionInstance.lang = 'en-US';
 
-            recognitionInstance.onresult = (event: any) => {
-                let interimTranscript = '';
-                let finalTranscript = '';
+                recognitionInstance.onresult = (event: any) => {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
 
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
                     }
-                }
 
-                const currentTranscript = finalTranscript || interimTranscript;
-                setTranscript(currentTranscript);
-                if (onResult) {
-                    onResult(currentTranscript);
-                }
-            };
+                    const currentTranscript = finalTranscript || interimTranscript;
+                    setTranscript(currentTranscript);
+                    if (onResult) {
+                        onResult(currentTranscript);
+                    }
+                };
 
-            recognitionInstance.onend = () => {
-                setIsListening(false);
-                if (onEnd) onEnd();
-            };
+                recognitionInstance.onend = () => {
+                    setIsListening(false);
+                    if (onEnd) onEnd();
+                };
 
-            recognitionInstance.onerror = (event: any) => {
-                console.error('Speech recognition error', event.error);
-                setIsListening(false);
-            };
+                recognitionInstance.onerror = (event: any) => {
+                    console.error('Speech recognition error', event.error);
+                    setIsListening(false);
+                };
 
-            setRecognition(recognitionInstance);
+                setRecognition(recognitionInstance);
+                setIsSupported(true);
+            } catch (e) {
+                console.error("SpeechRecognition initialization failed:", e);
+                setIsSupported(false);
+            }
         }
     }, [onResult, onEnd]);
 

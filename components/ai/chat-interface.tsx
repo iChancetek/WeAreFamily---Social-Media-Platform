@@ -25,10 +25,16 @@ type FileAttachment = {
     content: string;
 };
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+    isCompact?: boolean;
+    externalContext?: string | null;
+    onContextHandled?: () => void;
+}
+
+export function ChatInterface({ isCompact = false, externalContext, onContextHandled }: ChatInterfaceProps) {
     const { user } = useAuth();
     const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: "Hello! I am your AI Research Assistant. I can help you find information, write code, or explain complex topics. What are we working on today?" }
+        { role: 'assistant', content: isCompact ? "Hi! How can I help?" : "Hello! I am your AI Research Assistant. I can help you find information, write code, or explain complex topics. What are we working on today?" }
     ]);
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +42,27 @@ export function ChatInterface() {
     const scrollRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [attachedFile, setAttachedFile] = useState<FileAttachment | null>(null);
+
+    // Handle External Context (e.g. "Ask AI")
+    useEffect(() => {
+        if (externalContext) {
+            const contextMsg = `[Shared Context]: "${externalContext.substring(0, 200)}${externalContext.length > 200 ? '...' : ''}"`;
+
+            // Check if we already have this context to avoid loops
+            setMessages(prev => {
+                const lastMsg = prev[prev.length - 1];
+                if (lastMsg.role === 'user' && lastMsg.content === contextMsg) return prev;
+
+                return [
+                    ...prev,
+                    { role: 'user', content: contextMsg },
+                    { role: 'assistant', content: "I see the context. What would you like to know?" }
+                ];
+            });
+
+            if (onContextHandled) onContextHandled();
+        }
+    }, [externalContext, onContextHandled]);
 
     const { speak, stop: stopSpeaking, isSpeaking } = useTextToSpeech();
 
@@ -113,34 +140,41 @@ export function ChatInterface() {
 
     return (
         <div className="flex flex-col h-[calc(100vh-8rem)]">
-            <div className="mb-6 flex justify-between items-start">
-                <div>
-                    <h1 className="text-3xl font-bold flex items-center gap-3">
-                        <Bot className="w-8 h-8 text-primary" />
-                        AI Research Assistant
-                    </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Powered by Famio Universal Intelligence (GPT-4o)
-                    </p>
+            {!isCompact && (
+                <div className="mb-6 flex justify-between items-start">
+                    <div>
+                        <h1 className="text-3xl font-bold flex items-center gap-3">
+                            <Bot className="w-8 h-8 text-primary" />
+                            AI Research Assistant
+                        </h1>
+                        <p className="text-muted-foreground mt-1">
+                            Powered by Famio Universal Intelligence (GPT-4o)
+                        </p>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Mode Selector */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div className={cn(
+                "grid gap-3 mb-6",
+                isCompact ? "grid-cols-4 gap-1 mb-2" : "grid-cols-2 md:grid-cols-4"
+            )}>
                 {modes.map((mode) => (
                     <button
                         key={mode.id}
                         onClick={() => setSelectedMode(mode.id as AgentMode)}
                         className={cn(
                             "flex flex-col items-center p-3 rounded-xl border transition-all hover:bg-muted/50",
+                            isCompact ? "p-1.5 border-none bg-muted/20" : "",
                             selectedMode === mode.id
                                 ? "border-primary bg-primary/5 text-primary shadow-sm"
                                 : "border-border bg-card text-muted-foreground"
                         )}
+                        title={mode.label}
                     >
-                        <mode.icon className="w-5 h-5 mb-2" />
-                        <span className="font-semibold text-sm">{mode.label}</span>
-                        <span className="text-[10px] opacity-70 hidden md:block">{mode.desc}</span>
+                        <mode.icon className={cn("mb-2", isCompact ? "w-4 h-4 mb-0" : "w-5 h-5")} />
+                        {!isCompact && <span className="font-semibold text-sm">{mode.label}</span>}
+                        {!isCompact && <span className="text-[10px] opacity-70 hidden md:block">{mode.desc}</span>}
                     </button>
                 ))}
             </div>
