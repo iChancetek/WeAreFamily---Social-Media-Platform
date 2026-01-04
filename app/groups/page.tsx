@@ -1,4 +1,4 @@
-import { getGroups } from "@/app/actions/groups";
+import { getGroups, Group } from "@/app/actions/groups";
 import { CreateGroupDialog } from "@/components/groups/create-group-dialog";
 import { GroupCard } from "@/components/groups/group-card";
 import { MainLayout } from "@/components/layout/main-layout";
@@ -25,7 +25,7 @@ export default async function GroupsPage() {
             <Separator className="my-6" />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groups.map(group => (
+                {groups.map((group: Group) => (
                     <GroupCard key={group.id} group={group} />
                 ))}
             </div>
