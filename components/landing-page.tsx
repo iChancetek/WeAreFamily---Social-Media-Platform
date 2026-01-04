@@ -22,7 +22,7 @@ export function LandingPage() {
     return (
         <div className="min-h-screen bg-white">
             {/* Navigation */}
-            <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
+            <nav className="border-b border-gray-200 bg-white sticky top-0 z-[100]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-3">
@@ -68,7 +68,7 @@ export function LandingPage() {
                     {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                 </button>
 
-                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 w-full">
+                <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 w-full">
                     <div className="text-center">
                         <div className="mb-4 inline-flex items-center gap-2 text-blue-400">
                             <Heart className="w-8 h-8" fill="currentColor" />
