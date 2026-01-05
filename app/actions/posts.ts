@@ -90,12 +90,12 @@ export async function toggleReaction(
 
     // Notify author if not self and adding reaction
     if (!hasReaction && postDoc.data()?.authorId !== user.id) {
-        const { sendNotification } = await import("./notifications");
-        await sendNotification(
+        const { createNotification } = await import("./notifications");
+        await createNotification(
             postDoc.data()?.authorId,
-            "post_reaction",
-            `${user.displayName || user.email || 'Someone'} reacted to your post`,
-            { postId, type: reactionType }
+            "like",
+            postId,
+            { type: reactionType, message: `${user.displayName || user.email || 'Someone'} reacted to your post` }
         );
     }
 
@@ -150,12 +150,12 @@ export async function addComment(
 
     // Notify post author
     if (postDoc.data()?.authorId !== user.id) {
-        const { sendNotification } = await import("./notifications");
-        await sendNotification(
+        const { createNotification } = await import("./notifications");
+        await createNotification(
             postDoc.data()?.authorId,
-            "post_comment",
-            `${user.displayName || 'Someone'} commented on your post`,
-            { postId, commentSnippet: content.substring(0, 50) }
+            "comment",
+            postId,
+            { commentSnippet: content.substring(0, 50), message: `${user.displayName || user.email || 'Someone'} commented on your post` }
         );
     }
 
@@ -281,12 +281,12 @@ export async function toggleCommentLike(
     await commentRef.update({ likes: newLikes });
 
     if (!hasLiked && commentDoc.data()?.authorId !== user.id) {
-        const { sendNotification } = await import("./notifications");
-        await sendNotification(
+        const { createNotification } = await import("./notifications");
+        await createNotification(
             commentDoc.data()?.authorId,
-            "comment_like",
-            `${user.displayName || 'Someone'} liked your comment`,
-            { postId, commentId }
+            "like",
+            postId,
+            { commentId, message: `${user.displayName || user.email || 'Someone'} liked your comment` }
         );
     }
 

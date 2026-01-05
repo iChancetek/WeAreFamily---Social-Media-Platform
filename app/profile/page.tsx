@@ -39,7 +39,7 @@ export default async function ProfilePage() {
                         <CreatePost />
 
                         {posts.length > 0 ? (
-                            posts.map((post) => (
+                            posts.map((post: any) => (
                                 <PostCard key={post.id} post={post as any} currentUserId={user.id} />
                             ))
                         ) : (
