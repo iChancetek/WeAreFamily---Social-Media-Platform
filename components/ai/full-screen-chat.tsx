@@ -157,6 +157,11 @@ export function FullScreenChat() {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    import { storage } from "@/lib/firebase";
+    import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+    // ... (inside component)
+
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!user) {
             toast.error("Please login to upload.");
@@ -168,13 +173,14 @@ export function FullScreenChat() {
                 const file = e.target.files[0];
                 const isImage = file.type.startsWith('image/');
 
-                // Dynamic Import for Storage
-                const { storage } = await import("@/lib/firebase");
-                const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
-
+                // Use static storage instance
                 const storageRef = ref(storage, `ai-uploads/${user.uid}/${Date.now()}-${file.name}`);
+
+                console.log("Starting upload...", storageRef.fullPath);
                 const snapshot = await uploadBytes(storageRef, file);
+                console.log("Upload complete, getting URL...");
                 const url = await getDownloadURL(snapshot.ref);
+                console.log("URL retrieved:", url);
 
                 setAttachments(prev => [...prev, {
                     url,
@@ -182,9 +188,10 @@ export function FullScreenChat() {
                     name: file.name
                 }]);
                 toast.success("Attached successfully");
-            } catch (error) {
-                console.error("Upload failed", error);
-                toast.error("Upload failed");
+            } catch (error: any) {
+                console.error("Upload failed detailed:", error);
+                // Show detailed error to user
+                toast.error(`Upload failed: ${error.message || "Unknown error"}`);
             } finally {
                 setIsUploading(false);
                 // Reset input
@@ -296,7 +303,7 @@ export function FullScreenChat() {
     // ------------------------------------------------------------------
 
     return (
-        <div className="flex h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-border shadow-sm bg-background">
+        <div className="flex h-[calc(100vh-8rem)] md:h-[calc(100vh-8rem)] mb-16 md:mb-0 overflow-hidden rounded-xl border border-border shadow-sm bg-background">
 
             {/* Sidebar (Existing Code) */}
             {isSidebarOpen && (
@@ -400,9 +407,12 @@ export function FullScreenChat() {
                         {/* Model Selector */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 hidden md:flex border-dashed">
+                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 flex border-dashed">
                                     <Cpu className="w-3.5 h-3.5" />
-                                    {selectedModel === 'gpt-4o' ? 'GPT-4o' : (selectedModel === 'claude-3-5-sonnet-20240620' ? 'Claude 3.5' : selectedModel)}
+                                    <span className="md:hidden">Model</span>
+                                    <span className="hidden md:inline">
+                                        {selectedModel === 'gpt-4o' ? 'GPT-4o' : (selectedModel === 'claude-3-5-sonnet-20240620' ? 'Claude 3.5' : selectedModel)}
+                                    </span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
