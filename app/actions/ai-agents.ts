@@ -1,22 +1,18 @@
 "use server";
 
 import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { adminDb } from "@/lib/firebase-admin";
-
-// Helper for client
-function getClient() {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-        throw new Error("OpenAI API Key is missing");
-    }
-    return new OpenAI({ apiKey });
-}
 
 // ------------------------------------------------------------------
 // 🤖 Agent Definitions
 // ------------------------------------------------------------------
 
-export type AgentMode = "general" | "tutor" | "executive" | "biographer" | "architect";
+import { AgentMode, AIModel } from "@/types/ai";
+
+// ------------------------------------------------------------------
+// 🤖 Agent Definitions
+// ------------------------------------------------------------------
 
 const AGENT_PERSONAS: Record<AgentMode, string> = {
     general: `You are the Famio AI Assistant. You are helpful, warm, and family-oriented.
@@ -54,7 +50,10 @@ const AGENT_PERSONAS: Record<AgentMode, string> = {
 // ------------------------------------------------------------------
 
 async function generateEmbedding(text: string) {
-    const openai = getClient();
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error("OpenAI API Key is missing");
+    const openai = new OpenAI({ apiKey });
+
     const response = await openai.embeddings.create({
         model: "text-embedding-3-small",
         input: text,
@@ -79,10 +78,13 @@ function cosineSimilarity(vecA: number[], vecB: number[]) {
 // 🚀 Main Interaction Function
 // ------------------------------------------------------------------
 
-export async function chatWithAgent(userMessage: string, mode: AgentMode = "general") {
+export async function chatWithAgent(
+    userMessage: string,
+    mode: AgentMode = "general",
+    model: AIModel = "gpt-4o"
+) {
     try {
-        const openai = getClient();
-        console.log(`🤖 AI Agent Activated: [${mode.toUpperCase()}]`);
+        console.log(`🤖 AI Agent Activated: [${mode.toUpperCase()}] using [${model}]`);
 
         // 1. Get RAG Context (Shared Knowledge Base)
         // We use the same KB for all agents, but they interpret it differently.
@@ -110,31 +112,59 @@ export async function chatWithAgent(userMessage: string, mode: AgentMode = "gene
         // 2. Select Persona
         const systemPrompt = AGENT_PERSONAS[mode] || AGENT_PERSONAS.general;
 
-        // 3. Construct Messages
-        const messages: any[] = [
-            { role: "system", content: systemPrompt },
-        ];
+        // 3. Dispatch to Model
+        if (model.startsWith("claude")) {
+            // --- ANTHROPIC / CLAUDE ---
+            const anthropicKey = process.env.ANTHROPIC_API_KEY;
+            if (!anthropicKey) throw new Error("Anthropic API Key is missing");
+            const anthropic = new Anthropic({ apiKey: anthropicKey });
 
-        if (contextText) {
-            messages.push({
-                role: "system",
-                content: `Here is some relevant context from the platform knowledge base. Use it if helpful, but prioritize your specific persona's expertise:\n${contextText}`
+            const response = await anthropic.messages.create({
+                model: "claude-3-5-sonnet-20240620",
+                max_tokens: 1024,
+                system: systemPrompt + (contextText ? `\n\nContext:\n${contextText}` : ""),
+                messages: [
+                    { role: "user", content: userMessage }
+                ]
             });
+
+            // Extract text content
+            const contentBlock = response.content[0];
+            if (contentBlock.type === 'text') {
+                return contentBlock.text;
+            }
+            return "I couldn't process the response.";
+
+        } else {
+            // --- OPENAI ---
+            const apiKey = process.env.OPENAI_API_KEY;
+            if (!apiKey) throw new Error("OpenAI API Key is missing");
+            const openai = new OpenAI({ apiKey });
+
+            const messages: any[] = [
+                { role: "system", content: systemPrompt },
+            ];
+
+            if (contextText) {
+                messages.push({
+                    role: "system",
+                    content: `Here is some relevant context from the platform knowledge base. Use it if helpful, but prioritize your specific persona's expertise:\n${contextText}`
+                });
+            }
+
+            messages.push({ role: "user", content: userMessage });
+
+            const response = await openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: messages,
+                temperature: mode === "executive" ? 0.3 : 0.7,
+            });
+
+            return response.choices[0].message.content;
         }
 
-        messages.push({ role: "user", content: userMessage });
-
-        // 4. Generate Response
-        const response = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: messages,
-            temperature: mode === "executive" ? 0.3 : 0.7, // Lower temp for pros, higher for creative
-        });
-
-        return response.choices[0].message.content;
-
     } catch (error) {
-        console.error(`Error in chatWithAgent (${mode}):`, error);
+        console.error(`Error in chatWithAgent (${mode}/${model}):`, error);
         return "I'm having trouble connecting to my neural core. Please try again in a moment. 🧠";
     }
 }

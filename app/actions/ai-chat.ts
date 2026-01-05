@@ -3,7 +3,7 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
-import { AgentMode } from "@/app/actions/ai-agents";
+import { AgentMode } from "@/types/ai";
 
 export interface AIConversation {
     id: string;
@@ -14,6 +14,7 @@ export interface AIConversation {
     isDeleted: boolean;
     lastMessage?: string;
     mode?: AgentMode;
+    model?: string;
 }
 
 export interface AIMessage {
@@ -26,7 +27,7 @@ export interface AIMessage {
 /**
  * Create a new conversation
  */
-export async function createConversation(initialMessage?: string, mode: AgentMode = 'general'): Promise<string> {
+export async function createConversation(initialMessage?: string, mode: AgentMode = 'general', model: string = 'gpt-4o'): Promise<string> {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
@@ -39,7 +40,8 @@ export async function createConversation(initialMessage?: string, mode: AgentMod
         updatedAt: FieldValue.serverTimestamp(),
         isDeleted: false,
         lastMessage: initialMessage || "",
-        mode
+        mode,
+        model
     });
 
     return docRef.id;

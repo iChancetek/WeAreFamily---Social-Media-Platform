@@ -4,8 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bot, Send, User, Sparkles, Terminal, BookOpen, Briefcase, Volume2, StopCircle, ArrowLeft, Trash2, LayoutList, PanelLeft, X } from "lucide-react";
-import { chatWithAgent, AgentMode } from "@/app/actions/ai-agents";
+import { Bot, Send, User, Sparkles, Terminal, BookOpen, Briefcase, Volume2, StopCircle, ArrowLeft, Trash2, LayoutList, PanelLeft, X, Cpu } from "lucide-react";
+import { chatWithAgent } from "@/app/actions/ai-agents";
+import { AgentMode, AIModel } from "@/types/ai";
 import {
     createConversation,
     getConversations,
@@ -23,6 +24,12 @@ import { Loader2 } from "lucide-react";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Message = {
     role: 'user' | 'assistant';
@@ -38,6 +45,7 @@ export function FullScreenChat() {
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [selectedMode, setSelectedMode] = useState<AgentMode>('general');
+    const [selectedModel, setSelectedModel] = useState<AIModel>('gpt-4o');
 
     // Persistence State
     const [conversations, setConversations] = useState<AIConversation[]>([]);
@@ -140,7 +148,7 @@ export function FullScreenChat() {
 
             // Create new conversation if none active
             if (!chatId) {
-                chatId = await createConversation(userMsg, selectedMode);
+                chatId = await createConversation(userMsg, selectedMode, selectedModel);
                 setActiveConversationId(chatId);
                 // Refresh list without await to not block
                 loadConversations();
@@ -150,7 +158,7 @@ export function FullScreenChat() {
             }
 
             // Get AI Response
-            const response = await chatWithAgent(userMsg, selectedMode);
+            const response = await chatWithAgent(userMsg, selectedMode, selectedModel);
             const aiMsg = response || "I couldn't generate a response.";
 
             // Save AI message
@@ -206,6 +214,13 @@ export function FullScreenChat() {
             toast.error("Failed to delete");
         }
     };
+
+    const modes = [
+        { id: 'general', label: 'General', icon: Sparkles, desc: 'Everyday assistance' },
+        { id: 'architect', label: 'Architect (Code)', icon: Terminal, desc: 'Software & Code generation' },
+        { id: 'tutor', label: 'Tutor', icon: BookOpen, desc: 'Explanations & learning' },
+        { id: 'executive', label: 'Executive', icon: Briefcase, desc: 'Concise summaries' },
+    ] as const;
 
     // ... UI Layout Refactor ...
     // Since this is a FULL refactor of the render, I'll provide the complete UI structure
@@ -314,7 +329,27 @@ export function FullScreenChat() {
                             {activeConversationId ? (conversations.find(c => c.id === activeConversationId)?.title || "Research Session") : "New Research"}
                         </h2>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
+                        {/* Model Selector */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 hidden md:flex border-dashed">
+                                    <Cpu className="w-3.5 h-3.5" />
+                                    {selectedModel === 'gpt-4o' ? 'GPT-4o' : 'Claude 3.5'}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setSelectedModel('gpt-4o')} className="gap-2">
+                                    <span>GPT-4o</span>
+                                    {selectedModel === 'gpt-4o' && <span className="opacity-50 text-xs">(Active)</span>}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setSelectedModel('claude-3-5-sonnet-20240620')} className="gap-2">
+                                    <span>Claude 3.5 Sonnet</span>
+                                    {selectedModel === 'claude-3-5-sonnet-20240620' && <span className="opacity-50 text-xs">(Active)</span>}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
                         {/* Mode Selector - Compact */}
                         <div className="flex bg-muted/50 rounded-lg p-0.5">
                             {modes.map((mode) => (
