@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+
+import { useRouter, usePathname } from "next/navigation";
 import { Home, Users, Bell, User, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
@@ -22,28 +22,38 @@ export function BottomNav() {
         { href: "/profile", label: "Profile", icon: User },
     ];
 
+    const router = useRouter();
+
+    // Fix for SSR/Client mismatch if needed, but standard Link should work. 
+    // Converting to buttons to force click events might solve z-index/overlay issues.
+
+    const handleNavigation = (href: string) => {
+        router.push(href);
+    };
+
     return (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-gray-200 dark:border-white/10 px-4 py-2 flex justify-around items-center z-[100] pb-safe shadow-xl pointer-events-auto">
             {links.map((link) => {
                 const isActive = pathname === link.href;
                 return (
-                    <Link
+                    <button
                         key={link.href}
-                        href={link.href}
+                        onClick={() => handleNavigation(link.href)}
                         className={cn(
-                            "flex flex-col items-center justify-center p-2 rounded-lg transition-colors",
+                            "flex flex-col items-center justify-center p-2 rounded-lg transition-colors cursor-pointer active:scale-95 touch-manipulation",
                             isActive
                                 ? "text-primary"
                                 : "text-muted-foreground hover:text-foreground"
                         )}
+                        type="button"
                     >
                         <link.icon className={cn("w-6 h-6", isActive && "fill-current")} />
                         <span className="text-[10px] font-medium mt-1">{link.label}</span>
-                    </Link>
+                    </button>
                 );
             })}
 
-            {/* Menu Trigger for the rest of the items */}
+
             {/* Menu Trigger for the rest of the items */}
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
