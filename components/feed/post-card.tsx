@@ -351,24 +351,30 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
         onResult: (result) => setCommentText(prev => prev ? prev + " " + result : result)
     });
     const handleReaction = async (type: ReactionType) => {
-        // Optimistic update
-        const isRemoving = currentMyReaction === type;
-        const newMyReaction = isRemoving ? undefined : type;
-
-        setCurrentMyReaction(newMyReaction);
-        setAllReactions(prev => {
-            const next = { ...prev };
-            if (isRemoving) {
-                delete next[currentUserId || ""];
-            } else {
-                next[currentUserId || ""] = type;
-            }
-            return next;
-        });
+        if (!currentUserId) {
+            toast.error(t("auth.login_required") || "Please log in to react");
+            return;
+        }
 
         try {
+            // Optimistic update
+            const isRemoving = currentMyReaction === type;
+            const newMyReaction = isRemoving ? undefined : type;
+
+            setCurrentMyReaction(newMyReaction);
+            setAllReactions(prev => {
+                const next = { ...prev };
+                if (isRemoving) {
+                    delete next[currentUserId];
+                } else {
+                    next[currentUserId] = type;
+                }
+                return next;
+            });
+
             await toggleReaction(post.id, type, post.type || 'personal', post.context?.id);
-        } catch {
+        } catch (error) {
+            console.error("Reaction failed:", error);
             // Revert on failure
             setCurrentMyReaction(currentMyReaction);
             setAllReactions(reactionsMap);
