@@ -3,7 +3,7 @@
 import { useAuth } from "@/components/auth-provider";
 import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
-import Link from "next/link";
+// import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -63,14 +63,14 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
     return (
         <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card overflow-y-auto custom-scrollbar", className)}>
             <div className="px-6 py-4 flex-shrink-0">
-                <Link
+                <a
                     href="/"
                     className="flex items-center gap-2 cursor-pointer"
                     onClick={onLinkClick}
                 >
                     <Heart className="w-8 h-8 fill-primary text-primary" />
                     <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
-                </Link>
+                </a>
             </div>
 
             <nav className="flex-1 px-4 mt-2 space-y-6">
@@ -84,7 +84,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                         {group.items.map((link) => {
                             const isActive = pathname === link.href;
                             return (
-                                <Link
+                                <a
                                     key={link.href}
                                     href={link.href}
                                     onClick={onLinkClick}
@@ -102,7 +102,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                             <NotificationBadge />
                                         </div>
                                     )}
-                                </Link>
+                                </a>
                             )
                         })}
                     </div>
