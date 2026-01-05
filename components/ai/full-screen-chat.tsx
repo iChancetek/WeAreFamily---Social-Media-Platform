@@ -38,6 +38,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 type Message = {
     role: 'user' | 'assistant';
@@ -157,10 +159,7 @@ export function FullScreenChat() {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    import { storage } from "@/lib/firebase";
-    import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-    // ... (inside component)
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!user) {
