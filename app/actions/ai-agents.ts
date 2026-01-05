@@ -2,6 +2,7 @@
 
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { adminDb } from "@/lib/firebase-admin";
 
 // ------------------------------------------------------------------
@@ -135,12 +136,43 @@ export async function chatWithAgent(
             }
             return "I couldn't process the response.";
 
+        } else if (model.startsWith("gemini")) {
+            // --- GOOGLE GEMINI ---
+            const googleKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+            if (!googleKey) throw new Error("Google API Key is missing");
+            const genAI = new GoogleGenerativeAI(googleKey);
+            const geminiModel = genAI.getGenerativeModel({ model: model });
+
+            const chat = geminiModel.startChat({
+                history: [
+                    { role: "user", parts: [{ text: systemPrompt + (contextText ? `\n\nContext:\n${contextText}` : "") }] },
+                ],
+            });
+
+            const result = await chat.sendMessage(userMessage);
+            const response = result.response;
+            return response.text();
+
         } else {
-            // --- OPENAI ---
+            // --- OPENAI (GPT-4o, o1, etc) ---
             const apiKey = process.env.OPENAI_API_KEY;
             if (!apiKey) throw new Error("OpenAI API Key is missing");
             const openai = new OpenAI({ apiKey });
 
+            // Handle o1 models (Reasoning models don't support system role in the same way or temperature)
+            if (model.startsWith("o1")) {
+                const response = await openai.chat.completions.create({
+                    model: model,
+                    messages: [
+                        // o1-preview often requires user role for all, or carefully constructed prompts. 
+                        // Putting system instructions in the first user message is safer for beta.
+                        { role: "user", content: `[SYSTEM INSTRUCTION: ${systemPrompt}]\n\n${userMessage}` }
+                    ],
+                });
+                return response.choices[0].message.content;
+            }
+
+            // Standard GPT-4o / Mini
             const messages: any[] = [
                 { role: "system", content: systemPrompt },
             ];
@@ -155,7 +187,7 @@ export async function chatWithAgent(
             messages.push({ role: "user", content: userMessage });
 
             const response = await openai.chat.completions.create({
-                model: "gpt-4o",
+                model: model, // gpt-4o or gpt-4o-mini
                 messages: messages,
                 temperature: mode === "executive" ? 0.3 : 0.7,
             });
