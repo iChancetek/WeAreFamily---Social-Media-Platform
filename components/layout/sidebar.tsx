@@ -63,7 +63,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     }
 
     return (
-        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-[2147483647] overflow-y-auto custom-scrollbar pointer-events-auto", className)}>
+        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-[2147483647] overflow-y-auto custom-scrollbar pointer-events-auto hover:border-4 hover:border-red-500 transition-all", className)}>
             <div className="px-6 py-4 flex-shrink-0">
                 <Link
                     href="/"
