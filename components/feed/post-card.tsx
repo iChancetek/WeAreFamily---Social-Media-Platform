@@ -64,11 +64,6 @@ import {
     Youtube
 } from "lucide-react";
 import { getReactionIcon, getReactionLabel, getReactionColor, ReactionSelector } from "./reaction-selector";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import { useAuth } from "@/components/auth-provider";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { useEffect } from "react";
