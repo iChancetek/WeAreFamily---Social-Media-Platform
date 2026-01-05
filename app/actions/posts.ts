@@ -428,127 +428,116 @@ export async function getPosts() {
                     getGroup(post.groupId) // Cached/Batched potentially?
                 ]);
 
-                id: authorDoc.id,
-                    displayName: (() => {
-                        const d = authorDoc.data();
-                        const raw = d?.displayName;
-                        const profile = d?.profileData?.firstName ? `${d.profileData.firstName} ${d.profileData.lastName || ''}`.trim() : null;
-                        const email = d?.email?.split('@')[0];
-                        return (raw && raw !== "Family Member") ? raw : (profile || email || "Family Member");
-                    })(),
-                        imageUrl: authorDoc.data()?.imageUrl,
-                            email: authorDoc.data()?.email,
+                author = authorDoc.exists ? {
+                    id: authorDoc.id,
+                    displayName: resolveDisplayName(authorDoc.data()),
+                    imageUrl: authorDoc.data()?.imageUrl,
+                    email: authorDoc.data()?.email,
                 } : null;
 
-            if (group) {
-                context = { type: 'group', name: group.name, id: group.id };
-            }
-
-        } else if (post.type === 'branding') {
-            // Author is the Branding usually
-            if (post.postedAsBranding) {
-                const branding = await getBranding(post.brandingId);
-                if (branding) {
-                    author = {
-                        id: branding.id,
-                        displayName: branding.name,
-                        imageUrl: branding.imageUrl,
-                        email: null
-                    };
+                if (group) {
+                    context = { type: 'group', name: group.name, id: group.id };
                 }
+
+            } else if (post.type === 'branding') {
+                // Author is the Branding usually
+                if (post.postedAsBranding) {
+                    const branding = await getBranding(post.brandingId);
+                    if (branding) {
+                        author = {
+                            id: branding.id,
+                            displayName: branding.name,
+                            imageUrl: branding.imageUrl,
+                            email: null
+                        };
+                    }
+                } else {
+                    // User posted on branding? Not implemented yet but handled
+                    const authorDoc = await adminDb.collection("users").doc(post.authorId).get();
+                    author = authorDoc.exists ? { ...authorDoc.data(), id: authorDoc.id } : null;
+                }
+
             } else {
-                // User posted on branding? Not implemented yet but handled
+                // Personal post
                 const authorDoc = await adminDb.collection("users").doc(post.authorId).get();
-                author = authorDoc.exists ? { ...authorDoc.data(), id: authorDoc.id } : null;
+                author = authorDoc.exists ? {
+                    id: authorDoc.id,
+                    displayName: resolveDisplayName(authorDoc.data()),
+                    imageUrl: authorDoc.data()?.imageUrl,
+                    email: authorDoc.data()?.email,
+                } : null;
             }
 
-        } else {
-            // Personal post
-            const authorDoc = await adminDb.collection("users").doc(post.authorId).get();
-            author = authorDoc.exists ? {
-                id: authorDoc.id,
-                displayName: (() => {
-                    const d = authorDoc.data();
-                    const raw = d?.displayName;
-                    const profile = d?.profileData?.firstName ? `${d.profileData.firstName} ${d.profileData.lastName || ''}`.trim() : null;
-                    const email = d?.email?.split('@')[0];
-                    return (raw && raw !== "Family Member") ? raw : (profile || email || "Family Member");
-                })(),
-                imageUrl: authorDoc.data()?.imageUrl,
-                email: authorDoc.data()?.email,
-            } : null;
-        }
+            // Fetch comments (legacy logic, maybe optimize later)
+            // Note: Currently comments are subcollections of the post.
+            // Since we have the post Ref (conceptually), we can get comments.
+            // But we lost the Ref in the map.
+            // We need to know WHICH collection the post is in to fetch comments.
+            // Personal: posts/{id}/comments
+            // Group: groups/{groupId}/posts/{id}/comments
+            // Page: pages/{brandingId}/posts/{id}/comments
 
-        // Fetch comments (legacy logic, maybe optimize later)
-        // Note: Currently comments are subcollections of the post.
-        // Since we have the post Ref (conceptually), we can get comments.
-        // But we lost the Ref in the map.
-        // We need to know WHICH collection the post is in to fetch comments.
-        // Personal: posts/{id}/comments
-        // Group: groups/{groupId}/posts/{id}/comments
-        // Page: pages/{brandingId}/posts/{id}/comments
+            let commentsRef;
+            if (post.type === 'group') {
+                commentsRef = adminDb.collection("groups").doc(post.groupId).collection("posts").doc(post.id).collection("comments");
+            } else if (post.type === 'branding') {
+                commentsRef = adminDb.collection("pages").doc(post.brandingId).collection("posts").doc(post.id).collection("comments");
+            } else {
+                commentsRef = adminDb.collection("posts").doc(post.id).collection("comments");
+            }
 
-        let commentsRef;
-        if (post.type === 'group') {
-            commentsRef = adminDb.collection("groups").doc(post.groupId).collection("posts").doc(post.id).collection("comments");
-        } else if (post.type === 'branding') {
-            commentsRef = adminDb.collection("pages").doc(post.brandingId).collection("posts").doc(post.id).collection("comments");
-        } else {
-            commentsRef = adminDb.collection("posts").doc(post.id).collection("comments");
-        }
+            let commentsSnapshot;
+            try {
+                commentsSnapshot = await commentsRef.orderBy("createdAt", "asc").get();
+            } catch (err) {
+                console.warn("Index missing for comments, falling back to unordered query");
+                commentsSnapshot = await commentsRef.get();
+            }
 
-        let commentsSnapshot;
-        try {
-            commentsSnapshot = await commentsRef.orderBy("createdAt", "asc").get();
-        } catch (err) {
-            console.warn("Index missing for comments, falling back to unordered query");
-            commentsSnapshot = await commentsRef.get();
-        }
+            const comments = await Promise.all(commentsSnapshot.docs.map(async (cDoc: any) => {
+                const cData = cDoc.data();
+                const cAuthorDoc = await adminDb.collection("users").doc(cData.authorId).get();
+                return {
+                    id: cDoc.id,
+                    ...cData,
+                    author: cAuthorDoc.exists ? {
+                        id: cAuthorDoc.id,
+                        displayName: cAuthorDoc.data()?.displayName,
+                        imageUrl: cAuthorDoc.data()?.imageUrl
+                    } : null,
+                    createdAt: cData.createdAt?.toDate() || new Date()
+                };
+            }));
 
-        const comments = await Promise.all(commentsSnapshot.docs.map(async (cDoc: any) => {
-            const cData = cDoc.data();
-            const cAuthorDoc = await adminDb.collection("users").doc(cData.authorId).get();
-            return {
-                id: cDoc.id,
-                ...cData,
-                author: cAuthorDoc.exists ? {
-                    id: cAuthorDoc.id,
-                    displayName: cAuthorDoc.data()?.displayName,
-                    imageUrl: cAuthorDoc.data()?.imageUrl
-                } : null,
-                createdAt: cData.createdAt?.toDate() || new Date()
-            };
+            // Sort comments in memory if fallback was used or just to be safe
+            comments.sort((a: any, b: any) => {
+                const dateA = new Date(a.createdAt);
+                const dateB = new Date(b.createdAt);
+                return dateA.getTime() - dateB.getTime();
+            });
+
+            const reactions = post.reactions || {};
+            const likesCount = Object.keys(reactions).length;
+            const likes = Object.keys(reactions); // For backward compatibility with PostCard's current check
+
+            return sanitizeData({
+                id: post.id,
+                content: post.content,
+                mediaUrls: post.mediaUrls,
+                createdAt: post.createdAt,
+                likes,
+                reactions,
+                author,
+                comments,
+                context // Pass this to UI
+            });
         }));
 
-        // Sort comments in memory if fallback was used or just to be safe
-        comments.sort((a: any, b: any) => {
-            const dateA = new Date(a.createdAt);
-            const dateB = new Date(b.createdAt);
-            return dateA.getTime() - dateB.getTime();
-        });
-
-        const reactions = post.reactions || {};
-        const likesCount = Object.keys(reactions).length;
-        const likes = Object.keys(reactions); // For backward compatibility with PostCard's current check
-
-        return sanitizeData({
-            id: post.id,
-            content: post.content,
-            mediaUrls: post.mediaUrls,
-            createdAt: post.createdAt,
-            likes,
-            reactions,
-            author,
-            comments,
-            context // Pass this to UI
-        });
-    }));
-
-    return finalPosts;
-} catch (error) {
-    console.error("Error fetching posts:", error);
-    return [];
-}
+        return finalPosts;
+    } catch (error) {
+        console.error("Error fetching posts:", error);
+        return [];
+    }
 }
 
 function chunkArray(array: any[], size: number) {
