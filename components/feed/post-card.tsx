@@ -110,7 +110,7 @@ function CommentItem({
     post,
     currentUserId
 }: {
-    comment: Comment & { mediaUrl?: string, youtubeUrl?: string }, // Extend type locally if needed or rely on parent
+    comment: Comment & { mediaUrl?: string, youtubeUrl?: string },
     post: Post,
     currentUserId?: string
 }) {
@@ -119,7 +119,13 @@ function CommentItem({
     const [isDeleted, setIsDeleted] = useState(false);
     const [isArchived, setIsArchived] = useState(comment.isArchived || false);
 
-    if (isDeleted || isArchived) return null; // Hide if deleted or archived
+    const [likes, setLikes] = useState<string[]>(comment.likes || []);
+
+    useEffect(() => {
+        setLikes(comment.likes || []);
+    }, [comment.likes]);
+
+    if (isDeleted || isArchived) return null;
 
     const isAuthor = currentUserId && comment.author && currentUserId === comment.author.id;
     const authorName = comment.author?.displayName || comment.author?.email || "Unknown";
@@ -155,13 +161,6 @@ function CommentItem({
         }
     };
 
-    const [likes, setLikes] = useState<string[]>(comment.likes || []);
-
-    // Add effect to sync with prop updates
-    useEffect(() => {
-        setLikes(comment.likes || []);
-    }, [comment.likes]);
-
     const isLiked = currentUserId ? likes.includes(currentUserId) : false;
 
     const handleLike = async () => {
@@ -175,22 +174,15 @@ function CommentItem({
             ? likes.filter(id => id !== currentUserId)
             : [...likes, currentUserId];
 
-        setLikes(newLikes); // Optimistic
+        setLikes(newLikes);
 
         try {
             await toggleCommentLike(post.id, comment.id, post.type || 'personal', post.context?.id);
         } catch (error) {
-            setLikes(originalLikes); // Revert
+            setLikes(originalLikes);
             toast.error("Failed to like comment");
         }
     };
-
-    const { speak, stop, isSpeaking, isSupported } = useTextToSpeech();
-
-    // Stop speaking when unmounting
-    useEffect(() => {
-        return () => stop();
-    }, [stop]);
 
     return (
         <div className="flex gap-3 text-sm mb-3 group/comment">
@@ -220,22 +212,6 @@ function CommentItem({
                                 <Heart className={cn("w-3.5 h-3.5", isLiked && "fill-current")} />
                             </Button>
                             {likes.length > 0 && <span className="text-xs text-muted-foreground">{likes.length}</span>}
-
-                            {/* TTS Button */}
-                            {isSupported && (
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className={cn(
-                                        "h-5 w-5 rounded-full hover:bg-primary/10 hover:text-primary transition-opacity",
-                                        isSpeaking ? "opacity-100 text-primary animate-pulse" : "opacity-0 group-hover/comment:opacity-100 text-muted-foreground"
-                                    )}
-                                    onClick={() => isSpeaking ? stop() : speak(comment.content)}
-                                    title={isSpeaking ? "Stop Reading" : "Read Comment"}
-                                >
-                                    {isSpeaking ? <StopCircle className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-                                </Button>
-                            )}
                         </div>
                     </div>
 
@@ -272,15 +248,6 @@ function CommentItem({
                                     className="w-full h-auto max-h-[300px] object-contain"
                                     onError={() => toast.error("Playback failed")}
                                 />
-                                <a
-                                    href={comment.mediaUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                    title="Open file directly"
-                                >
-                                    <ExternalLink className="w-4 h-4" />
-                                </a>
                             </div>
                         ) : (
                             <img src={comment.mediaUrl} alt="Comment attachment" className="w-full h-auto" />
@@ -296,15 +263,6 @@ function CommentItem({
                             controls
                             onError={() => toast.error("Could not play video", { description: "Try opening it directly." })}
                         />
-                        <a
-                            href={comment.youtubeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Open on YouTube"
-                        >
-                            <ExternalLink className="w-4 h-4" />
-                        </a>
                     </div>
                 )}
 
