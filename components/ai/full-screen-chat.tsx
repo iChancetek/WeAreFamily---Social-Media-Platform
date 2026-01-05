@@ -172,8 +172,8 @@ export function FullScreenChat() {
                 const file = e.target.files[0];
                 const isImage = file.type.startsWith('image/');
 
-                // Use static storage instance
-                const storageRef = ref(storage, `ai-uploads/${user.uid}/${Date.now()}-${file.name}`);
+                // Use 'users/' path to match existing storage rules
+                const storageRef = ref(storage, `users/${user.uid}/ai-uploads/${Date.now()}-${file.name}`);
 
                 console.log("Starting upload...", storageRef.fullPath);
                 const snapshot = await uploadBytes(storageRef, file);
