@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bot, Send, User, Sparkles, Terminal, BookOpen, Briefcase, Volume2, StopCircle, ArrowLeft, Trash2, LayoutList, PanelLeft, X, Cpu } from "lucide-react";
+import { User } from "lucide-react";
 import { chatWithAgent } from "@/app/actions/ai-agents";
 import { AgentMode, AIModel } from "@/types/ai";
 import {
