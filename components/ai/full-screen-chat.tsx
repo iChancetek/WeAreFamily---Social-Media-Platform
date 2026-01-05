@@ -302,7 +302,7 @@ export function FullScreenChat() {
     // ------------------------------------------------------------------
 
     return (
-        <div className="flex h-[calc(100vh-8rem)] md:h-[calc(100vh-8rem)] mb-16 md:mb-0 overflow-hidden rounded-xl border border-border shadow-sm bg-background">
+        <div className="flex h-[calc(100dvh-8rem)] md:h-[calc(100vh-8rem)] mb-20 md:mb-0 overflow-hidden rounded-xl border border-border shadow-sm bg-background">
 
             {/* Sidebar (Existing Code) */}
             {isSidebarOpen && (
@@ -415,7 +415,7 @@ export function FullScreenChat() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => setSelectedModel('gpt-4o')} className="gap-2">
+                                <DropdownMenuItem key="gpt-4o" onClick={() => setSelectedModel('gpt-4o')} className="gap-2">
                                     <span>GPT-4o</span>
                                     {selectedModel === 'gpt-4o' && <span className="opacity-50 text-xs">(Active)</span>}
                                 </DropdownMenuItem>
