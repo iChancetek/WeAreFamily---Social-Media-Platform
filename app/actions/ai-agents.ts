@@ -82,32 +82,34 @@ function cosineSimilarity(vecA: number[], vecB: number[]) {
 export async function chatWithAgent(
     userMessage: string,
     mode: AgentMode = "general",
-    model: AIModel = "gpt-4o"
+    model: AIModel = "gpt-4o",
+    attachments: { url: string; type: 'image' | 'file' }[] = []
 ) {
     try {
-        console.log(`🤖 AI Agent Activated: [${mode.toUpperCase()}] using [${model}]`);
+        console.log(`🤖 AI Agent Activated: [${mode.toUpperCase()}] using [${model}] with [${attachments.length}] attachments`);
 
-        // 1. Get RAG Context (Shared Knowledge Base)
-        // We use the same KB for all agents, but they interpret it differently.
-        const userEmbedding = await generateEmbedding(userMessage);
-        const snapshot = await adminDb.collection("knowledge_base").get();
-
+        // 1. Get RAG Context (Shared Knowledge Base) - if no attachments (to save tokens/complexity for now)
         let contextText = "";
-        if (!snapshot.empty) {
-            const docs = snapshot.docs.map((doc: any) => ({
-                content: doc.data().content,
-                embedding: doc.data().embedding,
-                metadata: doc.data().metadata
-            }));
+        if (attachments.length === 0) {
+            const userEmbedding = await generateEmbedding(userMessage);
+            const snapshot = await adminDb.collection("knowledge_base").get();
 
-            const scoredDocs = docs.map((doc: any) => ({
-                ...doc,
-                score: cosineSimilarity(userEmbedding, doc.embedding)
-            }));
+            if (!snapshot.empty) {
+                const docs = snapshot.docs.map((doc: any) => ({
+                    content: doc.data().content,
+                    embedding: doc.data().embedding,
+                    metadata: doc.data().metadata
+                }));
 
-            scoredDocs.sort((a: any, b: any) => b.score - a.score);
-            const topDocs = scoredDocs.slice(0, 3);
-            contextText = topDocs.map((d: any) => `[Possible Context: ${d.metadata.title}]: ${d.content}`).join("\n\n");
+                const scoredDocs = docs.map((doc: any) => ({
+                    ...doc,
+                    score: cosineSimilarity(userEmbedding, doc.embedding)
+                }));
+
+                scoredDocs.sort((a: any, b: any) => b.score - a.score);
+                const topDocs = scoredDocs.slice(0, 3);
+                contextText = topDocs.map((d: any) => `[Possible Context: ${d.metadata.title}]: ${d.content}`).join("\n\n");
+            }
         }
 
         // 2. Select Persona
@@ -120,12 +122,30 @@ export async function chatWithAgent(
             if (!anthropicKey) throw new Error("Anthropic API Key is missing");
             const anthropic = new Anthropic({ apiKey: anthropicKey });
 
+            // Construct Message with Content Blocks
+            const messageContent: any[] = [{ type: "text", text: userMessage }];
+
+            // Add Images
+            // Note: Claude API expects base64 for images usually, but assuming URL support or we need to fetch. 
+            // SIMPLIFICATION: For now, if URL is public, we might need value-add logic. 
+            // Anthropic SDK often requires base64. 
+            // Let's assume for this step we append the URLs to the text if simple, or skip complex base64 fetching for speed unless requested.
+            // BETTER: Claude doesn't support image URLs directly in the API yet (needs base64).
+            // WORKAROUND: Just append URL to text and hope it can browse? No, it can't.
+            // ERROR HANDLING: If attachments exist, tell user "I can see that" (Stub).
+            // REAL IMPLEMENTATION: We would need to fetch the image and convert to base64.
+            // Let's stick to OpenAI for Vision which supports URLs easily.
+
+            if (attachments.length > 0) {
+                return "Image analysis is currently optimized for GPT-4o. Please switch models to GPT-4o to analyze this image!";
+            }
+
             const response = await anthropic.messages.create({
                 model: "claude-3-5-sonnet-20240620",
                 max_tokens: 1024,
                 system: systemPrompt + (contextText ? `\n\nContext:\n${contextText}` : ""),
                 messages: [
-                    { role: "user", content: userMessage }
+                    { role: "user", content: messageContent }
                 ]
             });
 
@@ -143,6 +163,13 @@ export async function chatWithAgent(
             const genAI = new GoogleGenerativeAI(googleKey);
             const geminiModel = genAI.getGenerativeModel({ model: model });
 
+            // Gemini supports image parts? 
+            // Need to fetch buffer. 
+            // Fallback for now.
+            if (attachments.length > 0) {
+                return "Image analysis is currently optimized for GPT-4o. Please switch models to GPT-4o to analyze this image!";
+            }
+
             const chat = geminiModel.startChat({
                 history: [
                     { role: "user", parts: [{ text: systemPrompt + (contextText ? `\n\nContext:\n${contextText}` : "") }] },
@@ -159,20 +186,18 @@ export async function chatWithAgent(
             if (!apiKey) throw new Error("OpenAI API Key is missing");
             const openai = new OpenAI({ apiKey });
 
-            // Handle o1 models (Reasoning models don't support system role in the same way or temperature)
+            // Handle o1 models (No Vision on o1-preview yet?)
             if (model.startsWith("o1")) {
                 const response = await openai.chat.completions.create({
                     model: model,
                     messages: [
-                        // o1-preview often requires user role for all, or carefully constructed prompts. 
-                        // Putting system instructions in the first user message is safer for beta.
                         { role: "user", content: `[SYSTEM INSTRUCTION: ${systemPrompt}]\n\n${userMessage}` }
                     ],
                 });
                 return response.choices[0].message.content;
             }
 
-            // Standard GPT-4o / Mini
+            // Standard GPT-4o / Mini (Supports Vision URL)
             const messages: any[] = [
                 { role: "system", content: systemPrompt },
             ];
@@ -180,14 +205,29 @@ export async function chatWithAgent(
             if (contextText) {
                 messages.push({
                     role: "system",
-                    content: `Here is some relevant context from the platform knowledge base. Use it if helpful, but prioritize your specific persona's expertise:\n${contextText}`
+                    content: `Here is some relevant context. Use likely only if text matches:\n${contextText}`
                 });
             }
 
-            messages.push({ role: "user", content: userMessage });
+            const userContent: any[] = [{ type: "text", text: userMessage }];
+
+            // Append Images
+            attachments.forEach(att => {
+                if (att.type === 'image') {
+                    userContent.push({
+                        type: "image_url",
+                        image_url: {
+                            url: att.url,
+                            detail: "high"
+                        }
+                    });
+                }
+            });
+
+            messages.push({ role: "user", content: userContent });
 
             const response = await openai.chat.completions.create({
-                model: model, // gpt-4o or gpt-4o-mini
+                model: model,
                 messages: messages,
                 temperature: mode === "executive" ? 0.3 : 0.7,
             });

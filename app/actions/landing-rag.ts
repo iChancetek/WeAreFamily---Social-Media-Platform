@@ -49,8 +49,44 @@ const STATIC_CONTENT = [
         text: "For Business Owners: Securely separate your private family life from your public business persona. Manage family events as efficiently as your business meetings."
     },
     {
-        category: "Target Audience: Researchers/Tech",
-        text: "For Researchers & Tech Enthusiasts: Built on modern tech stacks (Next.js, Firebase, AI), Famio verifies that privacy-first social networking is possible. Experience the future of ethical social media."
+        category: "Platform Structure",
+        text: "Famio is organized into: 1) Family (Your private network), 2) Groups (Micro-communities for cousins, planning, etc), 3) Social (Feed, Stories, Messages), 4) Workspace (Events, Calendar)."
+    },
+    {
+        category: "Roles",
+        text: "Chancellor: The 'Chancellor' is the primary administrator and guardian of the family space. They manage high-level settings and family admissions."
+    },
+    {
+        category: "Feature: AI Research Assistant",
+        text: "AI Research Assistant: A powerful multi-model companion (GPT-4o, Claude, Gemini). It helps users research topics, summarize documents, write drafts, and organize thoughts. It supports Voice Input and File Uploads."
+    },
+    {
+        category: "Feature: Live",
+        text: "Famio Live: Start real-time video broadcasts to share announcements, talent shows, or just hang out. Viewers can chat and react in real-time."
+    },
+    {
+        category: "Feature: Messages",
+        text: "Messages: Private, encrypted 1-on-1 and Group chats. Supports rich text and media sharing."
+    },
+    {
+        category: "Feature: Events",
+        text: "Events: comprehensive planning tool. Track RSVPs, send reminders, and sync with the family calendar."
+    },
+    {
+        category: "Feature: Gallery",
+        text: "Gallery: A centralized visual vault for all shared photos and videos. Organized by date and uploader."
+    },
+    {
+        category: "Feature: Branding",
+        text: "Branding: Unique pages for businesses or public figures within the family ecosystem."
+    },
+    {
+        category: "Feature: Admin & Settings",
+        text: "Admin & Settings: Granular control over privacy, notifications, and account security. Admins have oversight tools to ensure safety."
+    },
+    {
+        category: "Target Audience: Researchers",
+        text: "For Researchers & Tech Enthusiasts: Built on modern tech stacks (Next.js, Firebase, AI), Famio verifies that privacy-first social networking is possible."
     }
 ];
 
