@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { CreatePost } from "@/components/feed/create-post";
 import { FeedList } from "@/components/feed/feed-list";
 import { LandingPage } from "@/components/landing-page";
+import { LandingChatWidget } from "@/components/landing/landing-chat-widget";
 
 import { BirthdayModal } from "@/components/birthdays/birthday-modal";
 
@@ -17,7 +18,12 @@ export default async function Home() {
   const user = await getUserProfile();
 
   if (!user) {
-    return <LandingPage />;
+    return (
+      <>
+        <LandingPage />
+        <LandingChatWidget />
+      </>
+    );
   }
 
   const dbUser = await getUserProfile();
