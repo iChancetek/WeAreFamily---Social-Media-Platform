@@ -149,7 +149,7 @@ export function ChatInterface({ isCompact = false, externalContext, onContextHan
                             AI Research Assistant
                         </h1>
                         <p className="text-muted-foreground mt-1">
-                            Powered by Famio Universal Intelligence (GPT-4o)
+                            Powered by OpenAI and Claude Models
                         </p>
                     </div>
                 </div>

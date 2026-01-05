@@ -29,7 +29,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                 { href: "/profile", label: profile?.displayName || "Profile", icon: User },
                 { href: "/family", label: "Family", icon: Users },
                 { href: "/groups", label: "Groups", icon: Tent },
-                { href: "/chat", label: "AI Research", icon: Bot },
+                { href: "/chat", label: "AI Research Assistant", icon: Bot },
             ]
         },
         {
