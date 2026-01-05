@@ -1,17 +1,16 @@
 
-'use client';
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bot, Send, User, Sparkles, Terminal, BookOpen, Briefcase } from "lucide-react";
+import { Bot, Send, User, Sparkles, Terminal, BookOpen, Briefcase, Volume2, Square, StopCircle } from "lucide-react";
 import { chatWithAgent, AgentMode } from "@/app/actions/ai-agents";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
 import { Loader2 } from "lucide-react";
+import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 
 type Message = {
     role: 'user' | 'assistant';
@@ -27,6 +26,12 @@ export function FullScreenChat() {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedMode, setSelectedMode] = useState<AgentMode>('general');
     const scrollRef = useRef<HTMLDivElement>(null);
+    const { speak, stop, isSpeaking, isSupported } = useTextToSpeech();
+
+    useEffect(() => {
+        // Stop speech when unmounting or changing modes
+        return () => stop();
+    }, [stop]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -38,6 +43,9 @@ export function FullScreenChat() {
         e?.preventDefault();
         if (!inputValue.trim() || isLoading) return;
 
+        // Stop any current speech
+        stop();
+
         const userMsg = inputValue.trim();
         setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
         setInputValue("");
@@ -45,7 +53,10 @@ export function FullScreenChat() {
 
         try {
             const response = await chatWithAgent(userMsg, selectedMode);
-            setMessages(prev => [...prev, { role: 'assistant', content: response || "I couldn't generate a response." }]);
+            const aiMsg = response || "I couldn't generate a response.";
+            setMessages(prev => [...prev, { role: 'assistant', content: aiMsg }]);
+
+            // Auto-speak response if desired? Maybe let user click.
         } catch (error) {
             console.error(error);
             setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error. Please try again." }]);
@@ -101,35 +112,63 @@ export function FullScreenChat() {
                             <div
                                 key={idx}
                                 className={cn(
-                                    "flex gap-4 w-full",
+                                    "flex gap-4 w-full group relative",
                                     msg.role === 'user' ? "justify-end" : "justify-start"
                                 )}
                             >
                                 {msg.role === 'assistant' && (
-                                    <Avatar className="w-8 h-8 border border-primary/20 bg-primary/10">
+                                    <Avatar className="w-8 h-8 border border-primary/20 bg-primary/10 flex-shrink-0">
                                         <AvatarFallback><Bot className="w-5 h-5 text-primary" /></AvatarFallback>
                                     </Avatar>
                                 )}
 
                                 <div className={cn(
-                                    "rounded-2xl p-4 max-w-[80%] text-sm leading-relaxed shadow-sm",
+                                    "rounded-2xl p-4 max-w-[80%] text-sm leading-relaxed shadow-sm relative",
                                     msg.role === 'user'
                                         ? "bg-primary text-primary-foreground rounded-tr-none"
-                                        : "bg-white dark:bg-zinc-900 border border-border rounded-tl-none"
+                                        : "bg-white dark:bg-zinc-900 border border-border rounded-tl-none pr-10" // Extra padding for speaker icon
                                 )}>
                                     <div className="whitespace-pre-wrap font-sans">
                                         {msg.content}
                                     </div>
+
+                                    {/* TTS Button for Assistant */}
+                                    {msg.role === 'assistant' && isSupported && (
+                                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 rounded-full hover:bg-primary/10 hover:text-primary"
+                                                onClick={() => speak(msg.content)}
+                                            >
+                                                <Volume2 className="h-3.5 w-3.5" />
+                                                <span className="sr-only">Read Aloud</span>
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {msg.role === 'user' && (
-                                    <Avatar className="w-8 h-8 border border-border">
+                                    <Avatar className="w-8 h-8 border border-border flex-shrink-0">
                                         <AvatarImage src={user?.photoURL || undefined} />
                                         <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
                                     </Avatar>
                                 )}
                             </div>
                         ))}
+                        {isSpeaking && (
+                            <div className="sticky bottom-4 left-1/2 -translate-x-1/2 z-10">
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    className="rounded-full shadow-lg gap-2 animate-in fade-in slide-in-from-bottom-2"
+                                    onClick={stop}
+                                >
+                                    <StopCircle className="h-4 w-4 animate-pulse" />
+                                    Stop Speaking
+                                </Button>
+                            </div>
+                        )}
                         <div ref={scrollRef} />
                     </div>
                 </ScrollArea>

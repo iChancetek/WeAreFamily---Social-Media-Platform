@@ -68,6 +68,9 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAuth } from "@/components/auth-provider";
+import { useTextToSpeech } from "@/hooks/use-text-to-speech";
+import { useEffect } from "react";
+import { StopCircle } from "lucide-react";
 
 import dynamic from "next/dynamic";
 
@@ -154,6 +157,13 @@ function CommentItem({
         }
     };
 
+    const { speak, stop, isSpeaking, isSupported } = useTextToSpeech();
+
+    // Stop speaking when unmounting
+    useEffect(() => {
+        return () => stop();
+    }, [stop]);
+
     return (
         <div className="flex gap-3 text-sm mb-3 group/comment">
             <Avatar className="w-8 h-8 rounded-full border border-gray-100 dark:border-white/10 shrink-0">
@@ -163,8 +173,26 @@ function CommentItem({
             <div className="flex-1 space-y-2">
                 <div className="bg-muted/50 rounded-2xl px-4 py-2">
                     <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-sm">{authorName}</span>
-                        <span className="text-xs text-gray-500">{formatDistanceToNow(comment.createdAt, { addSuffix: true })}</span>
+                        <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm">{authorName}</span>
+                            <span className="text-xs text-gray-500">{formatDistanceToNow(comment.createdAt, { addSuffix: true })}</span>
+                        </div>
+
+                        {/* TTS Button */}
+                        {isSupported && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className={cn(
+                                    "h-5 w-5 rounded-full hover:bg-primary/10 hover:text-primary transition-opacity",
+                                    isSpeaking ? "opacity-100 text-primary animate-pulse" : "opacity-0 group-hover/comment:opacity-100 text-muted-foreground"
+                                )}
+                                onClick={() => isSpeaking ? stop() : speak(comment.content)}
+                                title={isSpeaking ? "Stop Reading" : "Read Comment"}
+                            >
+                                {isSpeaking ? <StopCircle className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                            </Button>
+                        )}
                     </div>
 
                     {isEditing ? (
