@@ -627,8 +627,8 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
             </CardContent>
             <CardFooter className="flex-col !items-stretch px-2 py-1 mx-2 mt-1 border-t border-border">
                 <div className="flex justify-between items-center text-muted-foreground w-full mb-1">
-                    <Popover>
-                        <PopoverTrigger asChild>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
                                 className={cn(
@@ -639,11 +639,25 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                 <span className="text-xl">{getReactionIcon(currentMyReaction)}</span>
                                 <span className="text-[15px]">{getReactionLabel(currentMyReaction)}</span>
                             </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 border-none bg-transparent shadow-none" side="top" align="start" sideOffset={10}>
-                            <ReactionSelector onSelect={handleReaction} currentReaction={currentMyReaction} />
-                        </PopoverContent>
-                    </Popover>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-auto p-2">
+                            <div className="flex items-center gap-1">
+                                {['brilliant', 'excellent', 'hugs', 'thinking_of_you', 'vibe', 'positive_energy'].map((type) => (
+                                    <DropdownMenuItem
+                                        key={type}
+                                        onClick={() => handleReaction(type as ReactionType)}
+                                        className={cn(
+                                            "flex flex-col items-center justify-center p-2 rounded-full cursor-pointer transition-transform hover:scale-125 focus:bg-muted",
+                                            currentMyReaction === type && "bg-muted"
+                                        )}
+                                        title={getReactionLabel(type as ReactionType)}
+                                    >
+                                        <span className="text-2xl">{getReactionIcon(type as ReactionType)}</span>
+                                    </DropdownMenuItem>
+                                ))}
+                            </div>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <Button
                         variant="ghost"
                         onClick={() => setShowComments(!showComments)}
