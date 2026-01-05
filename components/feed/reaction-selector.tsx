@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ReactionType } from "@/app/actions/posts";
 
-const REACTIONS: { type: ReactionType; label: string; emoji: string; color: string }[] = [
+export const REACTIONS: { type: ReactionType; label: string; emoji: string; color: string }[] = [
     { type: 'brilliant', label: 'Brilliant', emoji: '💡', color: 'text-amber-500' },
     { type: 'excellent', label: 'Excellent', emoji: '🌟', color: 'text-yellow-500' },
     { type: 'hugs', label: 'Hugs', emoji: '🤗', color: 'text-orange-500' },

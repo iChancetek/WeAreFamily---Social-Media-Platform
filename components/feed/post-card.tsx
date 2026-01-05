@@ -644,272 +644,258 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-auto p-2">
                             <div className="flex items-center gap-1">
-                                {['brilliant', 'excellent', 'hugs', 'thinking_of_you', 'vibe', 'positive_energy'].map((type) => (
-                                    <DropdownMenuItem
-                                        key={type}
-                                        onClick={() => handleReaction(type as ReactionType)}
-                                        className={cn(
-                                            "flex flex-col items-center justify-center p-2 rounded-full cursor-pointer transition-transform hover:scale-125 focus:bg-muted",
-                                            currentMyReaction === type && "bg-muted"
-                                        )}
-                                        title={getReactionLabel(type as ReactionType)}
-                                    >
-                                        <span className="text-2xl">{getReactionIcon(type as ReactionType)}</span>
-                                    </DropdownMenuItem>
-                                ))}
-                            </div>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button
-                        variant="ghost"
-                        onClick={() => setShowComments(!showComments)}
-                        className="flex-1 gap-2 hover:bg-muted h-9 font-medium text-muted-foreground rounded-md"
-                    >
-                        <MessageCircle className="w-5 h-5" />
-                        <span className="text-[15px]">{t("btn.comment")}</span>
-                    </Button>
-
-                    {/* TTS Quick Button */}
-                    <Button
-                        variant="ghost"
-                        className="flex-none px-3 gap-2 hover:bg-muted h-9 font-medium text-muted-foreground rounded-md"
-                        onClick={() => {
-                            const utterance = new SpeechSynthesisUtterance(post.content || "This post has no text content.");
-                            window.speechSynthesis.cancel();
-                            window.speechSynthesis.speak(utterance);
-                        }}
-                        title="Read Post"
-                    >
-                        <Volume2 className="w-5 h-5" />
-                    </Button>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                                import {getReactionIcon, getReactionLabel, getReactionColor, ReactionSelector, REACTIONS} from "./reaction-selector";
+                            </DropdownMenu>
                             <Button
                                 variant="ghost"
-                                className="flex-1 gap-2 hover:bg-indigo-50 hover:text-indigo-600 h-9 font-medium text-muted-foreground rounded-md transition-colors"
+                                onClick={() => setShowComments(!showComments)}
+                                className="flex-1 gap-2 hover:bg-muted h-9 font-medium text-muted-foreground rounded-md"
                             >
-                                <Sparkles className="w-4 h-4" />
-                                <span className="text-[15px]">Ask AI</span>
+                                <MessageCircle className="w-5 h-5" />
+                                <span className="text-[15px]">{t("btn.comment")}</span>
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="center">
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    window.dispatchEvent(new CustomEvent('famio:open-ai', {
-                                        detail: { context: post.content, mode: 'executive', type: 'post_context' }
-                                    }));
-                                }}
-                                className="gap-2"
-                            >
-                                <Briefcase className="w-4 h-4" />
-                                Summarize (Executive)
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    window.dispatchEvent(new CustomEvent('famio:open-ai', {
-                                        detail: { context: post.content, mode: 'tutor', type: 'post_context' }
-                                    }));
-                                }}
-                                className="gap-2"
-                            >
-                                <GraduationCap className="w-4 h-4" />
-                                Explain (Tutor)
-                            </DropdownMenuItem>
 
-                            {/* TTS Option */}
-                            <DropdownMenuItem
+                            {/* TTS Quick Button */}
+                            <Button
+                                variant="ghost"
+                                className="flex-none px-3 gap-2 hover:bg-muted h-9 font-medium text-muted-foreground rounded-md"
                                 onClick={() => {
-                                    // Use the window.speechSynthesis directly or trigger a custom event if the hook is not available in this scope
-                                    // But we CAN use the hook here since we are inside the component
                                     const utterance = new SpeechSynthesisUtterance(post.content || "This post has no text content.");
-                                    window.speechSynthesis.cancel(); // Stop any previous
+                                    window.speechSynthesis.cancel();
                                     window.speechSynthesis.speak(utterance);
                                 }}
-                                className="gap-2 cursor-pointer"
+                                title="Read Post"
                             >
-                                <Volume2 className="w-4 h-4" />
-                                Read Aloud
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    window.dispatchEvent(new CustomEvent('famio:open-ai', {
-                                        detail: { context: post.content, mode: 'biographer', type: 'post_context' }
-                                    }));
-                                }}
-                                className="gap-2"
-                            >
-                                <BookHeart className="w-4 h-4" />
-                                Save as Memory (Biographer)
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                className="flex-1 gap-2 hover:bg-muted h-9 font-medium text-muted-foreground rounded-md transition-colors"
-                            >
-                                <Share2 className="w-5 h-5" />
-                                <span className="text-[15px]">{t("btn.share")}</span>
+                                <Volume2 className="w-5 h-5" />
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={handleRepost} className="gap-2 cursor-pointer">
-                                <Repeat2 className="w-4 h-4" />
-                                Repost to Feed
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleCopyLink} className="gap-2 cursor-pointer">
-                                <Share2 className="w-4 h-4" />
-                                Copy Link
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleExternalShare} className="gap-2 cursor-pointer">
-                                <Share2 className="w-4 h-4" />
-                                Share Externally
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    const event = new CustomEvent('famio:open-ai', {
-                                        detail: {
-                                            context: post.content,
-                                            type: 'post_context'
-                                        }
-                                    });
-                                    window.dispatchEvent(event);
-                                    toast.success("Opened in AI Assistant! 🧠", { duration: 1500 });
-                                }}
-                                className="gap-2 cursor-pointer text-blue-600 focus:text-blue-600"
-                            >
-                                <Sparkles className="w-4 h-4" />
-                                Ask AI about this...
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
 
-                {showComments && (
-                    <div className="w-full pt-2 border-t border-border animate-in slide-in-from-top-2">
-                        {post.comments?.map(comment => (
-                            <CommentItem
-                                key={comment.id}
-                                comment={comment}
-                                post={post}
-                                currentUserId={currentUserId}
-                            />
-                        ))}
-
-                        <div className="flex gap-2 mt-2 items-center">
-                            <Avatar className="w-8 h-8">
-                                {/* Current user avatar would be nice here but we'll use placeholder or pass it down */}
-                                <AvatarFallback className="bg-muted text-muted-foreground">Me</AvatarFallback>
-                            </Avatar>
-                            <div className="relative flex-1">
-                                <Input
-                                    placeholder="Write a comment..."
-                                    className="bg-muted border-none rounded-full h-9 pl-4 pr-20 text-card-foreground placeholder:text-muted-foreground"
-                                    value={commentText}
-                                    onChange={(e) => setCommentText(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleComment()}
-                                />
-                                <div className="absolute right-1 top-1 flex gap-1">
-                                    <input
-                                        type="file"
-                                        hidden
-                                        ref={commentFileInputRef}
-                                        accept="image/*,video/*,.mov"
-                                        onChange={handleCommentFileSelect}
-                                    />
-
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
                                     <Button
-                                        size="icon"
                                         variant="ghost"
-                                        className={cn("h-7 w-7 rounded-full", showYoutubeInput ? "text-red-500 bg-red-50" : "text-muted-foreground hover:bg-muted")}
-                                        onClick={() => setShowYoutubeInput(!showYoutubeInput)}
-                                        title="Add YouTube Video"
-                                    >
-                                        <Youtube className="w-4 h-4" />
-                                    </Button>
-
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className={cn("h-7 w-7 rounded-full", commentMediaUrl ? "text-blue-500 bg-blue-50" : "text-muted-foreground hover:bg-muted")}
-                                        onClick={() => commentFileInputRef.current?.click()}
-                                        disabled={isUploadingComment}
-                                        title="Upload Photo or Video"
-                                    >
-                                        {isUploadingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
-                                    </Button>
-
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-7 w-7 text-purple-500 hover:bg-purple-100 rounded-full"
-                                        onClick={async () => {
-                                            try {
-                                                const suggestion = await generateCommentSuggestion(post.content);
-                                                setCommentText(suggestion);
-                                                toast.success("Magic comment ready! ✨");
-                                            } catch {
-                                                toast.error("Magic failed. Try again!");
-                                            }
-                                        }}
-                                        title="Magic AI Reply"
+                                        className="flex-1 gap-2 hover:bg-indigo-50 hover:text-indigo-600 h-9 font-medium text-muted-foreground rounded-md transition-colors"
                                     >
                                         <Sparkles className="w-4 h-4" />
+                                        <span className="text-[15px]">Ask AI</span>
                                     </Button>
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className={cn("h-7 w-7 rounded-full", isCommentListening ? "text-red-500 bg-red-50 animate-pulse" : "text-muted-foreground hover:bg-muted")}
-                                        onClick={isCommentListening ? stopCommentListening : startCommentListening}
-                                        title="Voice Input"
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="center">
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            window.dispatchEvent(new CustomEvent('famio:open-ai', {
+                                                detail: { context: post.content, mode: 'executive', type: 'post_context' }
+                                            }));
+                                        }}
+                                        className="gap-2"
                                     >
-                                        {isCommentListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                                    </Button>
-
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-7 w-7 text-primary hover:bg-primary/10 rounded-full"
-                                        onClick={handleComment}
-                                        disabled={(!commentText.trim() && !commentMediaUrl && !commentYoutubeUrl) || isUploadingComment}
+                                        <Briefcase className="w-4 h-4" />
+                                        Summarize (Executive)
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            window.dispatchEvent(new CustomEvent('famio:open-ai', {
+                                                detail: { context: post.content, mode: 'tutor', type: 'post_context' }
+                                            }));
+                                        }}
+                                        className="gap-2"
                                     >
-                                        <Send className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                            </div>
+                                        <GraduationCap className="w-4 h-4" />
+                                        Explain (Tutor)
+                                    </DropdownMenuItem>
 
-                            {/* Attachments Preview Area */}
-                            {(showYoutubeInput || commentMediaUrl || commentYoutubeUrl) && (
-                                <div className="mt-2 pl-10 space-y-2">
-                                    {showYoutubeInput && (
+                                    {/* TTS Option */}
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            // Use the window.speechSynthesis directly or trigger a custom event if the hook is not available in this scope
+                                            // But we CAN use the hook here since we are inside the component
+                                            const utterance = new SpeechSynthesisUtterance(post.content || "This post has no text content.");
+                                            window.speechSynthesis.cancel(); // Stop any previous
+                                            window.speechSynthesis.speak(utterance);
+                                        }}
+                                        className="gap-2 cursor-pointer"
+                                    >
+                                        <Volume2 className="w-4 h-4" />
+                                        Read Aloud
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            window.dispatchEvent(new CustomEvent('famio:open-ai', {
+                                                detail: { context: post.content, mode: 'biographer', type: 'post_context' }
+                                            }));
+                                        }}
+                                        className="gap-2"
+                                    >
+                                        <BookHeart className="w-4 h-4" />
+                                        Save as Memory (Biographer)
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="flex-1 gap-2 hover:bg-muted h-9 font-medium text-muted-foreground rounded-md transition-colors"
+                                    >
+                                        <Share2 className="w-5 h-5" />
+                                        <span className="text-[15px]">{t("btn.share")}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={handleRepost} className="gap-2 cursor-pointer">
+                                        <Repeat2 className="w-4 h-4" />
+                                        Repost to Feed
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleCopyLink} className="gap-2 cursor-pointer">
+                                        <Share2 className="w-4 h-4" />
+                                        Copy Link
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleExternalShare} className="gap-2 cursor-pointer">
+                                        <Share2 className="w-4 h-4" />
+                                        Share Externally
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            const event = new CustomEvent('famio:open-ai', {
+                                                detail: {
+                                                    context: post.content,
+                                                    type: 'post_context'
+                                                }
+                                            });
+                                            window.dispatchEvent(event);
+                                            toast.success("Opened in AI Assistant! 🧠", { duration: 1500 });
+                                        }}
+                                        className="gap-2 cursor-pointer text-blue-600 focus:text-blue-600"
+                                    >
+                                        <Sparkles className="w-4 h-4" />
+                                        Ask AI about this...
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                        {showComments && (
+                            <div className="w-full pt-2 border-t border-border animate-in slide-in-from-top-2">
+                                {post.comments?.map(comment => (
+                                    <CommentItem
+                                        key={comment.id}
+                                        comment={comment}
+                                        post={post}
+                                        currentUserId={currentUserId}
+                                    />
+                                ))}
+
+                                <div className="flex gap-2 mt-2 items-center">
+                                    <Avatar className="w-8 h-8">
+                                        {/* Current user avatar would be nice here but we'll use placeholder or pass it down */}
+                                        <AvatarFallback className="bg-muted text-muted-foreground">Me</AvatarFallback>
+                                    </Avatar>
+                                    <div className="relative flex-1">
                                         <Input
-                                            placeholder="Paste YouTube Link..."
-                                            className="h-8 text-xs"
-                                            value={commentYoutubeUrl}
-                                            onChange={(e) => setCommentYoutubeUrl(e.target.value)}
+                                            placeholder="Write a comment..."
+                                            className="bg-muted border-none rounded-full h-9 pl-4 pr-20 text-card-foreground placeholder:text-muted-foreground"
+                                            value={commentText}
+                                            onChange={(e) => setCommentText(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleComment()}
                                         />
-                                    )}
-                                    {commentMediaUrl && (
-                                        <div className="relative inline-block">
-                                            <img src={commentMediaUrl} className="h-20 w-auto rounded-md border" alt="Preview" />
-                                            <button
-                                                onClick={() => setCommentMediaUrl(null)}
-                                                className="absolute -top-1 -right-1 bg-black text-white rounded-full p-0.5"
+                                        <div className="absolute right-1 top-1 flex gap-1">
+                                            <input
+                                                type="file"
+                                                hidden
+                                                ref={commentFileInputRef}
+                                                accept="image/*,video/*,.mov"
+                                                onChange={handleCommentFileSelect}
+                                            />
+
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className={cn("h-7 w-7 rounded-full", showYoutubeInput ? "text-red-500 bg-red-50" : "text-muted-foreground hover:bg-muted")}
+                                                onClick={() => setShowYoutubeInput(!showYoutubeInput)}
+                                                title="Add YouTube Video"
                                             >
-                                                <X className="w-3 h-3" />
-                                            </button>
+                                                <Youtube className="w-4 h-4" />
+                                            </Button>
+
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className={cn("h-7 w-7 rounded-full", commentMediaUrl ? "text-blue-500 bg-blue-50" : "text-muted-foreground hover:bg-muted")}
+                                                onClick={() => commentFileInputRef.current?.click()}
+                                                disabled={isUploadingComment}
+                                                title="Upload Photo or Video"
+                                            >
+                                                {isUploadingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+                                            </Button>
+
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-7 w-7 text-purple-500 hover:bg-purple-100 rounded-full"
+                                                onClick={async () => {
+                                                    try {
+                                                        const suggestion = await generateCommentSuggestion(post.content);
+                                                        setCommentText(suggestion);
+                                                        toast.success("Magic comment ready! ✨");
+                                                    } catch {
+                                                        toast.error("Magic failed. Try again!");
+                                                    }
+                                                }}
+                                                title="Magic AI Reply"
+                                            >
+                                                <Sparkles className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className={cn("h-7 w-7 rounded-full", isCommentListening ? "text-red-500 bg-red-50 animate-pulse" : "text-muted-foreground hover:bg-muted")}
+                                                onClick={isCommentListening ? stopCommentListening : startCommentListening}
+                                                title="Voice Input"
+                                            >
+                                                {isCommentListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                                            </Button>
+
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-7 w-7 text-primary hover:bg-primary/10 rounded-full"
+                                                onClick={handleComment}
+                                                disabled={(!commentText.trim() && !commentMediaUrl && !commentYoutubeUrl) || isUploadingComment}
+                                            >
+                                                <Send className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {/* Attachments Preview Area */}
+                                    {(showYoutubeInput || commentMediaUrl || commentYoutubeUrl) && (
+                                        <div className="mt-2 pl-10 space-y-2">
+                                            {showYoutubeInput && (
+                                                <Input
+                                                    placeholder="Paste YouTube Link..."
+                                                    className="h-8 text-xs"
+                                                    value={commentYoutubeUrl}
+                                                    onChange={(e) => setCommentYoutubeUrl(e.target.value)}
+                                                />
+                                            )}
+                                            {commentMediaUrl && (
+                                                <div className="relative inline-block">
+                                                    <img src={commentMediaUrl} className="h-20 w-auto rounded-md border" alt="Preview" />
+                                                    <button
+                                                        onClick={() => setCommentMediaUrl(null)}
+                                                        className="absolute -top-1 -right-1 bg-black text-white rounded-full p-0.5"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </CardFooter>
-        </Card >
-    );
+                            </div>
+                        )}
+                    </CardFooter>
+                </Card >
+                );
 }
