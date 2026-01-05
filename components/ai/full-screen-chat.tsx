@@ -410,7 +410,7 @@ export function FullScreenChat() {
                                     <Cpu className="w-3.5 h-3.5" />
                                     <span className="md:hidden">Model</span>
                                     <span className="hidden md:inline">
-                                        {selectedModel === 'gpt-4o' ? 'GPT-4o' : (selectedModel === 'claude-3-5-sonnet-20240620' ? 'Claude 3.5' : selectedModel)}
+                                        {selectedModel === 'gpt-4o' ? 'GPT-4o' : (selectedModel === 'claude-3-5-sonnet-20240620' ? 'Claude 3.5' : (selectedModel || 'Select Model'))}
                                     </span>
                                 </Button>
                             </DropdownMenuTrigger>

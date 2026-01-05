@@ -1,10 +1,8 @@
-'use client'
-
 import { useAuth } from "@/components/auth-provider";
 import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 // import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -18,6 +16,7 @@ interface MobileSidebarProps {
 
 export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebarProps) {
     const pathname = usePathname();
+    const router = useRouter();
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
 
@@ -60,17 +59,21 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
         });
     }
 
+    const handleNavigation = (href: string) => {
+        router.push(href);
+        onLinkClick?.();
+    };
+
     return (
         <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card overflow-y-auto custom-scrollbar", className)}>
             <div className="px-6 py-4 flex-shrink-0">
-                <a
-                    href="/"
+                <div
                     className="flex items-center gap-2 cursor-pointer"
-                    onClick={onLinkClick}
+                    onClick={() => handleNavigation('/')}
                 >
                     <Heart className="w-8 h-8 fill-primary text-primary" />
                     <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
-                </a>
+                </div>
             </div>
 
             <nav className="flex-1 px-4 mt-2 space-y-6">
@@ -84,10 +87,9 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                         {group.items.map((link) => {
                             const isActive = pathname === link.href;
                             return (
-                                <a
+                                <button
                                     key={link.href}
-                                    href={link.href}
-                                    onClick={onLinkClick}
+                                    onClick={() => handleNavigation(link.href)}
                                     className={cn(
                                         "flex items-center gap-3 w-full text-base font-medium transition-colors h-11 rounded-xl px-3 relative my-1",
                                         isActive
@@ -102,7 +104,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                             <NotificationBadge />
                                         </div>
                                     )}
-                                </a>
+                                </button>
                             )
                         })}
                     </div>
