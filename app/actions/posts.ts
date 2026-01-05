@@ -1,4 +1,5 @@
-'use server'
+'use server';
+// critical-build-trigger: force redeploy of fixed syntax
 
 import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
