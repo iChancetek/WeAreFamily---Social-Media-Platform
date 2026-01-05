@@ -676,3 +676,53 @@ export async function getUserPosts(userId: string) {
         return [];
     }
 }
+
+export async function toggleCommentLike(
+    postId: string,
+    commentId: string,
+    postType: PostType = 'personal',
+    contextId?: string
+) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    let postRef;
+    if (postType === 'group' && contextId) {
+        postRef = adminDb.collection("groups").doc(contextId).collection("posts").doc(postId);
+    } else if (postType === 'branding' && contextId) {
+        postRef = adminDb.collection("pages").doc(contextId).collection("posts").doc(postId);
+    } else {
+        postRef = adminDb.collection("posts").doc(postId);
+    }
+
+    const commentRef = postRef.collection("comments").doc(commentId);
+    const commentSnap = await commentRef.get();
+
+    if (!commentSnap.exists) throw new Error("Comment not found");
+
+    const commentData = commentSnap.data();
+    const likes = (commentData?.likes || []) as string[];
+    const hasLiked = likes.includes(user.id);
+
+    if (hasLiked) {
+        await commentRef.update({
+            likes: FieldValue.arrayRemove(user.id)
+        });
+    } else {
+        await commentRef.update({
+            likes: FieldValue.arrayUnion(user.id)
+        });
+
+        // Notify comment author if it's not the liker
+        if (commentData && commentData.authorId && commentData.authorId !== user.id) {
+            const { createNotification } = await import("./notifications");
+            await createNotification(commentData.authorId, 'like' as any, postId, {
+                postPreview: commentData.content?.substring(0, 50) || "Comment"
+            }).catch(console.error);
+        }
+    }
+
+    revalidatePath('/');
+    if (postType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
+    if (postType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
+}
