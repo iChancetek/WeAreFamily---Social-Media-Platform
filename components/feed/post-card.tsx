@@ -647,6 +647,20 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         <span className="text-[15px]">{t("btn.comment")}</span>
                     </Button>
 
+                    {/* TTS Quick Button */}
+                    <Button
+                        variant="ghost"
+                        className="flex-none px-3 gap-2 hover:bg-muted h-9 font-medium text-muted-foreground rounded-md"
+                        onClick={() => {
+                            const utterance = new SpeechSynthesisUtterance(post.content || "This post has no text content.");
+                            window.speechSynthesis.cancel();
+                            window.speechSynthesis.speak(utterance);
+                        }}
+                        title="Read Post"
+                    >
+                        <Volume2 className="w-5 h-5" />
+                    </Button>
+
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
@@ -680,13 +694,17 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                                 <GraduationCap className="w-4 h-4" />
                                 Explain (Tutor)
                             </DropdownMenuItem>
+
+                            {/* TTS Option */}
                             <DropdownMenuItem
                                 onClick={() => {
-                                    const textToRead = post.content || "This post has no text content.";
-                                    const utterance = new SpeechSynthesisUtterance(textToRead);
+                                    // Use the window.speechSynthesis directly or trigger a custom event if the hook is not available in this scope
+                                    // But we CAN use the hook here since we are inside the component
+                                    const utterance = new SpeechSynthesisUtterance(post.content || "This post has no text content.");
+                                    window.speechSynthesis.cancel(); // Stop any previous
                                     window.speechSynthesis.speak(utterance);
                                 }}
-                                className="gap-2"
+                                className="gap-2 cursor-pointer"
                             >
                                 <Volume2 className="w-4 h-4" />
                                 Read Aloud
