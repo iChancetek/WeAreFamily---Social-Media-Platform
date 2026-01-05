@@ -14,7 +14,7 @@ export function WelcomeHeader({ displayName }: WelcomeHeaderProps) {
 
     return (
         <h1 className="text-3xl font-bold mb-6 text-primary animate-in fade-in slide-in-from-left-4 duration-700">
-            {welcomeText}, {name}!
+            {welcomeText} {name}!
         </h1>
     )
 }
