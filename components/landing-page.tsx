@@ -133,7 +133,7 @@ export function LandingPage() {
                         <FeatureCard
                             icon={<Sparkles className="w-10 h-10 text-blue-600" />}
                             title="AI Research Assistant"
-                            description="ChatGPT-style interface for everyone—Executives, Engineers, Architects, Medical Professionals, Students, Parents, and Kids. Powered by GPT-4, Claude, and Gemini with voice input and file uploads."
+                            description="ChatGPT-style interface for everyone—Executives, Engineers, Architects, Medical Professionals, Students, Parents, and Kids. Powered by OpenAI, Claude, and Gemini with voice input and file uploads."
                         />
                         <FeatureCard
                             icon={<Globe className="w-10 h-10 text-blue-600" />}

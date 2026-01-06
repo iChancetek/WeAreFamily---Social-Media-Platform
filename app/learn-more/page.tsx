@@ -134,7 +134,7 @@ export default function LearnMorePage() {
                         <FeatureCard
                             icon={<Sparkles className="w-8 h-8 text-blue-600" />}
                             title="AI Research Assistant"
-                            description="Familiar ChatGPT-style interface designed for everyone—from Executives and Engineers to Medical Professionals, Students, Parents, and Kids. Multi-model AI supporting GPT-4, Claude, and Gemini with voice input and file upload capabilities."
+                            description="Familiar ChatGPT-style interface designed for everyone—from Executives and Engineers to Medical Professionals, Students, Parents, and Kids. Multi-model AI supporting OpenAI, Claude, and Gemini with voice input and file upload capabilities."
                         />
                         <FeatureCard
                             icon={<Globe className="w-8 h-8 text-blue-600" />}
