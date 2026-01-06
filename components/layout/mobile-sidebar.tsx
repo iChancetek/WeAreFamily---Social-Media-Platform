@@ -1,3 +1,5 @@
+"use client";
+
 import { useAuth } from "@/components/auth-provider";
 import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
@@ -19,13 +21,37 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
 
-    const handleNavigation = (href: string) => {
-        // Close the sheet first
-        onLinkClick?.();
-        // Small delay to ensure sheet closes before navigation
-        setTimeout(() => {
+    const handleNavigation = (href: string, label: string) => {
+        console.log('🔵 MOBILE NAV CLICK:', label, href);
+
+        try {
+            // Close the sheet
+            if (onLinkClick) {
+                console.log('🔵 Calling onLinkClick to close sheet');
+                onLinkClick();
+            }
+
+            // Navigate immediately using window.location as fallback
+            console.log('🔵 Attempting navigation to:', href);
+
+            // Try router.push first
             router.push(href);
-        }, 50);
+
+            // Fallback to window.location after a short delay if router doesn't work
+            setTimeout(() => {
+                if (pathname === href) {
+                    console.log('🔵 Already at destination, no navigation needed');
+                } else {
+                    console.log('🔵 Using window.location fallback');
+                    window.location.href = href;
+                }
+            }, 300);
+
+        } catch (error) {
+            console.error('🔴 Navigation error:', error);
+            // Ultimate fallback
+            window.location.href = href;
+        }
     };
 
     const groups = [
@@ -67,16 +93,14 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
         });
     }
 
-
-
     return (
-        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card overflow-y-auto custom-scrollbar", className)} style={{ pointerEvents: 'auto', touchAction: 'auto' }}>
+        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card overflow-y-auto", className)}>
             <div className="px-6 py-4 flex-shrink-0">
                 <button
-                    className="flex items-center gap-2 cursor-pointer touch-manipulation active:opacity-70 border-none bg-transparent p-0"
-                    style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
-                    onClick={() => handleNavigation("/")}
+                    className="flex items-center gap-2 cursor-pointer border-none bg-transparent p-0"
+                    onClick={() => handleNavigation("/", "Logo")}
                     type="button"
+                    onTouchStart={() => console.log('🔵 Logo touched')}
                 >
                     <Heart className="w-8 h-8 fill-primary text-primary" />
                     <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
@@ -84,7 +108,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
             </div>
 
             <nav className="flex-1 px-4 mt-2 space-y-6">
-                {groups.map((group, index) => (
+                {groups.map((group) => (
                     <div key={group.title} className="space-y-1">
                         {group.title !== "Main" && (
                             <h4 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -96,14 +120,18 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                             return (
                                 <button
                                     key={link.href}
-                                    onClick={() => handleNavigation(link.href)}
-                                    style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleNavigation(link.href, link.label);
+                                    }}
+                                    onTouchStart={() => console.log('🔵 Touch start:', link.label)}
                                     className={cn(
                                         "flex items-center gap-3 w-full text-base font-medium transition-all h-11 rounded-xl px-3 relative my-1",
-                                        "touch-manipulation active:scale-95 border-none bg-transparent text-left", // Mobile optimization
+                                        "border-none bg-transparent text-left cursor-pointer",
                                         isActive
                                             ? "bg-primary/10 text-primary font-bold"
-                                            : "text-foreground hover:bg-muted"
+                                            : "text-foreground hover:bg-muted active:bg-muted"
                                     )}
                                     type="button"
                                 >
@@ -115,7 +143,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                         </div>
                                     )}
                                 </button>
-                            )
+                            );
                         })}
                     </div>
                 ))}
