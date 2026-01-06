@@ -284,11 +284,38 @@ export async function toggleCommentLike(postId: string, commentId: string, conte
 
 export async function getUserPosts(userId: string) {
     try {
-        const postsRef = adminDb.collection("posts")
+        // First try by authorId
+        let postsRef = adminDb.collection("posts")
             .where("authorId", "==", userId)
             .orderBy("createdAt", "desc");
 
-        const snapshot = await postsRef.get();
+        let snapshot = await postsRef.get();
+
+        // If no posts found by authorId, try by email (for users whose ID changed)
+        if (snapshot.empty) {
+            const userDoc = await adminDb.collection("users").doc(userId).get();
+            const userEmail = userDoc.data()?.email;
+
+            if (userEmail) {
+                // Query all posts and filter by author email
+                const allPostsSnapshot = await adminDb.collection("posts")
+                    .orderBy("createdAt", "desc")
+                    .get();
+
+                const matchingDocs: any[] = [];
+                for (const doc of allPostsSnapshot.docs) {
+                    const authorId = doc.data().authorId;
+                    if (authorId) {
+                        const authorDoc = await adminDb.collection("users").doc(authorId).get();
+                        if (authorDoc.exists && authorDoc.data()?.email === userEmail) {
+                            matchingDocs.push(doc);
+                        }
+                    }
+                }
+
+                snapshot = { docs: matchingDocs, empty: matchingDocs.length === 0 } as any;
+            }
+        }
 
         const finalPosts = await Promise.all(snapshot.docs.map(async (doc) => {
             const post = doc.data();
@@ -340,3 +367,4 @@ export async function getUserPosts(userId: string) {
         return [];
     }
 }
+

@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-06 T01:08 EST (PROFILE DEBUG)
-- **Goal**: Add debug logging to profile page to diagnose why posts aren't showing.
-- **Verification**: Check profile page - should show User ID and post count in empty state.
+- **Timestamp**: 2026-01-06 T01:10 EST (PROFILE FIX)
+- **Goal**: Fix profile posts by adding email-based fallback query for users with changed IDs.
+- **Verification**: Profile should show your posts even if your user ID changed.
 
 
 ## Overview
