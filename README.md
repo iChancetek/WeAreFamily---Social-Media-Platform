@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-05 T19:50 EST (CRASH FIX)
-- **Goal**: Restore truncated `posts.ts` file which caused "Application Error".
-- **Verification**: Check for removal of comma in "Welcome Home" header.
+- **Timestamp**: 2026-01-05 T20:30 EST (EMERGENCY DEPLOY)
+- **Goal**: Force build system to pick up the `posts.ts` restoration.
+- **Verification**: User must see "Welcome Home" comma disappear.
 
 
 ## Overview
