@@ -63,7 +63,8 @@ export async function createPost(content: string, mediaUrls: string[] = []) {
         details: { content: content.substring(0, 20) }
     });
 
-    revalidatePath('/')
+    revalidatePath('/');
+    revalidatePath('/profile');
 }
 
 export async function getPosts(limit = 20) {
