@@ -2,7 +2,7 @@ import { getBranding, getBrandingPosts, getBrandingFollowStatus } from "@/app/ac
 import { MainLayout } from "@/components/layout/main-layout";
 import { notFound } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
-import { Briefcase, Users, Heart } from "lucide-react";
+import { Briefcase, Users, Heart, Camera } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { PostCard } from "@/components/feed/post-card";
@@ -32,7 +32,24 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
         <MainLayout>
             {/* Branding Header */}
             <div className="relative h-64 w-full rounded-b-xl overflow-hidden mb-8">
-                {branding.bannerUrl ? (
+                {branding.coverUrl ? (
+                    branding.coverUrl.includes('mp4') || branding.coverUrl.includes('webm') ? (
+                        <video
+                            src={branding.coverUrl}
+                            className="w-full h-full object-cover"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                        />
+                    ) : (
+                        <img
+                            src={branding.coverUrl}
+                            alt="Cover"
+                            className="w-full h-full object-cover"
+                        />
+                    )
+                ) : branding.bannerUrl ? (
                     <img
                         src={branding.bannerUrl}
                         alt="Banner"
@@ -66,6 +83,18 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
                         </div>
 
                         <div className="flex items-center gap-3">
+                            {/* Edit Cover Button for Admins */}
+                            {isAdmin && (
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    className="gap-2"
+                                    title="Change Cover Photo"
+                                >
+                                    <Camera className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Cover</span>
+                                </Button>
+                            )}
                             <FollowBrandingButton
                                 brandingId={branding.id}
                                 isFollowing={!!followStatus}
