@@ -107,7 +107,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                     )}
                                 </Link>
                             )
-                            )
+
                         })}
                     </div>
                 ))}
