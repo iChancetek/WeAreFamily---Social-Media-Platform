@@ -19,3 +19,5 @@ env:
     value: we-are-family-221
   - variable: GOOGLE_CLOUD_PROJECT
     value: we-are-family-221
+  - variable: GOOGLE_RUNTIME_VERSION
+    value: "22"
