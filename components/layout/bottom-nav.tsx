@@ -45,6 +45,7 @@ export function BottomNav() {
                                 ? "text-primary"
                                 : "text-muted-foreground hover:text-foreground"
                         )}
+                        style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
                         type="button"
                     >
                         <link.icon className={cn("w-6 h-6", isActive && "fill-current")} />
@@ -57,7 +58,11 @@ export function BottomNav() {
             {/* Menu Trigger for the rest of the items */}
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
-                    <button className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-foreground">
+                    <button
+                        className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-foreground touch-manipulation active:scale-95"
+                        style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+                        type="button"
+                    >
                         <Menu className="w-6 h-6" />
                         <span className="text-[10px] font-medium mt-1">Menu</span>
                     </button>
