@@ -404,7 +404,7 @@ export function FullScreenChat() {
                     </div>
                     <div className="flex items-center gap-2">
                         {/* Model Selector */}
-                        <DropdownMenu>
+                        <DropdownMenu modal={false}>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm" className="h-7 text-xs gap-1 flex border-dashed">
                                     <Cpu className="w-3.5 h-3.5" />

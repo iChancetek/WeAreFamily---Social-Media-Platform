@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-06 T00:48 EST (DROPDOWN CRASH FIX)
-- **Goal**: Fix Like, Ask AI, and Share button crashes by adding modal={false} to DropdownMenus.
-- **Verification**: Click Like/Ask AI/Share -> Should open dropdown without crashing app.
+- **Timestamp**: 2026-01-06 T00:58 EST (MODEL SELECTOR CRASH FIX)
+- **Goal**: Fix AI Model Selector crash by adding modal={false} to dropdown.
+- **Verification**: Click Model button (Cpu icon) -> Should show GPT/Claude/Gemini without crash.
 
 
 ## Overview
