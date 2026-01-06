@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-05 T20:55 EST (ROLLOUT FIX)
-- **Goal**: Fix static generation error in `/chat` to prevent deployment rollback.
-- **Verification**: User must see "Welcome Home" comma disappear.
+- **Timestamp**: 2026-01-05 T21:05 EST (VISUAL SIGNAL)
+- **Goal**: Change welcome text to "UPDATE RECEIVED" to confirm cache break.
+- **Verification**: User must see "UPDATE RECEIVED" text.
 
 
 ## Overview
