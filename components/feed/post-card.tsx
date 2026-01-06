@@ -629,7 +629,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
             </CardContent>
             <CardFooter className="flex-col !items-stretch px-2 py-1 mx-2 mt-1 border-t border-border">
                 <div className="flex justify-between items-center text-muted-foreground w-full mb-1">
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
@@ -683,7 +683,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         <Volume2 className="w-5 h-5" />
                     </Button>
 
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
@@ -746,7 +746,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
