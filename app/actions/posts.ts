@@ -10,17 +10,32 @@ import { ReactionType, NotificationType } from "@/types/posts";
 
 // Helper for Display Name Resolution
 function resolveDisplayName(data: any) {
-    if (!data) return "Unknown";
-    // 1. Explicit display name (if not default/generic)
-    if (data.displayName && data.displayName !== "Family Member") return data.displayName;
-    // 2. Profile data (First Last)
-    if (data.profileData?.firstName) {
-        return `${data.profileData.firstName} ${data.profileData.lastName || ''}`.trim();
+    if (!data) return "Unknown User";
+
+    // 1. Use displayName if it exists and is meaningful (not generic/default)
+    if (data.displayName && data.displayName !== "Family Member" && data.displayName.trim()) {
+        return data.displayName;
     }
-    // 3. Email prefix
-    if (data.email) return data.email.split('@')[0];
-    // 4. Fallback
-    return "Family Member";
+
+    // 2. Try to build from profile data
+    if (data.profileData?.firstName) {
+        const fullName = `${data.profileData.firstName} ${data.profileData.lastName || ''}`.trim();
+        if (fullName) return fullName;
+    }
+
+    // 3. Use email prefix (everything before @)
+    if (data.email) {
+        const emailPrefix = data.email.split('@')[0];
+        // Make it more readable (capitalize, replace dots/underscores with spaces)
+        return emailPrefix
+            .replace(/[._]/g, ' ')
+            .split(' ')
+            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+
+    // 4. Final fallback
+    return "Unknown User";
 }
 
 export async function createPost(content: string, mediaUrls: string[] = []) {

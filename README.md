@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-06 T00:58 EST (MODEL SELECTOR CRASH FIX)
-- **Goal**: Fix AI Model Selector crash by adding modal={false} to dropdown.
-- **Verification**: Click Model button (Cpu icon) -> Should show GPT/Claude/Gemini without crash.
+- **Timestamp**: 2026-01-06 T01:05 EST (DISPLAY NAME FIX)
+- **Goal**: Show real user names instead of "Family Member" by improving name resolution logic.
+- **Verification**: Posts/comments should show actual user names (from email, profile, or displayName).
 
 
 ## Overview
