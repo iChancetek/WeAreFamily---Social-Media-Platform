@@ -1,7 +1,5 @@
 "use client";
 
-
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, Users, Bell, User, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,25 +26,48 @@ export function BottomNav() {
         { href: "/profile", label: "Profile", icon: User },
     ];
 
-    const handleNavigation = (href: string) => {
-        router.push(href);
+    const handleNavigation = (href: string, label: string) => {
+        console.log('🔵 BOTTOM NAV CLICK:', label, href);
+
+        try {
+            console.log('🔵 Attempting navigation to:', href);
+            router.push(href);
+
+            // Fallback to window.location after a short delay if router doesn't work
+            setTimeout(() => {
+                if (pathname === href) {
+                    console.log('🔵 Already at destination, no navigation needed');
+                } else {
+                    console.log('🔵 Using window.location fallback');
+                    window.location.href = href;
+                }
+            }, 300);
+
+        } catch (error) {
+            console.error('🔴 Navigation error:', error);
+            window.location.href = href;
+        }
     };
 
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-gray-200 dark:border-white/10 px-4 py-2 flex justify-around items-center z-[100] pb-safe shadow-xl pointer-events-auto">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-gray-200 dark:border-white/10 px-4 py-2 flex justify-around items-center z-[100] pb-safe shadow-xl">
             {links.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                     <button
                         key={link.href}
-                        onClick={() => handleNavigation(link.href)}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleNavigation(link.href, link.label);
+                        }}
+                        onTouchStart={() => console.log('🔵 Bottom nav touch:', link.label)}
                         className={cn(
-                            "flex flex-col items-center justify-center p-2 rounded-lg transition-colors cursor-pointer active:scale-95 touch-manipulation border-none bg-transparent",
+                            "flex flex-col items-center justify-center p-2 rounded-lg transition-colors cursor-pointer border-none bg-transparent",
                             isActive
                                 ? "text-primary"
-                                : "text-muted-foreground hover:text-foreground"
+                                : "text-muted-foreground hover:text-foreground active:text-foreground"
                         )}
-                        style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
                         type="button"
                     >
                         <link.icon className={cn("w-6 h-6", isActive && "fill-current")} />
@@ -55,13 +76,11 @@ export function BottomNav() {
                 );
             })}
 
-
             {/* Menu Trigger for the rest of the items */}
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
                     <button
-                        className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-foreground touch-manipulation active:scale-95"
-                        style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+                        className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-foreground active:text-foreground cursor-pointer border-none bg-transparent"
                         type="button"
                     >
                         <Menu className="w-6 h-6" />
