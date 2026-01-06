@@ -1,59 +1,23 @@
-'use server'
+'use server';
 
-import { remove } from "firebase/database";
-import { getUserProfile } from "@/lib/auth";
-import { getFamilyMemberIds } from "./family";
 import { adminDb } from "@/lib/firebase-admin";
 
-export async function checkFeedDiagnostics() {
-    const user = await getUserProfile();
-    if (!user) return { status: "Unauthorized" };
-
+export async function debugEnv() {
     try {
-        const familyIds = await getFamilyMemberIds(user.id);
-
-        // Check raw counts
-        const allowedIds = [user.id, ...familyIds];
-        const chunks = [];
-        for (let i = 0; i < allowedIds.length; i += 10) {
-            chunks.push(allowedIds.slice(i, i + 10));
-        }
-
-        let totalPostsFound = 0;
-        let errors = [];
-
-        for (const chunk of chunks) {
-            try {
-                const snap = await adminDb.collection("posts")
-                    .where("authorId", "in", chunk)
-                    .orderBy("createdAt", "desc")
-                    .limit(5)
-                    .get();
-                totalPostsFound += snap.size;
-            } catch (e: any) {
-                errors.push(`Ordered query failed: ${e.message}`);
-                // Try fallback
-                try {
-                    const snap = await adminDb.collection("posts")
-                        .where("authorId", "in", chunk)
-                        .limit(5)
-                        .get();
-                    totalPostsFound += snap.size;
-                    errors.push(`Fallback query success: found ${snap.size}`);
-                } catch (e2: any) {
-                    errors.push(`Fallback failed: ${e2.message}`);
-                }
-            }
-        }
+        const postsRef = adminDb.collection("posts");
+        const countSnapshot = await postsRef.count().get();
 
         return {
-            user: { id: user.id, name: user.displayName },
-            familyCount: familyIds.length,
-            familyIds: familyIds,
-            totalPostsFound,
-            errors
+            projectId: adminDb.projectId || "unknown",
+            numPosts: countSnapshot.data().count,
+            envProjectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT || "N/A",
+            nodeEnv: process.env.NODE_ENV,
+            serviceAccount: process.env.FIREBASE_CLIENT_EMAIL ? "Custom" : "ADC"
         };
     } catch (e: any) {
-        return { error: e.message };
+        return {
+            error: e.message,
+            projectId: "ALLOCATION_FAILED"
+        }
     }
 }

@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-05 T23:05 EST (DATA RECOVERY)
-- **Goal**: Force App Hosting to connect to `we-are-family-221` to restore missing posts.
-- **Verification**: User should see their old posts reappear.
+- **Timestamp**: 2026-01-05 T23:25 EST (SYSTEM DIAGNOSTICS)
+- **Goal**: Reveal which Firestore Project the app is mistakenly connected to.
+- **Verification**: User reports "Connected DB" value from bottom of screen.
 
 
 ## Overview
