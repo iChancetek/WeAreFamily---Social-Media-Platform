@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-06 T01:15 EST (RAG KNOWLEDGE BASE EXPANSION)
-- **Goal**: Expand landing page AI knowledge base with comprehensive Famio feature information.
-- **Verification**: Go to landing page -> Open chat widget -> Type "/seed" to populate, then ask about Famio features.
+- **Timestamp**: 2026-01-06 T01:22 EST (LANDING PAGE ENHANCEMENTS)
+- **Goal**: Add AI Research Assistant & Live Streaming features, credit OpenAI/Claude/Perplexity on landing and learn-more pages.
+- **Verification**: Landing page should show 5 features and credit AI providers.
 
 
 ## Overview

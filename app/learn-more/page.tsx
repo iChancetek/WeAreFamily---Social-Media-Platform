@@ -37,7 +37,7 @@ export default function LearnMorePage() {
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-full mb-6">
                         <Sparkles className="w-5 h-5 text-blue-600" />
-                        <span className="text-sm font-semibold text-blue-700">Powered by AI</span>
+                        <span className="text-sm font-semibold text-blue-700">Powered by OpenAI, Claude & Perplexity</span>
                     </div>
                     <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6">
                         Everything Your Family Needs to Stay Connected
@@ -120,7 +120,7 @@ export default function LearnMorePage() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         <FeatureCard
                             icon={<MessageCircle className="w-8 h-8 text-blue-600" />}
                             title="Posts & Feed"
@@ -130,6 +130,16 @@ export default function LearnMorePage() {
                             icon={<Calendar className="w-8 h-8 text-blue-600" />}
                             title="Events & Planning"
                             description="Organize family gatherings, track RSVPs, and never miss important dates with our event management system."
+                        />
+                        <FeatureCard
+                            icon={<Sparkles className="w-8 h-8 text-blue-600" />}
+                            title="AI Research Assistant"
+                            description="Powerful multi-model AI companion supporting GPT-4, Claude, and Gemini. Research topics, brainstorm ideas, and get instant answers with voice input and file upload support."
+                        />
+                        <FeatureCard
+                            icon={<Globe className="w-8 h-8 text-blue-600" />}
+                            title="Live Streaming"
+                            description="Start real-time video broadcasts to share special moments, announcements, or virtual family gatherings. Viewers can chat and react in real-time."
                         />
                         <FeatureCard
                             icon={<ImageIcon className="w-8 h-8 text-blue-600" />}
@@ -147,7 +157,7 @@ export default function LearnMorePage() {
                             description="Private 1-on-1 and group chats with your family members. Keep conversations organized and secure."
                         />
                         <FeatureCard
-                            icon={<Globe className="w-8 h-8 text-blue-600" />}
+                            icon={<Award className="w-8 h-8 text-blue-600" />}
                             title="Gallery"
                             description="Organize and share family photos in beautiful galleries. Create albums for special occasions."
                         />

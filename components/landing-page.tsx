@@ -5,7 +5,7 @@ import { useState, useRef } from "react"
 import Link from "next/link"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Heart, Shield, Users, Globe, CheckCircle, Sparkles, Volume2, VolumeX } from "lucide-react"
+import { Heart, Shield, Users, Globe, CheckCircle, Sparkles, Volume2, VolumeX, MessageCircle } from "lucide-react"
 import Image from "next/image"
 
 export function LandingPage() {
@@ -84,7 +84,7 @@ export function LandingPage() {
 
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full mb-8">
                             <Sparkles className="w-5 h-5 text-blue-300" />
-                            <span className="text-sm font-semibold text-blue-50">Powered by AI</span>
+                            <span className="text-sm font-semibold text-blue-50">Powered by OpenAI, Claude & Perplexity</span>
                         </div>
 
                         <p className="max-w-3xl mx-auto text-xl md:text-2xl text-gray-200 mb-10 leading-relaxed font-normal shadow-black drop-shadow-sm">
@@ -119,21 +119,31 @@ export function LandingPage() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
                         <FeatureCard
                             icon={<Shield className="w-10 h-10 text-blue-600" />}
                             title="Private & Secure"
-                            description="Your family's data is protected with enterprise-grade security. No ads, no tracking, no third-party access."
+                            description="Enterprise-grade security with end-to-end encryption. No ads, no tracking, no third-party access."
                         />
                         <FeatureCard
                             icon={<Users className="w-10 h-10 text-blue-600" />}
                             title="Built for Families"
-                            description="Share photos, plan events, coordinate schedules, and create lasting memories together in one beautiful platform."
+                            description="Share photos, plan events, coordinate schedules, and create lasting memories together."
+                        />
+                        <FeatureCard
+                            icon={<Sparkles className="w-10 h-10 text-blue-600" />}
+                            title="AI Research Assistant"
+                            description="Multi-model AI companion for research, writing, and brainstorming. Powered by GPT-4, Claude, and more."
                         />
                         <FeatureCard
                             icon={<Globe className="w-10 h-10 text-blue-600" />}
+                            title="Live Streaming"
+                            description="Broadcast real-time video to share announcements, celebrations, or just hang out with family."
+                        />
+                        <FeatureCard
+                            icon={<MessageCircle className="w-10 h-10 text-blue-600" />}
                             title="Always Connected"
-                            description="Stay in touch with real-time messaging, event notifications, and instant photo sharing from anywhere."
+                            description="Real-time messaging, event notifications, and instant photo sharing from anywhere in the world."
                         />
                     </div>
                 </div>
