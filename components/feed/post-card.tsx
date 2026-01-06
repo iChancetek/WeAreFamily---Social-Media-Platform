@@ -354,35 +354,37 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
 
     const commentFileInputRef = useRef<HTMLInputElement>(null);
 
-    if (!currentUserId) {
-        toast.error(t("auth.login_required") || "Please log in to react");
-        return;
-    }
+    const handleReaction = async (type: ReactionType) => {
+        if (!currentUserId) {
+            toast.error(t("auth.login_required") || "Please log in to react");
+            return;
+        }
 
-    try {
-        // Optimistic update
-        const isRemoving = currentMyReaction === type;
-        const newMyReaction = isRemoving ? undefined : type;
+        try {
+            // Optimistic update
+            const isRemoving = currentMyReaction === type;
+            const newMyReaction = isRemoving ? undefined : type;
 
-        setCurrentMyReaction(newMyReaction);
-        setAllReactions(prev => {
-            const next = { ...prev };
-            if (isRemoving) {
-                delete next[currentUserId];
-            } else {
-                next[currentUserId] = type;
-            }
-            return next;
-        });
+            setCurrentMyReaction(newMyReaction);
+            setAllReactions(prev => {
+                const next = { ...prev };
+                if (isRemoving) {
+                    delete next[currentUserId];
+                } else {
+                    next[currentUserId] = type;
+                }
+                return next;
+            });
 
-        await toggleReaction(post.id, type, post.type || 'personal', post.context?.id);
-    } catch (error) {
-        console.error("Reaction failed:", error);
-        // Revert on failure
-        setCurrentMyReaction(currentMyReaction);
-        setAllReactions(reactionsMap);
-        toast.error(t("profile.update.error") || "Failed to update reaction");
-    }
+            await toggleReaction(post.id, type, post.type || 'personal', post.context?.id);
+        } catch (error) {
+            console.error("Reaction failed:", error);
+            // Revert on failure
+            setCurrentMyReaction(currentMyReaction);
+            setAllReactions(reactionsMap);
+            toast.error(t("profile.update.error") || "Failed to update reaction");
+        }
+    };
 };
 
 
