@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-05 T23:36 EST (FORCE TRIGGER)
-- **Goal**: RE-TRIGGER Build `a39942b` (Fix TS + Mobile Sidebar).
-- **Verification**: WATCH FOR NEW BUILD IN DASHBOARD.
+- **Timestamp**: 2026-01-05 T23:50 EST (SIDEBAR + PROFILE DEBUG)
+- **Goal**: 1. Fix Sidebar Z-Index. 2. Show User ID on Profile to check for mismatch.
+- **Verification**: Sidebar works? Profile shows correct ID?
 
 
 ## Overview

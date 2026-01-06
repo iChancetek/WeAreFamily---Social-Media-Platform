@@ -67,17 +67,7 @@ export function FeedList() {
                 <PostCard key={post.id} post={post as any} currentUserId={profile?.id} />
             ))}
 
-            {/* DEBUG FOOTER - TEMPORARY */}
-            <div className="p-4 bg-black/5 text-xs font-mono text-center rounded mt-8 break-all">
-                <p className="font-bold text-red-500 mb-1">--- SYSTEM DIAGNOSTICS ---</p>
-                <div className="text-left space-y-1 inline-block">
-                    <p>Connected DB: <span className="font-bold">{debugInfo?.projectId}</span></p>
-                    <p>Target Env: <span className="font-bold">{debugInfo?.envProjectId}</span></p>
-                    <p>Total Posts in DB: <span className="font-bold">{debugInfo?.numPosts}</span></p>
-                    <p>Auth Mode: {debugInfo?.serviceAccount}</p>
-                    {debugInfo?.error && <p className="text-red-600">DB Error: {debugInfo.error}</p>}
-                </div>
-            </div>
+
         </div>
     )
 }
