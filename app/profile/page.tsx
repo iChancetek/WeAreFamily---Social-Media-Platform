@@ -22,6 +22,14 @@ export default async function ProfilePage() {
         getUserPosts(user.id)
     ]);
 
+    // DEBUG: Log to server console
+    console.log("Profile Debug:", {
+        userId: user.id,
+        userEmail: user.email,
+        postsCount: posts?.length || 0,
+        hasPosts: posts && posts.length > 0
+    });
+
     return (
         <MainLayout className="max-w-6xl">
             <div className="pb-16 pt-0">
@@ -49,6 +57,9 @@ export default async function ProfilePage() {
                         ) : (
                             <div className="bg-white dark:bg-card rounded-xl p-12 text-center border border-dashed border-gray-200 dark:border-white/10">
                                 <p className="text-muted-foreground">No posts yet. Share your first moment!</p>
+                                <p className="text-xs text-muted-foreground mt-2 font-mono">
+                                    User ID: {user.id?.substring(0, 12)}... | Posts: {posts?.length || 0}
+                                </p>
                             </div>
                         )}
                     </div>

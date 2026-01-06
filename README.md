@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-06 T01:05 EST (DISPLAY NAME FIX)
-- **Goal**: Show real user names instead of "Family Member" by improving name resolution logic.
-- **Verification**: Posts/comments should show actual user names (from email, profile, or displayName).
+- **Timestamp**: 2026-01-06 T01:08 EST (PROFILE DEBUG)
+- **Goal**: Add debug logging to profile page to diagnose why posts aren't showing.
+- **Verification**: Check profile page - should show User ID and post count in empty state.
 
 
 ## Overview
