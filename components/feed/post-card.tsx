@@ -1,5 +1,5 @@
 'use client'
-
+// Fixed: commentFileInputRef now uses useRef instead of useState
 import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
