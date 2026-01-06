@@ -40,8 +40,7 @@ export function FeedList() {
     if (error) {
         return (
             <div className="text-center py-10 text-red-500">
-                <p>Feed Error: {error}</p>
-                <p className="text-sm mt-2">Please pull to refresh.</p>
+                <p>Unable to load feed. Please pull to refresh.</p>
             </div>
         )
     }

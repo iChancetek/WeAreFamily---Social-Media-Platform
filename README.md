@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-05 T22:45 EST (DEBUG FEED)
-- **Goal**: Expose error message in feed list to diagnose "Nothing is working".
-- **Verification**: User reports specific error text in red.
+- **Timestamp**: 2026-01-05 T23:05 EST (DATA RECOVERY)
+- **Goal**: Force App Hosting to connect to `we-are-family-221` to restore missing posts.
+- **Verification**: User should see their old posts reappear.
 
 
 ## Overview
