@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-06 T01:10 EST (PROFILE FIX)
-- **Goal**: Fix profile posts by adding email-based fallback query for users with changed IDs.
-- **Verification**: Profile should show your posts even if your user ID changed.
+- **Timestamp**: 2026-01-06 T01:15 EST (RAG KNOWLEDGE BASE EXPANSION)
+- **Goal**: Expand landing page AI knowledge base with comprehensive Famio feature information.
+- **Verification**: Go to landing page -> Open chat widget -> Type "/seed" to populate, then ask about Famio features.
 
 
 ## Overview
