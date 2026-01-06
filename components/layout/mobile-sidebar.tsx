@@ -67,7 +67,6 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                     className="flex items-center gap-2 cursor-pointer touch-manipulation active:opacity-70"
                     style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
                     href="/"
-                    onClick={onLinkClick}
                 >
                     <Heart className="w-8 h-8 fill-primary text-primary" />
                     <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
@@ -88,7 +87,6 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    onClick={onLinkClick}
                                     style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
                                     className={cn(
                                         "flex items-center gap-3 w-full text-base font-medium transition-all h-11 rounded-xl px-3 relative my-1",

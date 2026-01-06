@@ -9,12 +9,16 @@ import { useAuth } from "@/components/auth-provider";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { MobileSidebar } from "./mobile-sidebar";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function BottomNav() {
     const pathname = usePathname();
     const { profile } = useAuth();
     const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        setOpen(false);
+    }, [pathname]);
 
     const links = [
         { href: "/", label: "Home", icon: Home },
