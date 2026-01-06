@@ -35,8 +35,8 @@ import {
     deleteComment,
     editComment,
     archiveComment,
-    ReactionType
 } from "@/app/actions/posts";
+import { ReactionType } from "@/types/posts";
 import { useLanguage } from "@/components/language-context";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import {
