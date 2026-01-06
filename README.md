@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-05 T21:05 EST (VISUAL SIGNAL)
-- **Goal**: Change welcome text to "UPDATE RECEIVED" to confirm cache break.
-- **Verification**: User must see "UPDATE RECEIVED" text.
+- **Timestamp**: 2026-01-05 T22:45 EST (DEBUG FEED)
+- **Goal**: Expose error message in feed list to diagnose "Nothing is working".
+- **Verification**: User reports specific error text in red.
 
 
 ## Overview

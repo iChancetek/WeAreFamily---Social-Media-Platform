@@ -12,7 +12,7 @@ export function FeedList() {
     const { t } = useLanguage()
     const [posts, setPosts] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -21,7 +21,7 @@ export function FeedList() {
                 setPosts(data)
             } catch (err) {
                 console.error("Error loading feed:", err)
-                setError(true)
+                setError(err instanceof Error ? err.message : "Unknown Load Error")
             } finally {
                 setLoading(false)
             }
@@ -40,7 +40,8 @@ export function FeedList() {
     if (error) {
         return (
             <div className="text-center py-10 text-red-500">
-                <p>Unable to load feed. Please refresh the page.</p>
+                <p>Feed Error: {error}</p>
+                <p className="text-sm mt-2">Please pull to refresh.</p>
             </div>
         )
     }
