@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-05 T23:50 EST (SIDEBAR + PROFILE DEBUG)
-- **Goal**: 1. Fix Sidebar Z-Index. 2. Show User ID on Profile to check for mismatch.
-- **Verification**: Sidebar works? Profile shows correct ID?
+- **Timestamp**: 2026-01-06 T00:35 EST (POINTER-EVENTS FIX)
+- **Goal**: Force pointer-events-auto on ALL sidebar buttons (User confirmed sidebar opens but clicks do nothing).
+- **Verification**: Tap "Family" in sidebar -> Should navigate instantly.
 
 
 ## Overview

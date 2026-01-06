@@ -65,10 +65,10 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
     };
 
     return (
-        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card overflow-y-auto custom-scrollbar", className)}>
+        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card overflow-y-auto custom-scrollbar pointer-events-auto", className)}>
             <div className="px-6 py-4 flex-shrink-0">
                 <div
-                    className="flex items-center gap-2 cursor-pointer touch-manipulation active:opacity-70"
+                    className="flex items-center gap-2 cursor-pointer touch-manipulation active:opacity-70 pointer-events-auto"
                     onClick={() => handleNavigation('/')}
                 >
                     <Heart className="w-8 h-8 fill-primary text-primary" />
@@ -92,7 +92,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                     type="button"
                                     onClick={() => handleNavigation(link.href)}
                                     className={cn(
-                                        "flex items-center gap-3 w-full text-base font-medium transition-all h-11 rounded-xl px-3 relative my-1",
+                                        "flex items-center gap-3 w-full text-base font-medium transition-all h-11 rounded-xl px-3 relative my-1 pointer-events-auto",
                                         "touch-manipulation active:scale-95", // Mobile optimization
                                         isActive
                                             ? "bg-primary/10 text-primary font-bold"
