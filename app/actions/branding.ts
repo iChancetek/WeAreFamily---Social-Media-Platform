@@ -14,12 +14,13 @@ export type Branding = {
     founderId: string;
     imageUrl?: string; // Logo
     bannerUrl?: string;
+    coverUrl?: string; // Cover photo/video
     createdAt: Date;
     followerCount?: number;
     isFollowing?: boolean;
 };
 
-export async function createBranding(data: { name: string; description: string; category: string; imageUrl?: string }) {
+export async function createBranding(data: { name: string; description: string; category: string; imageUrl?: string; coverUrl?: string }) {
     console.log("Creating branding", data);
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
@@ -203,3 +204,30 @@ export async function getFollowedBrandingIds(userId: string) {
     return Array.from(brandingIds);
 }
 
+export async function updateBrandingCover(brandingId: string, coverUrl: string | null) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    // Check if user is founder or admin
+    const brandingDoc = await adminDb.collection("pages").doc(brandingId).get();
+    if (!brandingDoc.exists) throw new Error("Branding not found");
+
+    const brandingData = brandingDoc.data();
+    const isFounder = brandingData?.founderId === user.id;
+
+    if (!isFounder) {
+        // Check if admin follower
+        const followerDoc = await adminDb.collection("pages").doc(brandingId).collection("followers").doc(user.id).get();
+        const isAdmin = followerDoc.exists && followerDoc.data()?.role === 'admin';
+        if (!isAdmin) {
+            throw new Error("Only branding founder or admins can update the cover");
+        }
+    }
+
+    await adminDb.collection("pages").doc(brandingId).update({
+        coverUrl: coverUrl || null
+    });
+
+    revalidatePath(`/branding/${brandingId}`);
+    revalidatePath('/branding');
+}

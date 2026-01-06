@@ -8,7 +8,37 @@ export function BrandingCard({ branding }: { branding: Branding }) {
     return (
         <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
             <div className="h-32 w-full bg-muted relative rounded-t-lg overflow-hidden">
-                {branding.imageUrl ? (
+                {branding.coverUrl ? (
+                    <>
+                        {branding.coverUrl.includes('mp4') || branding.coverUrl.includes('webm') ? (
+                            <video
+                                src={branding.coverUrl}
+                                className="w-full h-full object-cover"
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                            />
+                        ) : (
+                            <img
+                                src={branding.coverUrl}
+                                alt={branding.name}
+                                className="w-full h-full object-cover"
+                            />
+                        )}
+                        {branding.imageUrl && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-16 h-16 rounded-full border-4 border-white dark:border-gray-800 overflow-hidden bg-white shadow-lg">
+                                    <img
+                                        src={branding.imageUrl}
+                                        alt={branding.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </>
+                ) : branding.imageUrl ? (
                     <img
                         src={branding.imageUrl}
                         alt={branding.name}

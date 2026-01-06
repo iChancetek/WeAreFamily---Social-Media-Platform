@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-06 T01:40 EST (BRANDING UPDATE)
-- **Goal**: Replace "GPT-4" with "OpenAI" in landing and learn-more pages.
-- **Verification**: Landing page AI Assistant should say "Powered by OpenAI, Claude, and Gemini".
+- **Timestamp**: 2026-01-06 T02:10 EST (COVER PHOTOS FOR GROUPS & BRANDING)
+- **Goal**: Add cover photo/video support for Groups and Branding pages with upload/change/remove functionality.
+- **Verification**: Groups and branding should display cover photos/videos on cards and detail pages.
 
 
 ## Overview

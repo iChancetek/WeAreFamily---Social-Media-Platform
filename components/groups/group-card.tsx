@@ -8,7 +8,37 @@ export function GroupCard({ group }: { group: Group }) {
     return (
         <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
             <div className="h-32 w-full bg-muted relative rounded-t-lg overflow-hidden">
-                {group.imageUrl ? (
+                {group.coverUrl ? (
+                    <>
+                        {group.coverUrl.includes('mp4') || group.coverUrl.includes('webm') ? (
+                            <video
+                                src={group.coverUrl}
+                                className="w-full h-full object-cover"
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                            />
+                        ) : (
+                            <img
+                                src={group.coverUrl}
+                                alt={group.name}
+                                className="w-full h-full object-cover"
+                            />
+                        )}
+                        {group.imageUrl && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-16 h-16 rounded-full border-4 border-white dark:border-gray-800 overflow-hidden bg-white shadow-lg">
+                                    <img
+                                        src={group.imageUrl}
+                                        alt={group.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </>
+                ) : group.imageUrl ? (
                     <img
                         src={group.imageUrl}
                         alt={group.name}

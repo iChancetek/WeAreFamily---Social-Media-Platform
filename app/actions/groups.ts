@@ -14,12 +14,13 @@ export type Group = {
     privacy: 'public' | 'private';
     founderId: string;
     imageUrl?: string;
+    coverUrl?: string;
     createdAt: Date;
     memberCount?: number;
     isMember?: boolean;
 };
 
-export async function createGroup(data: { name: string; description: string; category: string; privacy: 'public' | 'private'; imageUrl?: string }) {
+export async function createGroup(data: { name: string; description: string; category: string; privacy: 'public' | 'private'; imageUrl?: string; coverUrl?: string }) {
     console.log("Creating group", data);
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
@@ -221,3 +222,39 @@ export async function getJoinedGroupIds(userId: string) {
 
     return Array.from(groupIds);
 }
+
+export async function updateGroupCover(groupId: string, coverUrl: string | null) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    // Check if user is founder or admin
+    const groupDoc = await adminDb.collection("groups").doc(groupId).get();
+    if (!groupDoc.exists) throw new Error("Group not found");
+
+    const groupData = groupDoc.data();
+    const isFounder = groupData?.founderId === user.id;
+
+    if (!isFounder) {
+        // Check if admin member
+        const memberDoc = await adminDb.collection("groups").doc(groupId).collection("members").doc(user.id).get();
+        const isAdmin = memberDoc.exists && memberDoc.data()?.role === 'admin';
+        if (!isAdmin) {
+            throw new Error("Only group founder or admins can update the cover");
+        }
+    }
+
+    await adminDb.collection("groups").doc(groupId).update({
+        coverUrl: coverUrl || null
+    });
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("group.update_cover", {
+        targetType: "group",
+        targetId: groupId,
+        details: { hasCover: !!coverUrl }
+    });
+
+    revalidatePath(`/groups/${groupId}`);
+    revalidatePath('/groups');
+}
+

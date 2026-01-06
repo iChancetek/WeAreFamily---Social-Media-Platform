@@ -25,6 +25,7 @@ export type AuditAction =
     | "group.join"
     | "group.leave"
     | "group.update"
+    | "group.update_cover"
     | "group.delete"
     | "branding.create"
     | "branding.follow"
