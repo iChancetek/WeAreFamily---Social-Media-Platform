@@ -3,12 +3,13 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { notFound } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Users, Heart, Camera } from "lucide-react";
+import { Briefcase, Users, Heart } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { PostCard } from "@/components/feed/post-card";
 import { FollowBrandingButton } from "@/components/branding/follow-branding-button";
 import { BrandingPostCreator } from "@/components/branding/branding-post-creator";
+import { BrandingCoverButton } from "@/components/branding/branding-cover-button";
 
 export const dynamic = 'force-dynamic';
 
@@ -85,16 +86,12 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
 
                         <div className="flex items-center gap-3">
                             {/* Edit Cover Button for Admins */}
-                            {isAdmin && (
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    className="gap-2"
-                                    title="Change Cover Photo"
-                                >
-                                    <Camera className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Cover</span>
-                                </Button>
+                            {isAdmin && user && (
+                                <BrandingCoverButton
+                                    brandingId={branding.id}
+                                    currentCoverUrl={branding.coverUrl}
+                                    userId={user.id}
+                                />
                             )}
                             <FollowBrandingButton
                                 brandingId={branding.id}

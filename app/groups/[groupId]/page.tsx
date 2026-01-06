@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Lock, Globe, Plus, Sparkles, Camera } from "lucide-react";
+import { Users, Lock, Globe, Plus, Sparkles } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { CreatePost } from "@/components/feed/create-post";
 // Note: CreatePost might need adjustment to support group posting context.
@@ -17,6 +17,7 @@ import { PostCard } from "@/components/feed/post-card"; // Assuming this creates
 import { GroupPostCreator } from "@/components/groups/group-post-creator"; // Will create this next
 import { JoinGroupButton } from "@/components/groups/join-group-button"; // Client component for actions
 import { GroupAITutorBanner } from "@/components/groups/group-ai-tutor-banner";
+import { GroupCoverButton } from "@/components/groups/group-cover-button";
 
 export default async function GroupPage({ params }: { params: Promise<{ groupId: string }> }) {
     const { groupId } = await params;
@@ -78,16 +79,12 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
 
                         <div className="flex items-center gap-3">
                             {/* Edit Cover Button for Admins */}
-                            {(user?.id === group.founderId || memberStatus?.role === 'admin') && (
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    className="gap-2"
-                                    title="Change Cover Photo"
-                                >
-                                    <Camera className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Cover</span>
-                                </Button>
+                            {(user?.id === group.founderId || memberStatus?.role === 'admin') && user && (
+                                <GroupCoverButton
+                                    groupId={group.id}
+                                    currentCoverUrl={group.coverUrl}
+                                    userId={user.id}
+                                />
                             )}
                             {/* Join/Leave Button Client Component */}
                             <JoinGroupButton

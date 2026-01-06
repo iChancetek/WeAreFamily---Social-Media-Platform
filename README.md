@@ -1,9 +1,9 @@
 # WeAreFamily - Social Media Platform
 
 ## Latest Build Trigger
-- **Timestamp**: 2026-01-06 T02:10 EST (COVER PHOTOS FOR GROUPS & BRANDING)
-- **Goal**: Add cover photo/video support for Groups and Branding pages with upload/change/remove functionality.
-- **Verification**: Groups and branding should display cover photos/videos on cards and detail pages.
+- **Timestamp**: 2026-01-06 T02:20 EST (COVER UPLOAD DIALOGS COMPLETE)
+- **Goal**: Add full cover upload/change/remove functionality with dialogs for Groups and Branding.
+- **Verification**: Creators/admins can click "Cover" button to upload, change, or remove cover photos/videos.
 
 
 ## Overview
