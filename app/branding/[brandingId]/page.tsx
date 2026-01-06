@@ -2,6 +2,7 @@ import { getBranding, getBrandingPosts, getBrandingFollowStatus } from "@/app/ac
 import { MainLayout } from "@/components/layout/main-layout";
 import { notFound } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { Briefcase, Users, Heart, Camera } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
