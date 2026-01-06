@@ -1,8 +1,7 @@
 import { useAuth } from "@/components/auth-provider";
 import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -16,8 +15,18 @@ interface MobileSidebarProps {
 
 export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebarProps) {
     const pathname = usePathname();
+    const router = useRouter();
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
+
+    const handleNavigation = (href: string) => {
+        // Close the sheet first
+        onLinkClick?.();
+        // Small delay to ensure sheet closes before navigation
+        setTimeout(() => {
+            router.push(href);
+        }, 50);
+    };
 
     const groups = [
         {
@@ -63,14 +72,15 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
     return (
         <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card overflow-y-auto custom-scrollbar", className)} style={{ pointerEvents: 'auto', touchAction: 'auto' }}>
             <div className="px-6 py-4 flex-shrink-0">
-                <Link
-                    className="flex items-center gap-2 cursor-pointer touch-manipulation active:opacity-70"
+                <button
+                    className="flex items-center gap-2 cursor-pointer touch-manipulation active:opacity-70 border-none bg-transparent p-0"
                     style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
-                    href="/"
+                    onClick={() => handleNavigation("/")}
+                    type="button"
                 >
                     <Heart className="w-8 h-8 fill-primary text-primary" />
                     <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
-                </Link>
+                </button>
             </div>
 
             <nav className="flex-1 px-4 mt-2 space-y-6">
@@ -84,17 +94,18 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                         {group.items.map((link) => {
                             const isActive = pathname === link.href;
                             return (
-                                <Link
+                                <button
                                     key={link.href}
-                                    href={link.href}
+                                    onClick={() => handleNavigation(link.href)}
                                     style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
                                     className={cn(
                                         "flex items-center gap-3 w-full text-base font-medium transition-all h-11 rounded-xl px-3 relative my-1",
-                                        "touch-manipulation active:scale-95", // Mobile optimization
+                                        "touch-manipulation active:scale-95 border-none bg-transparent text-left", // Mobile optimization
                                         isActive
                                             ? "bg-primary/10 text-primary font-bold"
                                             : "text-foreground hover:bg-muted"
                                     )}
+                                    type="button"
                                 >
                                     <link.icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
                                     <span className="truncate">{link.label}</span>
@@ -103,9 +114,8 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                             <NotificationBadge />
                                         </div>
                                     )}
-                                </Link>
+                                </button>
                             )
-
                         })}
                     </div>
                 ))}
