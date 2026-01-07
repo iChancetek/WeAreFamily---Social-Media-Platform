@@ -69,7 +69,7 @@ export function BrandingCard({ branding }: { branding: Branding }) {
             </CardContent>
             <CardFooter>
                 <Button asChild variant="outline" className="w-full">
-                    <Link href={`/branding/${branding.id}`}>
+                    <Link href={`/branding/${branding.slug || branding.id}`}>
                         View Branding
                     </Link>
                 </Button>

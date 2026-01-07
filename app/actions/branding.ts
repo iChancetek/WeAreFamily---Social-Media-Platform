@@ -1,4 +1,5 @@
-'use server'
+
+import { slugify } from "@/lib/utils";
 
 import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
@@ -8,6 +9,7 @@ import { sanitizeData } from "@/lib/serialization";
 
 export type Branding = {
     id: string;
+    slug?: string;
     name: string;
     description: string;
     category: string;
@@ -25,8 +27,35 @@ export async function createBranding(data: { name: string; description: string; 
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const brandingRef = await adminDb.collection("pages").add({
+    let slug = slugify(data.name);
+    let potentialId = slug;
+    let counter = 0;
+
+    // Check for uniqueness
+    while (true) {
+        // 1. Check ID collision
+        const doc = await adminDb.collection("pages").doc(potentialId).get();
+        if (doc.exists) {
+            counter++;
+            potentialId = `${slug}-${counter}`;
+            continue;
+        }
+
+        // 2. Check Slug collision
+        const slugCheck = await adminDb.collection("pages").where("slug", "==", potentialId).limit(1).get();
+        if (!slugCheck.empty) {
+            counter++;
+            potentialId = `${slug}-${counter}`;
+            continue;
+        }
+
+        break;
+    }
+
+    const brandingRef = adminDb.collection("pages").doc(potentialId);
+    await brandingRef.set({
         ...data,
+        slug: potentialId,
         founderId: user.id,
         createdAt: FieldValue.serverTimestamp(),
         followerCount: 1, // Founder automatically follows? Maybe.
@@ -54,9 +83,19 @@ export async function getBrandings() {
     });
 }
 
-export async function getBranding(brandingId: string) {
-    const doc = await adminDb.collection("pages").doc(brandingId).get();
-    if (!doc.exists) return null;
+export async function getBranding(identifier: string) {
+    // 1. Try by ID (Fastest/Default for new pages)
+    let doc = await adminDb.collection("pages").doc(identifier).get();
+
+    // 2. If not found, try by slug
+    if (!doc.exists) {
+        const snapshot = await adminDb.collection("pages").where("slug", "==", identifier).limit(1).get();
+        if (!snapshot.empty) {
+            doc = snapshot.docs[0];
+        } else {
+            return null;
+        }
+    }
 
     return sanitizeData({
         id: doc.id,

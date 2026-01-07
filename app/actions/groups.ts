@@ -1,4 +1,5 @@
-'use server'
+
+import { slugify } from "@/lib/utils";
 
 import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
@@ -8,6 +9,7 @@ import { sanitizeData } from "@/lib/serialization";
 
 export type Group = {
     id: string;
+    slug?: string;
     name: string;
     description: string;
     category: string;
@@ -25,8 +27,35 @@ export async function createGroup(data: { name: string; description: string; cat
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const groupRef = await adminDb.collection("groups").add({
+    let slug = slugify(data.name);
+    let potentialId = slug;
+    let counter = 0;
+
+    // Check for uniqueness
+    while (true) {
+        // 1. Check ID collision
+        const doc = await adminDb.collection("groups").doc(potentialId).get();
+        if (doc.exists) {
+            counter++;
+            potentialId = `${slug}-${counter}`;
+            continue;
+        }
+
+        // 2. Check Slug collision (for old groups)
+        const slugCheck = await adminDb.collection("groups").where("slug", "==", potentialId).limit(1).get();
+        if (!slugCheck.empty) {
+            counter++;
+            potentialId = `${slug}-${counter}`;
+            continue;
+        }
+
+        break;
+    }
+
+    const groupRef = adminDb.collection("groups").doc(potentialId);
+    await groupRef.set({
         ...data,
+        slug: potentialId, // Force slug to match ID for new groups
         founderId: user.id,
         createdAt: FieldValue.serverTimestamp(),
         memberCount: 1, // Founder is first member
@@ -65,9 +94,19 @@ export async function getGroups() {
     });
 }
 
-export async function getGroup(groupId: string) {
-    const doc = await adminDb.collection("groups").doc(groupId).get();
-    if (!doc.exists) return null;
+export async function getGroup(identifier: string) {
+    // 1. Try by ID (Fastest/Default for new groups)
+    let doc = await adminDb.collection("groups").doc(identifier).get();
+
+    // 2. If not found, try by slug (for old groups migrated to have slugs)
+    if (!doc.exists) {
+        const snapshot = await adminDb.collection("groups").where("slug", "==", identifier).limit(1).get();
+        if (!snapshot.empty) {
+            doc = snapshot.docs[0];
+        } else {
+            return null;
+        }
+    }
 
     return sanitizeData({
         id: doc.id,

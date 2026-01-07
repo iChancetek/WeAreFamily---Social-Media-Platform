@@ -73,7 +73,7 @@ export function GroupCard({ group }: { group: Group }) {
             </CardContent>
             <CardFooter>
                 <Button asChild className="w-full">
-                    <Link href={`/groups/${group.id}`}>
+                    <Link href={`/groups/${group.slug || group.id}`}>
                         View Group
                     </Link>
                 </Button>
