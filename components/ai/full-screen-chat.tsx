@@ -444,6 +444,16 @@ export function FullScreenChat() {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleNewChat}
+                            title="New Conversation"
+                            className="hidden md:flex"
+                        >
+                            <Sparkles className="w-5 h-5 text-primary" />
+                        </Button>
+
                         {/* Mode Selector - Compact */}
                         <div className="flex bg-muted/50 rounded-lg p-0.5">
                             {modes.map((mode) => (

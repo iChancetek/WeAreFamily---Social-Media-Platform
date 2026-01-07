@@ -54,18 +54,30 @@ export async function getConversations(): Promise<AIConversation[]> {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const snapshot = await adminDb.collection("ai_conversations")
-        .where("userId", "==", user.id)
-        .where("isDeleted", "==", false)
-        .orderBy("updatedAt", "desc")
-        .get();
+    let snapshot;
+    try {
+        snapshot = await adminDb.collection("ai_conversations")
+            .where("userId", "==", user.id)
+            .where("isDeleted", "==", false)
+            .orderBy("updatedAt", "desc")
+            .get();
+    } catch (error) {
+        console.warn("Index missing for getConversations, falling back to unordered query");
+        snapshot = await adminDb.collection("ai_conversations")
+            .where("userId", "==", user.id)
+            .where("isDeleted", "==", false)
+            .get();
+    }
 
-    return snapshot.docs.map(doc => ({
+    const conversations = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate() || new Date(),
         updatedAt: doc.data().updatedAt?.toDate() || new Date(),
     })) as AIConversation[];
+
+    // Ensure sorted if fallback was used
+    return conversations.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 }
 
 /**
@@ -75,18 +87,29 @@ export async function getTrash(): Promise<AIConversation[]> {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    const snapshot = await adminDb.collection("ai_conversations")
-        .where("userId", "==", user.id)
-        .where("isDeleted", "==", true)
-        .orderBy("updatedAt", "desc")
-        .get();
+    let snapshot;
+    try {
+        snapshot = await adminDb.collection("ai_conversations")
+            .where("userId", "==", user.id)
+            .where("isDeleted", "==", true)
+            .orderBy("updatedAt", "desc")
+            .get();
+    } catch (error) {
+        console.warn("Index missing for getTrash, falling back to unordered query");
+        snapshot = await adminDb.collection("ai_conversations")
+            .where("userId", "==", user.id)
+            .where("isDeleted", "==", true)
+            .get();
+    }
 
-    return snapshot.docs.map(doc => ({
+    const trash = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate() || new Date(),
         updatedAt: doc.data().updatedAt?.toDate() || new Date(),
     })) as AIConversation[];
+
+    return trash.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 }
 
 /**
