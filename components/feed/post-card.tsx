@@ -19,9 +19,10 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 // Actions
-import { toggleReaction, addComment, createPost } from "@/app/actions/posts";
+import { toggleReaction, addComment, editPost, deletePostWithContext } from "@/app/actions/posts";
 import { ReactionType } from "@/types/posts";
 import { REACTIONS, getReactionIcon, getReactionLabel } from "./reaction-selector";
+import { Textarea } from "@/components/ui/textarea";
 
 // Dynamic Player
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
@@ -34,12 +35,17 @@ function isUrlVideo(url: string | null | undefined): boolean {
 }
 
 export function PostCard({ post, currentUserId }: { post: any, currentUserId?: string }) {
-    if (!post || post.isDeleted) return null; // Don't show deleted posts (unless we are in a 'Trash' view, handled elsewhere)
+    if (!post || post.isDeleted) return null;
 
     // -- State --
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Edit State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState(post.content || "");
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
 
     // Translation State
     const [translatedContent, setTranslatedContent] = useState<string | null>(null);
@@ -58,6 +64,10 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     const name = author.displayName || author.email || "Unknown";
     const profilePic = author.imageUrl;
     const youtubeMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s]+(?<![.,!?])/);
+
+    // Context Info
+    const contextType = post.context?.type; // 'group' | 'branding'
+    const contextId = post.context?.id;
 
     // -- Handlers --
 
@@ -78,7 +88,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
         });
 
         try {
-            await toggleReaction(post.id, type, post.type || 'personal', post.context?.id);
+            await toggleReaction(post.id, type, contextType, contextId);
         } catch {
             // Rollback
             setCurrentReaction(previousReaction);
@@ -91,8 +101,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
         if (!commentText.trim() || !currentUserId) return;
         setIsSubmitting(true);
         try {
-            // Server action now returns the new comment object
-            const newComment = await addComment(post.id, commentText, post.type || 'personal', post.context?.id);
+            const newComment = await addComment(post.id, commentText, contextType, contextId);
             if (newComment) {
                 setComments(prev => [...prev, newComment]);
             }
@@ -106,6 +115,40 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
         }
     };
 
+    const handleEditSave = async () => {
+        if (!editContent.trim()) return;
+        setIsSavingEdit(true);
+        try {
+            await editPost(post.id, editContent, contextType, contextId);
+            toast.success("Post updated");
+            setIsEditing(false);
+            // In a real app, we might need to update local post.content if not using realtime listener or revalidation didn't hit yet
+            // But revalidatePath should serve fresh content on next interaction or navigation. 
+            // Ideally we accept props update. For now, we rely on parent re-render or just close.
+            // A hard reload isn't ideal. We can set a local override if we want?
+            // Let's rely on server revalidation.
+        } catch (e) {
+            console.error(e);
+            toast.error("Failed to update post");
+        } finally {
+            setIsSavingEdit(false);
+        }
+    };
+
+    const handleDeletePost = async () => {
+        if (!confirm("Are you sure you want to delete this post?")) return;
+        try {
+            await deletePostWithContext(post.id, contextType, contextId);
+            toast.success("Post deleted");
+            // Hide locally
+            const card = document.getElementById(`post-${post.id}`);
+            if (card) card.style.display = 'none';
+        } catch (e) {
+            console.error(e);
+            toast.error("Delete failed");
+        }
+    };
+
     const handleTranslate = async () => {
         if (translatedContent) {
             setTranslatedContent(null); // Toggle off
@@ -114,9 +157,6 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
         setIsTranslating(true);
         try {
             const { translateText } = await import("@/app/actions/ai");
-            // Simple heuristic based on browser language or user preference could go here.
-            // For now, we cycle: If content seems English, target Spanish, else English.
-            // Since detection is complex client-side, we'll default to Spanish for this "English to Spanish" request.
             const target = 'es';
             const result = await translateText(post.content, target);
             setTranslatedContent(result);
@@ -130,36 +170,12 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
 
     const handleSpeak = () => {
         try {
-            // Speak translated content if active, otherwise original
             const text = translatedContent || post.content || "";
             const u = new SpeechSynthesisUtterance(text);
-            if (translatedContent) u.lang = 'es-ES'; // Hint for Spanish
+            if (translatedContent) u.lang = 'es-ES';
             window.speechSynthesis.cancel();
             window.speechSynthesis.speak(u);
         } catch { toast.error("TTS unavailable"); }
-    };
-
-    const handleDeletePost = async () => {
-        try {
-            const { deletePost, restorePost } = await import("@/app/actions/posts");
-            await deletePost(post.id);
-            toast.success("Post moved to trash", {
-                action: {
-                    label: "Undo",
-                    onClick: () => {
-                        restorePost(post.id).then(() => {
-                            toast.success("Restored!");
-                            window.location.reload(); // Hard refresh to show it back
-                        });
-                    }
-                }
-            });
-            // Hide locally immediately
-            const card = document.getElementById(`post-${post.id}`);
-            if (card) card.style.display = 'none';
-        } catch {
-            toast.error("Delete failed");
-        }
     };
 
     const handleAI = (mode: string) => {
@@ -182,6 +198,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
             navigator.share({ title: `Post by ${name}`, text: post.content, url }).catch(() => { });
         } else if (mode === 'repost') {
             try {
+                const { createPost } = await import("@/app/actions/posts");
                 await createPost(`🔄 Reposted from ${name}:\n\n${post.content}`, post.mediaUrls || []);
                 toast.success("Reposted!");
             } catch { toast.error("Repost failed"); }
@@ -199,17 +216,21 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                 <div className="flex flex-col flex-1">
                     <div className="flex items-center gap-1 flex-wrap">
                         <span className="font-semibold text-sm">{name}</span>
-                        {post.context?.type === 'group' && (
+                        {/* Show Context if available (Group/Branding) */}
+                        {post.context?.name && (
                             <>
                                 <span className="text-muted-foreground text-xs">▶</span>
                                 <span className="font-semibold text-sm">{post.context.name}</span>
                             </>
                         )}
                     </div>
-                    <span className="text-xs text-muted-foreground"><SafeDate date={post.createdAt} /></span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground"><SafeDate date={post.createdAt} /></span>
+                        {post.isEdited && <span className="text-[10px] text-muted-foreground">(edited)</span>}
+                    </div>
                 </div>
 
-                {/* Header Menu (Delete Option) */}
+                {/* Header Menu */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><MoreHorizontal className="w-4 h-4" /></Button>
@@ -218,10 +239,16 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                         <DropdownMenuItem onClick={handleTranslate}>
                             {translatedContent ? "Show Original" : "Translate to Spanish"}
                         </DropdownMenuItem>
-                        {currentUserId === post.authorId && (
-                            <DropdownMenuItem onClick={handleDeletePost} className="text-red-500 focus:text-red-500">
-                                Delete Post
-                            </DropdownMenuItem>
+                        {/* Only Author or Admin (context based) can Edit/Delete */}
+                        {((currentUserId === post.authorId && !post.postedAsBranding) || (post.postedAsBranding /* Requires admin check logic locally or optimistic allow, server validates */)) && (
+                            <>
+                                <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                                    Edit Post
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleDeletePost} className="text-red-500 focus:text-red-500">
+                                    Delete Post
+                                </DropdownMenuItem>
+                            </>
                         )}
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -229,9 +256,26 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
 
             {/* Content */}
             <div className="px-4 py-2">
-                <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
-                    {translatedContent || post.content}
-                </p>
+                {isEditing ? (
+                    <div className="space-y-2">
+                        <Textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            className="w-full min-h-[100px]"
+                        />
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>Cancel</Button>
+                            <Button size="sm" onClick={handleEditSave} disabled={isSavingEdit}>
+                                {isSavingEdit ? "Saving..." : "Save"}
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
+                        {translatedContent || post.content}
+                    </p>
+                )}
+
                 {translatedContent && (
                     <p className="text-xs text-muted-foreground mt-1 italic flex items-center gap-1">
                         <Sparkles className="w-3 h-3" /> Translated by AI

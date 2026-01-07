@@ -202,6 +202,26 @@ export async function createGroupPost(groupId: string, content: string, mediaUrl
     revalidatePath(`/groups/${groupId}`);
 }
 
+export async function editGroupPost(groupId: string, postId: string, content: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const postRef = adminDb.collection("groups").doc(groupId).collection("posts").doc(postId);
+    const postDoc = await postRef.get();
+
+    if (!postDoc.exists) throw new Error("Post not found");
+    // Only author can edit
+    if (postDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+
+    await postRef.update({
+        content,
+        isEdited: true,
+        updatedAt: FieldValue.serverTimestamp()
+    });
+
+    revalidatePath(`/groups/${groupId}`);
+}
+
 export async function getGroupPosts(groupId: string) {
     const user = await getUserProfile();
     if (!user) return [];
@@ -235,7 +255,8 @@ export async function getGroupPosts(groupId: string) {
             mediaUrls: postData.mediaUrls || [],
             createdAt: postData.createdAt,
             likes: postData.likes || [],
-            author
+            author,
+            context: { type: 'group', id: groupId, name: group?.name }
         });
     }));
 

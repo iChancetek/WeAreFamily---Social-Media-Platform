@@ -186,6 +186,35 @@ export async function createBrandingPost(brandingId: string, content: string, me
     revalidatePath(`/branding/${brandingId}`);
 }
 
+export async function editBrandingPost(brandingId: string, postId: string, content: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const postRef = adminDb.collection("pages").doc(brandingId).collection("posts").doc(postId);
+    const postDoc = await postRef.get();
+
+    if (!postDoc.exists) throw new Error("Post not found");
+    const postData = postDoc.data();
+
+    // Check permissions
+    if (postData?.postedAsBranding) {
+        // If posted as branding, checking if user is admin
+        const status = await getBrandingFollowStatus(brandingId);
+        if (status?.role !== 'admin') throw new Error("Unauthorized");
+    } else {
+        // If posted as user, check authorId
+        if (postData?.authorId !== user.id) throw new Error("Unauthorized");
+    }
+
+    await postRef.update({
+        content,
+        isEdited: true,
+        updatedAt: FieldValue.serverTimestamp()
+    });
+
+    revalidatePath(`/branding/${brandingId}`);
+}
+
 export async function getBrandingPosts(brandingId: string) {
     const postsSnapshot = await adminDb.collection("pages").doc(brandingId).collection("posts")
         .orderBy("createdAt", "desc")
@@ -222,7 +251,8 @@ export async function getBrandingPosts(brandingId: string) {
             mediaUrls: postData.mediaUrls || [],
             createdAt: postData.createdAt,
             likes: postData.likes || [],
-            author
+            author,
+            context: { type: 'branding', id: brandingId }
         });
     }));
 
