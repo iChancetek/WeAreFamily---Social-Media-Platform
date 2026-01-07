@@ -259,6 +259,41 @@ export async function getBrandingPosts(brandingId: string) {
     return allPosts;
 }
 
+export async function getBrandingPost(brandingId: string, postId: string) {
+    try {
+        const postRef = adminDb.collection("pages").doc(brandingId).collection("posts").doc(postId);
+        const doc = await postRef.get();
+        if (!doc.exists) return null;
+
+        const data = doc.data()!;
+
+        // Fetch Author
+        const authorDoc = await adminDb.collection("users").doc(data.authorId).get();
+        const author = authorDoc.exists ? {
+            id: authorDoc.id,
+            displayName: authorDoc.data()?.displayName,
+            imageUrl: authorDoc.data()?.imageUrl,
+            email: authorDoc.data()?.email,
+        } : null;
+
+        return sanitizeData({
+            id: doc.id,
+            content: data.content || "",
+            mediaUrls: data.mediaUrls || [],
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+            likes: data.likes || [],
+            reactions: data.reactions || {},
+            author,
+            postedAsBranding: data.postedAsBranding,
+            context: { type: 'branding', id: brandingId },
+            comments: []
+        });
+    } catch (error) {
+        console.error("Error fetching branding post:", error);
+        return null;
+    }
+}
+
 export async function getFollowedBrandingIds(userId: string) {
     const snapshot = await adminDb.collectionGroup("followers")
         .where("userId", "==", userId)

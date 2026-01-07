@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -19,6 +20,7 @@ interface GroupPostCreatorProps {
 }
 
 export function GroupPostCreator({ groupId, user }: GroupPostCreatorProps) {
+    const router = useRouter();
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
@@ -94,6 +96,7 @@ export function GroupPostCreator({ groupId, user }: GroupPostCreatorProps) {
             setContent("");
             setMediaUrls([]);
             toast.success("Posted to group!");
+            router.refresh();
         } catch (error) {
             console.error(error);
             toast.error("Failed to post");

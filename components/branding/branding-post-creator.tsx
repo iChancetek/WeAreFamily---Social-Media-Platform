@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,7 @@ interface BrandingPostCreatorProps {
 }
 
 export function BrandingPostCreator({ brandingId, branding, currentUser, role }: BrandingPostCreatorProps) {
+    const router = useRouter();
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
@@ -102,6 +104,7 @@ export function BrandingPostCreator({ brandingId, branding, currentUser, role }:
             setContent("");
             setMediaUrls([]);
             toast.success("Posted to branding!");
+            router.refresh();
         } catch (error) {
             console.error(error);
             toast.error("Failed to post");

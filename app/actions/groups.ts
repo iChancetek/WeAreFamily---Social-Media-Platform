@@ -202,46 +202,16 @@ export async function createGroupPost(groupId: string, content: string, mediaUrl
     revalidatePath(`/groups/${groupId}`);
 }
 
-export async function editGroupPost(groupId: string, postId: string, content: string) {
-    const user = await getUserProfile();
-    if (!user) throw new Error("Unauthorized");
+export async function getGroupPost(groupId: string, postId: string) {
+    try {
+        const postRef = adminDb.collection("groups").doc(groupId).collection("posts").doc(postId);
+        const doc = await postRef.get();
+        if (!doc.exists) return null;
 
-    const postRef = adminDb.collection("groups").doc(groupId).collection("posts").doc(postId);
-    const postDoc = await postRef.get();
+        const data = doc.data()!;
 
-    if (!postDoc.exists) throw new Error("Post not found");
-    // Only author can edit
-    if (postDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
-
-    await postRef.update({
-        content,
-        isEdited: true,
-        updatedAt: FieldValue.serverTimestamp()
-    });
-
-    revalidatePath(`/groups/${groupId}`);
-}
-
-export async function getGroupPosts(groupId: string) {
-    const user = await getUserProfile();
-    if (!user) return [];
-
-    // Check privacy
-    const group = await getGroup(groupId);
-    if (group?.privacy === 'private') {
-        const memberStatus = await getGroupMemberStatus(groupId);
-        if (!memberStatus) return [];
-    }
-
-    const postsSnapshot = await adminDb.collection("groups").doc(groupId).collection("posts")
-        .orderBy("createdAt", "desc")
-        .get();
-
-    const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc: any) => {
-        const postData = postDoc.data();
-
-        // Fetch author
-        const authorDoc = await adminDb.collection("users").doc(postData.authorId).get();
+        // Fetch Author
+        const authorDoc = await adminDb.collection("users").doc(data.authorId).get();
         const author = authorDoc.exists ? {
             id: authorDoc.id,
             displayName: authorDoc.data()?.displayName,
@@ -249,18 +219,25 @@ export async function getGroupPosts(groupId: string) {
             email: authorDoc.data()?.email,
         } : null;
 
-        return sanitizeData({
-            id: postDoc.id,
-            content: postData.content || "",
-            mediaUrls: postData.mediaUrls || [],
-            createdAt: postData.createdAt,
-            likes: postData.likes || [],
-            author,
-            context: { type: 'group', id: groupId, name: group?.name }
-        });
-    }));
+        // Fetch Group Name for Context
+        const groupSnap = await adminDb.collection("groups").doc(groupId).get();
+        const groupName = groupSnap.data()?.name;
 
-    return allPosts;
+        return sanitizeData({
+            id: doc.id,
+            content: data.content || "",
+            mediaUrls: data.mediaUrls || [],
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+            likes: data.likes || [],
+            reactions: data.reactions || {},
+            author,
+            context: { type: 'group', id: groupId, name: groupName },
+            comments: []
+        });
+    } catch (error) {
+        console.error("Error fetching group post:", error);
+        return null;
+    }
 }
 
 export async function getJoinedGroupIds(userId: string) {

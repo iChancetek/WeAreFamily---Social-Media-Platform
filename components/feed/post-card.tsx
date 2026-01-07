@@ -188,7 +188,15 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     };
 
     const handleShare = async (mode: 'copy' | 'native' | 'repost') => {
-        const url = `${window.location.origin}/post/${post.id}`;
+        let url = `${window.location.origin}/post/${post.id}`;
+
+        // Context-aware URLs
+        if (post.context?.type === 'group' && post.context.id) {
+            url = `${window.location.origin}/groups/${post.context.id}/post/${post.id}`;
+        } else if (post.context?.type === 'branding' && post.context.id) {
+            url = `${window.location.origin}/branding/${post.context.id}/post/${post.id}`;
+        }
+
         if (mode === 'copy') {
             try {
                 await navigator.clipboard.writeText(url);

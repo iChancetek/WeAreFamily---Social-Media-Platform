@@ -460,3 +460,65 @@ export async function getUserPosts(userId: string) {
         return [];
     }
 }
+// Global Post Lookup for /post/[id]
+export async function getPostGlobal(postId: string) {
+    // 1. Try Main Feed
+    const mainRef = adminDb.collection("posts").doc(postId);
+    const mainDoc = await mainRef.get();
+
+    if (mainDoc.exists) {
+        const data = mainDoc.data()!;
+
+        let author = null;
+        if (data.authorId) {
+            const authorDoc = await adminDb.collection("users").doc(data.authorId).get();
+            if (authorDoc.exists) {
+                const aData = authorDoc.data();
+                author = {
+                    id: authorDoc.id,
+                    displayName: resolveDisplayName(aData),
+                    imageUrl: aData?.imageUrl,
+                    email: aData?.email
+                };
+            }
+        }
+
+        // Fetch comments
+        const commentsSnap = await mainRef.collection("comments").orderBy("createdAt", "asc").get();
+        const comments = await Promise.all(commentsSnap.docs.map(async c => {
+            const cData = c.data();
+            let cAuthor = null;
+            if (cData.authorId) {
+                const u = await adminDb.collection("users").doc(cData.authorId).get();
+                if (u.exists) {
+                    const uData = u.data();
+                    cAuthor = {
+                        id: u.id,
+                        displayName: resolveDisplayName(uData),
+                        imageUrl: uData?.imageUrl,
+                        email: uData?.email
+                    };
+                }
+            }
+
+            return {
+                id: c.id,
+                ...cData,
+                createdAt: cData.createdAt?.toDate ? cData.createdAt.toDate() : new Date(),
+                author: cAuthor
+            };
+        }));
+
+        return sanitizeData({
+            id: mainDoc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+            author,
+            comments,
+            type: 'personal',
+            context: null
+        });
+    }
+
+    return null;
+}
