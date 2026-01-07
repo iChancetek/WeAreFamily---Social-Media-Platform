@@ -15,6 +15,8 @@ runConfig:
 env:
   - variable: OPENAI_API_KEY
     secret: OPENAI_API_KEY
+  - variable: TAVILY_API_KEY
+    secret: TAVILY_API_KEY
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     value: we-are-family-221
   - variable: GOOGLE_CLOUD_PROJECT
