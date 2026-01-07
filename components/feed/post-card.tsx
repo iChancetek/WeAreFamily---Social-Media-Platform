@@ -1,20 +1,27 @@
 'use client';
 
-// Level 2.5: Basic Interactions (No Dropdowns, No Deep Hooks)
-// Goal: Enable Like and Commenting to verify Server Actions and local state work.
+// Level 3: Full Feature Restoration
+// Goal: Re-enable DropdownMenus for Custom Reactions, AI, and Share.
+// We are careful to import DropdownMenu correctly to avoid crashes.
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SafeDate } from "@/components/shared/safe-date";
+import {
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { Heart, MessageCircle, Share2, Sparkles, MoreHorizontal, Send, Loader2, ExternalLink } from "lucide-react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { toggleReaction, addComment } from "@/app/actions/posts";
+
+// Actions
+import { toggleReaction, addComment, createPost } from "@/app/actions/posts";
 import { ReactionType } from "@/types/posts";
+import { REACTIONS, getReactionIcon, getReactionLabel } from "./reaction-selector";
 
 // Dynamic Player
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
@@ -29,12 +36,12 @@ function isUrlVideo(url: string | null | undefined): boolean {
 export function PostCard({ post, currentUserId }: { post: any, currentUserId?: string }) {
     if (!post) return null;
 
-    // -- minimalistic state --
+    // -- State --
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Optimistic Reaction State
+    // Reaction State
     const [currentReaction, setCurrentReaction] = useState<ReactionType | undefined>(
         currentUserId && post.reactions ? post.reactions[currentUserId] : undefined
     );
@@ -45,24 +52,31 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     const profilePic = author.imageUrl;
     const youtubeMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s]+(?<![.,!?])/);
 
-    // -- Handlers (Simple) --
+    // -- Handlers --
 
-    const handleLike = async () => {
+    const handleReaction = async (type: ReactionType) => {
         if (!currentUserId) return toast.error("Please login");
 
-        const isLiked = !!currentReaction;
+        const previousReaction = currentReaction;
+        const previousCount = reactionCount;
+        const isRemoving = currentReaction === type;
+
         // Optimistic UI
-        setCurrentReaction(isLiked ? undefined : 'like');
-        setReactionCount(prev => isLiked ? prev - 1 : prev + 1);
+        setCurrentReaction(isRemoving ? undefined : type);
+        setReactionCount(prev => {
+            if (previousReaction && !isRemoving) return prev; // Change type, count same
+            if (isRemoving) return prev - 1;
+            if (!previousReaction) return prev + 1;
+            return prev;
+        });
 
         try {
-            // Toggle 'like' specifically
-            await toggleReaction(post.id, 'like', post.type || 'personal', post.context?.id);
+            await toggleReaction(post.id, type, post.type || 'personal', post.context?.id);
         } catch {
             // Rollback
-            setCurrentReaction(currentReaction);
-            setReactionCount(post.reactions ? Object.keys(post.reactions).length : 0);
-            toast.error("Failed to like");
+            setCurrentReaction(previousReaction);
+            setReactionCount(previousCount);
+            toast.error("Reaction failed");
         }
     };
 
@@ -73,11 +87,44 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
             await addComment(post.id, commentText, post.type || 'personal', post.context?.id);
             setCommentText("");
             toast.success("Comment added");
-            // Real-time update isn't here yet without listeners, but toast confirms action
         } catch {
             toast.error("Failed to comment");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleSpeak = () => {
+        try {
+            const u = new SpeechSynthesisUtterance(post.content || "");
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
+        } catch { toast.error("TTS unavailable"); }
+    };
+
+    const handleAI = (mode: string) => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('famio:open-ai', {
+                detail: { context: post.content, mode, type: 'post_context' }
+            }));
+            toast.success(`Opening AI: ${mode}`);
+        }
+    };
+
+    const handleShare = async (mode: 'copy' | 'native' | 'repost') => {
+        const url = `${window.location.origin}/post/${post.id}`;
+        if (mode === 'copy') {
+            try {
+                await navigator.clipboard.writeText(url);
+                toast.success("Link copied");
+            } catch { toast.error("Failed to copy"); }
+        } else if (mode === 'native' && navigator.share) {
+            navigator.share({ title: `Post by ${name}`, text: post.content, url }).catch(() => { });
+        } else if (mode === 'repost') {
+            try {
+                await createPost(`🔄 Reposted from ${name}:\n\n${post.content}`, post.mediaUrls || []);
+                toast.success("Reposted!");
+            } catch { toast.error("Repost failed"); }
         }
     };
 
@@ -121,36 +168,73 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
 
             {/* Actions */}
             <div className="flex flex-col px-2 py-1 mx-2 mt-1 border-t border-border">
+                {/* Stats */}
                 <div className="flex justify-between items-center text-xs text-muted-foreground w-full mb-2 px-1 pt-2">
-                    <span className={cn(currentReaction && "text-pink-600 font-medium")}>{reactionCount} reactions</span>
+                    <div className="flex items-center gap-1">
+                        {currentReaction && <span className="text-lg">{getReactionIcon(currentReaction)}</span>}
+                        <span className={cn(currentReaction && "font-medium text-pink-600")}>{reactionCount > 0 ? `${reactionCount} reactions` : 'Be the first to react'}</span>
+                    </div>
                     <span>{post.comments ? post.comments.length : 0} comments</span>
                 </div>
 
+                {/* Main Buttons */}
                 <div className="flex justify-between items-center w-full mb-1">
-                    {/* Like - Direct Toggle */}
-                    <Button variant="ghost" onClick={handleLike} className={cn("flex-1 gap-2 hover:bg-pink-50", currentReaction && "text-pink-600")}>
-                        <Heart className={cn("w-5 h-5", currentReaction && "fill-current")} />
-                        <span>Like</span>
-                    </Button>
 
-                    {/* Comment - Toggle View */}
+                    {/* 1. Reaction Dropdown */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className={cn("flex-1 gap-2 hover:bg-pink-50", currentReaction && "text-pink-600")}>
+                                <span className={cn("text-xl transition-transform", currentReaction && "scale-110")}>{getReactionIcon(currentReaction)}</span>
+                                <span>{currentReaction ? getReactionLabel(currentReaction) : "Like"}</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="flex gap-1 p-2">
+                            {REACTIONS.map(r => (
+                                <DropdownMenuItem key={r.type} onClick={() => handleReaction(r.type as ReactionType)} className="text-2xl cursor-pointer hover:scale-125 transition-transform" title={r.label}>
+                                    {r.emoji}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* 2. Comment Button */}
                     <Button variant="ghost" onClick={() => setShowComments(!showComments)} className="flex-1 gap-2 text-muted-foreground">
                         <MessageCircle className="w-5 h-5" />
                         <span>Comment</span>
                     </Button>
 
-                    {/* AI & Share - Visual Only for now */}
-                    <Button variant="ghost" className="flex-1 gap-2 text-muted-foreground" onClick={() => toast.info("Coming soon")}>
-                        <Sparkles className="w-4 h-4" />
-                        <span>AI</span>
-                    </Button>
-                    <Button variant="ghost" className="flex-1 gap-2 text-muted-foreground" onClick={() => toast.info("Coming soon")}>
-                        <Share2 className="w-5 h-5" />
-                        <span>Share</span>
-                    </Button>
+                    {/* 3. Ask AI Dropdown */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="flex-1 gap-2 text-muted-foreground hover:text-indigo-500 hover:bg-indigo-50">
+                                <Sparkles className="w-4 h-4" />
+                                <span>AI</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center">
+                            <DropdownMenuItem onClick={() => handleAI('executive')}>Summarize</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAI('tutor')}>Explain Context</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleSpeak}>Read Aloud</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* 4. Share Dropdown */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="flex-1 gap-2 text-muted-foreground">
+                                <Share2 className="w-5 h-5" />
+                                <span>Share</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleShare('repost')}>Repost to Feed</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleShare('copy')}>Copy Link</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleShare('native')}>Share via...</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
-                {/* Simple Comment Area */}
+                {/* Comment Area (Simple) */}
                 {showComments && (
                     <div className="w-full mt-2 space-y-3 animate-in fade-in slide-in-from-top-1">
                         <div className="flex gap-2">
