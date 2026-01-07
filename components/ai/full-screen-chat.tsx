@@ -230,9 +230,15 @@ export function FullScreenChat() {
                 await saveMessage(chatId, 'user', userMsg);
             }
 
-            // Get AI Response (Pass Attachments)
+            // Get AI Response (Pass Attachments & History)
+            // Filter out any potential non-serializable data from messages if needed
+            const history = messages.map(m => ({
+                role: m.role,
+                content: m.content
+            }));
+
             // Note: Currently backend only fully uses 'image' types for Vision
-            const response = await chatWithAgent(userMsg, selectedMode, selectedModel, sentAttachments);
+            const response = await chatWithAgent(userMsg, selectedMode, selectedModel, sentAttachments, history);
             const aiMsg = response || "I couldn't generate a response.";
 
             await saveMessage(chatId!, 'assistant', aiMsg);

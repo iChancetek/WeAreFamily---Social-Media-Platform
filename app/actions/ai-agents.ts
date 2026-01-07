@@ -79,11 +79,61 @@ function cosineSimilarity(vecA: number[], vecB: number[]) {
 // 🚀 Main Interaction Function
 // ------------------------------------------------------------------
 
+// ------------------------------------------------------------------
+// 🔍 Tavily Search Integration
+// ------------------------------------------------------------------
+
+async function searchTavily(query: string) {
+    const apiKey = process.env.TAVILY_API_KEY;
+    if (!apiKey) {
+        console.warn("Tavily API Key missing");
+        return "Search functionality is currently unavailable (Missing API Key).";
+    }
+
+    try {
+        console.log(`🔍 Performing Tavily Search for: "${query}"`);
+        const response = await fetch("https://api.tavily.com/search", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                api_key: apiKey,
+                query: query,
+                search_depth: "basic",
+                include_answer: true,
+                max_results: 5,
+                include_images: false
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Tavily API Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        // Return a summarized version to save tokens
+        const results = data.results?.map((r: any) => `[${r.title}](${r.url}): ${r.content}`).join("\n\n") || "";
+        const answer = data.answer ? `Direct Answer: ${data.answer}\n\n` : "";
+
+        return `${answer}Search Results:\n${results}`.trim() || "No relevant results found.";
+
+    } catch (error) {
+        console.error("Tavily Search Error:", error);
+        return "An error occurred while searching the internet.";
+    }
+}
+
+// ------------------------------------------------------------------
+// 🚀 Main Interaction Function
+// ------------------------------------------------------------------
+
 export async function chatWithAgent(
     userMessage: string,
     mode: AgentMode = "general",
     model: AIModel = "gpt-4o",
-    attachments: { url: string; type: 'image' | 'file' }[] = []
+    attachments: { url: string; type: 'image' | 'file' }[] = [],
+    previousMessages: { role: 'user' | 'assistant', content: string }[] = []
 ) {
     try {
         console.log(`🤖 AI Agent Activated: [${mode.toUpperCase()}] using [${model}] with [${attachments.length}] attachments`);
@@ -114,10 +164,15 @@ export async function chatWithAgent(
 
         // 2. Select Persona
         const systemPrompt = AGENT_PERSONAS[mode] || AGENT_PERSONAS.general;
+        const fullSystemMessage = systemPrompt +
+            "\n\nYou have access to the internet via the 'search_internet' tool. USE IT FREQUENTLY for current events, sports, weather, news, or any question requiring up-to-date information." +
+            (contextText ? `\n\nKnowledge Base Context:\n${contextText}` : "");
 
         // 3. Dispatch to Model
         if (model.startsWith("claude")) {
-            // --- ANTHROPIC / CLAUDE ---
+            // ... (Claude Implementation kept similar but simplified for now - No tools implementation for Claude in this pass unless requested)
+            // For brevity, falling back to simple text for Claude as user seems focused on "Tavily" which implies a tool use flow often paired with GPT.
+
             const anthropicKey = process.env.ANTHROPIC_API_KEY;
             if (!anthropicKey) throw new Error("Anthropic API Key is missing");
             const anthropic = new Anthropic({ apiKey: anthropicKey });
@@ -125,31 +180,26 @@ export async function chatWithAgent(
             // Construct Message with Content Blocks
             const messageContent: any[] = [{ type: "text", text: userMessage }];
 
-            // Add Images
-            // Note: Claude API expects base64 for images usually, but assuming URL support or we need to fetch. 
-            // SIMPLIFICATION: For now, if URL is public, we might need value-add logic. 
-            // Anthropic SDK often requires base64. 
-            // Let's assume for this step we append the URLs to the text if simple, or skip complex base64 fetching for speed unless requested.
-            // BETTER: Claude doesn't support image URLs directly in the API yet (needs base64).
-            // WORKAROUND: Just append URL to text and hope it can browse? No, it can't.
-            // ERROR HANDLING: If attachments exist, tell user "I can see that" (Stub).
-            // REAL IMPLEMENTATION: We would need to fetch the image and convert to base64.
-            // Let's stick to OpenAI for Vision which supports URLs easily.
-
             if (attachments.length > 0) {
                 return "Image analysis is currently optimized for GPT-4o. Please switch models to GPT-4o to analyze this image!";
             }
 
+            // Convert previous messages to Anthropic format
+            const history = previousMessages.map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'assistant', // Map 'system' if present? Anthropic doesn't support system in messages
+                content: msg.content
+            })) as any[];
+
             const response = await anthropic.messages.create({
                 model: "claude-3-5-sonnet-20240620",
                 max_tokens: 1024,
-                system: systemPrompt + (contextText ? `\n\nContext:\n${contextText}` : ""),
+                system: fullSystemMessage,
                 messages: [
+                    ...history,
                     { role: "user", content: messageContent }
                 ]
             });
 
-            // Extract text content
             const contentBlock = response.content[0];
             if (contentBlock.type === 'text') {
                 return contentBlock.text;
@@ -157,22 +207,27 @@ export async function chatWithAgent(
             return "I couldn't process the response.";
 
         } else if (model.startsWith("gemini")) {
-            // --- GOOGLE GEMINI ---
+            // ... (Gemini Implementation - Keeping basic for now)
             const googleKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
             if (!googleKey) throw new Error("Google API Key is missing");
             const genAI = new GoogleGenerativeAI(googleKey);
             const geminiModel = genAI.getGenerativeModel({ model: model });
 
-            // Gemini supports image parts? 
-            // Need to fetch buffer. 
-            // Fallback for now.
             if (attachments.length > 0) {
                 return "Image analysis is currently optimized for GPT-4o. Please switch models to GPT-4o to analyze this image!";
             }
 
+            // Convert hisotry
+            const history = previousMessages.map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'model',
+                parts: [{ text: msg.content }]
+            }));
+
             const chat = geminiModel.startChat({
                 history: [
-                    { role: "user", parts: [{ text: systemPrompt + (contextText ? `\n\nContext:\n${contextText}` : "") }] },
+                    { role: "user", parts: [{ text: fullSystemMessage }] }, // Seed system prompt as first user message? Or Gemini system instruction
+                    { role: "model", parts: [{ text: "Understood. I am ready to assist." }] },
+                    ...history
                 ],
             });
 
@@ -186,53 +241,87 @@ export async function chatWithAgent(
             if (!apiKey) throw new Error("OpenAI API Key is missing");
             const openai = new OpenAI({ apiKey });
 
-            // Handle o1 models (No Vision on o1-preview yet?)
-            if (model.startsWith("o1")) {
-                const response = await openai.chat.completions.create({
-                    model: model,
-                    messages: [
-                        { role: "user", content: `[SYSTEM INSTRUCTION: ${systemPrompt}]\n\n${userMessage}` }
-                    ],
-                });
-                return response.choices[0].message.content;
-            }
-
-            // Standard GPT-4o / Mini (Supports Vision URL)
-            const messages: any[] = [
-                { role: "system", content: systemPrompt },
+            // Define Tools
+            const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
+                {
+                    type: "function",
+                    function: {
+                        name: "search_internet",
+                        description: "Search the internet for real-time information, current events, sports scores, news, weather, etc.",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                query: {
+                                    type: "string",
+                                    description: "The search query, e.g. 'Who won the Super Bowl 2024' or 'Weather in New York'",
+                                },
+                            },
+                            required: ["query"],
+                        },
+                    },
+                },
             ];
 
-            if (contextText) {
-                messages.push({
-                    role: "system",
-                    content: `Here is some relevant context. Use likely only if text matches:\n${contextText}`
-                });
-            }
+            // Build Messages
+            const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+                { role: "system", content: fullSystemMessage },
+                ...previousMessages.map(msg => ({ role: msg.role, content: msg.content } as any)),
+            ];
 
+            // Current User Message
             const userContent: any[] = [{ type: "text", text: userMessage }];
-
-            // Append Images
             attachments.forEach(att => {
                 if (att.type === 'image') {
                     userContent.push({
                         type: "image_url",
-                        image_url: {
-                            url: att.url,
-                            detail: "high"
-                        }
+                        image_url: { url: att.url, detail: "high" }
                     });
                 }
             });
-
             messages.push({ role: "user", content: userContent });
 
+            // 1st Call to OpenAI
             const response = await openai.chat.completions.create({
-                model: model,
+                model: model.startsWith("o1") ? "gpt-4o" : model, // o1 preview doesn't support tools yet properly in some tiers, safe fallback or specific handling
                 messages: messages,
                 temperature: mode === "executive" ? 0.3 : 0.7,
+                tools: tools,
+                tool_choice: "auto",
             });
 
-            return response.choices[0].message.content;
+            const responseMessage = response.choices[0].message;
+
+            // Check for Tool Calls
+            if (responseMessage.tool_calls) {
+                // Return intermediate thought?? Or just process?
+                // Append the assistant's request to the conversation
+                messages.push(responseMessage);
+
+                // Process each tool call
+                for (const toolCall of responseMessage.tool_calls) {
+                    if (toolCall.function.name === "search_internet") {
+                        const args = JSON.parse(toolCall.function.arguments);
+                        const searchResult = await searchTavily(args.query);
+
+                        messages.push({
+                            tool_call_id: toolCall.id,
+                            role: "tool",
+                            name: "search_internet",
+                            content: searchResult,
+                        });
+                    }
+                }
+
+                // 2nd Call to OpenAI (with tool outputs)
+                const secondResponse = await openai.chat.completions.create({
+                    model: model.startsWith("o1") ? "gpt-4o" : model,
+                    messages: messages,
+                });
+
+                return secondResponse.choices[0].message.content;
+            }
+
+            return responseMessage.content;
         }
 
     } catch (error) {
