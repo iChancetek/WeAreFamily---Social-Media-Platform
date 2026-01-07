@@ -8,46 +8,9 @@ import { revalidatePath } from "next/cache";
 import { sanitizeData } from "@/lib/serialization";
 import { ReactionType, NotificationType } from "@/types/posts";
 
-// Helper for Display Name Resolution
-function resolveDisplayName(data: any) {
-    if (!data) return "Unknown User";
+import { resolveDisplayName } from "@/lib/user-utils";
 
-    // 1. Use displayName if it exists and is meaningful (not generic/default)
-    if (data.displayName && data.displayName.trim()) {
-        const lowerName = data.displayName.toLowerCase();
-        const generics = ["family member", "unknown user", "member", "user"];
-        // Only use if NOT generic
-        if (!generics.includes(lowerName)) {
-            return data.displayName;
-        }
-    }
-
-    // 2. Try to build from profile data
-    if (data.profileData?.firstName) {
-        const fullName = `${data.profileData.firstName} ${data.profileData.lastName || ''}`.trim();
-        if (fullName) return fullName;
-    }
-
-    // 2b. Fallback: If we have first/last name at top level (sometimes happens)
-    if (data.firstName) {
-        const fullName = `${data.firstName} ${data.lastName || ''}`.trim();
-        if (fullName) return fullName;
-    }
-
-    // 3. Use email prefix (everything before @)
-    if (data.email) {
-        const emailPrefix = data.email.split('@')[0];
-        // Make it more readable (capitalize, replace dots/underscores with spaces)
-        return emailPrefix
-            .replace(/[._]/g, ' ')
-            .split(' ')
-            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    }
-
-    // 4. Final fallback
-    return "Unknown User";
-}
+// Removed local resolveDisplayName helper in favor of shared utility
 
 export async function createPost(content: string, mediaUrls: string[] = []) {
     const user = await getUserProfile()

@@ -75,18 +75,24 @@ export async function getNotifications() {
 
         // Hydrate sender info
         const senderDoc = await adminDb.collection("users").doc(data.senderId).get();
-        const sender = senderDoc.exists ? {
-            displayName: senderDoc.data()?.displayName || "Unknown",
-            imageUrl: senderDoc.data()?.imageUrl
-        } : { displayName: "Unknown" };
+        import { resolveDisplayName } from "@/lib/user-utils";
 
-        return sanitizeData({
-            id: doc.id,
-            ...data,
-            sender,
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
-        });
-    }));
+        // ... imports ...
+
+        export async function getNotifications() {
+            // ...
+            const sender = senderDoc.exists ? {
+                displayName: resolveDisplayName(senderDoc.data()),
+                imageUrl: senderDoc.data()?.imageUrl
+            } : { displayName: "Unknown" };
+
+            return sanitizeData({
+                id: doc.id,
+                ...data,
+                sender,
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+            });
+        }));
 
     // Ensure sorting in case we fell back to unordered query
     return notifications.sort((a: any, b: any) => {
