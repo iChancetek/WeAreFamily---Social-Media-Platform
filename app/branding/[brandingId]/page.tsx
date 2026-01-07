@@ -58,73 +58,73 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
                     variant="secondary"
                 />
             </div>
-        </div>
 
 
-        {/* Soft Delete Notice for Owner */ }
-    {
-        branding.deletedAt && (user?.id === branding.founderId) && (
-            <div className="mt-8 mb-4 p-4 bg-yellow-500/10 border border-yellow-500 rounded-lg flex items-center justify-between mx-4 lg:mx-0">
-                <div className="flex items-center gap-3">
-                    <Trash2 className="h-5 w-5 text-yellow-500" />
-                    <div>
-                        <h4 className="font-semibold text-yellow-500">This page is scheduled for deletion</h4>
-                        <p className="text-sm text-yellow-500/90">
-                            It is currently hidden from the public. It will be permanently deleted on {branding.scheduledPermanentDeleteAt?.toDate().toLocaleDateString()}.
+
+            {/* Soft Delete Notice for Owner */}
+            {
+                branding.deletedAt && (user?.id === branding.founderId) && (
+                    <div className="mt-8 mb-4 p-4 bg-yellow-500/10 border border-yellow-500 rounded-lg flex items-center justify-between mx-4 lg:mx-0">
+                        <div className="flex items-center gap-3">
+                            <Trash2 className="h-5 w-5 text-yellow-500" />
+                            <div>
+                                <h4 className="font-semibold text-yellow-500">This page is scheduled for deletion</h4>
+                                <p className="text-sm text-yellow-500/90">
+                                    It is currently hidden from the public. It will be permanently deleted on {branding.scheduledPermanentDeleteAt?.toDate().toLocaleDateString()}.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8"> {/* Adjusted margin top for profile pic overlap */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* Post Creator for Followers and Admins */}
+                    {followStatus && (
+                        <BrandingPostCreator
+                            brandingId={branding.id}
+                            branding={brandingAuthor}
+                            currentUser={user!}
+                            role={followStatus.role}
+                        />
+                    )}
+
+                    <div className="space-y-4">
+                        {posts.map(post => (
+                            <PostCard key={post.id} post={post} currentUserId={user?.id || ''} />
+                        ))}
+                        {posts.length === 0 && (
+                            <div className="text-center py-12 bg-muted/30 rounded-lg">
+                                <p className="text-muted-foreground">No updates yet.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="space-y-6">
+                    <Card className="p-4">
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                            <Briefcase className="w-4 h-4" />
+                            About
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            {branding.description}
                         </p>
-                    </div>
+                        <Separator className="my-4" />
+                        <div className="space-y-4 text-sm">
+                            <div className="flex justify-between py-2 border-b">
+                                <span className="text-muted-foreground">Created</span>
+                                <span>{branding.createdAt.toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex justify-between py-2 border-b">
+                                <span className="text-muted-foreground">Followers</span>
+                                <span>{branding.followerCount || 1}</span>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
             </div>
-        )
-    }
-
-    <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8"> {/* Adjusted margin top for profile pic overlap */}
-        <div className="lg:col-span-2 space-y-6">
-            {/* Post Creator for Followers and Admins */}
-            {followStatus && (
-                <BrandingPostCreator
-                    brandingId={branding.id}
-                    branding={brandingAuthor}
-                    currentUser={user!}
-                    role={followStatus.role}
-                />
-            )}
-
-            <div className="space-y-4">
-                {posts.map(post => (
-                    <PostCard key={post.id} post={post} currentUserId={user?.id || ''} />
-                ))}
-                {posts.length === 0 && (
-                    <div className="text-center py-12 bg-muted/30 rounded-lg">
-                        <p className="text-muted-foreground">No updates yet.</p>
-                    </div>
-                )}
-            </div>
-        </div>
-
-        <div className="space-y-6">
-            <Card className="p-4">
-                <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <Briefcase className="w-4 h-4" />
-                    About
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                    {branding.description}
-                </p>
-                <Separator className="my-4" />
-                <div className="space-y-4 text-sm">
-                    <div className="flex justify-between py-2 border-b">
-                        <span className="text-muted-foreground">Created</span>
-                        <span>{branding.createdAt.toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b">
-                        <span className="text-muted-foreground">Followers</span>
-                        <span>{branding.followerCount || 1}</span>
-                    </div>
-                </div>
-            </Card>
-        </div>
-    </div>
 
         </MainLayout >
     );
