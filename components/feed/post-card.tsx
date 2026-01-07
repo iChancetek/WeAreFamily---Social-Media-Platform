@@ -3,7 +3,7 @@
 // Level 2: Visual Restoration (No Complex Interactions)
 // Goal: Verify Avatars, Media, and Layout work without crashing.
 
-import { Card, CardContent, CardGeneric, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SafeDate } from "@/components/shared/safe-date";
