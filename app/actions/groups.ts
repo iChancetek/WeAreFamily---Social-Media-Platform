@@ -1,3 +1,4 @@
+'use server'
 
 import { slugify } from "@/lib/utils";
 
