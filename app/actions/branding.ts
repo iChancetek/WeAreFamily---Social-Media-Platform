@@ -167,13 +167,15 @@ export async function createBrandingPost(brandingId: string, content: string, me
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
-    // Check if user is admin of the branding
+    // Check if user is a follower or admin
     const status = await getBrandingFollowStatus(brandingId);
-    if (status?.role !== 'admin') throw new Error("Only admins can post to the branding");
+    if (!status) throw new Error("Must follow the page to post");
+
+    const isAdmin = status.role === 'admin';
 
     await adminDb.collection("pages").doc(brandingId).collection("posts").add({
         authorId: user.id,
-        postedAsBranding: true,
+        postedAsBranding: isAdmin, // Only admins post AS the brand
         brandingId: brandingId,
         content,
         mediaUrls,

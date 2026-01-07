@@ -19,8 +19,9 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
     if (!branding) return notFound();
 
     const user = await getUserProfile();
-    const followStatus = await getBrandingFollowStatus(brandingId);
-    const posts = await getBrandingPosts(brandingId);
+    // Use branding.id (resolved) instead of params.brandingId (potential slug)
+    const followStatus = await getBrandingFollowStatus(branding.id);
+    const posts = await getBrandingPosts(branding.id);
 
     const isAdmin = followStatus?.role === 'admin';
 
@@ -105,9 +106,14 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
 
             <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8"> {/* Adjusted margin top for profile pic overlap */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Admin Post Creator */}
-                    {isAdmin && (
-                        <BrandingPostCreator brandingId={branding.id} branding={brandingAuthor} />
+                    {/* Post Creator for Followers and Admins */}
+                    {followStatus && (
+                        <BrandingPostCreator
+                            brandingId={branding.id}
+                            branding={brandingAuthor}
+                            currentUser={user!}
+                            role={followStatus.role}
+                        />
                     )}
 
                     <div className="space-y-4">

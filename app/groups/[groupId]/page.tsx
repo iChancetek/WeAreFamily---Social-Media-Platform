@@ -25,9 +25,10 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
     if (!group) return notFound();
 
     const user = await getUserProfile();
-    const memberStatus = await getGroupMemberStatus(groupId);
+    // Use group.id (resolved) instead of params.groupId (potential slug)
+    const memberStatus = await getGroupMemberStatus(group.id);
     const isMember = !!memberStatus;
-    const posts = await getGroupPosts(groupId);
+    const posts = await getGroupPosts(group.id);
 
     // If private and not member, check if we can see anything?
     // Usually show basic info and join button.
