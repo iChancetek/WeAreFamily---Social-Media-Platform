@@ -631,7 +631,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
             </CardContent>
             <CardFooter className="flex-col !items-stretch px-2 py-1 mx-2 mt-1 border-t border-border">
                 <div className="flex justify-between items-center text-muted-foreground w-full mb-1">
-                    <DropdownMenu modal={false}>
+                    <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
@@ -676,16 +676,21 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         variant="ghost"
                         className="flex-none px-3 gap-2 hover:bg-muted h-9 font-medium text-muted-foreground rounded-md"
                         onClick={() => {
-                            const utterance = new SpeechSynthesisUtterance(post.content || "This post has no text content.");
-                            window.speechSynthesis.cancel();
-                            window.speechSynthesis.speak(utterance);
+                            try {
+                                const utterance = new SpeechSynthesisUtterance(post.content || "This post has no text content.");
+                                window.speechSynthesis.cancel();
+                                window.speechSynthesis.speak(utterance);
+                            } catch (e) {
+                                console.error("TTS Error:", e);
+                                toast.error("Could not read text");
+                            }
                         }}
                         title="Read Post"
                     >
                         <Volume2 className="w-5 h-5" />
                     </Button>
 
-                    <DropdownMenu modal={false}>
+                    <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
@@ -698,9 +703,11 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         <DropdownMenuContent align="center">
                             <DropdownMenuItem
                                 onClick={() => {
-                                    window.dispatchEvent(new CustomEvent('famio:open-ai', {
-                                        detail: { context: post.content, mode: 'executive', type: 'post_context' }
-                                    }));
+                                    try {
+                                        window.dispatchEvent(new CustomEvent('famio:open-ai', {
+                                            detail: { context: post.content, mode: 'executive', type: 'post_context' }
+                                        }));
+                                    } catch (e) { console.error("AI Event Error:", e); }
                                 }}
                                 className="gap-2"
                             >
@@ -709,9 +716,11 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => {
-                                    window.dispatchEvent(new CustomEvent('famio:open-ai', {
-                                        detail: { context: post.content, mode: 'tutor', type: 'post_context' }
-                                    }));
+                                    try {
+                                        window.dispatchEvent(new CustomEvent('famio:open-ai', {
+                                            detail: { context: post.content, mode: 'tutor', type: 'post_context' }
+                                        }));
+                                    } catch (e) { console.error("AI Event Error:", e); }
                                 }}
                                 className="gap-2"
                             >
@@ -722,11 +731,11 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                             {/* TTS Option */}
                             <DropdownMenuItem
                                 onClick={() => {
-                                    // Use the window.speechSynthesis directly or trigger a custom event if the hook is not available in this scope
-                                    // But we CAN use the hook here since we are inside the component
-                                    const utterance = new SpeechSynthesisUtterance(post.content || "This post has no text content.");
-                                    window.speechSynthesis.cancel(); // Stop any previous
-                                    window.speechSynthesis.speak(utterance);
+                                    try {
+                                        const utterance = new SpeechSynthesisUtterance(post.content || "This post has no text content.");
+                                        window.speechSynthesis.cancel(); // Stop any previous
+                                        window.speechSynthesis.speak(utterance);
+                                    } catch (e) { console.error("TTS Error:", e); }
                                 }}
                                 className="gap-2 cursor-pointer"
                             >
@@ -736,9 +745,11 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
 
                             <DropdownMenuItem
                                 onClick={() => {
-                                    window.dispatchEvent(new CustomEvent('famio:open-ai', {
-                                        detail: { context: post.content, mode: 'biographer', type: 'post_context' }
-                                    }));
+                                    try {
+                                        window.dispatchEvent(new CustomEvent('famio:open-ai', {
+                                            detail: { context: post.content, mode: 'biographer', type: 'post_context' }
+                                        }));
+                                    } catch (e) { console.error("AI Event Error:", e); }
                                 }}
                                 className="gap-2"
                             >
@@ -748,7 +759,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <DropdownMenu modal={false}>
+                    <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
@@ -773,14 +784,16 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => {
-                                    const event = new CustomEvent('famio:open-ai', {
-                                        detail: {
-                                            context: post.content,
-                                            type: 'post_context'
-                                        }
-                                    });
-                                    window.dispatchEvent(event);
-                                    toast.success("Opened in AI Assistant! 🧠", { duration: 1500 });
+                                    try {
+                                        const event = new CustomEvent('famio:open-ai', {
+                                            detail: {
+                                                context: post.content,
+                                                type: 'post_context'
+                                            }
+                                        });
+                                        window.dispatchEvent(event);
+                                        toast.success("Opened in AI Assistant! 🧠", { duration: 1500 });
+                                    } catch (e) { console.error("AI Event Error:", e); }
                                 }}
                                 className="gap-2 cursor-pointer text-blue-600 focus:text-blue-600"
                             >
@@ -809,7 +822,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                             </Avatar>
                             <div className="relative flex-1">
                                 <Input
-                                    placeholder="Write a comment..."
+                                    placeholder="Write a comment... (v2)"
                                     className="bg-muted border-none rounded-full h-9 pl-4 pr-20 text-card-foreground placeholder:text-muted-foreground"
                                     value={commentText}
                                     onChange={(e) => setCommentText(e.target.value)}
