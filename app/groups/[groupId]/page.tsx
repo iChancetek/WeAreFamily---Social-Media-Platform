@@ -18,6 +18,8 @@ import { GroupPostCreator } from "@/components/groups/group-post-creator"; // Wi
 import { JoinGroupButton } from "@/components/groups/join-group-button"; // Client component for actions
 import { GroupAITutorBanner } from "@/components/groups/group-ai-tutor-banner";
 import { GroupCoverButton } from "@/components/groups/group-cover-button";
+import { GroupManagementDialog } from "@/components/groups/group-management-dialog";
+import { Trash2 } from "lucide-react";
 
 export default async function GroupPage({ params }: { params: Promise<{ groupId: string }> }) {
     const { groupId } = await params;
@@ -79,12 +81,12 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
                         </div>
 
                         <div className="flex items-center gap-3">
-                            {/* Edit Cover Button for Admins */}
+                            {/* Management Dialog for Admins/Founders */}
                             {(user?.id === group.founderId || memberStatus?.role === 'admin') && user && (
-                                <GroupCoverButton
-                                    groupId={group.id}
-                                    currentCoverUrl={group.coverUrl}
-                                    userId={user.id}
+                                <GroupManagementDialog
+                                    group={group}
+                                    currentUser={user}
+                                    isAdmin={true}
                                 />
                             )}
                             {/* Join/Leave Button Client Component */}
@@ -97,6 +99,21 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
                     </div>
                 </div>
             </div>
+
+            {/* Soft Delete Notice for Owner */}
+            {group.deletedAt && (user?.id === group.founderId) && (
+                <div className="mb-8 p-4 bg-yellow-500/10 border border-yellow-500 rounded-lg flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Trash2 className="h-5 w-5 text-yellow-500" />
+                        <div>
+                            <h4 className="font-semibold text-yellow-500">This group is scheduled for deletion</h4>
+                            <p className="text-sm text-yellow-500/90">
+                                It is currently hidden from the public. It will be permanently deleted on {group.scheduledPermanentDeleteAt?.toDate().toLocaleDateString()}.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">

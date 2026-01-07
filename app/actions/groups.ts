@@ -21,6 +21,8 @@ export type Group = {
     createdAt: Date;
     memberCount?: number;
     isMember?: boolean;
+    deletedAt?: any;
+    scheduledPermanentDeleteAt?: any;
 };
 
 export async function createGroup(data: { name: string; description: string; category: string; privacy: 'public' | 'private'; imageUrl?: string; coverUrl?: string }) {
@@ -87,12 +89,14 @@ export async function getGroups() {
     // In a real app, we might want to check membership for each group efficiently
     // For now, we'll just return the groups.
 
-    return groupsSnapshot.docs.map((doc: any) => {
-        return sanitizeData({
-            id: doc.id,
-            ...doc.data()
-        }) as Group;
-    });
+    return groupsSnapshot.docs
+        .map((doc: any) => {
+            return sanitizeData({
+                id: doc.id,
+                ...doc.data()
+            }) as Group;
+        })
+        .filter(g => !g.deletedAt); // Filter out soft-deleted groups by default
 }
 
 export async function getGroup(identifier: string) {
@@ -373,3 +377,68 @@ export async function updateGroupCover(groupId: string, coverUrl: string | null)
     revalidatePath('/groups');
 }
 
+
+export async function updateGroupDetails(groupId: string, data: { name?: string; description?: string; coverUrl?: string }) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const groupDoc = await adminDb.collection("groups").doc(groupId).get();
+    if (!groupDoc.exists) throw new Error("Group not found");
+
+    const groupData = groupDoc.data();
+    if (groupData?.founderId !== user.id) {
+        // Check if admin member
+        const memberDoc = await adminDb.collection("groups").doc(groupId).collection("members").doc(user.id).get();
+        if (!memberDoc.exists || memberDoc.data()?.role !== 'admin') {
+            throw new Error("Unauthorized");
+        }
+    }
+
+    await adminDb.collection("groups").doc(groupId).update({
+        ...data,
+        updatedAt: FieldValue.serverTimestamp()
+    });
+
+    revalidatePath(`/groups/${groupId}`);
+    revalidatePath('/groups');
+}
+
+export async function softDeleteGroup(groupId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const groupDoc = await adminDb.collection("groups").doc(groupId).get();
+    if (!groupDoc.exists) throw new Error("Group not found");
+
+    // Only founder can delete
+    if (groupDoc.data()?.founderId !== user.id) throw new Error("Only the founder can delete the group");
+
+    const now = new Date();
+    const thirtyDaysLater = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+    await adminDb.collection("groups").doc(groupId).update({
+        deletedAt: FieldValue.serverTimestamp(),
+        scheduledPermanentDeleteAt: thirtyDaysLater
+    });
+
+    revalidatePath(`/groups/${groupId}`);
+    revalidatePath('/groups');
+}
+
+export async function restoreGroup(groupId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const groupDoc = await adminDb.collection("groups").doc(groupId).get();
+    if (!groupDoc.exists) throw new Error("Group not found");
+
+    if (groupDoc.data()?.founderId !== user.id) throw new Error("Unauthorized");
+
+    await adminDb.collection("groups").doc(groupId).update({
+        deletedAt: FieldValue.delete(),
+        scheduledPermanentDeleteAt: FieldValue.delete()
+    });
+
+    revalidatePath(`/groups/${groupId}`);
+    revalidatePath('/groups');
+}

@@ -21,6 +21,8 @@ export type Branding = {
     createdAt: Date;
     followerCount?: number;
     isFollowing?: boolean;
+    deletedAt?: any;
+    scheduledPermanentDeleteAt?: any;
 };
 
 export async function createBranding(data: { name: string; description: string; category: string; imageUrl?: string; coverUrl?: string }) {
@@ -76,12 +78,14 @@ export async function createBranding(data: { name: string; description: string; 
 export async function getBrandings() {
     const brandingsSnapshot = await adminDb.collection("pages").orderBy("createdAt", "desc").get();
 
-    return brandingsSnapshot.docs.map((doc: any) => {
-        return sanitizeData({
-            id: doc.id,
-            ...doc.data()
-        }) as Branding;
-    });
+    return brandingsSnapshot.docs
+        .map((doc: any) => {
+            return sanitizeData({
+                id: doc.id,
+                ...doc.data()
+            }) as Branding;
+        })
+        .filter(b => !b.deletedAt);
 }
 
 export async function getBranding(identifier: string) {
@@ -339,6 +343,70 @@ export async function updateBrandingCover(brandingId: string, coverUrl: string |
 
     await adminDb.collection("pages").doc(brandingId).update({
         coverUrl: coverUrl || null
+    });
+
+    revalidatePath(`/branding/${brandingId}`);
+    revalidatePath('/branding');
+}
+
+export async function updateBrandingDetails(brandingId: string, data: { name?: string; description?: string; coverUrl?: string }) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const brandingDoc = await adminDb.collection("pages").doc(brandingId).get();
+    if (!brandingDoc.exists) throw new Error("Page not found");
+
+    // Only founder or admin can update
+    const brandingData = brandingDoc.data();
+    if (brandingData?.founderId !== user.id) {
+        const followerDoc = await adminDb.collection("pages").doc(brandingId).collection("followers").doc(user.id).get();
+        if (!followerDoc.exists || followerDoc.data()?.role !== 'admin') {
+            throw new Error("Unauthorized");
+        }
+    }
+
+    await adminDb.collection("pages").doc(brandingId).update({
+        ...data,
+        updatedAt: FieldValue.serverTimestamp()
+    });
+
+    revalidatePath(`/branding/${brandingId}`);
+    revalidatePath('/branding');
+}
+
+export async function softDeleteBranding(brandingId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const brandingDoc = await adminDb.collection("pages").doc(brandingId).get();
+    if (!brandingDoc.exists) throw new Error("Page not found");
+
+    if (brandingDoc.data()?.founderId !== user.id) throw new Error("Only the founder can delete the page");
+
+    const now = new Date();
+    const thirtyDaysLater = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+    await adminDb.collection("pages").doc(brandingId).update({
+        deletedAt: FieldValue.serverTimestamp(),
+        scheduledPermanentDeleteAt: thirtyDaysLater
+    });
+
+    revalidatePath(`/branding/${brandingId}`);
+    revalidatePath('/branding');
+}
+
+export async function restoreBranding(brandingId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const brandingDoc = await adminDb.collection("pages").doc(brandingId).get();
+    if (!brandingDoc.exists) throw new Error("Page not found");
+
+    if (brandingDoc.data()?.founderId !== user.id) throw new Error("Unauthorized");
+
+    await adminDb.collection("pages").doc(brandingId).update({
+        deletedAt: FieldValue.delete(),
+        scheduledPermanentDeleteAt: FieldValue.delete()
     });
 
     revalidatePath(`/branding/${brandingId}`);
