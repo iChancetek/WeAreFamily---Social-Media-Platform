@@ -3,6 +3,7 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
+import { resolveDisplayName } from "@/lib/user-utils";
 
 export type AuditAction =
     | "user.login"
@@ -87,34 +88,30 @@ export async function logAuditEvent(
             return;
         }
 
-        import { resolveDisplayName } from "@/lib/user-utils";
-
         /**
          * Log an audit event for admin monitoring
          */
-        export async function logAuditEvent(
-// ...
         const auditEntry: Omit<AuditLogEntry, "timestamp"> = {
-                userId: user.id,
-                userName: resolveDisplayName(user),
-                userEmail: user.email || "Unknown",
-                userRole: user.role || "member",
-                action,
-                targetType: options?.targetType,
-                targetId: options?.targetId,
-                targetName: options?.targetName,
-                details: options?.details,
-            };
+            userId: user.id,
+            userName: resolveDisplayName(user),
+            userEmail: user.email || "Unknown",
+            userRole: user.role || "member",
+            action,
+            targetType: options?.targetType,
+            targetId: options?.targetId,
+            targetName: options?.targetName,
+            details: options?.details,
+        };
 
         // Remove undefined values which Firestore doesn't support
         const cleanEntry = JSON.parse(JSON.stringify(auditEntry));
 
         const docRef = await adminDb.collection("auditLogs").add({
-                ...cleanEntry,
-                timestamp: FieldValue.serverTimestamp(),
-            });
+            ...cleanEntry,
+            timestamp: FieldValue.serverTimestamp(),
+        });
 
-            console.log(`[logAuditEvent] Success: ${action} (${docRef.id})`);
+        console.log(`[logAuditEvent] Success: ${action} (${docRef.id})`);
 
     } catch (error) {
         // Don't throw - audit logging shouldn't break the app
