@@ -4,9 +4,12 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
+import { resolveDisplayName } from "@/lib/user-utils";
 import { sanitizeData } from "@/lib/serialization";
 
+
 export type NotificationType = 'like' | 'comment' | 'group_invite' | 'follow' | 'mention' | 'admin_action' | 'family_request' | 'message';
+
 
 export type Notification = {
     id: string;
@@ -74,6 +77,8 @@ export async function getNotifications() {
         const data = doc.data();
 
         // Hydrate sender info
+        const senderDoc = await adminDb.collection('users').doc(data.senderId).get();
+
         const sender = senderDoc.exists ? {
             displayName: resolveDisplayName(senderDoc.data()),
             imageUrl: senderDoc.data()?.imageUrl
