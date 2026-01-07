@@ -13,7 +13,7 @@ import { SafeDate } from "@/components/shared/safe-date";
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Heart, MessageCircle, Share2, Sparkles, MoreHorizontal, Send, Loader2, ExternalLink } from "lucide-react";
+import { Heart, MessageCircle, Share2, Sparkles, MoreHorizontal, Send, Loader2, ExternalLink, AlertTriangle } from "lucide-react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ import { toggleReaction, addComment, editPost, deletePostWithContext } from "@/a
 import { ReactionType } from "@/types/posts";
 import { REACTIONS, getReactionIcon, getReactionLabel } from "./reaction-selector";
 import { Textarea } from "@/components/ui/textarea";
+import { ReportDialog } from "@/components/reporting/report-dialog";
 
 // Dynamic Player
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
@@ -38,6 +39,9 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     if (!post || post.isDeleted) return null;
 
     // -- State --
+    const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+    // Comment State (Real-time)
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,8 +60,6 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
         currentUserId && post.reactions ? post.reactions[currentUserId] : undefined
     );
     const [reactionCount, setReactionCount] = useState(post.reactions ? Object.keys(post.reactions).length : 0);
-
-    // Comment State (Real-time)
     const [comments, setComments] = useState<any[]>(post.comments || []);
 
     const author = post.author || { displayName: "Unknown" };
@@ -68,9 +70,9 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     // Context Info
     const contextType = post.context?.type; // 'group' | 'branding'
     const contextId = post.context?.id;
+    const isAuthor = currentUserId === post.authorId;
 
     // -- Handlers --
-
     const handleReaction = async (type: ReactionType) => {
         if (!currentUserId) return toast.error("Please login");
 
@@ -122,11 +124,6 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
             await editPost(post.id, editContent, contextType, contextId);
             toast.success("Post updated");
             setIsEditing(false);
-            // In a real app, we might need to update local post.content if not using realtime listener or revalidation didn't hit yet
-            // But revalidatePath should serve fresh content on next interaction or navigation. 
-            // Ideally we accept props update. For now, we rely on parent re-render or just close.
-            // A hard reload isn't ideal. We can set a local override if we want?
-            // Let's rely on server revalidation.
         } catch (e) {
             console.error(e);
             toast.error("Failed to update post");
@@ -247,7 +244,8 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                         <DropdownMenuItem onClick={handleTranslate}>
                             {translatedContent ? "Show Original" : "Translate to Spanish"}
                         </DropdownMenuItem>
-                        {/* Only Author or Admin (context based) can Edit/Delete */}
+
+                        {/* Edit/Delete for Author */}
                         {((currentUserId === post.authorId && !post.postedAsBranding) || (post.postedAsBranding /* Requires admin check logic locally or optimistic allow, server validates */)) && (
                             <>
                                 <DropdownMenuItem onClick={() => setIsEditing(true)}>
@@ -257,6 +255,14 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                                     Delete Post
                                 </DropdownMenuItem>
                             </>
+                        )}
+
+                        {/* Report Logic (Non-authors) */}
+                        {!isAuthor && currentUserId && (
+                            <DropdownMenuItem onClick={() => setReportDialogOpen(true)} className="text-red-500 focus:text-red-500">
+                                <AlertTriangle className="mr-2 h-4 w-4" />
+                                Report Post
+                            </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -290,7 +296,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     </p>
                 )}
 
-                {/* Media ... (Same as before) */}
+                {/* Media */}
                 {youtubeMatch && (
                     <div className="mt-3 rounded-xl overflow-hidden border border-border bg-black aspect-video relative group">
                         <ReactPlayer url={youtubeMatch[0]} width="100%" height="100%" controls />
@@ -400,6 +406,19 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     </div>
                 )}
             </div>
+
+            {/* Report Dialog */}
+            <ReportDialog
+                open={reportDialogOpen}
+                onOpenChange={setReportDialogOpen}
+                targetType="post"
+                targetId={post.id}
+                context={{
+                    contextType,
+                    contextId,
+                    authorId: post.authorId
+                }}
+            />
         </Card>
     );
 }

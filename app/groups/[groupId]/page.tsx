@@ -19,6 +19,7 @@ import { JoinGroupButton } from "@/components/groups/join-group-button"; // Clie
 import { GroupAITutorBanner } from "@/components/groups/group-ai-tutor-banner";
 import { GroupCoverButton } from "@/components/groups/group-cover-button";
 import { GroupManagementDialog } from "@/components/groups/group-management-dialog";
+import { ShareButton } from "@/components/shared/share-button";
 import { Trash2 } from "lucide-react";
 
 export default async function GroupPage({ params }: { params: Promise<{ groupId: string }> }) {
@@ -94,6 +95,11 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
                                 groupId={group.id}
                                 isMember={isMember}
                                 memberCount={group.memberCount}
+                            />
+                            <ShareButton
+                                title={group.name}
+                                text={`Check out this group: ${group.name}`}
+                                variant="secondary"
                             />
                         </div>
                     </div>
