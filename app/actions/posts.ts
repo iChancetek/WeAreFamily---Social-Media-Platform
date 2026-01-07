@@ -13,13 +13,24 @@ function resolveDisplayName(data: any) {
     if (!data) return "Unknown User";
 
     // 1. Use displayName if it exists and is meaningful (not generic/default)
-    if (data.displayName && data.displayName !== "Family Member" && data.displayName.trim()) {
-        return data.displayName;
+    if (data.displayName && data.displayName.trim()) {
+        const lowerName = data.displayName.toLowerCase();
+        const generics = ["family member", "unknown user", "member", "user"];
+        // Only use if NOT generic
+        if (!generics.includes(lowerName)) {
+            return data.displayName;
+        }
     }
 
     // 2. Try to build from profile data
     if (data.profileData?.firstName) {
         const fullName = `${data.profileData.firstName} ${data.profileData.lastName || ''}`.trim();
+        if (fullName) return fullName;
+    }
+
+    // 2b. Fallback: If we have first/last name at top level (sometimes happens)
+    if (data.firstName) {
+        const fullName = `${data.firstName} ${data.lastName || ''}`.trim();
         if (fullName) return fullName;
     }
 
