@@ -623,7 +623,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                         )}
                         {post.comments && post.comments.length > 0 && (
                             <div className="ml-auto hover:underline cursor-pointer" onClick={() => setShowComments(!showComments)}>
-                                {post.comments.length} comments
+                                {post.comments.length} comments (vFix)
                             </div>
                         )}
                     </div>
