@@ -407,31 +407,13 @@ export async function getUserPosts(userId: string) {
                         return {
                             id: c.id,
                             ...cData,
-                            author: cAuthor
-                        };
-                    }));
+                            return dateB - dateA;
+                        });
 
-                    return sanitizeData({
-                        id: doc.id,
-                        ...post,
-                        author,
-                        context: null,
-                        comments: comments || [],
-                        createdAt: post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt),
-                    });
-                }));
+                    return finalPosts;
 
-            // Sort by createdAt desc (Server-side in-memory sort)
-            finalPosts.sort((a, b) => {
-                const dateA = new Date(a.createdAt).getTime();
-                const dateB = new Date(b.createdAt).getTime();
-                return dateB - dateA;
-            });
-
-            return finalPosts;
-
-        } catch (error) {
-            console.error("Get User Posts Error:", error);
-            return [];
-        }
-    }
+                } catch (error) {
+                    console.error("Get User Posts Error:", error);
+                    return [];
+                }
+            }
