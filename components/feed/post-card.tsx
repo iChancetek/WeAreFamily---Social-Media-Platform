@@ -47,6 +47,9 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     );
     const [reactionCount, setReactionCount] = useState(post.reactions ? Object.keys(post.reactions).length : 0);
 
+    // Comment State (Real-time)
+    const [comments, setComments] = useState<any[]>(post.comments || []);
+
     const author = post.author || { displayName: "Unknown" };
     const name = author.displayName || author.email || "Unknown";
     const profilePic = author.imageUrl;
@@ -84,10 +87,15 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
         if (!commentText.trim() || !currentUserId) return;
         setIsSubmitting(true);
         try {
-            await addComment(post.id, commentText, post.type || 'personal', post.context?.id);
+            // Server action now returns the new comment object
+            const newComment = await addComment(post.id, commentText, post.type || 'personal', post.context?.id);
+            if (newComment) {
+                setComments(prev => [...prev, newComment]);
+            }
             setCommentText("");
             toast.success("Comment added");
-        } catch {
+        } catch (e) {
+            console.error(e);
             toast.error("Failed to comment");
         } finally {
             setIsSubmitting(false);
@@ -174,7 +182,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                         {currentReaction && <span className="text-lg">{getReactionIcon(currentReaction)}</span>}
                         <span className={cn(currentReaction && "font-medium text-pink-600")}>{reactionCount > 0 ? `${reactionCount} reactions` : 'Be the first to react'}</span>
                     </div>
-                    <span>{post.comments ? post.comments.length : 0} comments</span>
+                    <span>{comments.length} comments</span>
                 </div>
 
                 {/* Main Buttons */}
@@ -249,7 +257,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                             </Button>
                         </div>
                         <div className="space-y-3 pl-2">
-                            {post.comments?.map((c: any) => (
+                            {comments.map((c: any) => (
                                 <div key={c.id} className="text-sm bg-muted/40 p-2 rounded-lg">
                                     <div className="font-semibold text-xs mb-1 flex justify-between">
                                         {c.author?.displayName || "User"}

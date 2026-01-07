@@ -176,7 +176,7 @@ export async function addComment(postId: string, content: string, contextType?: 
     const postDoc = await postRef.get();
     if (!postDoc.exists) throw new Error("Post not found");
 
-    await postRef.collection("comments").add({
+    const docRef = await postRef.collection("comments").add({
         authorId: user.id,
         content,
         mediaUrl: mediaUrl || null,
@@ -184,6 +184,16 @@ export async function addComment(postId: string, content: string, contextType?: 
         likes: [],
         createdAt: FieldValue.serverTimestamp()
     });
+
+    const commentData = {
+        id: docRef.id,
+        authorId: user.id,
+        content,
+        mediaUrl: mediaUrl || null,
+        youtubeUrl: youtubeUrl || null,
+        likes: [],
+        createdAt: new Date().toISOString() // Return ISO string for client
+    };
 
     // Notify post author
     if (postDoc.data()?.authorId !== user.id) {
@@ -197,6 +207,17 @@ export async function addComment(postId: string, content: string, contextType?: 
     }
 
     revalidatePath('/');
+
+    // Return the comment for optimistic UI
+    return {
+        ...commentData,
+        author: {
+            id: user.id,
+            displayName: user.displayName,
+            email: user.email,
+            imageUrl: user.photoURL
+        }
+    };
 }
 
 export async function deleteComment(postId: string, commentId: string, contextType?: string, contextId?: string) {
