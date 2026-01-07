@@ -202,8 +202,7 @@ export async function createGroupPost(groupId: string, content: string, mediaUrl
     revalidatePath(`/groups/${groupId}`);
 }
 
-revalidatePath(`/groups/${groupId}`);
-}
+
 
 export async function editGroupPost(groupId: string, postId: string, content: string) {
     const user = await getUserProfile();
