@@ -199,7 +199,10 @@ export async function createGroupPost(groupId: string, content: string, mediaUrl
         details: { groupId, content: content.substring(0, 50) }
     });
 
+    // Revalidate ID and Slug
+    const group = await getGroup(groupId);
     revalidatePath(`/groups/${groupId}`);
+    if (group?.slug) revalidatePath(`/groups/${group.slug}`);
 }
 
 
@@ -221,7 +224,10 @@ export async function editGroupPost(groupId: string, postId: string, content: st
         updatedAt: FieldValue.serverTimestamp()
     });
 
+    // Revalidate both ID and Slug paths to ensure real-time updates work regardless of URL
+    const group = await getGroup(groupId);
     revalidatePath(`/groups/${groupId}`);
+    if (group?.slug) revalidatePath(`/groups/${group.slug}`);
 }
 
 export async function getGroupPosts(groupId: string) {
@@ -261,10 +267,11 @@ export async function getGroupPosts(groupId: string) {
             mediaUrls: postData.mediaUrls || [],
             createdAt: postData.createdAt,
             likes: postData.likes || [],
-            reactions: postData.reactions || {}, // Missing in previous edits?
+            reactions: postData.reactions || {},
+            authorId: postData.authorId, // CRITICAL: Explicitly return authorId for permission checks
             author,
             context: { type: 'group', id: groupId, name: groupName },
-            comments: [] // Would fetch real comments separately or here
+            comments: []
         });
     }));
 
@@ -299,6 +306,7 @@ export async function getGroupPost(groupId: string, postId: string) {
             createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
             likes: data.likes || [],
             reactions: data.reactions || {},
+            authorId: data.authorId,
             author,
             context: { type: 'group', id: groupId, name: groupName },
             comments: []

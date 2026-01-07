@@ -513,6 +513,7 @@ export async function getPostGlobal(postId: string) {
             id: mainDoc.id,
             ...data,
             createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+            authorId: data.authorId, // CRITICAL
             author,
             comments,
             type: 'personal',
