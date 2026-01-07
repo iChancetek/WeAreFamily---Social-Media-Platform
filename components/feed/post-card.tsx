@@ -7,7 +7,6 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { SafeDate } from "@/components/shared/safe-date";
-import { generateCommentSuggestion } from "@/app/actions/ai";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {

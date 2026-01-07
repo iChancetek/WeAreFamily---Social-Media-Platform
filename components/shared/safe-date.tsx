@@ -31,7 +31,11 @@ export function SafeDate({ date, fallback = "Just now" }: SafeDateProps) {
         }
     }, [date, fallback]);
 
-    if (!mounted) return null; // Render nothing on server to avoid mismatch
-
-    return <span suppressHydrationWarning>{text}</span>;
+    // Always render the span to ensure the DOM tree structure matches between server and client.
+    // hydration warning prevented by suppressHydrationWarning
+    return (
+        <span suppressHydrationWarning>
+            {mounted ? text : fallback}
+        </span>
+    );
 }
