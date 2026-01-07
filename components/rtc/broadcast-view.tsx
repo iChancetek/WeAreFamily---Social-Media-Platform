@@ -102,12 +102,8 @@ export function BroadcastView({ sessionId, onEnd }: BroadcastViewProps) {
         if (!localStreamRef.current) return
 
         // Create peer connection for this viewer
-        const pc = new RTCPeerConnection({
-            iceServers: [
-                { urls: "stun:stun.l.google.com:19302" },
-                { urls: "stun:stun1.l.google.com:19302" },
-            ],
-        })
+        const { RTC_CONFIG } = await import("@/lib/rtc-config")
+        const pc = new RTCPeerConnection(RTC_CONFIG)
 
         // Add local stream
         localStreamRef.current.getTracks().forEach((track) => {

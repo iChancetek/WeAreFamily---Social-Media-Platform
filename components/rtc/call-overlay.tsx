@@ -64,12 +64,8 @@ export function CallOverlay({ sessionId: initialSessionId, onClose }: CallOverla
             }
 
             // Create peer connection
-            const pc = new RTCPeerConnection({
-                iceServers: [
-                    { urls: "stun:stun.l.google.com:19302" },
-                    { urls: "stun:stun1.l.google.com:19302" },
-                ],
-            })
+            const { RTC_CONFIG } = await import("@/lib/rtc-config")
+            const pc = new RTCPeerConnection(RTC_CONFIG)
 
             peerConnectionRef.current = pc
 
