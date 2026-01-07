@@ -238,27 +238,28 @@ export async function getBrandingPosts(brandingId: string) {
         } else {
             // Fetch author (should be the brand or the admin user posting as brand)
             const authorDoc = await adminDb.collection("users").doc(postData.authorId).get();
-            const author = authorDoc.exists ? {
+            author = authorDoc.exists ? {
                 id: authorDoc.id,
                 displayName: authorDoc.data()?.displayName,
                 imageUrl: authorDoc.data()?.imageUrl,
                 email: authorDoc.data()?.email,
             } : null;
+        }
 
-            return sanitizeData({
-                id: postDoc.id,
-                content: postData.content || "",
-                mediaUrls: postData.mediaUrls || [],
-                createdAt: postData.createdAt,
-                likes: postData.likes || [],
-                reactions: postData.reactions || {},
-                authorId: postData.authorId, // CRITICAL: Return authorId
-                author,
-                postedAsBranding: postData.postedAsBranding,
-                context: { type: 'branding', id: brandingId },
-                comments: []
-            });
-        }));
+        return sanitizeData({
+            id: postDoc.id,
+            content: postData.content || "",
+            mediaUrls: postData.mediaUrls || [],
+            createdAt: postData.createdAt,
+            likes: postData.likes || [],
+            reactions: postData.reactions || {},
+            authorId: postData.authorId, // CRITICAL: Return authorId
+            author,
+            postedAsBranding: postData.postedAsBranding,
+            context: { type: 'branding', id: brandingId },
+            comments: []
+        });
+    }));
 
     return allPosts;
 }
