@@ -402,40 +402,59 @@ export async function getUserPosts(userId: string) {
             let cAuthor = cData.author;
             if (!cAuthor && cData.authorId) {
                 const u = await adminDb.collection("users").doc(cData.authorId).get();
-                cAuthor = u.exists ? {
-                    id: u.id,
-                    displayName: resolveDisplayName(u.data()),
-                    imageUrl: u.data()?.imageUrl
+                const post = doc.data();
+
+                // Re-fetch author just to be safe/consistent
+                const authorDoc = await adminDb.collection("users").doc(post.authorId).get();
+                const author = authorDoc.exists ? {
+                    id: authorDoc.id,
+                    displayName: resolveDisplayName(authorDoc.data()),
+                    imageUrl: authorDoc.data()?.imageUrl,
+                    email: authorDoc.data()?.email,
                 } : null;
-            }
-            return {
-                id: c.id,
-                ...cData,
-                author: cAuthor
-            };
-        }));
 
-        return sanitizeData({
-            id: doc.id,
-            ...post,
-            author,
-            context: null,
-            comments: comments || [],
-            createdAt: post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt),
+                // Fetch comments
+                const commentsRef = adminDb.collection("posts").doc(doc.id).collection("comments");
+                const commentsSnap = await commentsRef.orderBy("createdAt", "asc").get();
+                const comments = await Promise.all(commentsSnap.docs.map(async (c) => {
+                    const cData = c.data();
+                    let cAuthor = cData.author;
+                    if (!cAuthor && cData.authorId) {
+                        const u = await adminDb.collection("users").doc(cData.authorId).get();
+                        cAuthor = u.exists ? {
+                            id: u.id,
+                            displayName: resolveDisplayName(u.data()),
+                            imageUrl: u.data()?.imageUrl
+                        } : null;
+                    }
+                    return {
+                        id: c.id,
+                        ...cData,
+                        author: cAuthor
+                    };
+                }));
+
+                return sanitizeData({
+                    id: doc.id,
+                    ...post,
+                    author,
+                    context: null,
+                    comments: comments || [],
+                    createdAt: post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt),
+                });
+            }));
+
+        // Sort by createdAt desc (Server-side in-memory sort)
+        finalPosts.sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA;
         });
-    }));
 
-    // Sort by createdAt desc (Server-side in-memory sort)
-    finalPosts.sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return dateB - dateA;
-    });
+        return finalPosts;
 
-    return finalPosts;
-
-} catch (error) {
-    console.error("Get User Posts Error:", error);
-    return [];
+    } catch (error) {
+        console.error("Get User Posts Error:", error);
+        return [];
+    }
 }
-
