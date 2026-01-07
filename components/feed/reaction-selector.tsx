@@ -11,6 +11,7 @@ export const REACTIONS: { type: ReactionType; label: string; emoji: string; colo
     { type: 'thinking_of_you', label: 'Thinking of you', emoji: '💖', color: 'text-pink-500' },
     { type: 'vibe', label: "That's a Vibe", emoji: '😎', color: 'text-purple-500' },
     { type: 'positive_energy', label: 'Positive Energy', emoji: '✨', color: 'text-yellow-400' },
+    { type: 'healing_energy', label: 'Sending Healing Energy', emoji: '❤️‍🩹', color: 'text-red-400' },
 ];
 
 interface ReactionSelectorProps {
