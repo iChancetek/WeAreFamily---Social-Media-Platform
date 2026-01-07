@@ -331,10 +331,9 @@ export async function toggleCommentLike(postId: string, commentId: string, conte
 export async function getUserPosts(userId: string) {
     try {
         // First try by authorId
-        let postsRef = adminDb.collection("posts")
-            .where("authorId", "==", userId)
-            .orderBy("createdAt", "desc");
-
+        // Note: We remove orderBy("createdAt") from the query to avoid needing a composite index for every user.
+        // We will sort in memory since a single user's post count is manageable.
+        let postsRef = adminDb.collection("posts").where("authorId", "==", userId);
         let snapshot = await postsRef.get();
 
         // If no posts found by authorId, try by email (for users whose ID changed)
@@ -343,74 +342,100 @@ export async function getUserPosts(userId: string) {
             const userEmail = userDoc.data()?.email;
 
             if (userEmail) {
-                // Query all posts and filter by author email
-                const allPostsSnapshot = await adminDb.collection("posts")
-                    .orderBy("createdAt", "desc")
-                    .get();
+                const allPostsSnapshot = await adminDb.collection("posts").get(); // Fetch all to filter (fallback only)
 
                 const matchingDocs: any[] = [];
                 for (const doc of allPostsSnapshot.docs) {
-                    const authorId = doc.data().authorId;
-                    if (authorId) {
-                        const authorDoc = await adminDb.collection("users").doc(authorId).get();
+                    const data = doc.data();
+                    // Check authorId match via user lookup
+                    if (data.authorId) {
+                        const authorDoc = await adminDb.collection("users").doc(data.authorId).get();
                         if (authorDoc.exists && authorDoc.data()?.email === userEmail) {
                             matchingDocs.push(doc);
                         }
                     }
                 }
-
                 snapshot = { docs: matchingDocs, empty: matchingDocs.length === 0 } as any;
             }
         }
+        const userDoc = await adminDb.collection("users").doc(userId).get();
+        const userEmail = userDoc.data()?.email;
+
+        if (userEmail) {
+            // Query all posts and filter by author email
+            const allPostsSnapshot = await adminDb.collection("posts")
+                .orderBy("createdAt", "desc")
+                .get();
+
+            const matchingDocs: any[] = [];
+            for (const doc of allPostsSnapshot.docs) {
+                const authorId = doc.data().authorId;
+                if (authorId) {
+                    const authorDoc = await adminDb.collection("users").doc(authorId).get();
+                    if (authorDoc.exists && authorDoc.data()?.email === userEmail) {
+                        matchingDocs.push(doc);
+                    }
+                }
+            }
+
+            snapshot = { docs: matchingDocs, empty: matchingDocs.length === 0 } as any;
+        }
+    }
 
         const finalPosts = await Promise.all(snapshot.docs.map(async (doc) => {
-            const post = doc.data();
+        const post = doc.data();
 
-            // Re-fetch author just to be safe/consistent
-            const authorDoc = await adminDb.collection("users").doc(post.authorId).get();
-            const author = authorDoc.exists ? {
-                id: authorDoc.id,
-                displayName: resolveDisplayName(authorDoc.data()),
-                imageUrl: authorDoc.data()?.imageUrl,
-                email: authorDoc.data()?.email,
-            } : null;
+        // Re-fetch author just to be safe/consistent
+        const authorDoc = await adminDb.collection("users").doc(post.authorId).get();
+        const author = authorDoc.exists ? {
+            id: authorDoc.id,
+            displayName: resolveDisplayName(authorDoc.data()),
+            imageUrl: authorDoc.data()?.imageUrl,
+            email: authorDoc.data()?.email,
+        } : null;
 
-            // Fetch comments
-            const commentsRef = adminDb.collection("posts").doc(doc.id).collection("comments");
-            const commentsSnap = await commentsRef.orderBy("createdAt", "asc").get();
-            const comments = await Promise.all(commentsSnap.docs.map(async (c) => {
-                const cData = c.data();
-                let cAuthor = cData.author;
-                if (!cAuthor && cData.authorId) {
-                    const u = await adminDb.collection("users").doc(cData.authorId).get();
-                    cAuthor = u.exists ? {
-                        id: u.id,
-                        displayName: resolveDisplayName(u.data()),
-                        imageUrl: u.data()?.imageUrl
-                    } : null;
-                }
-                return {
-                    id: c.id,
-                    ...cData,
-                    author: cAuthor
-                };
-            }));
-
-            return sanitizeData({
-                id: doc.id,
-                ...post,
-                author,
-                context: null,
-                comments: comments || [],
-                createdAt: post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt),
-            });
+        // Fetch comments
+        const commentsRef = adminDb.collection("posts").doc(doc.id).collection("comments");
+        const commentsSnap = await commentsRef.orderBy("createdAt", "asc").get();
+        const comments = await Promise.all(commentsSnap.docs.map(async (c) => {
+            const cData = c.data();
+            let cAuthor = cData.author;
+            if (!cAuthor && cData.authorId) {
+                const u = await adminDb.collection("users").doc(cData.authorId).get();
+                cAuthor = u.exists ? {
+                    id: u.id,
+                    displayName: resolveDisplayName(u.data()),
+                    imageUrl: u.data()?.imageUrl
+                } : null;
+            }
+            return {
+                id: c.id,
+                ...cData,
+                author: cAuthor
+            };
         }));
 
-        return finalPosts;
+        return sanitizeData({
+            id: doc.id,
+            ...post,
+            author,
+            context: null,
+            comments: comments || [],
+            createdAt: post.createdAt?.toDate ? post.createdAt.toDate() : new Date(post.createdAt),
+        });
+    }));
 
-    } catch (error) {
-        console.error("Get User Posts Error:", error);
-        return [];
-    }
+    // Sort by createdAt desc (Server-side in-memory sort)
+    finalPosts.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+    });
+
+    return finalPosts;
+
+} catch (error) {
+    console.error("Get User Posts Error:", error);
+    return [];
 }
 
