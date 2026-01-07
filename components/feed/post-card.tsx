@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
+import { SafeDate } from "@/components/shared/safe-date";
 import { generateCommentSuggestion } from "@/app/actions/ai";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -195,7 +196,7 @@ function CommentItem({
                     <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
                             <span className="font-semibold text-sm">{authorName}</span>
-                            <span className="text-xs text-gray-500">{formatDistanceToNow(comment.createdAt, { addSuffix: true })}</span>
+                            <span className="text-xs text-gray-500"><SafeDate date={comment.createdAt} /></span>
                         </div>
 
                         <div className="flex items-center gap-1">
@@ -510,13 +511,7 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                             </>
                         )}
                         <span className="text-xs text-muted-foreground font-normal hover:underline cursor-pointer">
-                            {(() => {
-                                try {
-                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true });
-                                } catch (e) {
-                                    return "Just now";
-                                }
-                            })()}
+                            <SafeDate date={post.createdAt} />
                         </span>
                     </div>
                 </div>
