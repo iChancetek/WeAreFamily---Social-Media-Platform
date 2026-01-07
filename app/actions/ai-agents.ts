@@ -307,7 +307,6 @@ export async function chatWithAgent(
                         messages.push({
                             tool_call_id: toolCall.id,
                             role: "tool",
-                            name: "search_internet",
                             content: searchResult,
                         });
                     }
