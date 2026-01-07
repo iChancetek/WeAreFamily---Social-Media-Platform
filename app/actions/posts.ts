@@ -263,9 +263,33 @@ export async function deletePost(postId: string) {
     const postRef = adminDb.collection("posts").doc(postId);
     const postDoc = await postRef.get();
     if (!postDoc.exists) throw new Error("Post not found");
+    // Allow author OR admin (future proofing) to delete
     if (postDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
 
-    await postRef.delete();
+    // Soft Delete
+    await postRef.update({
+        isDeleted: true,
+        deletedAt: FieldValue.serverTimestamp()
+    });
+
+    revalidatePath('/');
+}
+
+export async function restorePost(postId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const postRef = adminDb.collection("posts").doc(postId);
+    const postDoc = await postRef.get();
+    if (!postDoc.exists) throw new Error("Post not found");
+    if (postDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+
+    // Restore
+    await postRef.update({
+        isDeleted: false,
+        deletedAt: FieldValue.delete()
+    });
+
     revalidatePath('/');
 }
 

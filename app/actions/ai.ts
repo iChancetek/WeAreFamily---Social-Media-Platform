@@ -248,3 +248,26 @@ export async function seedKnowledgeBase() {
     console.log("Knowledge Base Seeded Successfully!");
     return { success: true, count: knowledgeData.length };
 }
+
+export async function translateText(text: string, targetLanguage: 'es' | 'en' = 'es') {
+    try {
+        const openai = getClient();
+        const systemPrompt = targetLanguage === 'es'
+            ? "You are a professional translator. Translate the following text to Spanish. Maintain the tone and emojis."
+            : "You are a professional translator. Translate the following text to English. Maintain the tone and emojis.";
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: text }
+            ],
+            temperature: 0.3,
+        });
+
+        return response.choices[0].message.content || text;
+    } catch (error) {
+        console.error("Translation Error:", error);
+        return text; // Fallback to original
+    }
+}

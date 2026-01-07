@@ -34,12 +34,16 @@ function isUrlVideo(url: string | null | undefined): boolean {
 }
 
 export function PostCard({ post, currentUserId }: { post: any, currentUserId?: string }) {
-    if (!post) return null;
+    if (!post || post.isDeleted) return null; // Don't show deleted posts (unless we are in a 'Trash' view, handled elsewhere)
 
     // -- State --
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Translation State
+    const [translatedContent, setTranslatedContent] = useState<string | null>(null);
+    const [isTranslating, setIsTranslating] = useState(false);
 
     // Reaction State
     const [currentReaction, setCurrentReaction] = useState<ReactionType | undefined>(
@@ -102,12 +106,60 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
         }
     };
 
+    const handleTranslate = async () => {
+        if (translatedContent) {
+            setTranslatedContent(null); // Toggle off
+            return;
+        }
+        setIsTranslating(true);
+        try {
+            const { translateText } = await import("@/app/actions/ai");
+            // Simple heuristic based on browser language or user preference could go here.
+            // For now, we cycle: If content seems English, target Spanish, else English.
+            // Since detection is complex client-side, we'll default to Spanish for this "English to Spanish" request.
+            const target = 'es';
+            const result = await translateText(post.content, target);
+            setTranslatedContent(result);
+            toast.success("Translated!");
+        } catch {
+            toast.error("Translation failed");
+        } finally {
+            setIsTranslating(false);
+        }
+    };
+
     const handleSpeak = () => {
         try {
-            const u = new SpeechSynthesisUtterance(post.content || "");
+            // Speak translated content if active, otherwise original
+            const text = translatedContent || post.content || "";
+            const u = new SpeechSynthesisUtterance(text);
+            if (translatedContent) u.lang = 'es-ES'; // Hint for Spanish
             window.speechSynthesis.cancel();
             window.speechSynthesis.speak(u);
         } catch { toast.error("TTS unavailable"); }
+    };
+
+    const handleDeletePost = async () => {
+        try {
+            const { deletePost, restorePost } = await import("@/app/actions/posts");
+            await deletePost(post.id);
+            toast.success("Post moved to trash", {
+                action: {
+                    label: "Undo",
+                    onClick: () => {
+                        restorePost(post.id).then(() => {
+                            toast.success("Restored!");
+                            window.location.reload(); // Hard refresh to show it back
+                        });
+                    }
+                }
+            });
+            // Hide locally immediately
+            const card = document.getElementById(`post-${post.id}`);
+            if (card) card.style.display = 'none';
+        } catch {
+            toast.error("Delete failed");
+        }
     };
 
     const handleAI = (mode: string) => {
@@ -137,7 +189,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     };
 
     return (
-        <Card className="mb-4 overflow-hidden border-none shadow-sm bg-card">
+        <Card id={`post-${post.id}`} className="mb-4 overflow-hidden border-none shadow-sm bg-card">
             {/* Header */}
             <div className="flex flex-row items-center gap-3 p-4 pb-2">
                 <Avatar className="w-10 h-10 border border-border">
@@ -156,12 +208,37 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     </div>
                     <span className="text-xs text-muted-foreground"><SafeDate date={post.createdAt} /></span>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><MoreHorizontal className="w-4 h-4" /></Button>
+
+                {/* Header Menu (Delete Option) */}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><MoreHorizontal className="w-4 h-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleTranslate}>
+                            {translatedContent ? "Show Original" : "Translate to Spanish"}
+                        </DropdownMenuItem>
+                        {currentUserId === post.authorId && (
+                            <DropdownMenuItem onClick={handleDeletePost} className="text-red-500 focus:text-red-500">
+                                Delete Post
+                            </DropdownMenuItem>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             {/* Content */}
             <div className="px-4 py-2">
-                <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">{post.content}</p>
+                <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
+                    {translatedContent || post.content}
+                </p>
+                {translatedContent && (
+                    <p className="text-xs text-muted-foreground mt-1 italic flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> Translated by AI
+                    </p>
+                )}
+
+                {/* Media ... (Same as before) */}
                 {youtubeMatch && (
                     <div className="mt-3 rounded-xl overflow-hidden border border-border bg-black aspect-video relative group">
                         <ReactPlayer url={youtubeMatch[0]} width="100%" height="100%" controls />
@@ -222,6 +299,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                         <DropdownMenuContent align="center">
                             <DropdownMenuItem onClick={() => handleAI('executive')}>Summarize</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleAI('tutor')}>Explain Context</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleTranslate}>{translatedContent ? "Show Original" : "Translate (ES)"}</DropdownMenuItem>
                             <DropdownMenuItem onClick={handleSpeak}>Read Aloud</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
