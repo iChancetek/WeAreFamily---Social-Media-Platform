@@ -74,16 +74,25 @@ export async function getNotifications() {
         const data = doc.data();
 
         // Hydrate sender info
-        const senderDoc = await adminDb.collection("users").doc(data.senderId).get();
-    });
-}));
+        const sender = senderDoc.exists ? {
+            displayName: resolveDisplayName(senderDoc.data()),
+            imageUrl: senderDoc.data()?.imageUrl
+        } : { displayName: "Unknown" };
 
-// Ensure sorting in case we fell back to unordered query
-return notifications.sort((a: any, b: any) => {
-    const dateA = new Date(a.createdAt);
-    const dateB = new Date(b.createdAt);
-    return dateB.getTime() - dateA.getTime();
-});
+        return sanitizeData({
+            id: doc.id,
+            ...data,
+            sender,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+        });
+    }));
+
+    // Ensure sorting in case we fell back to unordered query
+    return notifications.sort((a: any, b: any) => {
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
+        return dateB.getTime() - dateA.getTime();
+    });
 }
 
 export async function markAsRead(notificationId: string) {
