@@ -202,6 +202,76 @@ export async function createGroupPost(groupId: string, content: string, mediaUrl
     revalidatePath(`/groups/${groupId}`);
 }
 
+revalidatePath(`/groups/${groupId}`);
+}
+
+export async function editGroupPost(groupId: string, postId: string, content: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const postRef = adminDb.collection("groups").doc(groupId).collection("posts").doc(postId);
+    const postDoc = await postRef.get();
+
+    if (!postDoc.exists) throw new Error("Post not found");
+    // Only author can edit
+    if (postDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+
+    await postRef.update({
+        content,
+        isEdited: true,
+        updatedAt: FieldValue.serverTimestamp()
+    });
+
+    revalidatePath(`/groups/${groupId}`);
+}
+
+export async function getGroupPosts(groupId: string) {
+    const user = await getUserProfile();
+    if (!user) return [];
+
+    // Check privacy
+    const group = await getGroup(groupId);
+    if (group?.privacy === 'private') {
+        const memberStatus = await getGroupMemberStatus(groupId);
+        if (!memberStatus) return [];
+    }
+
+    const postsSnapshot = await adminDb.collection("groups").doc(groupId).collection("posts")
+        .orderBy("createdAt", "desc")
+        .get();
+
+    const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc: any) => {
+        const postData = postDoc.data();
+
+        // Fetch author
+        const authorDoc = await adminDb.collection("users").doc(postData.authorId).get();
+        const author = authorDoc.exists ? {
+            id: authorDoc.id,
+            displayName: authorDoc.data()?.displayName,
+            imageUrl: authorDoc.data()?.imageUrl,
+            email: authorDoc.data()?.email,
+        } : null;
+
+        // Fetch Group Name for Context
+        const groupSnap = await adminDb.collection("groups").doc(groupId).get();
+        const groupName = groupSnap.data()?.name;
+
+        return sanitizeData({
+            id: postDoc.id,
+            content: postData.content || "",
+            mediaUrls: postData.mediaUrls || [],
+            createdAt: postData.createdAt,
+            likes: postData.likes || [],
+            reactions: postData.reactions || {}, // Missing in previous edits?
+            author,
+            context: { type: 'group', id: groupId, name: groupName },
+            comments: [] // Would fetch real comments separately or here
+        });
+    }));
+
+    return allPosts;
+}
+
 export async function getGroupPost(groupId: string, postId: string) {
     try {
         const postRef = adminDb.collection("groups").doc(groupId).collection("posts").doc(postId);
