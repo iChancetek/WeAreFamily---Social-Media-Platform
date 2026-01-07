@@ -44,7 +44,7 @@ import { getAuth } from "firebase/auth";
 // -- Components --
 
 // Dynamic Player for Media Safe Rendering
-const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
+const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
 
 // Helper: Video Detection
 function isUrlVideo(url: string | null | undefined): boolean {
