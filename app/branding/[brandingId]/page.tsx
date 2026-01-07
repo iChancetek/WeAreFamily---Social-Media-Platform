@@ -59,8 +59,7 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
                 />
             </div>
         </div>
-                </div >
-            </div >
+
 
         {/* Soft Delete Notice for Owner */ }
     {
