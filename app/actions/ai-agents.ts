@@ -298,8 +298,9 @@ export async function chatWithAgent(
                 messages.push(responseMessage);
 
                 // Process each tool call
+                // Process each tool call
                 for (const toolCall of responseMessage.tool_calls) {
-                    if (toolCall.function.name === "search_internet") {
+                    if (toolCall.type === 'function' && toolCall.function.name === "search_internet") {
                         const args = JSON.parse(toolCall.function.arguments);
                         const searchResult = await searchTavily(args.query);
 
