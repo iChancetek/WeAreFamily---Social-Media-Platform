@@ -291,15 +291,15 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     </div>
                 ) : (
                     <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
-                        <Linkify text={translatedContent || post.content} onMediaFound={(url) => {
-                            // Only set if not already matched by regex or previous find
-                            if (!mediaMatch) {
-                                // We can use a state or ref if needed, but for now we rely on the component re-render if we want to store it.
-                                // Actually, better approach: Linkify renders, and we can just use the ReactPlayer for the first found URL if we lift state.
-                                // However, to avoid complexity, let's keep the regex approach but expand it in the component body, 
-                                // OR simply let ReactPlayer handle the first extracted URL.
-                            }
-                        }} />
+                        <Linkify
+                            text={translatedContent || post.content}
+                            hideUrls={mediaMatch ? [mediaMatch[0]] : []}
+                            onMediaFound={(url) => {
+                                // Only set if not already matched
+                                if (!mediaMatch) {
+                                    // logic for onMediaFound... 
+                                }
+                            }} />
                     </p>
                 )}
 
