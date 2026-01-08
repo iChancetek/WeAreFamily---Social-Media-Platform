@@ -160,7 +160,7 @@ export function LandingPage() {
                         <BenefitItem text="Unlimited photo and video sharing" />
                         <BenefitItem text="Private family messaging and group chats" />
                         <BenefitItem text="Shared calendar and event planning" />
-                        <BenefitItem text="Stories that keep everyone updated" />
+                        <BenefitItem text="My Life updates to keep everyone close" />
                         <BenefitItem text="Secure cloud storage for family memories" />
                         <BenefitItem text="Mobile and desktop access" />
                     </div>

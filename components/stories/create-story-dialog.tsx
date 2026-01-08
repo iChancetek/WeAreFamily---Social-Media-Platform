@@ -1,12 +1,15 @@
+
 "use client";
 
 import { useState, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { createStory } from "@/app/actions/stories";
 // import { uploadFile } from "@/app/actions/upload"; // Removed - using Firebase Storage
 import { useAuth } from "@/components/auth-provider";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Image as ImageIcon, X } from "lucide-react";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -30,7 +33,7 @@ export function CreateStoryDialog({ children }: CreateStoryDialogProps) {
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!user) {
-            toast.error("You must be logged in to create a story.");
+            toast.error("You must be logged in to add to My Life.");
             return;
         }
 
@@ -42,7 +45,7 @@ export function CreateStoryDialog({ children }: CreateStoryDialogProps) {
             try {
                 // Create a unique reference
                 const timestamp = Date.now();
-                const storageRef = ref(storage, `users/${user.uid}/stories/${timestamp}-${file.name}`);
+                const storageRef = ref(storage, `users / ${user.uid} /stories/${timestamp} -${file.name} `);
 
                 await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(storageRef);
@@ -65,7 +68,7 @@ export function CreateStoryDialog({ children }: CreateStoryDialogProps) {
         setIsSubmitting(true);
         try {
             await createStory(mediaUrl, mediaType);
-            toast.success("Story added to your moments!");
+            toast.success("Added to your My Life!");
             setOpen(false);
             setMediaUrl(null);
             setMediaType(null);
@@ -99,59 +102,56 @@ export function CreateStoryDialog({ children }: CreateStoryDialogProps) {
             </DialogTrigger>
             <DialogContent className="sm:max-w-md bg-white">
                 <DialogHeader>
-                    <DialogTitle>Add to Story</DialogTitle>
+                    <DialogTitle>Add to My Life</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col items-center gap-4 py-4">
-                    {!mediaUrl ? (
-                        <div
-                            className="w-full h-64 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            {isUploading ? (
-                                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+
+                    <div className="grid gap-4 py-4">
+                        {/* Preview Area */}
+                        <div className="w-full h-64 bg-black rounded-lg overflow-hidden relative flex items-center justify-center border border-border">
+                            {!mediaUrl ? (
+                                <div className="text-center p-4">
+                                    <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                                    <p className="text-sm text-muted-foreground">Select an image or video</p>
+                                </div>
                             ) : (
-                                <>
-                                    <ImageIcon className="w-10 h-10 text-gray-400 mb-2" />
-                                    <p className="text-sm text-gray-500">Click to upload photo or video</p>
-                                </>
+                                mediaType === 'video' ? (
+                                    <video src={mediaUrl} className="max-w-full max-h-full" controls />
+                                ) : (
+                                    <img src={mediaUrl} alt="My Life preview" className="max-w-full max-h-full object-contain" />
+                                )
+                            )}
+
+                            {isUploading && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                                    <Loader2 className="w-8 h-8 text-white animate-spin" />
+                                </div>
                             )}
                         </div>
-                    ) : (
-                        <div className="relative w-full h-96 bg-black rounded-xl overflow-hidden flex items-center justify-center">
-                            {mediaType === 'video' ? (
-                                <video src={mediaUrl} className="max-w-full max-h-full" controls />
-                            ) : (
-                                <img src={mediaUrl} alt="Story preview" className="max-w-full max-h-full object-contain" />
-                            )}
-                            <button
-                                onClick={clearMedia}
-                                className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white hover:bg-black/70"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
+
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="story-file" className="text-right">
+                                Media
+                            </Label>
+                            <Input
+                                id="story-file"
+                                type="file"
+                                accept="image/*,video/*"
+                                className="col-span-3"
+                                onChange={handleFileSelect}
+                                disabled={isUploading}
+                            />
                         </div>
-                    )}
-
-                    <input
-                        type="file"
-                        hidden
-                        ref={fileInputRef}
-                        accept="image/*,video/*"
-                        onChange={handleFileSelect}
-                    />
-
-                    <div className="flex justify-end w-full gap-2">
-                        <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                        <Button
-                            onClick={handleSubmit}
-                            disabled={!mediaUrl || isSubmitting || isUploading}
-                        >
-                            {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                            Share to Story
-                        </Button>
                     </div>
-                </div>
+
+                    <DialogFooter>
+                        <Button onClick={handleSubmit} disabled={!mediaUrl || isUploading}>
+                            {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Share to My Life
+                        </Button>
+                    </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 }
+

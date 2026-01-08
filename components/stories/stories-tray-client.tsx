@@ -64,10 +64,12 @@ export function StoriesTrayClient({
                                     )}
                                 </div>
                                 <div className="absolute bottom-0 inset-x-0 h-1/3 bg-white dark:bg-card flex flex-col items-center justify-center pt-4 z-10">
-                                    <span className="text-xs font-semibold text-foreground">Create Story</span>
-                                </div>
-                                <div className="absolute top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 bg-primary rounded-full p-1 border-4 border-white dark:border-zinc-900">
-                                    <Plus className="w-5 h-5 text-white" />
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-card transition-colors group-hover:bg-accent/50">
+                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
+                                            <Plus className="w-6 h-6 text-primary" />
+                                        </div>
+                                        <span className="text-xs font-semibold text-foreground">Add to My Life</span>
+                                    </div>
                                 </div>
                             </div>
                         </CreateStoryDialog>
