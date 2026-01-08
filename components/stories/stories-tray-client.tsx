@@ -10,6 +10,7 @@ interface Story {
     id: string;
     mediaUrl: string;
     mediaType: 'image' | 'video';
+    authorId: string;
     createdAt: Date;
 }
 
