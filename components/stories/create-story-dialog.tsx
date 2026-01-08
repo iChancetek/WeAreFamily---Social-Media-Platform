@@ -45,7 +45,7 @@ export function CreateStoryDialog({ children }: CreateStoryDialogProps) {
             try {
                 // Create a unique reference
                 const timestamp = Date.now();
-                const storageRef = ref(storage, `users / ${user.uid} /stories/${timestamp} -${file.name} `);
+                const storageRef = ref(storage, `users/${user.uid}/stories/${timestamp}-${file.name}`);
 
                 await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(storageRef);
