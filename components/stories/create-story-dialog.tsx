@@ -104,52 +104,50 @@ export function CreateStoryDialog({ children }: CreateStoryDialogProps) {
                 <DialogHeader>
                     <DialogTitle>Add to My Life</DialogTitle>
                 </DialogHeader>
-                <div className="flex flex-col items-center gap-4 py-4">
-
-                    <div className="grid gap-4 py-4">
-                        {/* Preview Area */}
-                        <div className="w-full h-64 bg-black rounded-lg overflow-hidden relative flex items-center justify-center border border-border">
-                            {!mediaUrl ? (
-                                <div className="text-center p-4">
-                                    <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                                    <p className="text-sm text-muted-foreground">Select an image or video</p>
-                                </div>
+                <div className="grid gap-4 py-4">
+                    {/* Preview Area */}
+                    <div className="w-full h-64 bg-black rounded-lg overflow-hidden relative flex items-center justify-center border border-border">
+                        {!mediaUrl ? (
+                            <div className="text-center p-4">
+                                <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                                <p className="text-sm text-muted-foreground">Select an image or video</p>
+                            </div>
+                        ) : (
+                            mediaType === 'video' ? (
+                                <video src={mediaUrl} className="max-w-full max-h-full" controls />
                             ) : (
-                                mediaType === 'video' ? (
-                                    <video src={mediaUrl} className="max-w-full max-h-full" controls />
-                                ) : (
-                                    <img src={mediaUrl} alt="My Life preview" className="max-w-full max-h-full object-contain" />
-                                )
-                            )}
+                                <img src={mediaUrl} alt="My Life preview" className="max-w-full max-h-full object-contain" />
+                            )
+                        )}
 
-                            {isUploading && (
-                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-                                    <Loader2 className="w-8 h-8 text-white animate-spin" />
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="story-file" className="text-right">
-                                Media
-                            </Label>
-                            <Input
-                                id="story-file"
-                                type="file"
-                                accept="image/*,video/*"
-                                className="col-span-3"
-                                onChange={handleFileSelect}
-                                disabled={isUploading}
-                            />
-                        </div>
+                        {isUploading && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                                <Loader2 className="w-8 h-8 text-white animate-spin" />
+                            </div>
+                        )}
                     </div>
 
-                    <DialogFooter>
-                        <Button onClick={handleSubmit} disabled={!mediaUrl || isUploading}>
-                            {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Share to My Life
-                        </Button>
-                    </DialogFooter>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="story-file" className="text-right">
+                            Media
+                        </Label>
+                        <Input
+                            id="story-file"
+                            type="file"
+                            accept="image/*,video/*"
+                            className="col-span-3"
+                            onChange={handleFileSelect}
+                            disabled={isUploading}
+                        />
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button onClick={handleSubmit} disabled={!mediaUrl || isUploading}>
+                        {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Share to My Life
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
