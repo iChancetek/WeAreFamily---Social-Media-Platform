@@ -28,6 +28,7 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
     const posts = await getBrandingPosts(branding.id);
 
     const isFollowing = !!followStatus;
+    const isAdmin = followStatus?.role === 'admin';
 
     // Construct Branding-as-author object for the Creator component
     const brandingAuthor = {
