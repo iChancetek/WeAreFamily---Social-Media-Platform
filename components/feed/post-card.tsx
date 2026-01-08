@@ -25,6 +25,8 @@ import { REACTIONS, getReactionIcon, getReactionLabel } from "./reaction-selecto
 import { Textarea } from "@/components/ui/textarea";
 import { ReportDialog } from "@/components/reporting/report-dialog";
 
+import { Linkify } from "@/components/shared/linkify";
+
 // Dynamic Player
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
 
@@ -65,7 +67,10 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     const author = post.author || { displayName: "Unknown" };
     const name = author.displayName || author.email || "Unknown";
     const profilePic = author.imageUrl;
-    const youtubeMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[^\s]+(?<![.,!?])/);
+
+    // Broad Media Matching for YouTube, Facebook, LinkedIn, SoundCloud, Vimeo, etc.
+    // ReactPlayer supports many, so we catch common ones.
+    const mediaMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|dailymotion\.com|soundcloud\.com)\/[^\s]+(?<![.,!?])/i);
 
     // Context Info
     const contextType = post.context?.type; // 'group' | 'branding'
@@ -286,7 +291,15 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     </div>
                 ) : (
                     <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
-                        {translatedContent || post.content}
+                        <Linkify text={translatedContent || post.content} onMediaFound={(url) => {
+                            // Only set if not already matched by regex or previous find
+                            if (!youtubeMatch) {
+                                // We can use a state or ref if needed, but for now we rely on the component re-render if we want to store it.
+                                // Actually, better approach: Linkify renders, and we can just use the ReactPlayer for the first found URL if we lift state.
+                                // However, to avoid complexity, let's keep the regex approach but expand it in the component body, 
+                                // OR simply let ReactPlayer handle the first extracted URL.
+                            }
+                        }} />
                     </p>
                 )}
 
@@ -296,10 +309,23 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     </p>
                 )}
 
-                {/* Media */}
-                {youtubeMatch && (
+                {/* Media Embeds (YouTube, FB, LinkedIn, etc) */}
+                {/* We prefer the mediaMatch from the top level regex if possible, but Linkify support is dynamic. 
+                    Let's update the match logic in the body to include more types. */}
+                {mediaMatch && (
                     <div className="mt-3 rounded-xl overflow-hidden border border-border bg-black aspect-video relative group">
-                        <ReactPlayer url={youtubeMatch[0]} width="100%" height="100%" controls />
+                        <ReactPlayer
+                            url={mediaMatch[0]}
+                            width="100%"
+                            height="100%"
+                            controls
+                            light={false} // attempt to load immediately or use true for placeholder
+                            config={{
+                                facebook: {
+                                    appId: '130969678083861' // Optional: Generic App ID if needed
+                                }
+                            }}
+                        />
                     </div>
                 )}
                 {post.mediaUrls?.map((url: string, idx: number) => (
@@ -399,7 +425,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                                         {c.author?.displayName || "User"}
                                         <span className="font-normal text-muted-foreground"><SafeDate date={c.createdAt} /></span>
                                     </div>
-                                    <p>{c.content}</p>
+                                    <p><Linkify text={c.content} /></p>
                                 </div>
                             ))}
                         </div>

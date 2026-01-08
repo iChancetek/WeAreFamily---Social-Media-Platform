@@ -15,6 +15,7 @@ import { useAuth } from "@/components/auth-provider";
 import { Loader2 } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
+import { Linkify } from "@/components/shared/linkify";
 
 type Message = {
     role: 'user' | 'assistant';
@@ -205,7 +206,7 @@ export function ChatInterface({ isCompact = false, externalContext, onContextHan
                                         : "bg-white dark:bg-zinc-900 border border-border rounded-tl-none"
                                 )}>
                                     <div className="whitespace-pre-wrap font-sans">
-                                        {msg.content}
+                                        <Linkify text={msg.content} />
                                     </div>
 
                                     {/* TTS Button */}
