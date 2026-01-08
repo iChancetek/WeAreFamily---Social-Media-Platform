@@ -13,38 +13,24 @@ import { resolveDisplayName } from "@/lib/user-utils";
 // Removed local resolveDisplayName helper in favor of shared utility
 
 export async function createPost(content: string, mediaUrls: string[] = []) {
-    console.log("[createPost] Starting...", { contentLength: content?.length, mediaUrls });
-
-    // Validate inputs
-    if (!mediaUrls || !Array.isArray(mediaUrls)) {
-        console.error("[createPost] Invalid mediaUrls:", mediaUrls);
-        throw new Error("Invalid media data");
+    const user = await getUserProfile()
+    if (!user) {
+        throw new Error("Unauthorized")
     }
 
-    // Sanitize mediaUrls just in case (e.g. remove undefined/null)
-    const cleanMediaUrls = mediaUrls.filter(url => typeof url === 'string');
+    // Safe sanitization
+    const safeMediaUrls = Array.isArray(mediaUrls) ? mediaUrls : [];
 
     try {
-        const user = await getUserProfile()
-        if (!user) {
-            console.error("[createPost] No user found");
-            throw new Error("Unauthorized")
-        }
-
-        console.log("[createPost] User:", user.id);
-
         await adminDb.collection("posts").add({
             authorId: user.id,
             content,
-            mediaUrls: cleanMediaUrls,
+            mediaUrls: safeMediaUrls,
             reactions: {}, // Map of userId -> reactionType
             createdAt: FieldValue.serverTimestamp(),
         });
-        console.log("[createPost] DB Write Success");
-
     } catch (e: any) {
-        console.error("[createPost] Failed:", e);
-        // Throw a simple error message to the client
+        console.error("Create Post Failed:", e);
         throw new Error(e.message || "Database write failed");
     }
 
