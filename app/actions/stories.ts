@@ -147,3 +147,29 @@ function chunkArray(array: any[], size: number) {
     }
     return chunked;
 }
+
+export async function deleteStory(storyId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const storyRef = adminDb.collection("stories").doc(storyId);
+    const storyDoc = await storyRef.get();
+
+    if (!storyDoc.exists) throw new Error("Story not found");
+
+    // Only author (or admin, implicitly) can delete
+    if (storyDoc.data()?.authorId !== user.id && user.role !== 'admin') {
+        throw new Error("Unauthorized");
+    }
+
+    await storyRef.delete();
+
+    // Log audit
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("story.delete", {
+        targetType: "story",
+        targetId: storyId
+    });
+
+    revalidatePath("/", 'layout');
+}
