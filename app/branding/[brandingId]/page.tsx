@@ -28,7 +28,7 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
     const posts = await getBrandingPosts(branding.id);
 
     const isFollowing = !!followStatus;
-    const isAdmin = followStatus?.role === 'admin';
+    const isBrandingAdmin = followStatus?.role === 'admin';
 
     // Construct Branding-as-author object for the Creator component
     const brandingAuthor = {
@@ -41,7 +41,7 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
             {/* ... */}
             <div className="flex items-center gap-3">
                 {/* Management Dialog for Admins */}
-                {isAdmin && user && (
+                {isBrandingAdmin && user && (
                     <BrandingManagementDialog
                         branding={branding}
                         currentUser={user}
