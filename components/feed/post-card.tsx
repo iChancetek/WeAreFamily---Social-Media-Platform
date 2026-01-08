@@ -69,8 +69,17 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     const profilePic = author.imageUrl;
 
     // Broad Media Matching for YouTube, Facebook, LinkedIn, SoundCloud, Vimeo, etc.
-    // ReactPlayer supports many, so we catch common ones.
-    const mediaMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|dailymotion\.com|soundcloud\.com)\/[^\s]+(?<![.,!?])/i);
+    // We catch the URL including potential trailing punctuation, then clean it.
+    const rawMediaMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|dailymotion\.com|soundcloud\.com)\/[^\s]+/i);
+    let mediaUrl = rawMediaMatch ? rawMediaMatch[0] : null;
+
+    // Clean trailing punctuation if present
+    if (mediaUrl) {
+        const punctuation = /[.,!?;:]$/;
+        if (punctuation.test(mediaUrl)) {
+            mediaUrl = mediaUrl.replace(punctuation, '');
+        }
+    }
 
     // Context Info
     const contextType = post.context?.type; // 'group' | 'branding'
@@ -293,10 +302,10 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
                         <Linkify
                             text={translatedContent || post.content}
-                            hideUrls={mediaMatch ? [mediaMatch[0]] : []}
+                            hideUrls={mediaUrl ? [mediaUrl] : []}
                             onMediaFound={(url) => {
                                 // Only set if not already matched
-                                if (!mediaMatch) {
+                                if (!mediaUrl) {
                                     // logic for onMediaFound... 
                                 }
                             }} />
@@ -312,10 +321,10 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                 {/* Media Embeds (YouTube, FB, LinkedIn, etc) */}
                 {/* We prefer the mediaMatch from the top level regex if possible, but Linkify support is dynamic. 
                     Let's update the match logic in the body to include more types. */}
-                {mediaMatch && (
+                {mediaUrl && (
                     <div className="mt-3 rounded-xl overflow-hidden border border-border bg-black aspect-video relative group">
                         <ReactPlayer
-                            url={mediaMatch[0]}
+                            url={mediaUrl}
                             width="100%"
                             height="100%"
                             controls
