@@ -34,7 +34,7 @@ export async function checkAndCelebrateBirthdays() {
     // 3. Generate wishes and create posts
     let celebratedCount = 0;
     for (const bdayUser of birthdayUsers) {
-        const name = (bdayUser as any).displayName || "Family Member";
+        const name = (bdayUser as any).displayName || "Unknown";
         const wish = await generateBirthdayWish(name);
 
         // Create Post

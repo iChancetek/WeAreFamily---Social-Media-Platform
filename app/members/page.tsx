@@ -27,7 +27,7 @@ export default async function MembersDirectoryPage() {
         const data = doc.data();
         return sanitizeData({
             id: doc.id,
-            displayName: data.displayName || (data.profileData?.firstName ? `${data.profileData.firstName} ${data.profileData.lastName || ''}`.trim() : null) || data.email?.split('@')[0] || "Family Member",
+            displayName: data.displayName || (data.profileData?.firstName ? `${data.profileData.firstName} ${data.profileData.lastName || ''}`.trim() : null) || data.email?.split('@')[0] || "Unknown",
             email: data.email,
             imageUrl: data.imageUrl,
             role: data.role,
@@ -63,7 +63,7 @@ export default async function MembersDirectoryPage() {
                                         {member.displayName}
                                     </h3>
                                     <p className="text-xs text-muted-foreground capitalize mt-1">
-                                        {member.role === 'admin' ? 'Administrator' : 'Family Member'}
+                                        {member.role === 'admin' ? 'Administrator' : 'Member'}
                                     </p>
                                 </div>
                             </Link>

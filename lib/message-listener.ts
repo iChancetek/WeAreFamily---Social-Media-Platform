@@ -51,7 +51,7 @@ export function listenForNewMessages(
                                 id: change.doc.id,
                                 sessionId: sessionDoc.id,
                                 senderId: messageData.senderId,
-                                senderName: sessionData.otherUserName || "Family Member",
+                                senderName: sessionData.otherUserName || "Unknown",
                                 senderImage: sessionData.otherUserImage,
                                 content: messageData.content,
                                 createdAt: messageData.createdAt?.toDate() || new Date(),

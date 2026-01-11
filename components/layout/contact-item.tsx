@@ -24,7 +24,7 @@ export function ContactItem({ user }: ContactItemProps) {
     const [showRequestDialog, setShowRequestDialog] = useState(false);
 
     const profile = user.profileData as { firstName: string, lastName: string, imageUrl: string } | null;
-    const name = user.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : "Family Member");
+    const name = user.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : "Unknown");
     const imageUrl = user.imageUrl || profile?.imageUrl;
 
     async function handleClick() {

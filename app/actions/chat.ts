@@ -120,7 +120,7 @@ export async function getChats(): Promise<ChatSession[]> {
                 otherUser = {
                     id: userDoc.id,
                     email: userData?.email,
-                    displayName: userData?.displayName || "Family Member",
+                    displayName: userData?.displayName || "Unknown",
                     imageUrl: userData?.imageUrl || null
                 };
             }

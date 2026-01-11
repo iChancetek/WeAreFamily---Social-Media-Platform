@@ -49,7 +49,7 @@ export function ChatList({ chats }: ChatListProps) {
                                     "font-semibold truncate text-sm",
                                     isActive ? "text-primary" : "text-foreground"
                                 )}>
-                                    {otherUser?.displayName || "Family Member"}
+                                    {otherUser?.displayName || "Unknown"}
                                 </span>
                                 {chat.lastMessageAt && (
                                     <span className="text-[10px] text-gray-400 shrink-0">

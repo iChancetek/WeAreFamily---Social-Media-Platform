@@ -17,13 +17,13 @@ export async function StoriesTray() {
                 currentUserId={user?.id}
                 currentUserRole={user?.role}
                 currentUserImage={user?.imageUrl}
-                currentUserDisplayName={user?.displayName || 'Family Member'}
+                currentUserDisplayName={user?.displayName || 'Unknown'}
                 activeStories={stories as any} // Cast to any to bypass strict type check for now, knowing structure matches
             />
         );
     } catch (error) {
         console.error("Error loading stories:", error)
         // Return empty stories tray on error
-        return <StoriesTrayClient currentUserId={undefined} currentUserRole={undefined} currentUserImage={undefined} currentUserDisplayName="Family Member" activeStories={[]} />
+        return <StoriesTrayClient currentUserId={undefined} currentUserRole={undefined} currentUserImage={undefined} currentUserDisplayName="Unknown" activeStories={[]} />
     }
 }

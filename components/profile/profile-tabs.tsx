@@ -106,7 +106,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                                 </Avatar>
                                 <div>
                                     <p className="font-semibold">{member.displayName}</p>
-                                    <p className="text-sm text-gray-500">Family Member</p>
+                                    <p className="text-sm text-gray-500">Member</p>
                                 </div>
                             </div>
                         ))}

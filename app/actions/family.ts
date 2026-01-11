@@ -234,7 +234,7 @@ export async function getFamilyRequests() {
                 id: senderDoc.id,
                 email: u?.email,
                 imageUrl: u?.imageUrl,
-                displayName: (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Family Member")
+                displayName: (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Unknown")
             } as any;
         }
 
@@ -261,7 +261,7 @@ export async function getFamilyRequests() {
                 id: receiverDoc.id,
                 email: u?.email,
                 imageUrl: u?.imageUrl,
-                displayName: (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Family Member")
+                displayName: (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Unknown")
             } as any;
         }
 

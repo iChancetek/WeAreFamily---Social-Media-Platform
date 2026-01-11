@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     await syncUserToDb(
                         firebaseUser.uid,
                         firebaseUser.email || "",
-                        firebaseUser.displayName || "Family Member"
+                        firebaseUser.displayName || ""
                     );
                     console.log("[AuthProvider] User synced.");
                     // Then create session

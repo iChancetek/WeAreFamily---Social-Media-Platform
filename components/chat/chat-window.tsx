@@ -98,7 +98,7 @@ export function ChatWindow({ session, currentUserId, onStartCall }: ChatWindowPr
                 </Avatar>
                 <div className="flex-1">
                     <h3 className="font-semibold text-sm md:text-base text-foreground">
-                        {otherUser?.displayName || "Family Member"}
+                        {otherUser?.displayName || "Unknown"}
                     </h3>
                     <p className="text-xs text-green-500 font-medium">Online</p>
                 </div>

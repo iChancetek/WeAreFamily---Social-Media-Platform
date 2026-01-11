@@ -75,7 +75,7 @@ export async function getEvents(): Promise<Event[]> {
             if (userDoc.exists) {
                 const userData = userDoc.data();
                 userProfiles.set(userId, {
-                    displayName: userData?.displayName || "Family Member",
+                    displayName: userData?.displayName || "Unknown",
                     imageUrl: userData?.imageUrl || null,
                 });
             }
