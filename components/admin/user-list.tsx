@@ -37,7 +37,7 @@ export function UserList({ users }: { users: User[] }) {
     const handleApprove = async (id: string) => {
         try {
             await approveUser(id)
-            toast.success("Family Member approved")
+            toast.success("User approved")
         } catch {
             toast.error("Failed to approve")
         }
@@ -46,7 +46,7 @@ export function UserList({ users }: { users: User[] }) {
     const handleReject = async (id: string) => {
         try {
             await rejectUser(id)
-            toast.success("Family Member rejected")
+            toast.success("User rejected")
         } catch {
             toast.error("Failed to reject")
         }
@@ -55,7 +55,7 @@ export function UserList({ users }: { users: User[] }) {
     const handleMakeAdmin = async (id: string) => {
         try {
             await makeAdmin(id)
-            toast.success("Family Member promoted to Admin")
+            toast.success("User promoted to Admin")
         } catch {
             toast.error("Failed to promote")
         }
@@ -64,7 +64,7 @@ export function UserList({ users }: { users: User[] }) {
     const handleToggleStatus = async (id: string, currentStatus: boolean) => {
         try {
             await toggleUserStatus(id, !currentStatus)
-            toast.success(`Family Member ${!currentStatus ? 'enabled' : 'disabled'}`)
+            toast.success(`User ${!currentStatus ? 'enabled' : 'disabled'}`)
         } catch {
             toast.error("Failed to update status")
         }
@@ -74,7 +74,7 @@ export function UserList({ users }: { users: User[] }) {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>Family Member</TableHead>
+                    <TableHead>Member</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Joined</TableHead>
@@ -85,7 +85,8 @@ export function UserList({ users }: { users: User[] }) {
                 {users.map((user) => {
                     // Type assertion for profileData since it's jsonb
                     const profile = user.profileData as { firstName?: string, lastName?: string, imageUrl?: string } | null;
-                    const name = user.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.email);
+                    const displayName = (user.displayName && user.displayName !== 'Family Member') ? user.displayName : null;
+                    const name = displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.email);
                     const initials = name.slice(0, 2).toUpperCase();
 
                     return (
