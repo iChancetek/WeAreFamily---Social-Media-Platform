@@ -140,10 +140,21 @@ export function CommentItem({
     // Handle reply submission
     const handleReplySubmit = async () => {
         if (!replyText.trim() || !currentUserId) return;
+
+        console.log('🔵 Starting reply submission:', {
+            postId,
+            commentId: comment.id,
+            replyText,
+            contextType,
+            contextId
+        });
+
         setIsSubmittingReply(true);
 
         try {
             const newReply = await addReply(postId, comment.id, replyText, contextType, contextId);
+            console.log('✅ Reply created successfully:', newReply);
+
             if (newReply) {
                 // Cast to Reply with required fields
                 const replyWithMetadata: Reply = {
@@ -157,10 +168,18 @@ export function CommentItem({
                 setShowReplyInput(false);
                 toast.success('Reply added');
                 onUpdate?.();
+            } else {
+                console.error('❌ addReply returned null/undefined');
+                toast.error('Reply was not created');
             }
-        } catch (error) {
-            console.error(error);
-            toast.error('Failed to add reply');
+        } catch (error: any) {
+            console.error('❌ Reply submission failed:', error);
+            console.error('Error details:', {
+                message: error?.message,
+                code: error?.code,
+                stack: error?.stack
+            });
+            toast.error(`Failed to add reply: ${error?.message || 'Unknown error'}`);
         } finally {
             setIsSubmittingReply(false);
         }
