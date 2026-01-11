@@ -450,7 +450,9 @@ function ReplyItem({
     contextType,
     contextId,
     onUpdate,
-    onDelete
+    onDelete,
+    postAuthorId,
+    commentAuthorId
 }: {
     reply: Reply;
     postId: string;
