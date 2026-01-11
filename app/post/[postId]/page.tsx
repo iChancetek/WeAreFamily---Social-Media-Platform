@@ -86,6 +86,7 @@ export async function generateMetadata(
                 players: [
                     {
                         playerUrl: embedUrl,
+                        streamUrl: embedUrl,
                         width: 1280,
                         height: 720
                     }
