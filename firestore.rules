@@ -74,6 +74,18 @@ service cloud.firestore {
         
         // Update/Delete: Only owner or admin
         allow update, delete: if isAuthenticated() && (isOwner(resource.data.authorId) || isAdmin());
+
+        // Replies Subcollection (nested under comments)
+        match /replies/{replyId} {
+          // All authenticated users can read replies
+          allow read: if isAuthenticated();
+          
+          // Create: Must be authenticated and set own authorId
+          allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+          
+          // Update/Delete: Only owner or admin
+          allow update, delete: if isAuthenticated() && (isOwner(resource.data.authorId) || isAdmin());
+        }
       }
     }
 

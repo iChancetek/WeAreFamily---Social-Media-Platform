@@ -13,7 +13,7 @@ import { SafeDate } from "@/components/shared/safe-date";
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Heart, MessageCircle, Share2, Sparkles, MoreHorizontal, Send, Loader2, ExternalLink, AlertTriangle } from "lucide-react";
+import { Heart, MessageCircle, Share2, Sparkles, MoreHorizontal, Send, Loader2, ExternalLink, AlertTriangle, Settings2, Lock, Globe, Users, Image as ImageIcon, Video, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -26,6 +26,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { ReportDialog } from "@/components/reporting/report-dialog";
 
 import { Linkify } from "@/components/shared/linkify";
+import { CommentItem } from "./comment-item";
+import { EngagementSettingsDialog } from "./engagement-settings-dialog";
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { chatWithAgent } from '@/app/actions/ai-agents';
 
 // Dynamic Player
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
@@ -63,6 +68,18 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     );
     const [reactionCount, setReactionCount] = useState(post.reactions ? Object.keys(post.reactions).length : 0);
     const [comments, setComments] = useState<any[]>(post.comments || []);
+    const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+    const [commentMediaUrl, setCommentMediaUrl] = useState<string | null>(null);
+    const [isUploadingComment, setIsUploadingComment] = useState(false);
+    const [isGeneratingComment, setIsGeneratingComment] = useState(false);
+    const commentFileInputRef = useRef<HTMLInputElement>(null);
+
+    // Engagement settings from post
+    const engagementSettings = post.engagementSettings || {
+        allowLikes: true,
+        allowComments: true,
+        privacy: 'friends'
+    };
 
     const author = post.author || { displayName: "Unknown" };
     const name = author.displayName || author.email || "Unknown";
@@ -86,9 +103,19 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     const contextId = post.context?.id;
     const isAuthor = currentUserId === post.authorId;
 
+    // Get privacy icon
+    const getPrivacyIcon = () => {
+        switch (engagementSettings.privacy) {
+            case 'public': return <Globe className="w-3.5 h-3.5" />;
+            case 'private': return <Lock className="w-3.5 h-3.5" />;
+            default: return <Users className="w-3.5 h-3.5" />;
+        }
+    };
+
     // -- Handlers --
     const handleReaction = async (type: ReactionType) => {
         if (!currentUserId) return toast.error("Please login");
+        if (!engagementSettings.allowLikes) return toast.error("Likes are disabled on this post");
 
         const previousReaction = currentReaction;
         const previousCount = reactionCount;
@@ -115,6 +142,8 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
 
     const handleCommentSubmit = async () => {
         if (!commentText.trim() || !currentUserId) return;
+        if (!engagementSettings.allowComments) return toast.error("Comments are disabled on this post");
+
         setIsSubmitting(true);
         try {
             const newComment = await addComment(post.id, commentText, contextType, contextId);
@@ -122,12 +151,57 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                 setComments(prev => [...prev, newComment]);
             }
             setCommentText("");
+            setCommentMediaUrl(null);
             toast.success("Comment added");
         } catch (e) {
             console.error(e);
             toast.error("Failed to comment");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    // Handle Magic AI for comment
+    const handleCommentMagic = async () => {
+        if (!commentText.trim()) {
+            toast.error('Type something first!');
+            return;
+        }
+        setIsGeneratingComment(true);
+        try {
+            const magicText = await chatWithAgent(
+                `Write a friendly, engaging comment about: "${commentText}". Keep it under 140 chars. Use emojis naturally.`,
+                'general'
+            );
+            setCommentText(magicText || commentText);
+            toast.success('Magic applied! ✨');
+        } catch {
+            toast.error('Magic failed');
+        } finally {
+            setIsGeneratingComment(false);
+        }
+    };
+
+    // Handle file upload for comment
+    const handleCommentFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setIsUploadingComment(true);
+            try {
+                const timestamp = Date.now();
+                const filename = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+                const storageRef = ref(storage, `comments/${filename}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(snapshot.ref);
+                setCommentMediaUrl(url);
+                toast.success('File uploaded');
+            } catch (error: any) {
+                console.error('Error uploading:', error);
+                toast.error('Upload failed');
+            } finally {
+                setIsUploadingComment(false);
+                if (commentFileInputRef.current) commentFileInputRef.current.value = '';
+            }
         }
     };
 
@@ -246,6 +320,10 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground"><SafeDate date={post.createdAt} /></span>
                         {post.isEdited && <span className="text-[10px] text-muted-foreground">(edited)</span>}
+                        {/* Privacy Indicator */}
+                        <span className="text-xs text-muted-foreground flex items-center gap-1" title={`Privacy: ${engagementSettings.privacy}`}>
+                            {getPrivacyIcon()}
+                        </span>
                     </div>
                 </div>
 
@@ -259,9 +337,12 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                             {translatedContent ? "Show Original" : "Translate to Spanish"}
                         </DropdownMenuItem>
 
-                        {/* Edit/Delete for Author */}
+                        {/* Edit/Delete/Settings for Author */}
                         {((currentUserId === post.authorId && !post.postedAsBranding) || (post.postedAsBranding /* Requires admin check logic locally or optimistic allow, server validates */)) && (
                             <>
+                                <DropdownMenuItem onClick={() => setSettingsDialogOpen(true)}>
+                                    <Settings2 className="w-4 h-4 mr-2" /> Post Settings
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setIsEditing(true)}>
                                     Edit Post
                                 </DropdownMenuItem>
@@ -366,11 +447,16 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                                 <span>{currentReaction ? getReactionLabel(currentReaction) : "Like"}</span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="flex gap-1 p-2">
+                        <DropdownMenuContent align="start" className="flex gap-2 p-3 bg-background/95 backdrop-blur-sm">
                             {REACTIONS.map(r => (
-                                <DropdownMenuItem key={r.type} onClick={() => handleReaction(r.type as ReactionType)} className="text-2xl cursor-pointer hover:scale-125 transition-transform" title={r.label}>
+                                <button
+                                    key={r.type}
+                                    onClick={() => handleReaction(r.type as ReactionType)}
+                                    className="text-3xl cursor-pointer hover:scale-150 transition-all duration-200 p-1 rounded-lg hover:bg-muted/50"
+                                    title={r.label}
+                                >
                                     {r.emoji}
-                                </DropdownMenuItem>
+                                </button>
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -413,29 +499,86 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     </DropdownMenu>
                 </div>
 
-                {/* Comment Area (Simple) */}
+                {/* Comment Area with Threaded Replies */}
                 {showComments && (
                     <div className="w-full mt-2 space-y-3 animate-in fade-in slide-in-from-top-1">
-                        <div className="flex gap-2">
-                            <Input
-                                placeholder="Add a comment..."
-                                value={commentText}
-                                onChange={e => setCommentText(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && handleCommentSubmit()}
-                            />
-                            <Button size="icon" onClick={handleCommentSubmit} disabled={isSubmitting || !commentText}>
-                                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                            </Button>
-                        </div>
-                        <div className="space-y-3 pl-2">
-                            {comments.map((c: any) => (
-                                <div key={c.id} className="text-sm bg-muted/40 p-2 rounded-lg">
-                                    <div className="font-semibold text-xs mb-1 flex justify-between">
-                                        {c.author?.displayName || "User"}
-                                        <span className="font-normal text-muted-foreground"><SafeDate date={c.createdAt} /></span>
+                        {engagementSettings.allowComments ? (
+                            <div className="space-y-2">
+                                {commentMediaUrl && (
+                                    <div className="relative inline-block">
+                                        <div className="relative group w-20 h-20 rounded-lg overflow-hidden border border-border">
+                                            {commentMediaUrl.includes('.mp4') || commentMediaUrl.includes('.webm') ? (
+                                                <div className="w-full h-full bg-black flex items-center justify-center">
+                                                    <Video className="w-6 h-6 text-white/70" />
+                                                </div>
+                                            ) : (
+                                                <img src={commentMediaUrl} alt="Upload" className="w-full h-full object-cover" />
+                                            )}
+                                            <button
+                                                onClick={() => setCommentMediaUrl(null)}
+                                                className="absolute top-0.5 right-0.5 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
                                     </div>
-                                    <p><Linkify text={c.content} /></p>
+                                )}
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="Add a comment..."
+                                        value={commentText}
+                                        onChange={e => setCommentText(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleCommentSubmit()}
+                                    />
+                                    <input
+                                        type="file"
+                                        ref={commentFileInputRef}
+                                        className="hidden"
+                                        accept="image/*,video/*"
+                                        onChange={handleCommentFileSelect}
+                                        disabled={isUploadingComment}
+                                    />
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => commentFileInputRef.current?.click()}
+                                        disabled={isUploadingComment}
+                                        title="Add photo/video"
+                                    >
+                                        {isUploadingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+                                    </Button>
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={handleCommentMagic}
+                                        disabled={isGeneratingComment}
+                                        className="text-indigo-600 hover:bg-indigo-50"
+                                        title="Magic AI"
+                                    >
+                                        {isGeneratingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                    </Button>
+                                    <Button size="icon" onClick={handleCommentSubmit} disabled={isSubmitting || !commentText}>
+                                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                    </Button>
                                 </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 p-2 bg-muted/40 rounded-lg text-sm text-muted-foreground">
+                                <Lock className="w-4 h-4" />
+                                Comments are disabled on this post
+                            </div>
+                        )}
+
+                        <div className="space-y-3">
+                            {comments.map((c: any) => (
+                                <CommentItem
+                                    key={c.id}
+                                    comment={c}
+                                    postId={post.id}
+                                    currentUserId={currentUserId}
+                                    contextType={contextType}
+                                    contextId={contextId}
+                                />
                             ))}
                         </div>
                     </div>
@@ -454,6 +597,18 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     authorId: post.authorId
                 }}
             />
+
+            {/* Engagement Settings Dialog */}
+            {isAuthor && (
+                <EngagementSettingsDialog
+                    open={settingsDialogOpen}
+                    onOpenChange={setSettingsDialogOpen}
+                    postId={post.id}
+                    currentSettings={engagementSettings}
+                    contextType={contextType}
+                    contextId={contextId}
+                />
+            )}
         </Card>
     );
 }

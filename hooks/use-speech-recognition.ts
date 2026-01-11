@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export interface UseSpeechRecognitionProps {
     onResult?: (transcript: string) => void;
@@ -11,6 +11,16 @@ export function useSpeechRecognition({ onResult, onEnd }: UseSpeechRecognitionPr
     const [transcript, setTranscript] = useState('');
     const [isSupported, setIsSupported] = useState(false);
     const [recognition, setRecognition] = useState<any>(null);
+
+    // Use refs to avoid recreating recognition instance
+    const onResultRef = useRef(onResult);
+    const onEndRef = useRef(onEnd);
+
+    // Update refs when callbacks change
+    useEffect(() => {
+        onResultRef.current = onResult;
+        onEndRef.current = onEnd;
+    }, [onResult, onEnd]);
 
     useEffect(() => {
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -36,14 +46,14 @@ export function useSpeechRecognition({ onResult, onEnd }: UseSpeechRecognitionPr
 
                     const currentTranscript = finalTranscript || interimTranscript;
                     setTranscript(currentTranscript);
-                    if (onResult) {
-                        onResult(currentTranscript);
+                    if (onResultRef.current) {
+                        onResultRef.current(currentTranscript);
                     }
                 };
 
                 recognitionInstance.onend = () => {
                     setIsListening(false);
-                    if (onEnd) onEnd();
+                    if (onEndRef.current) onEndRef.current();
                 };
 
                 recognitionInstance.onerror = (event: any) => {
@@ -58,7 +68,7 @@ export function useSpeechRecognition({ onResult, onEnd }: UseSpeechRecognitionPr
                 setIsSupported(false);
             }
         }
-    }, [onResult, onEnd]);
+    }, []); // Empty dependency array - only runs once
 
     const startListening = useCallback(() => {
         if (recognition && !isListening) {

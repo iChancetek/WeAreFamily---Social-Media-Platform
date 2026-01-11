@@ -12,7 +12,11 @@ import { resolveDisplayName } from "@/lib/user-utils";
 
 // Removed local resolveDisplayName helper in favor of shared utility
 
-export async function createPost(content: string, mediaUrls: string[] = []) {
+export async function createPost(
+    content: string,
+    mediaUrls: string[] = [],
+    engagementSettings?: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' }
+) {
     const user = await getUserProfile()
     if (!user) {
         throw new Error("Unauthorized")
@@ -21,12 +25,20 @@ export async function createPost(content: string, mediaUrls: string[] = []) {
     // Safe sanitization
     const safeMediaUrls = Array.isArray(mediaUrls) ? mediaUrls : [];
 
+    // Default engagement settings
+    const settings = {
+        allowLikes: engagementSettings?.allowLikes ?? true,
+        allowComments: engagementSettings?.allowComments ?? true,
+        privacy: engagementSettings?.privacy ?? 'friends'
+    };
+
     try {
         await adminDb.collection("posts").add({
             authorId: user.id,
             content,
             mediaUrls: safeMediaUrls,
             reactions: {}, // Map of userId -> reactionType
+            engagementSettings: settings,
             createdAt: FieldValue.serverTimestamp(),
         });
     } catch (e: any) {
@@ -69,7 +81,7 @@ export async function getPosts(limit = 20) {
                 }
             }
 
-            // Fetch Comments (Subcollection)
+            // Fetch Comments (Subcollection) with Replies
             const commentsRef = doc.ref.collection("comments").orderBy("createdAt", "asc"); // Oldest first
             const commentsSnap = await commentsRef.get();
             const comments = await Promise.all(commentsSnap.docs.map(async (cDoc) => {
@@ -87,10 +99,37 @@ export async function getPosts(limit = 20) {
                         };
                     }
                 }
+
+                // Fetch replies for this comment
+                const repliesSnap = await cDoc.ref.collection("replies").orderBy("createdAt", "asc").get();
+                const replies = await Promise.all(repliesSnap.docs.map(async (rDoc) => {
+                    const rData = rDoc.data();
+                    let rAuthor = null;
+                    if (rData.authorId) {
+                        const rAuthorDoc = await adminDb.collection("users").doc(rData.authorId).get();
+                        if (rAuthorDoc.exists) {
+                            const raData = rAuthorDoc.data();
+                            rAuthor = {
+                                id: rAuthorDoc.id,
+                                displayName: resolveDisplayName(raData),
+                                imageUrl: raData?.imageUrl,
+                                email: raData?.email
+                            };
+                        }
+                    }
+                    return sanitizeData({
+                        id: rDoc.id,
+                        ...rData,
+                        author: rAuthor,
+                        createdAt: rData.createdAt?.toDate ? rData.createdAt.toDate() : new Date()
+                    });
+                }));
+
                 return sanitizeData({
                     id: cDoc.id,
                     ...cData,
                     author: cAuthor,
+                    replies: replies || [],
                     createdAt: cData.createdAt?.toDate ? cData.createdAt.toDate() : new Date()
                 });
             }));
@@ -338,7 +377,7 @@ export async function restorePost(postId: string) {
     // ...
 }
 
-export async function toggleCommentLike(postId: string, commentId: string, contextType?: string, contextId?: string) {
+export async function toggleCommentLike(postId: string, commentId: string, reactionType: ReactionType = 'like', contextType?: string, contextId?: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
 
@@ -348,25 +387,207 @@ export async function toggleCommentLike(postId: string, commentId: string, conte
     const commentDoc = await commentRef.get();
     if (!commentDoc.exists) throw new Error("Comment not found");
 
-    const currentLikes = commentDoc.data()?.likes || [];
-    const hasLiked = currentLikes.includes(user.id);
+    // Use reactions map like posts instead of likes array
+    const currentReactions = commentDoc.data()?.reactions || {};
+    const hasReaction = currentReactions[user.id] === reactionType;
 
-    let newLikes;
-    if (hasLiked) {
-        newLikes = currentLikes.filter((id: string) => id !== user.id);
+    let newReactions = { ...currentReactions };
+    if (hasReaction) {
+        delete newReactions[user.id];
     } else {
-        newLikes = [...currentLikes, user.id];
+        newReactions[user.id] = reactionType;
     }
 
-    await commentRef.update({ likes: newLikes });
+    await commentRef.update({ reactions: newReactions });
 
-    if (!hasLiked && commentDoc.data()?.authorId !== user.id) {
+    if (!hasReaction && commentDoc.data()?.authorId !== user.id) {
         const { createNotification } = await import("./notifications");
         await createNotification(
             commentDoc.data()?.authorId,
             "like",
             postId,
-            { commentId, message: `${user.displayName || user.email || 'Someone'} liked your comment` }
+            { commentId, message: `${user.displayName || user.email || 'Someone'} reacted to your comment` }
+        );
+    }
+
+    revalidatePath('/');
+    if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
+    if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
+}
+
+// ============================================================================
+// THREADED REPLIES SYSTEM
+// ============================================================================
+
+/**
+ * Add a reply to a comment (threaded conversation)
+ */
+export async function addReply(
+    postId: string,
+    commentId: string,
+    content: string,
+    contextType?: string,
+    contextId?: string
+) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const postRef = getPostRef(postId, contextType, contextId);
+    const commentRef = postRef.collection("comments").doc(commentId);
+
+    const commentDoc = await commentRef.get();
+    if (!commentDoc.exists) throw new Error("Comment not found");
+
+    // Create reply in subcollection
+    const replyRef = await commentRef.collection("replies").add({
+        authorId: user.id,
+        content,
+        likes: [],
+        createdAt: FieldValue.serverTimestamp()
+    });
+
+    const replyData = {
+        id: replyRef.id,
+        authorId: user.id,
+        content,
+        likes: [],
+        createdAt: new Date().toISOString()
+    };
+
+    // Notify comment author
+    if (commentDoc.data()?.authorId !== user.id) {
+        const { createNotification } = await import("./notifications");
+        await createNotification(
+            commentDoc.data()?.authorId,
+            "comment", // We can add 'reply' type if needed
+            postId,
+            {
+                commentId,
+                replyId: replyRef.id,
+                message: `${user.displayName || user.email || 'Someone'} replied to your comment`
+            }
+        );
+    }
+
+    revalidatePath('/');
+    if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
+    if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
+
+    return {
+        ...replyData,
+        author: {
+            id: user.id,
+            displayName: user.displayName,
+            email: user.email,
+            imageUrl: user.photoURL
+        }
+    };
+}
+
+/**
+ * Delete a reply
+ */
+export async function deleteReply(
+    postId: string,
+    commentId: string,
+    replyId: string,
+    contextType?: string,
+    contextId?: string
+) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const postRef = getPostRef(postId, contextType, contextId);
+    const replyRef = postRef.collection("comments").doc(commentId).collection("replies").doc(replyId);
+
+    const replyDoc = await replyRef.get();
+    if (!replyDoc.exists) throw new Error("Reply not found");
+    if (replyDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+
+    await replyRef.delete();
+
+    revalidatePath('/');
+    if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
+    if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
+}
+
+/**
+ * Edit a reply
+ */
+export async function editReply(
+    postId: string,
+    commentId: string,
+    replyId: string,
+    content: string,
+    contextType?: string,
+    contextId?: string
+) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const postRef = getPostRef(postId, contextType, contextId);
+    const replyRef = postRef.collection("comments").doc(commentId).collection("replies").doc(replyId);
+
+    const replyDoc = await replyRef.get();
+    if (!replyDoc.exists) throw new Error("Reply not found");
+    if (replyDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+
+    await replyRef.update({
+        content,
+        isEdited: true,
+        updatedAt: FieldValue.serverTimestamp()
+    });
+
+    revalidatePath('/');
+    if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
+    if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
+}
+
+/**
+ * Toggle like on a reply
+ */
+export async function toggleReplyLike(
+    postId: string,
+    commentId: string,
+    replyId: string,
+    reactionType: ReactionType = 'like',
+    contextType?: string,
+    contextId?: string
+) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const postRef = getPostRef(postId, contextType, contextId);
+    const replyRef = postRef.collection("comments").doc(commentId).collection("replies").doc(replyId);
+
+    const replyDoc = await replyRef.get();
+    if (!replyDoc.exists) throw new Error("Reply not found");
+
+    // Use reactions map like posts instead of likes array
+    const currentReactions = replyDoc.data()?.reactions || {};
+    const hasReaction = currentReactions[user.id] === reactionType;
+
+    let newReactions = { ...currentReactions };
+    if (hasReaction) {
+        delete newReactions[user.id];
+    } else {
+        newReactions[user.id] = reactionType;
+    }
+
+    await replyRef.update({ reactions: newReactions });
+
+    // Notify reply author
+    if (!hasReaction && replyDoc.data()?.authorId !== user.id) {
+        const { createNotification } = await import("./notifications");
+        await createNotification(
+            replyDoc.data()?.authorId,
+            "like",
+            postId,
+            {
+                commentId,
+                replyId,
+                message: `${user.displayName || user.email || 'Someone'} reacted to your reply`
+            }
         );
     }
 
@@ -525,4 +746,37 @@ export async function getPostGlobal(postId: string) {
     }
 
     return null;
+}
+
+/**
+ * Update post engagement settings (enable/disable likes, comments, change privacy)
+ */
+export async function updatePostEngagementSettings(
+    postId: string,
+    settings: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' },
+    contextType?: string,
+    contextId?: string
+) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const postRef = getPostRef(postId, contextType, contextId);
+    const postDoc = await postRef.get();
+
+    if (!postDoc.exists) throw new Error("Post not found");
+    if (postDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+
+    // Update only provided settings
+    const currentSettings = postDoc.data()?.engagementSettings || {};
+    const newSettings = {
+        allowLikes: settings.allowLikes ?? currentSettings.allowLikes ?? true,
+        allowComments: settings.allowComments ?? currentSettings.allowComments ?? true,
+        privacy: settings.privacy ?? currentSettings.privacy ?? 'friends'
+    };
+
+    await postRef.update({ engagementSettings: newSettings });
+
+    revalidatePath('/');
+    if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
+    if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
 }
