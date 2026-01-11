@@ -442,7 +442,7 @@ export async function addReply(
     const replyRef = await commentRef.collection("replies").add({
         authorId: user.id,
         content,
-        likes: [],
+        reactions: {}, // Use reactions map instead of likes array
         createdAt: FieldValue.serverTimestamp()
     });
 
@@ -450,7 +450,7 @@ export async function addReply(
         id: replyRef.id,
         authorId: user.id,
         content,
-        likes: [],
+        reactions: {}, // Use reactions map
         createdAt: new Date().toISOString()
     };
 
