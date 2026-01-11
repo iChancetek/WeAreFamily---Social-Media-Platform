@@ -4,7 +4,8 @@ export interface Reply {
     postId: string;
     authorId: string;
     content: string;
-    likes: string[]; // Array of user IDs who liked
+    reactions?: { [userId: string]: string }; // Map of userId to reaction type
+    likes?: string[]; // Deprecated - kept for backwards compatibility
     createdAt: Date | string;
     updatedAt?: Date | string;
     isEdited?: boolean;
@@ -78,7 +79,8 @@ export interface EnhancedComment {
     content: string;
     mediaUrl?: string | null;
     youtubeUrl?: string | null;
-    likes: string[];
+    reactions?: { [userId: string]: string }; // Map of userId to reaction type
+    likes?: string[]; // Deprecated - kept for backwards compatibility
     replies?: Reply[];
     replyCount?: number;
     createdAt: Date | string;
