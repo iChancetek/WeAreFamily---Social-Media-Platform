@@ -52,7 +52,11 @@ export type AuditAction =
     | "event.leave"
     | "group.post_create"
     | "reaction.add"
-    | "reaction.remove";
+    | "reaction.remove"
+    | "admin.update_profile"
+    | "admin.update_role"
+    | "admin.soft_delete_user"
+    | "admin.restore_user";
 
 export interface AuditLogEntry {
     userId: string;
