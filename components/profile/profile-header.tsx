@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { ProfileContent } from "./profile-content"
 import { BlockButton } from "@/components/profile/block-button"
 import { toast } from "sonner"
+import { ProfileShareButton } from "@/components/profile/profile-share-button"
 
 interface ProfileHeaderProps {
     user: {
@@ -18,6 +19,7 @@ interface ProfileHeaderProps {
         coverUrl?: string | null;
         coverType?: string | null;
         bio?: string | null;
+        isPublicProfile?: boolean;
     };
     isCurrentUser?: boolean;
     isBlocked?: boolean;
@@ -106,12 +108,24 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                             />
                                         </DialogContent>
                                     </Dialog>
+                                    <ProfileShareButton
+                                        userId={user.id}
+                                        displayName={user.displayName || "Famio Member"}
+                                        isPublic={user.isPublicProfile || false}
+                                    />
                                 </div>
                             ) : (
-                                <BlockButton
-                                    targetUserId={user.id}
-                                    isBlocked={isBlocked}
-                                />
+                                <div className="flex gap-2">
+                                    <BlockButton
+                                        targetUserId={user.id}
+                                        isBlocked={isBlocked}
+                                    />
+                                    <ProfileShareButton
+                                        userId={user.id}
+                                        displayName={user.displayName || "Famio Member"}
+                                        isPublic={user.isPublicProfile || false}
+                                    />
+                                </div>
                             )}
                         </div>
                     </div>

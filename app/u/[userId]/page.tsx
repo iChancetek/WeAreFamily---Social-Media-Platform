@@ -11,8 +11,91 @@ import { getUserPosts } from "@/app/actions/posts";
 import { Lock } from "lucide-react";
 
 import { ProfileTabs } from "@/components/profile/profile-tabs";
+import { Metadata } from "next";
 
 export const dynamic = 'force-dynamic';
+
+type Props = {
+    params: Promise<{ userId: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { userId } = await params;
+
+    try {
+        const userDoc = await adminDb.collection("users").doc(userId).get();
+
+        if (!userDoc.exists) {
+            return {
+                title: 'Profile Not Found | Famio',
+                description: 'This profile does not exist.'
+            };
+        }
+
+        const userData = userDoc.data()!;
+        const isPublic = userData.isPublicProfile === true;
+
+        // Privacy: Only public profiles get full OG metadata
+        if (!isPublic) {
+            return {
+                title: 'Famio Profile',
+                description: 'This profile is private.',
+                openGraph: {
+                    type: 'website',
+                    title: 'Famio Profile',
+                    description: 'This profile is private.',
+                    siteName: 'Famio'
+                }
+            };
+        }
+
+        // Build display name
+        const displayName = ((userData.displayName && userData.displayName !== "Family Member")
+            ? userData.displayName
+            : null)
+            || (userData.profileData?.firstName
+                ? `${userData.profileData.firstName} ${userData.profileData.lastName || ''}`.trim()
+                : null)
+            || "Famio Member";
+
+        const bio = userData.bio || "Member on Famio. View profile and activity.";
+        const imageUrl = userData.imageUrl || 'https://famio.us/default-avatar.png';
+        const profileUrl = `https://famio.us/u/${userId}`;
+
+        return {
+            title: `${displayName} | Famio`,
+            description: bio,
+            openGraph: {
+                type: 'profile',
+                title: displayName,
+                description: bio,
+                url: profileUrl,
+                siteName: 'Famio',
+                images: [
+                    {
+                        url: imageUrl,
+                        width: 400,
+                        height: 400,
+                        alt: 'Profile Photo'
+                    }
+                ]
+            },
+            twitter: {
+                card: 'summary',
+                title: `${displayName} | Famio`,
+                description: bio,
+                images: [imageUrl]
+            }
+        };
+    } catch (error) {
+        console.error('Error generating profile metadata:', error);
+        return {
+            title: 'Famio Profile',
+            description: 'Member profile on Famio'
+        };
+    }
+}
+
 
 export default async function ProfilePage({ params }: { params: Promise<{ userId: string }> }) {
     const currentUser = await getUserProfile();
