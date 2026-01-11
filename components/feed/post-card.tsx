@@ -34,7 +34,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { chatWithAgent } from '@/app/actions/ai-agents';
 
 // Dynamic Player
-const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
+import { MediaEmbed } from "./media-embed";
 
 // Helper: Video Detection
 function isUrlVideo(url: string | null | undefined): boolean {
@@ -407,21 +407,9 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                 {/* Media Embeds (YouTube, FB, LinkedIn, etc) */}
                 {/* We prefer the mediaMatch from the top level regex if possible, but Linkify support is dynamic. 
                     Let's update the match logic in the body to include more types. */}
+                {/* Media Embeds (YouTube, FB, LinkedIn, etc) */}
                 {mediaUrl && (
-                    <div className="mt-3 rounded-xl overflow-hidden border border-border bg-black aspect-video relative group">
-                        <ReactPlayer
-                            url={mediaUrl}
-                            width="100%"
-                            height="100%"
-                            controls
-                            light={false} // attempt to load immediately or use true for placeholder
-                            config={{
-                                facebook: {
-                                    appId: '130969678083861' // Optional: Generic App ID if needed
-                                }
-                            }}
-                        />
-                    </div>
+                    <MediaEmbed url={mediaUrl} />
                 )}
                 {post.mediaUrls?.map((url: string, idx: number) => (
                     <div key={idx} className="mt-3 rounded-xl overflow-hidden border border-border">
