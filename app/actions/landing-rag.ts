@@ -34,7 +34,7 @@ const STATIC_CONTENT = [
     },
     {
         category: "Security",
-        text: "Security & Privacy: Famio uses Enterprise-grade security. All data is encrypted. Privacy controls restrict visibility to family members only. Admin controls allow moderation."
+        text: "Security & Privacy: Famio uses Enterprise-grade security. All data is encrypted. Privacy controls restrict visibility to members only. Admin controls allow moderation."
     },
     {
         category: "Target Audience: Executives",

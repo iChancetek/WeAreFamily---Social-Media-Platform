@@ -74,8 +74,8 @@ export function UserList({ users }: { users: User[] }) {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>Member</TableHead>
-                    <TableHead>Role</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -86,7 +86,7 @@ export function UserList({ users }: { users: User[] }) {
                     // Type assertion for profileData since it's jsonb
                     const profile = user.profileData as { firstName?: string, lastName?: string, imageUrl?: string } | null;
                     const displayName = (user.displayName && user.displayName !== 'Family Member') ? user.displayName : null;
-                    const name = displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.email);
+                    const name = displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}`.trim() : "Unnamed User");
                     const initials = name.slice(0, 2).toUpperCase();
 
                     return (
@@ -100,14 +100,16 @@ export function UserList({ users }: { users: User[] }) {
                                     <Link href={`/u/${user.id}`} className="font-medium hover:underline cursor-pointer text-blue-600 dark:text-blue-400">
                                         {name}
                                     </Link>
-                                    <span className="text-xs text-gray-500">{user.email}</span>
-                                    <span className="text-xs text-muted-foreground select-all font-mono opacity-50 hover:opacity-100">{user.id}</span>
+                                    {user.role === 'admin' && (
+                                        <Badge variant="default" className="w-fit text-[10px] h-5 px-1.5 mt-1">
+                                            Admin
+                                        </Badge>
+                                    )}
+                                    <span className="text-xs text-muted-foreground select-all font-mono opacity-50 hover:opacity-100 mt-1">{user.id}</span>
                                 </div>
                             </TableCell>
                             <TableCell>
-                                <Badge variant={user.role === 'admin' ? 'default' : user.role === 'member' ? 'secondary' : 'outline'}>
-                                    {user.role}
-                                </Badge>
+                                <span className="text-sm text-gray-500">{user.email}</span>
                             </TableCell>
                             <TableCell>
                                 <Badge variant={user.isActive ? 'outline' : 'destructive'}>

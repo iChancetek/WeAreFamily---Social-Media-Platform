@@ -51,6 +51,8 @@ import { Label } from "@/components/ui/label"
 const profileFormSchema = z.object({
     displayName: z.string().min(2, {
         message: "Display name must be at least 2 characters.",
+    }).refine((val) => val.trim().split(/\s+/).length >= 2, {
+        message: "Please enter your First and Last Name",
     }),
     bio: z.string().max(160).optional(),
     imageUrl: z.string().optional(),
@@ -198,9 +200,9 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
         try {
             await unblockUser(userId);
             setBlockedList(prev => prev.filter(u => u.id !== userId));
-            toast.success("Family Member unblocked");
+            toast.success("Member unblocked");
         } catch {
-            toast.error("Failed to unblock family member");
+            toast.error("Failed to unblock member");
         }
     };
 
@@ -336,7 +338,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                 <div className="space-y-0.5">
                                     <Label className="text-base">Invisible Mode</Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Hide your online status from other family members.
+                                        Hide your online status from other members.
                                     </p>
                                 </div>
                                 <Switch
@@ -363,7 +365,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
 
                             {/* 3. Blocked List */}
                             <div className="space-y-4 pt-4 border-t border-border">
-                                <Label className="text-base">Blocked Family Members</Label>
+                                <Label className="text-base">Blocked Members</Label>
                                 {blockedList.length === 0 ? (
                                     <p className="text-sm text-muted-foreground">You haven't blocked anyone.</p>
                                 ) : (

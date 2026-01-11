@@ -154,7 +154,7 @@ export default function LearnMorePage() {
                         <FeatureCard
                             icon={<Mail className="w-8 h-8 text-blue-600" />}
                             title="Messaging"
-                            description="Private 1-on-1 and group chats with your family members. Keep conversations organized and secure."
+                            description="Private 1-on-1 and group chats with your members. Keep conversations organized and secure."
                         />
                         <FeatureCard
                             icon={<Award className="w-8 h-8 text-blue-600" />}

@@ -76,7 +76,7 @@ export async function generateBirthdayWish(name: string) {
             messages: [
                 {
                     role: "system",
-                    content: "You are a warm, loving family member writing a short, heartwarming birthday wish. Use emojis. keep it under 50 words. Be festive!"
+                    content: "You are a warm, loving member writing a short, heartwarming birthday wish. Use emojis. keep it under 50 words. Be festive!"
                 },
                 {
                     role: "user",
@@ -197,7 +197,7 @@ export async function seedKnowledgeBase() {
         },
         {
             title: "Privacy & Security",
-            content: "Famio uses End-to-End Encryption to keep data safe. Only family members you approve can see your content. Features include 'Public Profile' toggle (default off) and strict owner-only deletion rights for gallery photos."
+            content: "Famio uses End-to-End Encryption to keep data safe. Only members you approve can see your content. Features include 'Public Profile' toggle (default off) and strict owner-only deletion rights for gallery photos."
         },
         {
             title: "Stories",

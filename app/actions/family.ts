@@ -377,7 +377,7 @@ export async function getFamilyMembers() {
                 const rawName = data.displayName;
                 const profileName = data.profileData?.firstName ? `${data.profileData.firstName} ${data.profileData.lastName || ''}`.trim() : null;
                 const emailName = data.email?.split('@')[0];
-                const cleanName = (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Family Member");
+                const cleanName = (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Unknown");
 
                 return {
                     id: userDoc.id,

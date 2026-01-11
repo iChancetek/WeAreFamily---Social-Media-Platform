@@ -31,7 +31,7 @@ export default async function LivePage() {
                     </Link>
                     <div>
                         <h1 className="text-3xl font-bold">Live Broadcasts</h1>
-                        <p className="text-muted-foreground mt-1">Watch family members streaming live</p>
+                        <p className="text-muted-foreground mt-1">Watch members streaming live</p>
                     </div>
                 </div>
                 <Link href="/live/broadcast">

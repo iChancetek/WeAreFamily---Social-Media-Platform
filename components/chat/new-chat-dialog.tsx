@@ -78,7 +78,7 @@ export function NewChatDialog({ familyMembers }: NewChatDialogProps) {
                     <div className="max-h-[300px] overflow-y-auto space-y-1">
                         {filteredFamily.length === 0 ? (
                             <p className="text-center text-sm text-muted-foreground py-8">
-                                No family members found.
+                                No members found.
                             </p>
                         ) : (
                             filteredFamily.map((member) => (

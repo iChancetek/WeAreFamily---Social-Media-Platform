@@ -30,17 +30,6 @@ export function resolveDisplayName(data: any): string {
         if (fullName) return fullName;
     }
 
-    // 3. Use email prefix (everything before @)
-    if (data.email) {
-        const emailPrefix = data.email.split('@')[0];
-        // Make it more readable (capitalize, replace dots/underscores with spaces)
-        return emailPrefix
-            .replace(/[._]/g, ' ')
-            .split(' ')
-            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    }
-
-    // 4. Final fallback
-    return "Unknown User";
+    // 3. Fallback: Unnamed User (Strict mode: No email fallback)
+    return "Unnamed User";
 }

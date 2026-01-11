@@ -107,7 +107,7 @@ export default async function FamilyPage() {
                             <CardContent>
                                 {familyMembers.length === 0 ? (
                                     <div className="text-center py-10 text-muted-foreground">
-                                        You haven't added any family members yet. Use the search to find them!
+                                        You haven't added any members yet. Use the search to find them!
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">

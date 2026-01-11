@@ -54,7 +54,7 @@ export async function getActiveUsers() {
             const displayName = u.displayName ||
                 (u.profileData?.firstName ? `${u.profileData.firstName} ${u.profileData.lastName || ''}`.trim() : null) ||
                 u.email?.split('@')[0] ||
-                "Family Member";
+                "Unknown";
 
             return {
                 id: u.id,

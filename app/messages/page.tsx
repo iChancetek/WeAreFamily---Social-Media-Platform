@@ -19,7 +19,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
 
     const activeSession = activeChatId ? chats.find(c => c.id === activeChatId) : null;
 
-    // Fetch family members for the new chat dialog
+    // Fetch members for the new chat dialog
     const { getFamilyMembers } = await import("@/app/actions/family");
     const familyMembers = await getFamilyMembers();
 
@@ -48,7 +48,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                             </div>
                             <h2 className="text-xl font-semibold mb-2 text-foreground">Select a Conversation</h2>
                             <p className="max-w-xs text-sm">
-                                Choose a family member from the list to start chatting or checking up on them!
+                                Choose a member from the list to start chatting or checking up on them!
                             </p>
                         </div>
                     )}

@@ -60,7 +60,7 @@ export default function BroadcastPage() {
                     <div className="text-center max-w-md">
                         <h3 className="font-semibold text-lg mb-2">Go Live with Your Family</h3>
                         <p className="text-muted-foreground text-sm">
-                            Share special moments in real-time. Your family members will be able to watch and connect with you instantly.
+                            Share special moments in real-time. Your members will be able to watch and connect with you instantly.
                         </p>
                     </div>
                     <div className="bg-muted/50 p-4 rounded-lg max-w-md">
