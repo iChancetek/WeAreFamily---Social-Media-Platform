@@ -45,7 +45,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
 
     const user = sanitizeData({
         id: userDoc.id,
-        displayName: userData.displayName,
+        displayName: ((userData.displayName && userData.displayName !== "Family Member") ? userData.displayName : null) || (userData.profileData?.firstName ? `${userData.profileData.firstName} ${userData.profileData.lastName || ''}`.trim() : null) || userData.email?.split('@')[0] || "Unknown",
         imageUrl: userData.imageUrl,
         // Public Data (Allowed for everyone)
         isPublicProfile: userData.isPublicProfile,

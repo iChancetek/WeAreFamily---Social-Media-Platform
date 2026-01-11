@@ -12,14 +12,18 @@ export async function approveUser(userId: string) {
     }
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
+    if (!userDoc.exists) throw new Error("User not found");
     const userData = userDoc.data();
 
     await adminDb.collection("users").doc(userId).update({ role: 'member' });
 
+    const rawName = userData?.displayName;
+    const targetName = (rawName && rawName !== "Family Member") ? rawName : (userData?.email || "Unknown");
+
     await logAuditEvent("admin.approve_user", {
         targetType: "user",
         targetId: userId,
-        targetName: userData?.displayName || userData?.email || "Unknown",
+        targetName,
     });
 
     revalidatePath('/admin')
@@ -32,14 +36,18 @@ export async function rejectUser(userId: string) {
     }
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
+    if (!userDoc.exists) throw new Error("User not found");
     const userData = userDoc.data();
 
     await adminDb.collection("users").doc(userId).update({ role: 'rejected' });
 
+    const rawName = userData?.displayName;
+    const targetName = (rawName && rawName !== "Family Member") ? rawName : (userData?.email || "Unknown");
+
     await logAuditEvent("admin.reject_user", {
         targetType: "user",
         targetId: userId,
-        targetName: userData?.displayName || userData?.email || "Unknown",
+        targetName,
     });
 
     revalidatePath('/admin')
@@ -52,14 +60,18 @@ export async function makeAdmin(userId: string) {
     }
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
+    if (!userDoc.exists) throw new Error("User not found");
     const userData = userDoc.data();
 
     await adminDb.collection("users").doc(userId).update({ role: 'admin' });
 
+    const rawName = userData?.displayName;
+    const targetName = (rawName && rawName !== "Family Member") ? rawName : (userData?.email || "Unknown");
+
     await logAuditEvent("admin.promote_user", {
         targetType: "user",
         targetId: userId,
-        targetName: userData?.displayName || userData?.email || "Unknown",
+        targetName,
     });
 
     revalidatePath('/admin')
@@ -72,14 +84,18 @@ export async function toggleUserStatus(userId: string, isActive: boolean) {
     }
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
+    if (!userDoc.exists) throw new Error("User not found");
     const userData = userDoc.data();
 
     await adminDb.collection("users").doc(userId).update({ isActive });
 
+    const rawName = userData?.displayName;
+    const targetName = (rawName && rawName !== "Family Member") ? rawName : (userData?.email || "Unknown");
+
     await logAuditEvent(isActive ? "admin.enable_user" : "admin.disable_user", {
         targetType: "user",
         targetId: userId,
-        targetName: userData?.displayName || userData?.email || "Unknown",
+        targetName,
     });
 
     revalidatePath('/admin')
