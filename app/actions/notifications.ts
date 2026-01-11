@@ -20,6 +20,7 @@ export type Notification = {
     read: boolean;
     createdAt: Date;
     sender?: {
+        id?: string;
         displayName: string;
         imageUrl?: string;
     };
@@ -80,6 +81,7 @@ export async function getNotifications() {
         const senderDoc = await adminDb.collection('users').doc(data.senderId).get();
 
         const sender = senderDoc.exists ? {
+            id: senderDoc.id,
             displayName: resolveDisplayName(senderDoc.data()),
             imageUrl: senderDoc.data()?.imageUrl
         } : { displayName: "Unknown" };

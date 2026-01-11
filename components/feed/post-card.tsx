@@ -14,6 +14,7 @@ import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Heart, MessageCircle, Share2, Sparkles, MoreHorizontal, Send, Loader2, ExternalLink, AlertTriangle, Settings2, Lock, Globe, Users, Image as ImageIcon, Video, X } from "lucide-react";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -82,7 +83,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     };
 
     const author = post.author || { displayName: "Unknown" };
-    const name = author.displayName || author.email || "Unknown";
+    const name = (author.displayName && author.displayName !== "Family Member") ? author.displayName : "Unknown";
     const profilePic = author.imageUrl;
 
     // Broad Media Matching for YouTube, Facebook, LinkedIn, SoundCloud, Vimeo, etc.
@@ -302,13 +303,17 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
         <Card id={`post-${post.id}`} className="mb-4 overflow-hidden border-none shadow-sm bg-card">
             {/* Header */}
             <div className="flex flex-row items-center gap-3 p-4 pb-2">
-                <Avatar className="w-10 h-10 border border-border">
-                    <AvatarImage src={profilePic || undefined} />
-                    <AvatarFallback className="bg-primary text-primary-foreground font-bold">{name.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <Link href={`/u/${post.authorId}`}>
+                    <Avatar className="w-10 h-10 border border-border cursor-pointer hover:opacity-80 transition-opacity">
+                        <AvatarImage src={profilePic || undefined} />
+                        <AvatarFallback className="bg-primary text-primary-foreground font-bold">{name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                </Link>
                 <div className="flex flex-col flex-1">
                     <div className="flex items-center gap-1 flex-wrap">
-                        <span className="font-semibold text-sm">{name}</span>
+                        <Link href={`/u/${post.authorId}`} className="font-semibold text-sm hover:underline cursor-pointer">
+                            {name}
+                        </Link>
                         {/* Show Context if available (Group/Branding) */}
                         {post.context?.name && (
                             <>

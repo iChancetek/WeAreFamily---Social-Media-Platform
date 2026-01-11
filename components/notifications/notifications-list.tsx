@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCheck, Heart, MessageCircle, UserPlus, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export function NotificationsList() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -98,14 +99,33 @@ export function NotificationsList() {
                         notification.read ? "bg-background/50 opacity-80" : "bg-blue-50/50 dark:bg-blue-950/20"
                     )}
                 >
-                    <Avatar className="w-10 h-10 border border-border">
-                        <AvatarImage src={notification.sender?.imageUrl || ""} />
-                        <AvatarFallback>{notification.sender?.displayName?.[0] || "?"}</AvatarFallback>
-                    </Avatar>
+                    {notification.sender?.id ? (
+                        <Link href={`/u/${notification.sender.id}`} onClick={(e) => e.stopPropagation()}>
+                            <Avatar className="w-10 h-10 border border-border cursor-pointer hover:opacity-80 transition-opacity">
+                                <AvatarImage src={notification.sender.imageUrl || ""} />
+                                <AvatarFallback>{notification.sender.displayName?.[0] || "?"}</AvatarFallback>
+                            </Avatar>
+                        </Link>
+                    ) : (
+                        <Avatar className="w-10 h-10 border border-border">
+                            <AvatarImage src={notification.sender?.imageUrl || ""} />
+                            <AvatarFallback>{notification.sender?.displayName?.[0] || "?"}</AvatarFallback>
+                        </Avatar>
+                    )}
 
                     <div className="flex-1 space-y-1">
                         <p className="text-sm">
-                            <span className="font-semibold">{notification.sender?.displayName || "Someone"}</span>
+                            {notification.sender?.id ? (
+                                <Link
+                                    href={`/u/${notification.sender.id}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="font-semibold hover:underline"
+                                >
+                                    {notification.sender.displayName || "Someone"}
+                                </Link>
+                            ) : (
+                                <span className="font-semibold">{notification.sender?.displayName || "Someone"}</span>
+                            )}
                             {" "}
                             {getNotificationText(notification)}
                         </p>

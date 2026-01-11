@@ -17,6 +17,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 import {
     toggleCommentLike,
     deleteComment,
@@ -83,7 +84,12 @@ export function CommentItem({
 
     const userReaction = currentUserId ? likesState[currentUserId] : null;
     const hasLiked = !!userReaction;
-    const commentAuthor = comment.author || { displayName: 'Unknown' };
+    const commentAuthor = comment.author ? {
+        ...comment.author,
+        displayName: (comment.author.displayName && comment.author.displayName !== "Family Member")
+            ? comment.author.displayName
+            : "Unknown"
+    } : { displayName: 'Unknown' };
 
     // Handle comment like
     const handleLike = async (reactionType: ReactionType) => {
@@ -244,17 +250,21 @@ export function CommentItem({
             {/* Main Comment */}
             <div className="bg-muted/40 p-3 rounded-lg">
                 <div className="flex items-start gap-2">
-                    <Avatar className="w-8 h-8 border border-border">
-                        <AvatarImage src={commentAuthor.imageUrl || undefined} />
-                        <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                            {commentAuthor.displayName.charAt(0)}
-                        </AvatarFallback>
-                    </Avatar>
+                    <Link href={`/u/${comment.authorId}`}>
+                        <Avatar className="w-8 h-8 border border-border cursor-pointer hover:opacity-80 transition-opacity">
+                            <AvatarImage src={commentAuthor.imageUrl || undefined} />
+                            <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                                {commentAuthor.displayName.charAt(0)}
+                            </AvatarFallback>
+                        </Avatar>
+                    </Link>
 
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-semibold text-sm">{commentAuthor.displayName}</span>
+                                <Link href={`/u/${comment.authorId}`} className="font-semibold text-sm hover:underline cursor-pointer">
+                                    {commentAuthor.displayName}
+                                </Link>
                                 <span className="text-xs text-muted-foreground">
                                     <SafeDate date={comment.createdAt} />
                                 </span>
@@ -490,7 +500,12 @@ function ReplyItem({
         currentUserId === postAuthorId;
     const userReaction = currentUserId ? likesState[currentUserId] : null;
     const hasLiked = !!userReaction;
-    const replyAuthor = reply.author || { displayName: 'Unknown', imageUrl: undefined };
+    const replyAuthor = reply.author ? {
+        ...reply.author,
+        displayName: (reply.author.displayName && reply.author.displayName !== "Family Member")
+            ? reply.author.displayName
+            : "Unknown"
+    } : { displayName: 'Unknown', imageUrl: undefined };
 
     const handleLike = async (reactionType: ReactionType) => {
         if (!currentUserId) return toast.error('Please login');
@@ -547,17 +562,21 @@ function ReplyItem({
     return (
         <div className="bg-muted/20 p-2.5 rounded-lg border-l-2 border-border">
             <div className="flex items-start gap-2">
-                <Avatar className="w-7 h-7 border border-border">
-                    <AvatarImage src={replyAuthor.imageUrl || undefined} />
-                    <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                        {replyAuthor.displayName?.charAt(0) || '?'}
-                    </AvatarFallback>
-                </Avatar>
+                <Link href={`/u/${reply.authorId}`}>
+                    <Avatar className="w-7 h-7 border border-border cursor-pointer hover:opacity-80 transition-opacity">
+                        <AvatarImage src={replyAuthor.imageUrl || undefined} />
+                        <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                            {replyAuthor.displayName?.charAt(0) || '?'}
+                        </AvatarFallback>
+                    </Avatar>
+                </Link>
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-xs">{replyAuthor.displayName}</span>
+                            <Link href={`/u/${reply.authorId}`} className="font-semibold text-xs hover:underline cursor-pointer">
+                                {replyAuthor.displayName}
+                            </Link>
                             <span className="text-[10px] text-muted-foreground">
                                 <SafeDate date={reply.createdAt} />
                             </span>
