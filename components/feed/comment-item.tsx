@@ -69,6 +69,18 @@ export function CommentItem({
     const isAuthor = currentUserId === comment.authorId;
     const canDelete = currentUserId === comment.authorId || currentUserId === postAuthorId;
     const canEdit = currentUserId === comment.authorId;
+
+    // DEBUG LOGGING
+    if (typeof window !== 'undefined') {
+        console.log(`Comment ${comment.id} permissions:`, {
+            currentUserId,
+            commentAuthor: comment.authorId,
+            postAuthor: postAuthorId,
+            canEdit,
+            canDelete
+        });
+    }
+
     const userReaction = currentUserId ? likesState[currentUserId] : null;
     const hasLiked = !!userReaction;
     const commentAuthor = comment.author || { displayName: 'Unknown' };
