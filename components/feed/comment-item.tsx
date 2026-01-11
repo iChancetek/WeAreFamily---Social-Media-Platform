@@ -45,7 +45,7 @@ export function CommentItem({
     postId,
     currentUserId,
     contextType,
-    contextType,
+
     contextId,
     onUpdate,
     postAuthorId
