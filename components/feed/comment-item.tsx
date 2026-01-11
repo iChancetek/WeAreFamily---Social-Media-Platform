@@ -45,9 +45,11 @@ export function CommentItem({
     postId,
     currentUserId,
     contextType,
+    contextType,
     contextId,
-    onUpdate
-}: CommentItemProps) {
+    onUpdate,
+    postAuthorId
+}: CommentItemProps & { postAuthorId?: string }) {
     const [showReplyInput, setShowReplyInput] = useState(false);
     const [replyText, setReplyText] = useState('');
     const [isSubmittingReply, setIsSubmittingReply] = useState(false);
@@ -65,6 +67,8 @@ export function CommentItem({
     const [replies, setReplies] = useState<Reply[]>(comment.replies || []);
 
     const isAuthor = currentUserId === comment.authorId;
+    const canDelete = currentUserId === comment.authorId || currentUserId === postAuthorId;
+    const canEdit = currentUserId === comment.authorId;
     const userReaction = currentUserId ? likesState[currentUserId] : null;
     const hasLiked = !!userReaction;
     const commentAuthor = comment.author || { displayName: 'Unknown' };
@@ -245,7 +249,7 @@ export function CommentItem({
                                 {comment.isEdited && <span className="text-[10px] text-muted-foreground">(edited)</span>}
                             </div>
 
-                            {isAuthor && (
+                            {(canEdit || canDelete) && (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="icon" className="h-6 w-6">
@@ -253,12 +257,16 @@ export function CommentItem({
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => setIsEditingComment(true)}>
-                                            <Edit2 className="w-4 h-4 mr-2" /> Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={handleDelete} className="text-red-500">
-                                            <Trash2 className="w-4 h-4 mr-2" /> Delete
-                                        </DropdownMenuItem>
+                                        {canEdit && (
+                                            <DropdownMenuItem onClick={() => setIsEditingComment(true)}>
+                                                <Edit2 className="w-4 h-4 mr-2" /> Edit
+                                            </DropdownMenuItem>
+                                        )}
+                                        {canDelete && (
+                                            <DropdownMenuItem onClick={handleDelete} className="text-red-500">
+                                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                            </DropdownMenuItem>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             )}
@@ -421,6 +429,8 @@ export function CommentItem({
                             currentUserId={currentUserId}
                             contextType={contextType}
                             contextId={contextId}
+                            postAuthorId={postAuthorId}
+                            commentAuthorId={comment.authorId}
                             onUpdate={() => onUpdate?.()}
                             onDelete={(replyId) => setReplies(prev => prev.filter(r => r.id !== replyId))}
                         />
@@ -450,6 +460,8 @@ function ReplyItem({
     contextId?: string;
     onUpdate?: () => void;
     onDelete?: (replyId: string) => void;
+    postAuthorId?: string;
+    commentAuthorId?: string;
 }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(reply.content || '');
@@ -457,6 +469,11 @@ function ReplyItem({
     const [likesState, setLikesState] = useState(reply.reactions || {});
 
     const isAuthor = currentUserId === reply.authorId;
+    const canEdit = currentUserId === reply.authorId;
+    // Delete rights: Reply Author OR Comment Author OR Post Author
+    const canDelete = currentUserId === reply.authorId ||
+        currentUserId === commentAuthorId ||
+        currentUserId === postAuthorId;
     const userReaction = currentUserId ? likesState[currentUserId] : null;
     const hasLiked = !!userReaction;
     const replyAuthor = reply.author || { displayName: 'Unknown', imageUrl: undefined };
@@ -533,7 +550,7 @@ function ReplyItem({
                             {reply.isEdited && <span className="text-[9px] text-muted-foreground">(edited)</span>}
                         </div>
 
-                        {isAuthor && (
+                        {(canEdit || canDelete) && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" className="h-5 w-5">
@@ -541,12 +558,16 @@ function ReplyItem({
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                                        <Edit2 className="w-3 h-3 mr-2" /> Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={handleDelete} className="text-red-500">
-                                        <Trash2 className="w-3 h-3 mr-2" /> Delete
-                                    </DropdownMenuItem>
+                                    {canEdit && (
+                                        <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                                            <Edit2 className="w-3 h-3 mr-2" /> Edit
+                                        </DropdownMenuItem>
+                                    )}
+                                    {canDelete && (
+                                        <DropdownMenuItem onClick={handleDelete} className="text-red-500">
+                                            <Trash2 className="w-3 h-3 mr-2" /> Delete
+                                        </DropdownMenuItem>
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         )}

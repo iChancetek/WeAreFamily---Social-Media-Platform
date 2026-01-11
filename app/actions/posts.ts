@@ -288,10 +288,21 @@ export async function deleteComment(postId: string, commentId: string, contextTy
 
     const postRef = getPostRef(postId, contextType, contextId);
     const commentRef = postRef.collection("comments").doc(commentId);
-    const commentDoc = await commentRef.get();
-    if (!commentDoc.exists) throw new Error("Comment not found");
 
-    if (commentDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+    // Fetch both comment and post to check permissions
+    const [commentDoc, postDoc] = await Promise.all([
+        commentRef.get(),
+        postRef.get()
+    ]);
+
+    if (!commentDoc.exists) throw new Error("Comment not found");
+    if (!postDoc.exists) throw new Error("Post not found");
+
+    const isCommentAuthor = commentDoc.data()?.authorId === user.id;
+    const isPostAuthor = postDoc.data()?.authorId === user.id;
+
+    // Allow deletion if user is Comment Author OR Post Author
+    if (!isCommentAuthor && !isPostAuthor) throw new Error("Unauthorized");
 
     await commentRef.delete();
     revalidatePath('/');
@@ -498,11 +509,26 @@ export async function deleteReply(
     if (!user) throw new Error("Unauthorized");
 
     const postRef = getPostRef(postId, contextType, contextId);
-    const replyRef = postRef.collection("comments").doc(commentId).collection("replies").doc(replyId);
+    const commentRef = postRef.collection("comments").doc(commentId);
+    const replyRef = commentRef.collection("replies").doc(replyId);
 
-    const replyDoc = await replyRef.get();
+    // Need to check 3 levels of ownership: Reply Author, Comment Author, Post Author
+    const [replyDoc, commentDoc, postDoc] = await Promise.all([
+        replyRef.get(),
+        commentRef.get(),
+        postRef.get()
+    ]);
+
     if (!replyDoc.exists) throw new Error("Reply not found");
-    if (replyDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+
+    const isReplyAuthor = replyDoc.data()?.authorId === user.id;
+    const isCommentAuthor = commentDoc.exists && commentDoc.data()?.authorId === user.id;
+    const isPostAuthor = postDoc.exists && postDoc.data()?.authorId === user.id;
+
+    // Allow if: Reply Author OR Comment Author OR Post Author
+    if (!isReplyAuthor && !isCommentAuthor && !isPostAuthor) {
+        throw new Error("Unauthorized");
+    }
 
     await replyRef.delete();
 

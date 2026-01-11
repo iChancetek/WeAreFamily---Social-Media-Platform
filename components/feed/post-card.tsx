@@ -578,6 +578,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                                     currentUserId={currentUserId}
                                     contextType={contextType}
                                     contextId={contextId}
+                                    postAuthorId={post.authorId}
                                 />
                             ))}
                         </div>
