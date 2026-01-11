@@ -653,10 +653,37 @@ export async function getUserPosts(userId: string) {
                         imageUrl: u.data()?.imageUrl
                     } : null;
                 }
+                // Fetch replies for this comment
+                const repliesSnap = await commentsRef.doc(c.id).collection("replies").orderBy("createdAt", "asc").get();
+                const replies = await Promise.all(repliesSnap.docs.map(async (r) => {
+                    const rData = r.data();
+                    let rAuthor = null;
+                    if (rData.authorId) {
+                        const u = await adminDb.collection("users").doc(rData.authorId).get();
+                        if (u.exists) {
+                            const uData = u.data();
+                            rAuthor = {
+                                id: u.id,
+                                displayName: resolveDisplayName(uData),
+                                imageUrl: uData?.imageUrl,
+                                email: uData?.email
+                            };
+                        }
+                    }
+                    return {
+                        id: r.id,
+                        ...rData,
+                        author: rAuthor,
+                        createdAt: rData.createdAt?.toDate ? rData.createdAt.toDate() : new Date()
+                    };
+                }));
+
                 return {
                     id: c.id,
                     ...cData,
-                    author: cAuthor
+                    author: cAuthor,
+                    replies: replies || [],
+                    createdAt: cData.createdAt?.toDate ? cData.createdAt.toDate() : new Date()
                 };
             }));
 
@@ -725,11 +752,37 @@ export async function getPostGlobal(postId: string) {
                 }
             }
 
+            // Fetch replies for this comment
+            const repliesSnap = await mainRef.collection("comments").doc(c.id).collection("replies").orderBy("createdAt", "asc").get();
+            const replies = await Promise.all(repliesSnap.docs.map(async (r) => {
+                const rData = r.data();
+                let rAuthor = null;
+                if (rData.authorId) {
+                    const u = await adminDb.collection("users").doc(rData.authorId).get();
+                    if (u.exists) {
+                        const uData = u.data();
+                        rAuthor = {
+                            id: u.id,
+                            displayName: resolveDisplayName(uData),
+                            imageUrl: uData?.imageUrl,
+                            email: uData?.email
+                        };
+                    }
+                }
+                return {
+                    id: r.id,
+                    ...rData,
+                    author: rAuthor,
+                    createdAt: rData.createdAt?.toDate ? rData.createdAt.toDate() : new Date()
+                };
+            }));
+
             return {
                 id: c.id,
                 ...cData,
                 createdAt: cData.createdAt?.toDate ? cData.createdAt.toDate() : new Date(),
-                author: cAuthor
+                author: cAuthor,
+                replies: replies || []
             };
         }));
 
