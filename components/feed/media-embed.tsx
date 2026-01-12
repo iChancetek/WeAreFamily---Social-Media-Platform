@@ -4,38 +4,68 @@ import { useState, useEffect } from "react";
 import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
+import { LinkPreviewCard } from "./link-preview-card";
 
-// Lazy load ReactPlayer for non-YouTube sources (Vimeo, SoundCloud, etc.)
-// ssr: false helps avoid hydration mismatch
-// using 'as any' to bypass specific type check issues with dynamic import
+// Lazy load ReactPlayer for embeddable sources (Vimeo, SoundCloud, etc.)
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
 
 interface MediaEmbedProps {
     url: string;
 }
 
+type Provider = 'youtube' | 'linkedin' | 'facebook' | 'instagram' | 'vimeo' | 'other';
+
+function detectProvider(url: string): Provider {
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.replace(/^(www\.|m\.)/, '');
+
+        if (hostname.includes('youtube.com') || hostname === 'youtu.be') {
+            return 'youtube';
+        }
+        if (hostname.includes('linkedin.com')) {
+            return 'linkedin';
+        }
+        if (hostname.includes('facebook.com') || hostname.includes('fb.watch')) {
+            return 'facebook';
+        }
+        if (hostname.includes('instagram.com')) {
+            return 'instagram';
+        }
+        if (hostname.includes('vimeo.com')) {
+            return 'vimeo';
+        }
+
+        return 'other';
+    } catch {
+        return 'other';
+    }
+}
+
 export function MediaEmbed({ url }: MediaEmbedProps) {
     const [embedUrl, setEmbedUrl] = useState<string | null>(null);
-    const [isYouTube, setIsYouTube] = useState(false);
+    const [provider, setProvider] = useState<Provider>('other');
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
         if (!url) {
-            setIsYouTube(false);
+            setProvider('other');
             return;
         }
 
-        const parsed = parseYouTubeUrl(url);
-        if (parsed) {
-            setEmbedUrl(parsed);
-            setIsYouTube(true);
-        } else {
-            setIsYouTube(false);
+        const detectedProvider = detectProvider(url);
+        setProvider(detectedProvider);
+
+        if (detectedProvider === 'youtube') {
+            const parsed = parseYouTubeUrl(url);
+            if (parsed) {
+                setEmbedUrl(parsed);
+            }
         }
     }, [url]);
 
-    // Render Optimized YouTube Iframe (youtube-nocookie)
-    if (isYouTube && embedUrl) {
+    // YouTube: Render optimized iframe with youtube-nocookie
+    if (provider === 'youtube' && embedUrl) {
         return (
             <div className="relative w-full overflow-hidden rounded-xl bg-black border border-border mt-3 aspect-video group">
                 {!isLoaded && (
@@ -58,8 +88,19 @@ export function MediaEmbed({ url }: MediaEmbedProps) {
         );
     }
 
-    // Fallback to ReactPlayer for other providers (FB, Vimeo, LinkedIn)
-    // ReactPlayer handles standard YouTube too, but we prioritize the custom iframe for strict requirements.
+    // LinkedIn, Facebook, Instagram: Render rich preview card (no embed allowed)
+    if (provider === 'linkedin' || provider === 'facebook' || provider === 'instagram') {
+        return (
+            <LinkPreviewCard
+                url={url}
+                provider={provider}
+                title={extractTitle(url, provider)}
+                description={extractDescription(provider)}
+            />
+        );
+    }
+
+    // Vimeo and other embeddable providers: Use ReactPlayer
     return (
         <div className="mt-3 rounded-xl overflow-hidden border border-border bg-black aspect-video relative group">
             <ReactPlayer
@@ -76,10 +117,55 @@ export function MediaEmbed({ url }: MediaEmbedProps) {
     );
 }
 
+// Helper: Extract title from URL
+function extractTitle(url: string, provider: Provider): string {
+    try {
+        const urlObj = new URL(url);
+
+        if (provider === 'linkedin') {
+            if (url.includes('/feed/update')) {
+                return 'LinkedIn Post';
+            }
+            if (url.includes('/posts/')) {
+                return 'LinkedIn Post';
+            }
+            if (url.includes('/video/')) {
+                return 'LinkedIn Video';
+            }
+            return 'LinkedIn Content';
+        }
+
+        if (provider === 'facebook') {
+            return 'Facebook Post';
+        }
+
+        if (provider === 'instagram') {
+            return 'Instagram Post';
+        }
+
+        return 'Shared Content';
+    } catch {
+        return 'Shared Link';
+    }
+}
+
+// Helper: Extract description based on provider
+function extractDescription(provider: Provider): string {
+    const descriptions: Record<Provider, string> = {
+        youtube: '',
+        linkedin: 'View this post on LinkedIn',
+        facebook: 'View this post on Facebook',
+        instagram: 'View this post on Instagram',
+        vimeo: '',
+        other: 'Click to view content'
+    };
+
+    return descriptions[provider];
+}
+
 // Robust YouTube URL Parser
 function parseYouTubeUrl(url: string): string | null {
     try {
-        // Handle variations: www.youtube.com, youtube.com, m.youtube.com
         const urlObj = new URL(url);
         const hostname = urlObj.hostname.replace(/^(www\.|m\.)/, '');
 
@@ -92,31 +178,26 @@ function parseYouTubeUrl(url: string): string | null {
         // 2. youtube.com/shorts/ID
         else if (hostname === 'youtube.com' && urlObj.pathname.startsWith('/shorts/')) {
             const parts = urlObj.pathname.split('/');
-            // /shorts/ID... 
             videoId = parts[2];
         }
         // 3. youtu.be/ID
         else if (hostname === 'youtu.be') {
             videoId = urlObj.pathname.slice(1);
         }
-        // 4. youtube.com/embed/ID (if user pasted raw embed link)
+        // 4. youtube.com/embed/ID
         else if (hostname === 'youtube.com' && urlObj.pathname.startsWith('/embed/')) {
             videoId = urlObj.pathname.split('/embed/')[1];
         }
 
         if (videoId) {
-            // Sanitize ID: Alphanumeric + - _
-            // Remove any trailing slash or query params if extracted from pathname incorrectly
             const cleanId = videoId.split('?')[0].replace(/[^a-zA-Z0-9_-]/g, '');
             if (!cleanId) return null;
 
-            // Always force youtube-nocookie
             return `https://www.youtube-nocookie.com/embed/${cleanId}`;
         }
 
         return null;
     } catch {
-        // Not a valid URL
         return null;
     }
 }
