@@ -1,111 +1,91 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import "tw-animate-css";
-
-
-
-@custom-variant dark (&:is(.dark *));
 
 @layer base {
   :root {
-    /* Truth Social Theme */
-    --background: 255 255 255;
-    /* Strict White */
-    --foreground: 15 20 25;
-    /* High Contrast Dark */
+    /* FAMIO AI - LIGHT MODE */
+    --background: 248 250 252;
+    /* Slate-50 */
+    --foreground: 15 23 42;
+    /* Slate-900 */
 
     --card: 255 255 255;
-    --card-foreground: 15 20 25;
+    --card-foreground: 15 23 42;
 
     --popover: 255 255 255;
-    --popover-foreground: 15 20 25;
+    --popover-foreground: 15 23 42;
 
-    --primary: 84 72 238;
-    /* vibrant violet-blue #5448EE */
+    --primary: 99 102 241;
+    /* Indigo-500 */
     --primary-foreground: 255 255 255;
 
-    --secondary: 245 248 250;
-    /* Light Gray Accent */
-    --secondary-foreground: 15 20 25;
+    --secondary: 241 245 249;
+    --secondary-foreground: 15 23 42;
 
-    --muted: 245 248 250;
-    --muted-foreground: 83 100 113;
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
 
-    --accent: 245 248 250;
-    --accent-foreground: 15 20 25;
+    --accent: 236 253 245;
+    --accent-foreground: 15 23 42;
 
-    --destructive: 244 33 46;
+    --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
 
-    --border: 239 243 244;
-    --input: 239 243 244;
-    --ring: 84 72 238;
-    /* #5448EE */
-    --radius: 0.5rem;
-    /* Slightly sharper corners */
+    --border: 226 232 240;
+    --input: 226 232 240;
+    --ring: 99 102 241;
+    --radius: 0.75rem;
+
+    /* Charts */
+    --chart-1: 12 118 221;
+    --chart-2: 173 250 29;
+    --chart-3: 197 48 48;
+    --chart-4: 43 121 137;
+    --chart-5: 255 165 0;
   }
 
   .dark {
-    /* Sexy Pure Black Theme */
-    --background: 0 0 0;
-    --foreground: 84 72 238;
-    /* Blurple Text */
+    /* FAMIO AI - DARK MODE */
+    --background: 10 10 12;
+    --foreground: 226 232 240;
 
-    --card: 9 9 11;
-    /* Deep Onyx (Zinc-950) */
-    --card-foreground: 84 72 238;
-    /* Blurple Text */
+    --card: 17 17 20;
+    --card-foreground: 226 232 240;
 
-    --popover: 9 9 11;
-    --popover-foreground: 84 72 238;
-    /* Blurple Text */
+    --popover: 17 17 20;
+    --popover-foreground: 226 232 240;
 
-    --primary: 84 72 238;
-    /* vibrant violet-blue */
+    --primary: 99 102 241;
     --primary-foreground: 255 255 255;
 
-    --secondary: 24 24 27;
-    /* Zinc-900 */
-    --secondary-foreground: 84 72 238;
-    /* Blurple Text */
+    --secondary: 30 41 59;
+    --secondary-foreground: 226 232 240;
 
-    --muted: 24 24 27;
-    --muted-foreground: 133 125 219;
-    /* Muted Blurple */
+    --muted: 30 41 59;
+    --muted-foreground: 148 163 184;
 
-    --accent: 24 24 27;
-    --accent-foreground: 84 72 238;
-    /* Blurple Text */
+    --accent: 30 41 59;
+    --accent-foreground: 226 232 240;
 
     --destructive: 127 29 29;
     --destructive-foreground: 255 255 255;
 
-    --border: 39 39 42;
-    /* Crisp border (Zinc-800) */
-    --input: 39 39 42;
-    --ring: 84 72 238;
-  }
-}
+    --border: 30 41 59;
+    --input: 30 41 59;
+    --ring: 99 102 241;
 
-@theme inline {
-  --color-background: rgb(var(--background));
-  --color-foreground: rgb(var(--foreground));
-  --color-card: rgb(var(--card));
-  --color-card-foreground: rgb(var(--card-foreground));
-  --color-popover: rgb(var(--popover));
-  --color-popover-foreground: rgb(var(--popover-foreground));
-  --color-primary: rgb(var(--primary));
-  --color-primary-foreground: rgb(var(--primary-foreground));
-  --color-secondary: rgb(var(--secondary));
-  --color-secondary-foreground: rgb(var(--secondary-foreground));
-  --color-muted: rgb(var(--muted));
-  --color-muted-foreground: rgb(var(--muted-foreground));
-  --color-accent: rgb(var(--accent));
-  --color-accent-foreground: rgb(var(--accent-foreground));
-  --color-destructive: rgb(var(--destructive));
-  --color-destructive-foreground: rgb(var(--destructive-foreground));
-  --color-border: rgb(var(--border));
-  --color-input: rgb(var(--input));
-  --color-ring: rgb(var(--ring));
+    /* Charts */
+    --chart-1: 220 70 80;
+    --chart-2: 0 160 40;
+    /* Corrected typo */
+    --chart-3: 30 144 255;
+    --chart-4: 216 28 216;
+    /* Corrected typo */
+    --chart-5: 255 165 0;
+  }
 }
 
 @layer base {
@@ -115,25 +95,25 @@
 
   body {
     @apply bg-background text-foreground transition-colors duration-300;
-    font-family: var(--font-roboto), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    pointer-events: auto !important; /* Force interactivity */
+    font-family: var(--font-inter), system-ui, sans-serif;
   }
 
   .dark body {
-    /* Pure Black Background */
-    background-color: black;
-    background-image: none;
+    background-color: #0a0a0c;
   }
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-white dark:bg-black border-r border-gray-100 dark:border-white/10 shadow-sm;
+  .glass-panel {
+    @apply bg-white/70 dark:bg-black/60 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-xl;
   }
 
   .glass-card {
-    /* Sexy: Deep Zinc BG + Subtle White Border overlay */
-    @apply bg-white dark:bg-zinc-950 text-black dark:text-primary rounded-lg border border-gray-100 dark:border-white/10 shadow-md;
+    @apply bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .glow-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500;
   }
 
   .pb-safe {

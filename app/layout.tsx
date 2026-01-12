@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Inter } from "next/font/google";
 import { AuthProvider } from "@/components/auth-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -9,10 +9,9 @@ import { AIAssistant } from "@/components/ai/ai-assistant";
 import { CallOverlay } from "@/components/rtc/call-overlay";
 import { MessageNotificationProvider } from "@/components/messages/message-notification-provider";
 
-const roboto = Roboto({
-  weight: ['300', '400', '500', '700', '900'],
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-roboto",
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
@@ -31,7 +30,7 @@ export default function RootLayout({
     <AuthProvider>
       <html lang="en" suppressHydrationWarning>
         <body
-          className={`${roboto.variable} antialiased min-h-screen bg-background text-foreground font-sans`}
+          className={`${inter.variable} antialiased min-h-screen bg-background text-foreground font-sans`}
           suppressHydrationWarning
         >
           <ThemeProvider

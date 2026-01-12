@@ -298,33 +298,32 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     };
 
     return (
-        <Card id={`post-${post.id}`} className="mb-4 overflow-hidden border-none shadow-sm bg-card">
+        <Card id={`post-${post.id}`} className="mb-6 overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow duration-300 bg-white dark:bg-card/50 backdrop-blur-sm rounded-3xl">
             {/* Header */}
-            <div className="flex flex-row items-center gap-3 p-4 pb-2">
-                <Link href={`/u/${post.authorId}`}>
-                    <Avatar className="w-10 h-10 border border-border cursor-pointer hover:opacity-80 transition-opacity">
+            <div className="flex flex-row items-center gap-4 p-5 pb-3">
+                <Link href={`/u/${post.authorId}`} className="relative group">
+                    <Avatar className="w-11 h-11 ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all">
                         <AvatarImage src={profilePic || undefined} />
-                        <AvatarFallback className="bg-primary text-primary-foreground font-bold">{name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white font-bold">{name.charAt(0)}</AvatarFallback>
                     </Avatar>
                 </Link>
                 <div className="flex flex-col flex-1">
-                    <div className="flex items-center gap-1 flex-wrap">
-                        <Link href={`/u/${post.authorId}`} className="font-semibold text-sm hover:underline cursor-pointer">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Link href={`/u/${post.authorId}`} className="font-bold text-[15px] hover:text-primary transition-colors cursor-pointer text-foreground">
                             {name}
                         </Link>
                         {/* Show Context if available (Group/Branding) */}
                         {post.context?.name && (
-                            <>
-                                <span className="text-muted-foreground text-xs">▶</span>
-                                <span className="font-semibold text-sm">{post.context.name}</span>
-                            </>
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted/50 text-xs font-medium text-muted-foreground">
+                                <span>in</span>
+                                <span className="text-foreground">{post.context.name}</span>
+                            </div>
                         )}
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground"><SafeDate date={post.createdAt} /></span>
-                        {post.isEdited && <span className="text-[10px] text-muted-foreground">(edited)</span>}
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium mt-0.5">
+                        <span><SafeDate date={post.createdAt} /></span>
                         {/* Privacy Indicator */}
-                        <span className="text-xs text-muted-foreground flex items-center gap-1" title={`Privacy: ${engagementSettings.privacy}`}>
+                        <span className="flex items-center gap-1 opacity-60" title={`Privacy: ${engagementSettings.privacy}`}>
                             {getPrivacyIcon()}
                         </span>
                     </div>
@@ -428,12 +427,12 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                 </div>
 
                 {/* Main Buttons */}
-                <div className="flex justify-between items-center w-full mb-1">
+                <div className="flex items-center justify-between w-full p-1 bg-secondary/30 rounded-2xl">
 
                     {/* 1. Reaction Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className={cn("flex-1 gap-2 hover:bg-pink-50", currentReaction && "text-pink-600")}>
+                            <Button variant="ghost" className={cn("flex-1 gap-2 hover:bg-white dark:hover:bg-black/20 hover:shadow-xs rounded-xl h-10 transition-all", currentReaction && "text-primary bg-primary/5")}>
                                 <span className={cn("text-xl transition-transform", currentReaction && "scale-110")}>{getReactionIcon(currentReaction)}</span>
                                 <span>{currentReaction ? getReactionLabel(currentReaction) : "Like"}</span>
                             </Button>
@@ -453,7 +452,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     </DropdownMenu>
 
                     {/* 2. Comment Button */}
-                    <Button variant="ghost" onClick={() => setShowComments(!showComments)} className="flex-1 gap-2 text-muted-foreground">
+                    <Button variant="ghost" onClick={() => setShowComments(!showComments)} className="flex-1 gap-2 text-muted-foreground hover:bg-white dark:hover:bg-black/20 hover:text-foreground rounded-xl h-10">
                         <MessageCircle className="w-5 h-5" />
                         <span>Comment</span>
                     </Button>
@@ -461,7 +460,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     {/* 3. Ask AI Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="flex-1 gap-2 text-muted-foreground hover:text-indigo-500 hover:bg-indigo-50">
+                            <Button variant="ghost" className="flex-1 gap-2 text-muted-foreground hover:text-indigo-500 hover:bg-white dark:hover:bg-black/20 rounded-xl h-10">
                                 <Sparkles className="w-4 h-4" />
                                 <span>AI</span>
                             </Button>
@@ -477,7 +476,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     {/* 4. Share Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="flex-1 gap-2 text-muted-foreground">
+                            <Button variant="ghost" className="flex-1 gap-2 text-muted-foreground hover:bg-white dark:hover:bg-black/20 rounded-xl h-10">
                                 <Share2 className="w-5 h-5" />
                                 <span>Share</span>
                             </Button>

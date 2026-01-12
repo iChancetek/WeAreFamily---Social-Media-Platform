@@ -24,10 +24,11 @@ export function NotificationBadge({ className }: { className?: string }) {
 
     return (
         <span className={cn(
-            "absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white",
+            "absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-black animate-in zoom-in duration-300",
             className
         )}>
-            {count > 9 ? "9+" : count}
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative">{count > 9 ? "9+" : count}</span>
         </span>
     );
 }

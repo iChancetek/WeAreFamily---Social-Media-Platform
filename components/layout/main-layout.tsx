@@ -17,18 +17,24 @@ export async function MainLayout({ children, className }: { children: React.Reac
     const containerClass = className ? cn("mx-auto", className) : "mx-auto max-w-2xl";
 
     return (
-        <div className="flex h-screen bg-transparent">
+        <div className="flex h-screen bg-background overflow-hidden relative">
             <ActivityTracker userId={user?.id} />
+
+            {/* Sidebar is now floating, fixed position */}
             <Sidebar isAdmin={isAdmin} className="hidden md:flex" />
-            <div className="flex-1 flex flex-col min-w-0 md:pl-64">
-                <TopNav className="md:hidden border-b border-white/10" />
-                <main className="flex-1 overflow-y-auto p-4 md:p-8">
+
+            {/* Main Content Area - Added left margin to account for floating sidebar */}
+            <div className="flex-1 flex flex-col min-w-0 md:ml-72 transition-all duration-300">
+                <TopNav className="md:hidden border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-40" />
+                <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
                     <div className={containerClass}>
                         {children}
                     </div>
                 </main>
             </div>
-            <RightSidebar className="border-l border-white/10 bg-transparent" />
+
+            <RightSidebar className="hidden xl:flex border-l border-border/50 bg-background/50 backdrop-blur-sm w-80 p-4" />
+
             {/* BirthdayOnboarding disabled to debug sidebar interactions - potentially blocking clicks */}
             {/* <BirthdayOnboarding currentBirthday={user?.birthday || null} /> */}
             <BottomNav />

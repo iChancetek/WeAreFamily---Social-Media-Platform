@@ -21,8 +21,6 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
 
-    // ... (rest of logic)
-
     const groups = [
         {
             title: "Main",
@@ -31,7 +29,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                 { href: "/profile", label: profile?.displayName || "Profile", icon: User },
                 { href: "/family", label: "Family", icon: Users },
                 { href: "/groups", label: "Groups", icon: Tent },
-                { href: "/chat", label: "AI Research Assistant", icon: Bot },
+                { href: "/chat", label: "AI Assistant", icon: Bot },
             ]
         },
         {
@@ -63,26 +61,28 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     }
 
     return (
-        <div className={cn("flex flex-col h-full py-4 bg-white dark:bg-card border-r border-gray-200 dark:border-white/10 fixed left-0 top-0 bottom-0 w-64 z-[2147483647] overflow-y-auto custom-scrollbar pointer-events-auto", className)}>
-            <div className="px-6 py-4 flex-shrink-0">
+        <div className={cn("hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-3xl glass-panel w-64 fixed left-0 top-0 z-50 overflow-hidden shadow-2xl transition-all duration-300", className)}>
+            <div className="px-6 py-6 flex-shrink-0">
                 <a
                     href="/"
-                    className="flex items-center gap-2 pointer-events-auto cursor-pointer"
+                    className="flex items-center gap-3 pointer-events-auto cursor-pointer group"
                     onClick={() => {
-                        console.log("FAMIO HOME CLICKED - Sidebar is interactive");
                         onLinkClick?.();
                     }}
                 >
-                    <Heart className="w-8 h-8 fill-primary text-primary" />
-                    <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
+                    <div className="relative">
+                        <Heart className="w-8 h-8 text-primary fill-primary/20 group-hover:scale-110 transition-transform duration-300" />
+                        <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-50 group-hover:opacity-80 transition-opacity" />
+                    </div>
+                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 tracking-tight">Famio</span>
                 </a>
             </div>
 
-            <nav className="flex-1 px-4 mt-2 space-y-6">
+            <nav className="flex-1 px-4 mt-2 space-y-8 overflow-y-auto custom-scrollbar">
                 {groups.map((group, index) => (
-                    <div key={group.title} className="space-y-1">
+                    <div key={group.title} className="space-y-2">
                         {group.title !== "Main" && (
-                            <h4 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                            <h4 className="px-4 text-xs font-bold text-muted-foreground/70 uppercase tracking-widest mb-3">
                                 {group.title}
                             </h4>
                         )}
@@ -94,13 +94,14 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                                     href={link.href}
                                     onClick={onLinkClick}
                                     className={cn(
-                                        "flex items-center gap-3 w-full text-base font-medium transition-colors h-11 rounded-xl px-3 relative my-1",
+                                        "flex items-center gap-3 w-full text-[15px] font-medium transition-all h-11 rounded-xl px-4 relative group",
                                         isActive
-                                            ? "bg-primary/10 text-primary font-bold"
-                                            : "text-foreground hover:bg-primary/5 hover:text-primary transition-colors"
+                                            ? "bg-primary/10 text-primary shadow-sm"
+                                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:pl-5"
                                     )}
                                 >
-                                    <link.icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
+                                    {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />}
+                                    <link.icon className={cn("w-5 h-5 transition-colors", isActive ? "text-primary fill-primary/10" : "text-muted-foreground group-hover:text-primary")} />
                                     <span className="truncate">{link.label}</span>
                                     {link.href === '/notifications' && (
                                         <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -114,11 +115,15 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                 ))}
             </nav>
 
-            <div className="px-4 mt-6 pt-4 border-t border-border flex-shrink-0 space-y-2">
-                <div className="px-2">
+            <div className="px-4 py-4 mt-auto border-t border-border/50 bg-white/50 dark:bg-black/20 backdrop-blur-md">
+                <div className="mb-2 px-2">
                     <ModeToggle />
                 </div>
-                <Button variant="ghost" className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl px-3" onClick={() => signOut()}>
+                <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl px-3 h-10"
+                    onClick={() => signOut()}
+                >
                     <LogOut className="h-5 w-5" />
                     {t("nav.signout")}
                 </Button>
