@@ -162,11 +162,14 @@ export function UserList({ users }: { users: User[] }) {
                     {filteredUsers.map((user) => {
                         // Type assertion for profileData since it's jsonb
                         const profile = user.profileData as { firstName?: string, lastName?: string, imageUrl?: string } | null;
-                        const displayName = (user.displayName && user.displayName !== 'Family Member' && user.displayName !== 'Unnamed User') ? user.displayName : null;
+                        const lowerName = (user.displayName || "").toLowerCase();
+                        const isGeneric = ["family member", "unnamed user", "unknown user", "user", "member"].includes(lowerName);
+
+                        const displayName = (user.displayName && !isGeneric) ? user.displayName : null;
                         const profileName = (profile?.firstName && profile?.lastName) ? `${profile.firstName} ${profile.lastName}`.trim() : null;
                         const emailName = user.email.split('@')[0];
 
-                        const name = displayName || profileName || emailName || "Unknown User";
+                        const name = displayName || profileName || emailName || "Famio Member";
                         const initials = name.slice(0, 2).toUpperCase();
                         const isDeleted = !!user.deletedAt;
 

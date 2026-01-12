@@ -30,6 +30,11 @@ export function resolveDisplayName(data: any): string {
         if (fullName) return fullName;
     }
 
-    // 3. Fallback: Unnamed User (Strict mode: No email fallback)
-    return "Unnamed User";
+    // 3. Fallback: Try Email
+    if (data.email) {
+        return data.email.split('@')[0];
+    }
+
+    // 4. Final Fallback
+    return "Famio Member";
 }
