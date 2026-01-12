@@ -9,6 +9,10 @@ export type NewsItem = {
     pubDate: string;
     thumbnail?: string;
     description?: string;
+    // AI-powered fields
+    aiSummary?: string[];
+    sentiment?: 'positive' | 'neutral' | 'negative';
+    whyItMatters?: string;
 };
 
 const FEEDS: Record<string, string> = {
@@ -96,9 +100,76 @@ export async function getNews(category: string = 'general'): Promise<NewsItem[]>
     try {
         const url = FEEDS[category] || FEEDS.general;
         const xml = await fetchFromUrl(url);
-        return parseRSS(xml, FEED_NAMES[category] || 'News');
+        const items = parseRSS(xml, FEED_NAMES[category] || 'News');
+
+        // Add AI summaries to first 3 items (to manage API costs)
+        const itemsWithAI = await Promise.all(
+            items.map(async (item, index) => {
+                if (index < 3) {
+                    // Only generate AI for top 3 stories
+                    const aiEnhancements = await generateNewsSummary(item);
+                    return { ...item, ...aiEnhancements };
+                }
+                return item;
+            })
+        );
+
+        return itemsWithAI;
     } catch (e) {
         console.error("News fetch error:", e);
         return [];
     }
 }
+
+// AI Summary Generation
+async function generateNewsSummary(item: NewsItem): Promise<Partial<NewsItem>> {
+    try {
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (!apiKey) {
+            return {}; // Skip AI if no key
+        }
+
+        const { default: OpenAI } = await import('openai');
+        const openai = new OpenAI({ apiKey });
+
+        const prompt = `Analyze this news article and provide:
+1. A concise 3-bullet summary (each bullet max 15 words)
+2. Overall sentiment (positive, neutral, or negative)
+3. A one-sentence "Why It Matters" explanation
+
+Article Title: ${item.title}
+Description: ${item.description}
+
+Respond in JSON format:
+{
+  "summary": ["bullet 1", "bullet 2", "bullet 3"],
+  "sentiment": "neutral",
+  "whyItMatters": "one sentence explanation"
+}`;
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini", // Cost-effective model
+            messages: [
+                { role: "system", content: "You are a neutral news analyst. Provide factual, unbiased summaries." },
+                { role: "user", content: prompt }
+            ],
+            temperature: 0.3,
+            response_format: { type: "json_object" }
+        });
+
+        const content = response.choices[0].message.content;
+        if (!content) return {};
+
+        const parsed = JSON.parse(content);
+
+        return {
+            aiSummary: parsed.summary || [],
+            sentiment: parsed.sentiment || 'neutral',
+            whyItMatters: parsed.whyItMatters || ''
+        };
+    } catch (error) {
+        console.error("AI Summary Error:", error);
+        return {}; // Fail gracefully
+    }
+}
+
