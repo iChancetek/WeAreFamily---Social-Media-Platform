@@ -30,23 +30,36 @@ export async function generateMetadata(
         };
     }
 
+    // Use actual deployment URL
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+        || 'https://we-are-family-221.web.app';
+
+    const postUrl = `${baseUrl}/post/${postId}`;
+    const embedUrl = `${baseUrl}/embed/post/${postId}`;
+
     const title = `${post.author.displayName} on Famio`;
-    const description = post.content || `Check out this post by ${post.author.displayName}`;
+    const description = post.content?.substring(0, 200) || `Check out this post by ${post.author.displayName}`;
     const firstMedia = post.mediaUrls?.[0];
     const isVideo = isUrlVideo(firstMedia);
 
-    // Initial thumbnail fallback: author image or default
-    let imageUrl = post.author.imageUrl || 'https://famio.us/og-default.jpg';
+    // Smart thumbnail selection
+    let imageUrl = post.author.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.displayName)}&size=1200&background=random`;
 
-    // If it's a photo post, use the photo
-    if (firstMedia && !isVideo) {
+    // Extract YouTube thumbnail if it's a YouTube video
+    if (firstMedia && isVideo && firstMedia.includes('youtube')) {
+        const youtubeId = extractYouTubeId(firstMedia);
+        if (youtubeId) {
+            // Use high-quality YouTube thumbnail
+            imageUrl = `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
+        }
+    }
+    // For photos, use the photo itself
+    else if (firstMedia && !isVideo) {
         imageUrl = firstMedia;
     }
-    // If video, we ideally want a thumbnail. Since we don't have one generated yet, 
-    // we fallback to author image or site default unless we can extract frame (hard on server).
-    // Some platforms scrape video for thumbnail if og:video is present.
-
-    const embedUrl = `https://famio.us/embed/post/${postId}`;
+    // For native videos, use poster frame if available (future enhancement)
+    // For now, fallback to author image
 
     if (isVideo) {
         return {
@@ -56,7 +69,7 @@ export async function generateMetadata(
                 title,
                 description,
                 type: 'video.other',
-                url: `https://famio.us/post/${postId}`,
+                url: postUrl,
                 siteName: 'Famio',
                 images: [
                     {
@@ -71,11 +84,8 @@ export async function generateMetadata(
                         url: embedUrl,
                         width: 1280,
                         height: 720,
-                        type: 'text/html' // Secure Iframe
-                    },
-                    // Optional: Add direct mp4 source if we want "native" native (some platforms prefer direct stream)
-                    // { url: firstMedia, type: 'video/mp4', ... } 
-                    // But requirement says "match YouTube ID behavior" which implies text/html embed.
+                        type: 'text/html'
+                    }
                 ],
             },
             twitter: {
@@ -95,6 +105,7 @@ export async function generateMetadata(
         };
     }
 
+    // Photo or text post
     return {
         title,
         description,
@@ -102,7 +113,7 @@ export async function generateMetadata(
             title,
             description,
             type: 'article',
-            url: `https://famio.us/post/${postId}`,
+            url: postUrl,
             siteName: 'Famio',
             images: [
                 {
@@ -120,6 +131,31 @@ export async function generateMetadata(
             images: [imageUrl],
         }
     };
+}
+
+// Helper: Extract YouTube video ID from URL
+function extractYouTubeId(url: string): string | null {
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.replace(/^(www\.|m\.)/, '');
+
+        if (hostname === 'youtube.com' && urlObj.pathname === '/watch') {
+            return urlObj.searchParams.get('v');
+        }
+        if (hostname === 'youtube.com' && urlObj.pathname.startsWith('/shorts/')) {
+            return urlObj.pathname.split('/')[2];
+        }
+        if (hostname === 'youtu.be') {
+            return urlObj.pathname.slice(1);
+        }
+        if (hostname === 'youtube.com' && urlObj.pathname.startsWith('/embed/')) {
+            return urlObj.pathname.split('/embed/')[1];
+        }
+
+        return null;
+    } catch {
+        return null;
+    }
 }
 
 export default async function PostPage({ params }: { params: Promise<{ postId: string }> }) {
