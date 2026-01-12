@@ -33,10 +33,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         }
 
         const userData = userDoc.data()!;
-        const isPublic = userData.isPublicProfile === true;
+        // Show metadata by default, only hide if explicitly set to false (private)
+        const isExplicitlyPrivate = userData.isPublicProfile === false;
 
-        // Privacy: Only public profiles get full OG metadata
-        if (!isPublic) {
+        // Privacy: Only hide metadata for explicitly private profiles
+        if (isExplicitlyPrivate) {
             return {
                 title: 'Famio Profile',
                 description: 'This profile is private.',
