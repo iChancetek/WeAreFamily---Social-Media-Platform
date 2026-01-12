@@ -61,11 +61,32 @@ export async function updateSessionHeartbeat(sessionId: string, accumulatedDurat
 
     // Let's try: Update user's `totalTimeSpent` by incrementing by the heartbeat interval (approx 60s).
     // The client should call this every 60s.
-    await adminDb.collection("users").doc(user.id).update({
+    // Debounce totalTimeSpent update to avoid multi-tab overcounting
+    // We only increment if lastActiveAt was older than 45 seconds (allowing for some jitter in 60s heartbeat)
+    const userDocRef = adminDb.collection("users").doc(user.id);
+    const userDoc = await userDocRef.get();
+    const userData = userDoc.data();
+
+    let shouldIncrementDetails = true;
+    if (userData?.lastActiveAt) {
+        // Check if last update was very recent
+        const lastActiveTime = userData.lastActiveAt.toDate().getTime();
+        const now = Date.now();
+        if (now - lastActiveTime < 45000) {
+            shouldIncrementDetails = false;
+        }
+    }
+
+    const updates: any = {
         isOnline: true,
         lastActiveAt: FieldValue.serverTimestamp(),
-        totalTimeSpent: FieldValue.increment(60000) // Assuming 60s heartbeat
-    });
+    };
+
+    if (shouldIncrementDetails) {
+        updates.totalTimeSpent = FieldValue.increment(60000); // 60s
+    }
+
+    await userDocRef.update(updates);
 }
 
 export async function endTrackingSession(sessionId: string) {

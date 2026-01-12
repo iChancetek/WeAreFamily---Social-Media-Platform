@@ -26,12 +26,15 @@ export function ActivityTracker({ userId }: { userId: string | null | undefined 
                     intervalRef.current = setInterval(async () => {
                         if (!sessionIdRef.current) return;
 
-                        durationRef.current += HEARTBEAT_INTERVAL_MS;
+                        // Only track time if page is visible
+                        if (document.visibilityState === 'visible') {
+                            durationRef.current += HEARTBEAT_INTERVAL_MS;
 
-                        // We send the accumulated duration
-                        await updateSessionHeartbeat(sessionIdRef.current, durationRef.current).catch(err => {
-                            console.error("[ActivityTracker] Heartbeat failed", err);
-                        });
+                            // We send the accumulated duration
+                            await updateSessionHeartbeat(sessionIdRef.current, durationRef.current).catch(err => {
+                                console.error("[ActivityTracker] Heartbeat failed", err);
+                            });
+                        }
                     }, HEARTBEAT_INTERVAL_MS);
                 }
             } catch (error) {
