@@ -5,6 +5,7 @@ import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { LinkPreviewCard } from "./link-preview-card";
+import { LinkedInViewer } from "./linkedin-viewer";
 
 // Lazy load ReactPlayer for embeddable sources (Vimeo, SoundCloud, etc.)
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
@@ -88,8 +89,19 @@ export function MediaEmbed({ url }: MediaEmbedProps) {
         );
     }
 
-    // LinkedIn, Facebook, Instagram: Render rich preview card (no embed allowed)
-    if (provider === 'linkedin' || provider === 'facebook' || provider === 'instagram') {
+    // LinkedIn: Render AI-powered content viewer (no embed allowed)
+    if (provider === 'linkedin') {
+        return (
+            <LinkedInViewer
+                url={url}
+                title={extractTitle(url, provider)}
+                description={extractDescription(provider)}
+            />
+        );
+    }
+
+    // Facebook, Instagram: Render rich preview card (no embed allowed)
+    if (provider === 'facebook' || provider === 'instagram') {
         return (
             <LinkPreviewCard
                 url={url}
