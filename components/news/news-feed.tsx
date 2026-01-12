@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getNews, NewsItem } from "@/app/actions/news";
 import { NewsCard } from "./news-card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,21 +21,7 @@ export function NewsFeed() {
     const [news, setNews] = useState<NewsItem[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        loadNews();
-    }, [category]);
-
-    // Auto-refresh news every 30 minutes
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            loadNews();
-        }, 30 * 60 * 1000); // 30 minutes in milliseconds
-
-        // Cleanup interval on unmount
-        return () => clearInterval(intervalId);
-    }, [category]); // Re-create interval when category changes
-
-    async function loadNews() {
+    const loadNews = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getNews(category);
@@ -45,7 +31,21 @@ export function NewsFeed() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [category]);
+
+    useEffect(() => {
+        loadNews();
+    }, [loadNews]);
+
+    // Auto-refresh news every 30 minutes
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            loadNews();
+        }, 30 * 60 * 1000); // 30 minutes in milliseconds
+
+        // Cleanup interval on unmount
+        return () => clearInterval(intervalId);
+    }, [loadNews]); // Re-create interval when loadNews changes
 
     return (
         <div className="flex flex-col gap-3">
