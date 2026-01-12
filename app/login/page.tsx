@@ -43,7 +43,12 @@ export default function LoginPage() {
 
             console.log("User authenticated, syncing to database...")
             // Sync user (existing users might have empty profileData, that's fine)
-            await syncUserToDb(user.uid, user.email!, user.displayName || user.email!.split('@')[0], undefined, undefined, user.emailVerified)
+            // Split display name into first/last for fallback
+            const nameParts = (user.displayName || "").split(' ');
+            const firstName = nameParts[0] || "Famio";
+            const lastName = nameParts.slice(1).join(' ') || "Member";
+
+            await syncUserToDb(user.uid, user.email!, user.displayName || user.email!.split('@')[0], firstName, lastName, user.emailVerified)
 
             console.log("Creating session cookie...")
             await createSession(user.uid)
