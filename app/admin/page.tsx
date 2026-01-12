@@ -9,10 +9,12 @@ import { BirthdayTrigger } from "@/components/admin/birthday-trigger";
 import { AdminCharts } from "@/components/admin/admin-charts";
 import { AuditLogViewer } from "@/components/admin/audit-log-viewer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserPlus, Calendar } from "lucide-react";
+import { Users, UserPlus, Calendar, BarChart2 } from "lucide-react";
 import { subDays, startOfDay, subYears, format } from "date-fns";
 import { sanitizeData } from "@/lib/serialization";
 import { BroadcastPanel } from "@/components/admin/broadcast-panel";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function AdminPage() {
     const user = await getUserProfile();
@@ -118,6 +120,13 @@ export default async function AdminPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <BirthdayTrigger />
                         <BroadcastPanel />
+                        <Link href="/admin/analytics" className="col-span-1 md:col-span-2">
+                            <Button variant="outline" className="w-full h-24 flex flex-col gap-2 items-center justify-center border-dashed border-2 hover:border-solid hover:bg-muted/50">
+                                <BarChart2 className="h-8 w-8 text-blue-600" />
+                                <div className="text-lg font-semibold">Analytics Dashboard</div>
+                                <span className="text-xs text-muted-foreground">View platform growth and user trends</span>
+                            </Button>
+                        </Link>
                     </div>
                 </div>
 
