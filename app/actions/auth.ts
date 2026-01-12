@@ -75,11 +75,20 @@ export async function syncUserToDb(
     uid: string,
     email: string,
     displayName: string,
-    firstName?: string,
-    lastName?: string,
+    firstName: string,
+    lastName: string,
     emailVerified: boolean = false
 ) {
     try {
+        if (!uid || !email || !displayName || !firstName || !lastName) {
+            console.error("Missing required fields for user creation:", { uid, email, displayName, firstName, lastName });
+            throw new Error("Missing required fields: First Name, Last Name, and Display Name are mandatory.");
+        }
+
+        if (displayName.trim() === "Unnamed User" || displayName.trim().length < 2) {
+            throw new Error("Invalid Display Name. Please provide a valid name.");
+        }
+
         if (!adminDb || !adminDb.collection) {
             throw new Error("Firebase Admin DB not initialized");
         }
@@ -96,8 +105,8 @@ export async function syncUserToDb(
                 email: email,
                 displayName: displayName,
                 profileData: {
-                    firstName: firstName || "",
-                    lastName: lastName || "",
+                    firstName: firstName.trim(),
+                    lastName: lastName.trim(),
                 },
                 role: role,
                 isActive: true,

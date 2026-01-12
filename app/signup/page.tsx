@@ -34,7 +34,32 @@ export default function SignupPage() {
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
     const [isLoading, setIsLoading] = useState(false)
+    const [isDisplayNameManuallyEdited, setIsDisplayNameManuallyEdited] = useState(false)
     const router = useRouter()
+
+    // Auto-generate Display Name
+    const updateDisplayName = (fName: string, lName: string) => {
+        if (!isDisplayNameManuallyEdited && fName && lName) {
+            setDisplayName(`${fName} ${lName}`.trim())
+        }
+    }
+
+    const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setFirstName(val);
+        updateDisplayName(val, lastName);
+    }
+
+    const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setLastName(val);
+        updateDisplayName(firstName, val);
+    }
+
+    const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setDisplayName(e.target.value);
+        setIsDisplayNameManuallyEdited(true);
+    }
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -118,7 +143,7 @@ export default function SignupPage() {
                                     type="text"
                                     placeholder="John"
                                     value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
+                                    onChange={handleFirstNameChange}
                                     required
                                 />
                             </div>
@@ -129,7 +154,7 @@ export default function SignupPage() {
                                     type="text"
                                     placeholder="Doe"
                                     value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
+                                    onChange={handleLastNameChange}
                                     required
                                 />
                             </div>
@@ -142,7 +167,7 @@ export default function SignupPage() {
                                 type="text"
                                 placeholder="How you'd like to be known"
                                 value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
+                                onChange={handleDisplayNameChange}
                                 required
                                 minLength={2}
                             />
