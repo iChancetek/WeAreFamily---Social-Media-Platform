@@ -40,28 +40,49 @@ export async function generateMetadata(
 
     const title = `${post.author.displayName} on Famio`;
     const description = post.content?.substring(0, 200) || `Check out this post by ${post.author.displayName}`;
+
+    // Check for YouTube URL in post content (this is where users paste YouTube links)
+    const youtubeUrlMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/\S+/gi);
+    const youtubeUrl = youtubeUrlMatch ? youtubeUrlMatch[0].replace(/[\s.,!?;:]+$/, '').trim() : null;
+
+    // Also check mediaUrls for uploaded videos
     const firstMedia = post.mediaUrls?.[0];
     const isVideo = isUrlVideo(firstMedia);
 
-    // Smart thumbnail selection
-    let imageUrl = post.author.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.displayName)}&size=1200&background=random`;
+    // PRIORITY ORDER for thumbnail selection:
+    // 1. YouTube video thumbnail (highest priority)
+    // 2. Photo from mediaUrls
+    // 3. Native video (future: poster frame)
+    // 4. Author avatar (last resort)
 
-    // Extract YouTube thumbnail if it's a YouTube video
-    if (firstMedia && isVideo && firstMedia.includes('youtube')) {
-        const youtubeId = extractYouTubeId(firstMedia);
+    let imageUrl: string;
+    let hasYouTubeVideo = false;
+
+    // Priority 1: YouTube video thumbnail
+    if (youtubeUrl) {
+        const youtubeId = extractYouTubeId(youtubeUrl);
         if (youtubeId) {
-            // Use high-quality YouTube thumbnail
+            hasYouTubeVideo = true;
+            // Try maxresdefault first, with fallbacks
             imageUrl = `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
+        } else {
+            imageUrl = post.author.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.displayName)}&size=1200&background=random`;
         }
     }
-    // For photos, use the photo itself
+    // Priority 2: Photo from mediaUrls
     else if (firstMedia && !isVideo) {
         imageUrl = firstMedia;
     }
-    // For native videos, use poster frame if available (future enhancement)
-    // For now, fallback to author image
+    // Priority 3: Native video (future enhancement for poster frame)
+    // Priority 4: Author avatar (fallback)
+    else {
+        imageUrl = post.author.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.displayName)}&size=1200&background=random`;
+    }
 
-    if (isVideo) {
+    // Determine if this is a video post (YouTube or uploaded video)
+    const isVideoPost = hasYouTubeVideo || isVideo;
+
+    if (isVideoPost) {
         return {
             title,
             description,
