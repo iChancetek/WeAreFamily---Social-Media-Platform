@@ -20,3 +20,43 @@ export function getMediaType(url: string): 'video' | 'image' | 'unknown' {
     if (url.includes("/o/") && (url.includes(".jpg") || url.includes(".png") || url.includes(".webp"))) return 'image';
     return 'unknown';
 }
+
+export function extractYouTubeId(url: string): string | null {
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.replace(/^(www\.|m\.)/, '');
+
+        if (hostname === 'youtube.com' && urlObj.pathname === '/watch') {
+            return urlObj.searchParams.get('v');
+        }
+        if (hostname === 'youtube.com' && urlObj.pathname.startsWith('/shorts/')) {
+            return urlObj.pathname.split('/')[2];
+        }
+        if (hostname === 'youtu.be') {
+            return urlObj.pathname.slice(1);
+        }
+        if (hostname === 'youtube.com' && urlObj.pathname.startsWith('/embed/')) {
+            return urlObj.pathname.split('/embed/')[1];
+        }
+
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+export async function fetchYouTubeTitle(videoId: string): Promise<string | null> {
+    try {
+        const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`, {
+            next: { revalidate: 3600 } // Cache for 1 hour
+        });
+
+        if (!res.ok) return null;
+
+        const data = await res.json();
+        return data.title || null;
+    } catch (error) {
+        console.error("Error fetching YouTube title:", error);
+        return null;
+    }
+}

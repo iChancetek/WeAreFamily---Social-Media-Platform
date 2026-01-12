@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Metadata, ResolvingMetadata } from "next";
-import { isUrlVideo } from "@/lib/media-utils";
+import { isUrlVideo, extractYouTubeId, fetchYouTubeTitle } from "@/lib/media-utils";
 
 type Props = {
     params: Promise<{ postId: string }>
@@ -38,12 +38,20 @@ export async function generateMetadata(
     const postUrl = `${baseUrl}/post/${postId}`;
     const embedUrl = `${baseUrl}/embed/post/${postId}`;
 
-    const title = `${post.author.displayName} on Famio`;
-    const description = post.content?.substring(0, 200) || `Check out this post by ${post.author.displayName}`;
-
-    // Check for YouTube URL in post content (this is where users paste YouTube links)
     const youtubeUrlMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/\S+/gi);
     const youtubeUrl = youtubeUrlMatch ? youtubeUrlMatch[0].replace(/[\s.,!?;:]+$/, '').trim() : null;
+
+    // Fetch YouTube Title if available
+    let videoTitle = null;
+    if (youtubeUrl) {
+        const yId = extractYouTubeId(youtubeUrl);
+        if (yId) {
+            videoTitle = await fetchYouTubeTitle(yId);
+        }
+    }
+
+    const title = videoTitle || `${post.author.displayName} on Famio`;
+    const description = post.content?.substring(0, 200) || `Check out this post by ${post.author.displayName}`;
 
     // Also check mediaUrls for uploaded videos
     const firstMedia = post.mediaUrls?.[0];
@@ -154,30 +162,7 @@ export async function generateMetadata(
     };
 }
 
-// Helper: Extract YouTube video ID from URL
-function extractYouTubeId(url: string): string | null {
-    try {
-        const urlObj = new URL(url);
-        const hostname = urlObj.hostname.replace(/^(www\.|m\.)/, '');
 
-        if (hostname === 'youtube.com' && urlObj.pathname === '/watch') {
-            return urlObj.searchParams.get('v');
-        }
-        if (hostname === 'youtube.com' && urlObj.pathname.startsWith('/shorts/')) {
-            return urlObj.pathname.split('/')[2];
-        }
-        if (hostname === 'youtu.be') {
-            return urlObj.pathname.slice(1);
-        }
-        if (hostname === 'youtube.com' && urlObj.pathname.startsWith('/embed/')) {
-            return urlObj.pathname.split('/embed/')[1];
-        }
-
-        return null;
-    } catch {
-        return null;
-    }
-}
 
 export default async function PostPage({ params }: { params: Promise<{ postId: string }> }) {
     const { postId } = await params;
