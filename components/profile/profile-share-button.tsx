@@ -55,8 +55,11 @@ export function ProfileShareButton({ userId, displayName, isPublic }: ProfileSha
         setOpen(false);
     };
 
-    if (!isPublic) {
-        // Don't show share button for private profiles
+    // Show share button by default (profiles are shareable unless explicitly set to private)
+    // Only hide if user has explicitly set isPublic to false
+    const shouldHide = isPublic === false;
+
+    if (shouldHide) {
         return null;
     }
 
