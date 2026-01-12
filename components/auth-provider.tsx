@@ -39,10 +39,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 try {
                     // Sync user to DB first
                     console.log("[AuthProvider] Syncing user to DB:", firebaseUser.uid);
+
+                    const nameParts = (firebaseUser.displayName || "").split(' ');
+                    const firstName = nameParts[0] || "Famio";
+                    const lastName = nameParts.slice(1).join(' ') || "Member";
+
                     await syncUserToDb(
                         firebaseUser.uid,
                         firebaseUser.email || "",
-                        firebaseUser.displayName || ""
+                        firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
+                        firstName,
+                        lastName,
+                        firebaseUser.emailVerified
                     );
                     console.log("[AuthProvider] User synced.");
                     // Then create session
