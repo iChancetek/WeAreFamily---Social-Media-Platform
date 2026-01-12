@@ -67,9 +67,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
         // Use the actual deployment URL (production or preview)
         // This ensures the URLs work regardless of where the app is hosted
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
-            ? `https://${process.env.VERCEL_URL}`
-            : 'https://we-are-family-221.web.app';
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+            || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+            || 'https://we-are-family-221.web.app';
 
         const profileUrl = `${baseUrl}/u/${userId}`;
 
