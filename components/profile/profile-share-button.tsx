@@ -23,7 +23,12 @@ export function ProfileShareButton({ userId, displayName, isPublic }: ProfileSha
     const [copied, setCopied] = useState(false);
     const [open, setOpen] = useState(false);
 
-    const profileUrl = `https://famio.us/u/${userId}`;
+    // Use actual deployment URL
+    const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
+        : 'https://we-are-family-221.web.app';
+
+    const profileUrl = `${baseUrl}/u/${userId}`;
 
     const handleCopyLink = async () => {
         try {

@@ -60,8 +60,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             || "Famio Member";
 
         const bio = userData.bio || "Member on Famio. View profile and activity.";
-        const imageUrl = userData.imageUrl || 'https://famio.us/default-avatar.png';
-        const profileUrl = `https://famio.us/u/${userId}`;
+
+        // Use actual image URL from Firebase Storage or fallback to a placeholder
+        // Firebase Storage URLs are publicly accessible if the bucket has public read rules
+        const imageUrl = userData.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=400&background=random`;
+
+        // Use the actual deployment URL (production or preview)
+        // This ensures the URLs work regardless of where the app is hosted
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
+            ? `https://${process.env.VERCEL_URL}`
+            : 'https://we-are-family-221.web.app';
+
+        const profileUrl = `${baseUrl}/u/${userId}`;
 
         return {
             title: `${displayName} | Famio`,
@@ -77,7 +87,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
                         url: imageUrl,
                         width: 400,
                         height: 400,
-                        alt: 'Profile Photo'
+                        alt: `${displayName}'s profile photo`
                     }
                 ]
             },
