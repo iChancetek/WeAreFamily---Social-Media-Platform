@@ -1,7 +1,7 @@
 import { Sidebar } from "./sidebar";
 import { TopNav } from "./top-nav";
 import { RightSidebar } from "./right-sidebar";
-import { ActivityTracker } from "./activity-tracker";
+import { ActivityTracker } from "@/components/auth/activity-tracker";
 import { BirthdayOnboarding } from "@/components/onboarding/birthday-onboarding";
 import { BottomNav } from "./bottom-nav";
 
@@ -18,7 +18,7 @@ export async function MainLayout({ children, className }: { children: React.Reac
 
     return (
         <div className="flex h-screen bg-transparent">
-            <ActivityTracker />
+            <ActivityTracker userId={user?.id} />
             <Sidebar isAdmin={isAdmin} className="hidden md:flex" />
             <div className="flex-1 flex flex-col min-w-0 md:pl-64">
                 <TopNav className="md:hidden border-b border-white/10" />

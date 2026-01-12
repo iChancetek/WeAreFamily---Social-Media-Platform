@@ -24,8 +24,51 @@ export async function createSession(uid: string) {
 
 
 export async function deleteSession() {
-    const cookieStore = await cookies()
-    cookieStore.delete("session_uid")
+    // We should ideally end the session in DB too, but we need the sessionId.
+    // Since we don't track sessionId in cookie currently (only uid), 
+    // we will rely on the client-side 'endTrackingSession' call for the specific session ID
+    // OR we can mark all 'active' sessions for this user as 'completed' here as a fallback.
+
+    // Fallback: Mark all active sessions as completed
+    try {
+        const cookieStore = await cookies()
+        // Note: we can't get the user ID easily if we just delete cookie first? 
+        // Actually we should get it before deleting.
+        const uid = cookieStore.get("session_uid")?.value;
+
+        if (uid) {
+            const { adminDb } = await import("@/lib/firebase-admin"); // Dynamic import to avoid cycles if any
+            const { FieldValue } = await import("firebase-admin/firestore");
+
+            // Get all active sessions
+            const sessionsSnapshot = await adminDb.collection("users").doc(uid).collection("sessions")
+                .where("status", "==", "active")
+                .get();
+
+            const batch = adminDb.batch();
+            sessionsSnapshot.docs.forEach(doc => {
+                batch.update(doc.ref, {
+                    status: 'completed',
+                    endedAt: FieldValue.serverTimestamp()
+                });
+            });
+
+            // Update User Status
+            batch.update(adminDb.collection("users").doc(uid), {
+                isOnline: false,
+                lastSignOffAt: FieldValue.serverTimestamp()
+            });
+
+            await batch.commit();
+        }
+
+        cookieStore.delete("session_uid")
+    } catch (e) {
+        console.error("Error during sign out tracking:", e);
+        // Ensure cookie is deleted even if tracking fails
+        const cookieStore = await cookies()
+        cookieStore.delete("session_uid")
+    }
 }
 
 export async function syncUserToDb(

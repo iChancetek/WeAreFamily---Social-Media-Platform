@@ -47,7 +47,19 @@ type User = {
     imageUrl: string | null
     profileData: unknown
     createdAt: Date
+    lastSignInAt?: any // Timestamp
+    lastSignOffAt?: any // Timestamp
+    totalTimeSpent?: number // milliseconds
+    isOnline?: boolean
     deletedAt?: string | null
+}
+
+function formatDuration(ms: number) {
+    if (!ms) return "0m";
+    const minutes = Math.floor(ms / 60000);
+    const hours = Math.floor(minutes / 60);
+    if (hours > 0) return `${hours}h ${minutes % 60}m`;
+    return `${minutes}m`;
 }
 
 export function UserList({ users }: { users: User[] }) {
@@ -140,6 +152,8 @@ export function UserList({ users }: { users: User[] }) {
                         <TableHead>Email</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Joined</TableHead>
+                        <TableHead>Last Active</TableHead>
+                        <TableHead>Total Time</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -191,6 +205,17 @@ export function UserList({ users }: { users: User[] }) {
                                     )}
                                 </TableCell>
                                 <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                                <TableCell>
+                                    <div className="flex flex-col">
+                                        <span className={user.isOnline ? "text-green-600 font-medium" : "text-muted-foreground"}>
+                                            {user.isOnline ? "Online Now" : (user.lastSignInAt ? new Date(user.lastSignInAt.toDate ? user.lastSignInAt.toDate() : user.lastSignInAt).toLocaleString() : "Never")}
+                                        </span>
+                                        {/* Optional: Show last sign off if needed, but last active is key */}
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="font-mono text-xs">{formatDuration(user.totalTimeSpent || 0)}</span>
+                                </TableCell>
                                 <TableCell className="text-right">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
