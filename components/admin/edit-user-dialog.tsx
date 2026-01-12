@@ -179,10 +179,20 @@ export function EditUserDialog({ user, open, onOpenChange }: EditUserDialogProps
                                     <div className="text-xs text-muted-foreground">Lifetime usage</div>
                                 </div>
                                 <div className="p-4 rounded-lg border bg-card">
-                                    <div className="text-sm font-medium text-muted-foreground">Last Sign In</div>
+                                    <div className="text-sm font-medium text-muted-foreground">Last Active</div>
                                     <div className="text-lg font-bold mt-1">
-                                        {user.lastSignInAt ? new Date(user.lastSignInAt.toDate ? user.lastSignInAt.toDate() : user.lastSignInAt).toLocaleString() : "Never"}
+                                        {(() => {
+                                            const lastActive = user.lastActiveAt || user.lastSignInAt;
+                                            if (!lastActive) return "Never";
+                                            const date = lastActive.toDate ? lastActive.toDate() : new Date(lastActive);
+                                            return date.toLocaleString();
+                                        })()}
                                     </div>
+                                    {user.lastSignInAt && (
+                                        <div className="text-xs text-muted-foreground">
+                                            Signed in: {new Date(user.lastSignInAt.toDate ? user.lastSignInAt.toDate() : user.lastSignInAt).toLocaleTimeString()}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="p-4 rounded-lg border bg-card">
                                     <div className="text-sm font-medium text-muted-foreground">Current Status</div>

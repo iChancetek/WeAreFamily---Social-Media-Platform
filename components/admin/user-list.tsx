@@ -49,6 +49,7 @@ type User = {
     createdAt: Date
     lastSignInAt?: any // Timestamp
     lastSignOffAt?: any // Timestamp
+    lastActiveAt?: any // Timestamp
     totalTimeSpent?: number // milliseconds
     isOnline?: boolean
     deletedAt?: string | null
@@ -208,7 +209,13 @@ export function UserList({ users }: { users: User[] }) {
                                 <TableCell>
                                     <div className="flex flex-col">
                                         <span className={user.isOnline ? "text-green-600 font-medium" : "text-muted-foreground"}>
-                                            {user.isOnline ? "Online Now" : (user.lastSignInAt ? new Date(user.lastSignInAt.toDate ? user.lastSignInAt.toDate() : user.lastSignInAt).toLocaleString() : "Never")}
+                                            {(() => {
+                                                const lastActive = user.lastActiveAt || user.lastSignInAt;
+                                                if (user.isOnline) return "Online Now";
+                                                if (!lastActive) return "Never";
+                                                const date = lastActive.toDate ? lastActive.toDate() : new Date(lastActive);
+                                                return date.toLocaleString();
+                                            })()}
                                         </span>
                                         {/* Optional: Show last sign off if needed, but last active is key */}
                                     </div>
