@@ -87,16 +87,14 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     const profilePic = author.imageUrl;
 
     // Broad Media Matching for YouTube, Facebook, LinkedIn, SoundCloud, Vimeo, etc.
-    // We catch the URL including potential trailing punctuation, then clean it.
-    const rawMediaMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|dailymotion\.com|soundcloud\.com)\/[^\s]+/i);
+    // Enhanced regex to handle mobile input (line breaks, extra spaces, etc.)
+    const rawMediaMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|dailymotion\.com|soundcloud\.com)\/\S+/gi);
     let mediaUrl = rawMediaMatch ? rawMediaMatch[0] : null;
 
-    // Clean trailing punctuation if present
+    // Clean trailing punctuation and whitespace if present
     if (mediaUrl) {
-        const punctuation = /[.,!?;:]$/;
-        if (punctuation.test(mediaUrl)) {
-            mediaUrl = mediaUrl.replace(punctuation, '');
-        }
+        // Remove trailing punctuation and whitespace
+        mediaUrl = mediaUrl.replace(/[\s.,!?;:]+$/, '').trim();
     }
 
     // Context Info
