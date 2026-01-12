@@ -4,13 +4,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Facebook, Linkedin, Twitter, Link as LinkIcon, Check } from "lucide-react";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 interface ProfileShareButtonProps {
@@ -69,22 +69,22 @@ export function ProfileShareButton({ userId, displayName, isPublic }: ProfileSha
     }
 
     return (
-        <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
                     <Share2 className="w-4 h-4" />
                     Share Profile
                 </Button>
-            </SheetTrigger>
-            <SheetContent side="bottom" className="rounded-t-2xl">
-                <SheetHeader>
-                    <SheetTitle>Share Profile</SheetTitle>
-                    <SheetDescription>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Share Profile</DialogTitle>
+                    <DialogDescription>
                         Share {displayName}'s profile on social media or copy the link
-                    </SheetDescription>
-                </SheetHeader>
+                    </DialogDescription>
+                </DialogHeader>
 
-                <div className="grid gap-3 mt-6">
+                <div className="grid gap-3 py-4">
                     {/* External Share Options */}
                     <button
                         onClick={handleShareFacebook}
@@ -138,13 +138,13 @@ export function ProfileShareButton({ userId, displayName, isPublic }: ProfileSha
                         </div>
                         <div className="flex-1">
                             <div className="font-medium">{copied ? "Copied!" : "Copy Link"}</div>
-                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                            <div className="text-xs text-muted-foreground truncate">
                                 {profileUrl}
                             </div>
                         </div>
                     </button>
                 </div>
-            </SheetContent>
-        </Sheet>
+            </DialogContent>
+        </Dialog>
     );
 }
