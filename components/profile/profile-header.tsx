@@ -75,10 +75,10 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                         </div>
                         <div className="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
                             {isCurrentUser ? (
-                                <div className="flex gap-2 w-full sm:w-auto">
+                                <div className="flex flex-col w-full gap-3 sm:flex-row sm:w-auto sm:gap-2">
                                     <Button
                                         variant="outline"
-                                        className="flex-1 sm:flex-none gap-2 border-blue-500/20 hover:bg-blue-500/5 text-blue-600 dark:text-blue-400"
+                                        className="w-full sm:w-auto flex-1 sm:flex-none gap-2 border-blue-500/20 hover:bg-blue-500/5 text-blue-600 dark:text-blue-400"
                                         onClick={() => {
                                             const event = new CustomEvent('famio:open-ai', {
                                                 detail: {
@@ -96,7 +96,7 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                     </Button>
                                     <Dialog open={isEditing} onOpenChange={setIsEditing}>
                                         <DialogTrigger asChild>
-                                            <Button variant="outline" className="gap-2">
+                                            <Button variant="outline" className="w-full sm:w-auto gap-2">
                                                 <Edit2 className="h-4 w-4" />
                                                 {t("profile.edit")}
                                             </Button>
@@ -108,23 +108,29 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                             />
                                         </DialogContent>
                                     </Dialog>
-                                    <ProfileShareButton
-                                        userId={user.id}
-                                        displayName={user.displayName || "Famio Member"}
-                                        isPublic={user.isPublicProfile || false}
-                                    />
+                                    <div className="w-full sm:w-auto">
+                                        <ProfileShareButton
+                                            userId={user.id}
+                                            displayName={user.displayName || "Famio Member"}
+                                            isPublic={user.isPublicProfile || false}
+                                        />
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="flex gap-2">
-                                    <BlockButton
-                                        targetUserId={user.id}
-                                        isBlocked={isBlocked}
-                                    />
-                                    <ProfileShareButton
-                                        userId={user.id}
-                                        displayName={user.displayName || "Famio Member"}
-                                        isPublic={user.isPublicProfile || false}
-                                    />
+                                <div className="flex flex-col w-full gap-3 sm:flex-row sm:w-auto sm:gap-2">
+                                    <div className="w-full sm:w-auto">
+                                        <BlockButton
+                                            targetUserId={user.id}
+                                            isBlocked={isBlocked}
+                                        />
+                                    </div>
+                                    <div className="w-full sm:w-auto">
+                                        <ProfileShareButton
+                                            userId={user.id}
+                                            displayName={user.displayName || "Famio Member"}
+                                            isPublic={user.isPublicProfile || false}
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </div>

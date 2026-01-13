@@ -206,8 +206,8 @@ export function CreatePost() {
                             </div>
                         )}
 
-                        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                            <div className="flex gap-2">
+                        <div className="flex flex-col-reverse gap-3 pt-2 border-t border-gray-100 md:flex-row md:justify-between md:items-center">
+                            <div className="flex gap-2 w-full justify-between md:justify-start md:w-auto">
                                 <input
                                     type="file"
                                     hidden
@@ -220,7 +220,7 @@ export function CreatePost() {
                                     size="sm"
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isUploading}
-                                    className="gap-2 text-muted-foreground hover:text-foreground"
+                                    className="gap-2 flex-1 md:flex-none text-muted-foreground hover:text-foreground"
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-6 h-6 text-primary" />}
                                     <span className="text-[15px] font-semibold text-foreground">Photo/Video</span>
@@ -230,7 +230,7 @@ export function CreatePost() {
                                     size="sm"
                                     onClick={handleMagic}
                                     disabled={isGenerating}
-                                    className="text-primary hover:bg-primary/10 gap-2 border border-primary/20 bg-primary/5"
+                                    className="gap-2 flex-1 md:flex-none text-primary hover:bg-primary/10 border border-primary/20 bg-primary/5"
                                 >
                                     {isGenerating ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <Sparkles className="w-6 h-6 text-primary" />}
                                     <span className="text-[15px] font-bold text-primary">Magic AI ✨</span>
@@ -248,7 +248,7 @@ export function CreatePost() {
                             <Button
                                 onClick={handleSubmit}
                                 disabled={(!content.trim() && mediaUrls.length === 0) || isSubmitting || isUploading}
-                                className="bg-primary hover:bg-primary/90 text-white font-semibold px-8"
+                                className="bg-primary hover:bg-primary/90 text-white font-semibold w-full md:w-auto px-8"
                             >
                                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
                                 {t("btn.post")}
