@@ -30,10 +30,11 @@ type FileAttachment = {
 interface ChatInterfaceProps {
     isCompact?: boolean;
     externalContext?: string | null;
+    initialMode?: AgentMode; // Added prop
     onContextHandled?: () => void;
 }
 
-export function ChatInterface({ isCompact = false, externalContext, onContextHandled }: ChatInterfaceProps) {
+export function ChatInterface({ isCompact = false, externalContext, initialMode, onContextHandled }: ChatInterfaceProps) {
     const { user } = useAuth();
     const [messages, setMessages] = useState<Message[]>([
         { role: 'assistant', content: isCompact ? "Hi! How can I help?" : "Hello! I am your AI Research Assistant. I can help you find information, write code, or explain complex topics. What are we working on today?" }
@@ -44,6 +45,13 @@ export function ChatInterface({ isCompact = false, externalContext, onContextHan
     const scrollRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [attachedFile, setAttachedFile] = useState<FileAttachment | null>(null);
+
+    // Update mode if passed externally
+    useEffect(() => {
+        if (initialMode) {
+            setSelectedMode(initialMode);
+        }
+    }, [initialMode]);
 
     // Handle External Context (e.g. "Ask AI")
     useEffect(() => {

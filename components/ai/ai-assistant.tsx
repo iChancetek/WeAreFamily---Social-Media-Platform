@@ -9,20 +9,25 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { ChatInterface } from "@/components/ai/chat-interface"
 import { useAuth } from "@/components/auth-provider"
+import { AgentMode } from "@/types/ai"
 
 export function AIAssistant() {
     const { user } = useAuth()
     const [isOpen, setIsOpen] = useState(false)
     const [externalContext, setExternalContext] = useState<string | null>(null)
+    const [mode, setMode] = useState<AgentMode>('general')
     const [isSeeding, setIsSeeding] = useState(false)
 
     // Listen for custom "Open AI" events from other components
     useEffect(() => {
         const handleOpenAI = (e: any) => {
-            const { context } = e.detail || {};
+            const { context, mode: newMode } = e.detail || {};
             setIsOpen(true);
             if (context) {
                 setExternalContext(context);
+            }
+            if (newMode) {
+                setMode(newMode);
             }
         };
 
@@ -79,6 +84,7 @@ export function AIAssistant() {
                         <ChatInterface
                             isCompact={true}
                             externalContext={externalContext}
+                            initialMode={mode}
                             onContextHandled={() => setExternalContext(null)}
                         />
                     </CardContent>

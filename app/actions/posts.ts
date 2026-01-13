@@ -162,6 +162,8 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
                 const isAuthor = user?.id === data.authorId;
                 const privacy = data.engagementSettings?.privacy || 'public';
 
+                // BYPASS VISIBILITY CHECK PER USER REQUEST: Show all posts regardless of privacy
+                /*
                 if (!isAuthor && privacy !== 'public') {
                     if (!user) return null;
                     if (privacy === 'private') return null;
@@ -171,6 +173,7 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
                         if (!allowed.includes(user.id)) return null;
                     }
                 }
+                */
 
                 // Hydrate Author
                 let author = null;
