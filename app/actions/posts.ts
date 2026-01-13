@@ -65,182 +65,128 @@ export type PostFilters = {
     contentType: 'text' | 'photo' | 'video' | 'all';
 };
 
+
+
+
+
 export async function getPosts(limit = 50, filters: PostFilters = { timeRange: 'all', contentType: 'all' }) {
     const user = await getUserProfile();
 
     try {
-        // Base Query: Strictly Chronological
-        const postsRef = adminDb.collection("posts").orderBy("createdAt", "desc").limit(limit);
-        const snapshot = await postsRef.get();
+        let validPosts: any[] = [];
+        let lastDoc: any = null;
+        let safetyCounter = 0;
+        const MAX_LOOPS = 10; // Allow enough text-to-public filtering
 
-        let rawDocs = snapshot.docs;
-
-        // --- FILTERING (In-Memory for flexibility without composite indexes) ---
-        // Note: For production scale, specific composite indexes should be created and 'where' clauses used.
-        // Current scale allows robust in-memory filtering of the fetched batch.
-
-        // 1. Time Filtering
-        if (filters.timeRange !== 'all') {
-            const now = new Date();
-            const cutoff = new Date();
-
-            switch (filters.timeRange) {
-                case 'day': cutoff.setHours(0, 0, 0, 0); break;
-                case 'week': cutoff.setDate(now.getDate() - 7); break;
-                case 'month': cutoff.setMonth(now.getMonth() - 1); break;
-                case 'year': cutoff.setFullYear(now.getFullYear() - 1); break;
-            }
-
-            rawDocs = rawDocs.filter(doc => {
-                const createdAt = doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : new Date();
-                return createdAt >= cutoff;
-            });
-        }
-
-        // 2. Content Type Filtering
-        if (filters.contentType !== 'all') {
-            rawDocs = rawDocs.filter(doc => {
-                const data = doc.data();
-                const hasMedia = data.mediaUrls && data.mediaUrls.length > 0;
-
-                // Check if content string has a video URL (YouTube, etc)
-                const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek\.com)\/\S+/i;
-                const hasVideoLink = videoUrlRegex.test(data.content || "");
-
-                // Classification
-                const isVideo = (hasMedia && data.mediaUrls.some((u: string) => u.match(/\.(mp4|mov|webm)$/i))) || hasVideoLink;
-                const isPhoto = hasMedia && !isVideo; // If has media but not video, assume photo
-                const isText = !hasMedia && !hasVideoLink;
-
-                if (filters.contentType === 'video') return isVideo;
-                if (filters.contentType === 'photo') return isPhoto;
-                if (filters.contentType === 'text') return isText;
-                return true;
-            });
-        }
-
-        // --- VISIBILITY FILTERING (Security) ---
-        // Fetch family IDs once if needed (optimization: only fetch if we encounter companion-only posts?)
-        // For efficiency, we'll fetch the current user's family IDs upfront.
+        // Fetch family IDs once
         let userFamilyIds: string[] = [];
         if (user) {
             const { getFamilyMemberIds } = await import("./family");
             userFamilyIds = await getFamilyMemberIds(user.id);
         }
 
-        const posts = await Promise.all(rawDocs.map(async (doc) => {
-            const data = doc.data();
+        while (validPosts.length < limit && safetyCounter < MAX_LOOPS) {
+            let query = adminDb.collection("posts").orderBy("createdAt", "desc");
 
-            // 1. VISIBILITY CHECK
-            const isAuthor = user?.id === data.authorId;
-            const privacy = data.engagementSettings?.privacy || 'public';
-
-            if (!isAuthor && privacy !== 'public') {
-                if (!user) return null; // Private/Restricted posts hidden from guests
-
-                if (privacy === 'private') return null; // Only author sees private
-
-                if (privacy === 'friends') { // Legacy "Friends" = "Companions"
-                    // Check if viewer is family of author
-                    // We need to know if USER is in AUTHOR'S family list.
-                    // Relationship is symmetric in Famio? Yes, currently.
-                    // So we can check if AUTHOR is in USER'S family list (which we have).
-                    if (!userFamilyIds.includes(data.authorId)) return null;
-                }
-
-                if (privacy === 'companions') {
-                    if (!userFamilyIds.includes(data.authorId)) return null;
-                }
-
-                if (privacy === 'specific') {
-                    const allowed = data.allowedViewerIds || [];
-                    if (!allowed.includes(user.id)) return null;
-                }
+            if (lastDoc) {
+                query = query.startAfter(lastDoc);
             }
 
-            // ... Continue with hydration if visible ...
+            const fetchSize = Math.max((limit - validPosts.length) * 2, 20);
+            query = query.limit(fetchSize);
 
-            // Hydrate Author
-            let author = null;
-            if (data.authorId) {
-                const authorDoc = await adminDb.collection("users").doc(data.authorId).get();
-                if (authorDoc.exists) {
-                    const aData = authorDoc.data();
-                    author = {
-                        id: authorDoc.id,
-                        displayName: resolveDisplayName(aData),
-                        imageUrl: aData?.imageUrl,
-                        email: aData?.email
-                    };
-                }
+            const snapshot = await query.get();
+            if (snapshot.empty) break;
+
+            lastDoc = snapshot.docs[snapshot.docs.length - 1];
+            let rawDocs = snapshot.docs;
+
+            // Content Type Filter
+            if (filters.contentType !== 'all') {
+                rawDocs = rawDocs.filter(doc => {
+                    const data = doc.data();
+                    const hasMedia = data.mediaUrls && data.mediaUrls.length > 0;
+                    const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
+                    const hasVideoLink = videoUrlRegex.test(data.content || "");
+                    const isVideo = (hasMedia && data.mediaUrls.some((u: string) => u.match(/\.(mp4|mov|webm)$/i))) || hasVideoLink;
+                    const isPhoto = hasMedia && !isVideo;
+                    const isText = !hasMedia && !hasVideoLink;
+                    if (filters.contentType === 'video') return isVideo;
+                    if (filters.contentType === 'photo') return isPhoto;
+                    if (filters.contentType === 'text') return isText;
+                    return true;
+                });
             }
 
-            // Fetch Comments (Subcollection) with Replies
-            const commentsRef = doc.ref.collection("comments").orderBy("createdAt", "asc"); // Oldest first
-            const commentsSnap = await commentsRef.get();
-            const comments = await Promise.all(commentsSnap.docs.map(async (cDoc) => {
-                const cData = cDoc.data();
-                let cAuthor = null;
-                if (cData.authorId) {
-                    const cAuthorDoc = await adminDb.collection("users").doc(cData.authorId).get();
-                    if (cAuthorDoc.exists) {
-                        const caData = cAuthorDoc.data();
-                        cAuthor = {
-                            id: cAuthorDoc.id,
-                            displayName: resolveDisplayName(caData),
-                            imageUrl: caData?.imageUrl,
-                            email: caData?.email
-                        };
+            const batchPosts = await Promise.all(rawDocs.map(async (doc) => {
+                const data = doc.data();
+
+                // VISIBILITY CHECK
+                const isAuthor = user?.id === data.authorId;
+                const privacy = data.engagementSettings?.privacy || 'public';
+
+                if (!isAuthor && privacy !== 'public') {
+                    if (!user) return null;
+                    if (privacy === 'private') return null;
+                    if ((privacy === 'friends' || privacy === 'companions') && !userFamilyIds.includes(data.authorId)) return null;
+                    if (privacy === 'specific') {
+                        const allowed = data.allowedViewerIds || [];
+                        if (!allowed.includes(user.id)) return null;
                     }
                 }
 
-                // Fetch replies for this comment
-                const repliesSnap = await cDoc.ref.collection("replies").orderBy("createdAt", "asc").get();
-                const replies = await Promise.all(repliesSnap.docs.map(async (rDoc) => {
-                    const rData = rDoc.data();
-                    let rAuthor = null;
-                    if (rData.authorId) {
-                        const rAuthorDoc = await adminDb.collection("users").doc(rData.authorId).get();
-                        if (rAuthorDoc.exists) {
-                            const raData = rAuthorDoc.data();
-                            rAuthor = {
-                                id: rAuthorDoc.id,
-                                displayName: resolveDisplayName(raData),
-                                imageUrl: raData?.imageUrl,
-                                email: raData?.email
-                            };
+                // Hydrate Author
+                let author = null;
+                if (data.authorId) {
+                    const docSpan = await adminDb.collection("users").doc(data.authorId).get();
+                    if (docSpan.exists) {
+                        const d = docSpan.data();
+                        author = { id: docSpan.id, displayName: resolveDisplayName(d), imageUrl: d?.imageUrl, email: d?.email };
+                    }
+                }
+
+                // Hydrate Comments & Replies
+                const commentsRef = doc.ref.collection("comments").orderBy("createdAt", "asc");
+                const commentsSnap = await commentsRef.get();
+                const comments = await Promise.all(commentsSnap.docs.map(async (cDoc) => {
+                    const cData = cDoc.data();
+                    let cAuthor = null;
+                    if (cData.authorId) {
+                        const u = await adminDb.collection("users").doc(cData.authorId).get();
+                        if (u.exists) {
+                            const uD = u.data();
+                            cAuthor = { id: u.id, displayName: resolveDisplayName(uD), imageUrl: uD?.imageUrl };
                         }
                     }
-                    return sanitizeData({
-                        id: rDoc.id,
-                        ...rData,
-                        author: rAuthor,
-                        createdAt: rData.createdAt?.toDate ? rData.createdAt.toDate() : new Date()
-                    });
+                    const repliesSnap = await cDoc.ref.collection("replies").orderBy("createdAt", "asc").get();
+                    const replies = await Promise.all(repliesSnap.docs.map(async (r) => {
+                        const rData = r.data();
+                        let rAuthor = null;
+                        if (rData.authorId) {
+                            const u = await adminDb.collection("users").doc(rData.authorId).get();
+                            if (u.exists) { const uD = u.data(); rAuthor = { id: u.id, displayName: resolveDisplayName(uD), imageUrl: uD?.imageUrl }; }
+                        }
+                        return sanitizeData({ id: r.id, ...rData, author: rAuthor, createdAt: rData.createdAt?.toDate ? rData.createdAt.toDate() : new Date() });
+                    }));
+                    return sanitizeData({ id: cDoc.id, ...cData, author: cAuthor, replies, createdAt: cData.createdAt?.toDate ? cData.createdAt.toDate() : new Date() });
                 }));
 
                 return sanitizeData({
-                    id: cDoc.id,
-                    ...cData,
-                    author: cAuthor,
-                    replies: replies || [],
-                    createdAt: cData.createdAt?.toDate ? cData.createdAt.toDate() : new Date()
+                    id: doc.id,
+                    ...data,
+                    author,
+                    comments: comments || [],
+                    createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date()
                 });
             }));
 
-            return sanitizeData({
-                id: doc.id,
-                ...data,
-                author,
-                comments: comments || [],
-                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date()
-            });
-        }));
+            const visible = batchPosts.filter(p => p !== null);
+            validPosts = [...validPosts, ...visible];
+            safetyCounter++;
+        }
 
+        return validPosts.slice(0, limit);
 
-
-        // Filter out nulls (hidden posts)
-        return posts.filter(p => p !== null);
     } catch (error) {
         console.error("Error fetching posts:", error);
         return [];
