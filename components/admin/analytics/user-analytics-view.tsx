@@ -11,6 +11,7 @@ import { getUserAnalytics } from "@/app/actions/analytics";
 import { UserActivityChart } from "@/components/admin/analytics/charts";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { UserSearch } from "@/components/admin/analytics/user-search";
 
 export function UserAnalyticsView() {
     const [userId, setUserId] = useState("");
@@ -44,21 +45,20 @@ export function UserAnalyticsView() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col md:flex-row gap-4">
-                        <div className="flex-1 flex gap-2">
-                            {/* Ideally this is a Combobox that searches users by name/email. 
-                                 For now, simplistic input for UID. 
-                                 TODO: Upgrade to UserCombobox 
-                             */}
-                            <Input
-                                placeholder="Enter User ID (for now)"
-                                value={userId}
-                                onChange={(e) => setUserId(e.target.value)}
-                            />
-                            <Button onClick={handleSearch} disabled={loading}>
-                                <Search className="mr-2 h-4 w-4" />
-                                {loading ? "Searching..." : "Analyze"}
-                            </Button>
+                        <div className="w-full md:w-[300px]">
+                            <UserSearch onSelect={(id) => {
+                                setUserId(id);
+                                // Optionally trigger search immediately or waiting for button? 
+                                // Let's keep the button for now or auto-trigger? 
+                                // UserSearch sets userId, user still clicks Analyze.
+                                // Or better UX: auto trigger. But stick to existing flow for safety.
+                            }} />
                         </div>
+                        <Button onClick={handleSearch} disabled={loading || !userId}>
+                            <Search className="mr-2 h-4 w-4" />
+                            {loading ? "Analyzing..." : "Analyze"}
+                        </Button>
+
                         <Select value={range} onValueChange={(val: any) => setRange(val)}>
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Select period" />
@@ -74,74 +74,76 @@ export function UserAnalyticsView() {
                 </CardContent>
             </Card>
 
-            {userData && (
-                <div className="space-y-6">
-                    <div className="grid gap-4 md:grid-cols-3">
+            {
+                userData && (
+                    <div className="space-y-6">
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{userData.summary.totalSignIns}</div>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm font-medium">Total Time Spent</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">
+                                        {Math.round(userData.summary.totalTimeSpent / 60000)}m
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm font-medium">Avg Session</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">
+                                        {userData.summary.totalSignIns > 0
+                                            ? Math.round((userData.summary.totalTimeSpent / userData.summary.totalSignIns) / 60000)
+                                            : 0}m
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <UserActivityChart data={userData.chartData} />
+
                         <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
+                            <CardHeader>
+                                <CardTitle>Session History</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{userData.summary.totalSignIns}</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Total Time Spent</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {Math.round(userData.summary.totalTimeSpent / 60000)}m
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Avg Session</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {userData.summary.totalSignIns > 0
-                                        ? Math.round((userData.summary.totalTimeSpent / userData.summary.totalSignIns) / 60000)
-                                        : 0}m
-                                </div>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Start Time</TableHead>
+                                            <TableHead>End Time</TableHead>
+                                            <TableHead>Duration</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead>Device</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {userData.history.map((session: any) => (
+                                            <TableRow key={session.id}>
+                                                <TableCell>{format(new Date(session.startedAt), "PPpp")}</TableCell>
+                                                <TableCell>{session.endedAt ? format(new Date(session.endedAt), "PPpp") : '-'}</TableCell>
+                                                <TableCell>{Math.round(session.duration / 60000)} min</TableCell>
+                                                <TableCell>{session.status}</TableCell>
+                                                <TableCell className="max-w-[200px] truncate" title={session.deviceInfo}>{session.deviceInfo}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
                             </CardContent>
                         </Card>
                     </div>
-
-                    <UserActivityChart data={userData.chartData} />
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Session History</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Start Time</TableHead>
-                                        <TableHead>End Time</TableHead>
-                                        <TableHead>Duration</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Device</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {userData.history.map((session: any) => (
-                                        <TableRow key={session.id}>
-                                            <TableCell>{format(new Date(session.startedAt), "PPpp")}</TableCell>
-                                            <TableCell>{session.endedAt ? format(new Date(session.endedAt), "PPpp") : '-'}</TableCell>
-                                            <TableCell>{Math.round(session.duration / 60000)} min</TableCell>
-                                            <TableCell>{session.status}</TableCell>
-                                            <TableCell className="max-w-[200px] truncate" title={session.deviceInfo}>{session.deviceInfo}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     )
 }

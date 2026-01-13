@@ -100,8 +100,14 @@ export async function getGlobalAnalytics(range: 'day' | 'week' | 'month' | 'year
             chartData
         };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching global analytics:", error);
+
+        // Check for "FAILED_PRECONDITION" which usually means missing index
+        if (error?.code === 9 || error?.message?.includes("index")) {
+            console.error("Missing Firestore Index for 'sessions' collection group query. Please create the index using the link in the server console.");
+        }
+
         // Fallback or empty struct
         return {
             totalSignIns: 0,
