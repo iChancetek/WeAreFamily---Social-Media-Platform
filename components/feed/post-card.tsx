@@ -172,7 +172,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
     const [lightboxOpen, setLightboxOpen] = useState(false);
 
     return (
-        <Card id={`post-${post.id}`} className="group relative break-inside-avoid mb-4 border-none shadow-sm hover:shadow-md transition-all duration-300 bg-white dark:bg-card rounded-2xl overflow-hidden flex flex-col">
+        <Card id={`post-${post.id}`} className="group relative break-inside-avoid mb-4 border-none shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-white dark:bg-card rounded-2xl overflow-hidden flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 duration-700 fill-mode-backwards">
 
             {/* 1. MEDIA ANCHOR (Top) */}
             {hasMedia && (

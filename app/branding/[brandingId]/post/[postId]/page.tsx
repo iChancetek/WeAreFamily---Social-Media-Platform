@@ -15,6 +15,8 @@ type Props = {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
+import { generateContentMetadata } from "@/lib/metadata";
+
 export async function generateMetadata(
     { params, searchParams }: Props,
     parent: ResolvingMetadata
