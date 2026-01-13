@@ -94,14 +94,14 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
             <TabsContent value="family">
                 {familyMembers.length === 0 ? (
                     <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900 text-gray-500">
-                        No family connections yet.
+                        No companion connections yet.
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {familyMembers.map((member) => (
                             <div key={member.id} className="flex items-center gap-3 p-4 bg-white dark:bg-card border rounded-lg hover:border-primary transition-colors cursor-pointer" onClick={() => router.push(`/u/${member.id}`)}>
-                                <Avatar className="h-12 w-12">
-                                    <AvatarImage src={member.imageUrl} />
+                                <Avatar className="h-12 w-12 shrink-0">
+                                    <AvatarImage src={member.imageUrl || undefined} className="object-cover" />
                                     <AvatarFallback>{member.displayName?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div>

@@ -27,7 +27,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
             items: [
                 { href: "/", label: "Home", icon: Home },
                 { href: "/profile", label: profile?.displayName || "Profile", icon: User },
-                { href: "/family", label: "Family", icon: Users },
+                { href: "/family", label: "Companions", icon: Users },
                 { href: "/groups", label: "Groups", icon: Tent },
                 { href: "/chat", label: "AI Assistant", icon: Bot },
             ]
