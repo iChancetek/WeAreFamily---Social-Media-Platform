@@ -200,9 +200,9 @@ export function BrandingPostCreator({ brandingId, branding, currentUser, role }:
                                     size="sm"
                                     onClick={handleMagic}
                                     disabled={isGenerating}
-                                    className="text-indigo-600 hover:bg-indigo-50 gap-2 border border-indigo-200 bg-indigo-50/50"
+                                    className="text-primary hover:bg-primary/10 gap-2 border border-primary/20 bg-primary/5"
                                 >
-                                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin text-indigo-600" /> : <Sparkles className="w-4 h-4 text-indigo-600" />}
+                                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <Sparkles className="w-4 h-4 text-primary" />}
                                     <span className="hidden sm:inline font-medium">Magic AI</span>
                                 </Button>
                             </div>

@@ -220,20 +220,20 @@ export function CreatePost() {
                                     size="sm"
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isUploading}
-                                    className="text-gray-600 hover:bg-gray-100 gap-2"
+                                    className="gap-2 text-muted-foreground hover:text-foreground"
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-6 h-6 text-primary" />}
-                                    <span className="text-[15px] font-semibold text-gray-600">Photo/Video</span>
+                                    <span className="text-[15px] font-semibold text-foreground">Photo/Video</span>
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleMagic}
                                     disabled={isGenerating}
-                                    className="text-indigo-600 hover:bg-indigo-50 gap-2 border border-indigo-200 bg-indigo-50/50"
+                                    className="text-primary hover:bg-primary/10 gap-2 border border-primary/20 bg-primary/5"
                                 >
-                                    {isGenerating ? <Loader2 className="w-5 h-5 animate-spin text-indigo-600" /> : <Sparkles className="w-6 h-6 text-indigo-600" />}
-                                    <span className="text-[15px] font-bold text-indigo-700">Magic AI ✨</span>
+                                    {isGenerating ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <Sparkles className="w-6 h-6 text-primary" />}
+                                    <span className="text-[15px] font-bold text-primary">Magic AI ✨</span>
                                 </Button>
                             </div>
 
