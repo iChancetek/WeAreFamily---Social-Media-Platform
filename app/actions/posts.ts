@@ -12,6 +12,35 @@ import { resolveDisplayName } from "@/lib/user-utils";
 
 // Removed local resolveDisplayName helper in favor of shared utility
 
+// Helper to unfurl Pinterest links
+async function fetchLinkPreview(url: string) {
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+            }
+        });
+        const html = await response.text();
+
+        const imageMatch = html.match(/<meta property="?og:image"? content="([^"]+)"/i) || html.match(/<meta name="?twitter:image"? content="([^"]+)"/i);
+        const titleMatch = html.match(/<meta property="?og:title"? content="([^"]+)"/i) || html.match(/<title>([^<]+)<\/title>/i);
+
+        if (imageMatch && imageMatch[1]) {
+            return {
+                url,
+                image: imageMatch[1],
+                title: titleMatch ? titleMatch[1] : '',
+                source: url.includes('pinterest') || url.includes('pin.it') ? 'pinterest' : 'link'
+            };
+        }
+        return null;
+    } catch (e) {
+        console.error("Link unfurl failed:", e);
+        return null;
+    }
+}
+
 export async function createPost(
     content: string,
     mediaUrls: string[] = [],
@@ -34,12 +63,20 @@ export async function createPost(
         privacy: engagementSettings?.privacy ?? 'public' // Changed default to public
     };
 
+    // Detect and unfurl Pinterest links
+    let linkPreview = null;
+    const pinterestMatch = content.match(/(https?:\/\/(?:www\.)?(?:pinterest\.com\/pin\/|pin\.it\/)[^\s]+)/);
+    if (pinterestMatch) {
+        linkPreview = await fetchLinkPreview(pinterestMatch[0]);
+    }
+
     try {
         await adminDb.collection("posts").add({
             authorId: user.id,
             content,
             mediaUrls: safeMediaUrls,
             thumbnailUrl: thumbnailUrl || null,
+            linkPreview,
             reactions: {}, // Map of userId -> reactionType
             engagementSettings: settings,
             allowedViewerIds: allowedViewerIds || [], // Store specific viewers if any

@@ -169,11 +169,17 @@ export function PostCard({ post, currentUserId, isEnlarged = false }: { post: an
     };
 
     // --- RENDER ---
-    const hasMedia = (post.mediaUrls && post.mediaUrls.length > 0) || mediaUrl;
-    // Determine Main Media Anchor (use first image/video, OR the embedded link)
-    const mainMedia = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls[0] : mediaUrl;
-    const isEmbeddable = mainMedia === mediaUrl;
+    const pinterestPreview = (post as any).linkPreview;
+    const hasUploadedMedia = post.mediaUrls && post.mediaUrls.length > 0;
+    const hasLinkPreview = !!pinterestPreview?.image;
+
+    // Determine Main Media Anchor (use first image/video, OR the embedded link, OR link preview)
+    let mainMedia = hasUploadedMedia ? post.mediaUrls[0] : (hasLinkPreview ? pinterestPreview.image : mediaUrl);
+    const hasMedia = !!mainMedia;
+
+    const isEmbeddable = !hasUploadedMedia && !hasLinkPreview && (mainMedia === mediaUrl);
     const isVideoFile = isUrlVideo(mainMedia);
+    const isPinterest = hasLinkPreview && !hasUploadedMedia;
 
     // Card Styles
     const cardClasses = isEnlarged
@@ -231,6 +237,17 @@ export function PostCard({ post, currentUserId, isEnlarged = false }: { post: an
                                     className="w-full h-auto object-cover hover:scale-105 transition-transform duration-500"
                                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                 />
+                            </div>
+                        )}
+
+                        {/* Pinterest Overlay */}
+                        {isPinterest && pinterestPreview && (
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 text-white flex flex-col justify-end pt-16 pointer-events-none">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="bg-[#E60023] rounded-full p-1 shadow-sm"><span className="sr-only">Pinterest</span><svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-white"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.228.085.355-.09.376-.292 1.199-.332 1.363-.053.225-.172.271-.399.165-1.487-.695-2.42-2.875-2.42-4.646 0-3.778 2.305-7.252 7.951-7.252 4.173 0 6.949 3.018 6.949 6.169 0 3.714-2.313 6.649-5.512 6.649-1.084 0-2.092-.565-2.435-1.229l-.665 2.527c-.237.906-.883 2.052-1.314 2.749 1.002.301 2.05.461 3.137.461 6.613 0 11.979-5.368 11.979-11.987001C24 5.367 18.618 0 12.017 0z" /></svg></div>
+                                    <span className="text-xs font-bold uppercase tracking-wider opacity-95 drop-shadow-md">Pinterest</span>
+                                </div>
+                                {pinterestPreview.title && <h3 className="text-sm font-bold line-clamp-2 leading-tight drop-shadow-md">{pinterestPreview.title}</h3>}
                             </div>
                         )}
 
