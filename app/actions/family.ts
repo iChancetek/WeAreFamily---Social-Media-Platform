@@ -394,38 +394,59 @@ export async function getFamilyMembers() {
 }
 
 export async function getFamilyMemberIds(userId: string) {
-    // Queries can be expensive, but we initialized familyConnections for this!
-    // Wait, did we? Yes, in acceptFamilyRequest we write to `users/{id}/familyConnections`.
-    // Let's use THAT if it exists, as it's cleaner.
-    // BUT, we must be sure it's populated. 
-    // Legacy requests might not have it.
-    // Safer to stick to familyRequests collection for now to support old data + new data, 
-    // OR we could migrate? 
-    // Let's stick to querying familyRequests properly in both directions.
-
-    const [sentSnapshot, receivedSnapshot] = await Promise.all([
-        adminDb.collection("familyRequests")
-            .where("senderId", "==", userId)
-            .where("status", "==", 'accepted')
-            .get(),
-        adminDb.collection("familyRequests")
-            .where("receiverId", "==", userId)
-            .where("status", "==", 'accepted')
-            .get()
-    ]);
-
     const familyIds = new Set<string>();
-    sentSnapshot.docs.forEach((doc: any) => familyIds.add(doc.data().receiverId));
-    receivedSnapshot.docs.forEach((doc: any) => familyIds.add(doc.data().senderId));
 
-    // Filter out blocked users
-    const blockedSnapshot = await adminDb.collection("blockedUsers").get();
-    blockedSnapshot.docs.forEach((doc: any) => {
-        const data = doc.data();
-        if (data.blockerId === userId || data.blockedId === userId) {
-            familyIds.delete(data.blockerId === userId ? data.blockedId : data.blockerId);
-        }
-    });
+    // 1. Efficient Family Connections (Subcollection)
+    try {
+        const connectionsSnap = await adminDb.collection("users")
+            .doc(userId)
+            .collection("familyConnections")
+            .where("status", "==", "accepted")
+            .get();
+
+        connectionsSnap.forEach(doc => {
+            if (doc.data().connectedUserId) {
+                familyIds.add(doc.data().connectedUserId);
+            }
+        });
+    } catch (e) {
+        console.error("Error fetching familyConnections:", e);
+    }
+
+    // 2. Legacy/Fallback: Family Requests (Bidirectional)
+    try {
+        const [sentSnapshot, receivedSnapshot] = await Promise.all([
+            adminDb.collection("familyRequests")
+                .where("senderId", "==", userId)
+                .where("status", "==", 'accepted')
+                .get(),
+            adminDb.collection("familyRequests")
+                .where("receiverId", "==", userId)
+                .where("status", "==", 'accepted')
+                .get()
+        ]);
+
+        sentSnapshot.forEach((doc: any) => familyIds.add(doc.data().receiverId));
+        receivedSnapshot.forEach((doc: any) => familyIds.add(doc.data().senderId));
+    } catch (e) {
+        console.error("Error fetching familyRequests:", e);
+    }
+
+    // 3. Filter out blocked users (Optimized)
+    try {
+        const [blockedBySnapshot, blockingSnapshot] = await Promise.all([
+            adminDb.collection("blockedUsers").where("blockerId", "==", userId).get(),
+            adminDb.collection("blockedUsers").where("blockedId", "==", userId).get()
+        ]);
+
+        const blockedIds = new Set<string>();
+        blockedBySnapshot.forEach((doc: any) => blockedIds.add(doc.data().blockedId));
+        blockingSnapshot.forEach((doc: any) => blockedIds.add(doc.data().blockerId));
+
+        blockedIds.forEach(blockedId => familyIds.delete(blockedId));
+    } catch (e) {
+        console.error("Error fetching blockedUsers:", e);
+    }
 
     return Array.from(familyIds);
 }
