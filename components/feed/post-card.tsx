@@ -79,10 +79,12 @@ export function PostCard({ post, currentUserId, isEnlarged = false }: { post: an
     const isAuthor = currentUserId === post.authorId;
 
     const getPrivacyIcon = () => {
-        switch (engagementSettings.privacy) {
+        const privacy = engagementSettings.privacy;
+        switch (privacy) {
             case 'public': return <Globe className="w-3 h-3" />;
             case 'private': return <Lock className="w-3 h-3" />;
-            default: return <Users className="w-3 h-3" />;
+            case 'specific': return <Users className="w-3 h-3 text-blue-500" />;
+            default: return <Users className="w-3 h-3" />; // 'companions' or legacy 'friends'
         }
     };
 
@@ -266,7 +268,14 @@ export function PostCard({ post, currentUserId, isEnlarged = false }: { post: an
                                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                                     <SafeDate date={post.createdAt} />
                                     {post.context?.name && <span>in {post.context.name}</span>}
-                                    <span className="opacity-50">{getPrivacyIcon()}</span>
+                                    <span className="opacity-50 flex items-center gap-1">
+                                        {getPrivacyIcon()}
+                                        {engagementSettings.privacy === 'specific' && post.allowedViewerIds?.length > 0 && (
+                                            <span className="text-[9px] bg-blue-50 text-blue-600 px-1 rounded-sm">
+                                                +{post.allowedViewerIds.length}
+                                            </span>
+                                        )}
+                                    </span>
                                 </div>
                             </div>
                         </div>

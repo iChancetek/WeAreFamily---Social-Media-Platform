@@ -14,6 +14,7 @@ import { ImageIcon, Loader2, Send, Sparkles, X, Mic, MicOff } from "lucide-react
 import { useAuth } from "@/components/auth-provider";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useLanguage } from "@/components/language-context";
+import { VisibilitySelector, PrivacyType } from "./visibility-selector";
 
 
 
@@ -24,7 +25,9 @@ export function CreatePost() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
-    const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null); // New State
+    const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+    const [privacy, setPrivacy] = useState<PrivacyType>('public');
+    const [allowedViewers, setAllowedViewers] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [lastUploadError, setLastUploadError] = useState<string | null>(null);
 
@@ -43,10 +46,19 @@ export function CreatePost() {
         setIsSubmitting(true);
         try {
             // Pass thumbnailUrl (undefined for engagement settings to use default)
-            await createPost(content, mediaUrls, undefined, thumbnailUrl);
+            // Pass thumbnailUrl and engagement settings
+            await createPost(
+                content,
+                mediaUrls,
+                { privacy },
+                thumbnailUrl,
+                allowedViewers.length > 0 ? allowedViewers : undefined
+            );
             setContent("");
             setMediaUrls([]);
             setThumbnailUrl(null);
+            setPrivacy('public');
+            setAllowedViewers([]);
             toast.success("Moment shared successfully! ❤️");
 
             window.location.reload();
@@ -233,6 +245,15 @@ export function CreatePost() {
                                 </Button>
                             </div>
 
+                            <VisibilitySelector
+                                value={privacy}
+                                onChange={setPrivacy}
+                                allowedViewerIds={allowedViewers}
+                                onAllowedViewersChange={setAllowedViewers}
+                            />
+                        </div>
+
+                        <div className="flex flex-col-reverse gap-3 pt-2 md:flex-row md:justify-end md:items-center">
                             {lastUploadError && (
                                 <div className="text-red-500 text-xs mt-2 bg-red-50 p-2 rounded break-all whitespace-pre-wrap">
                                     <p className="font-bold">DEBUG INFO:</p>
