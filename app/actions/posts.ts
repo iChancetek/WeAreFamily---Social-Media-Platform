@@ -870,6 +870,7 @@ export async function getPostGlobal(postId: string) {
 
     if (mainDoc.exists) {
         const post = mainDoc.data();
+        if (!post) return null;
         const user = await getUserProfile();
 
         // VISIBILITY CHECK
@@ -978,35 +979,38 @@ export async function getPostGlobal(postId: string) {
         return null;
     }
 
-    /**
-     * Update post engagement settings (enable/disable likes, comments, change privacy)
-     */
-    export async function updatePostEngagementSettings(
-        postId: string,
-        settings: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' },
-        contextType?: string,
-        contextId?: string
-    ) {
-        const user = await getUserProfile();
-        if (!user) throw new Error("Unauthorized");
+    return null;
+}
 
-        const postRef = getPostRef(postId, contextType, contextId);
-        const postDoc = await postRef.get();
+/**
+ * Update post engagement settings (enable/disable likes, comments, change privacy)
+ */
+export async function updatePostEngagementSettings(
+    postId: string,
+    settings: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' },
+    contextType?: string,
+    contextId?: string
+) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
 
-        if (!postDoc.exists) throw new Error("Post not found");
-        if (postDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+    const postRef = getPostRef(postId, contextType, contextId);
+    const postDoc = await postRef.get();
 
-        // Update only provided settings
-        const currentSettings = postDoc.data()?.engagementSettings || {};
-        const newSettings = {
-            allowLikes: settings.allowLikes ?? currentSettings.allowLikes ?? true,
-            allowComments: settings.allowComments ?? currentSettings.allowComments ?? true,
-            privacy: settings.privacy ?? currentSettings.privacy ?? 'friends'
-        };
+    if (!postDoc.exists) throw new Error("Post not found");
+    if (postDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
 
-        await postRef.update({ engagementSettings: newSettings });
+    // Update only provided settings
+    const currentSettings = postDoc.data()?.engagementSettings || {};
+    const newSettings = {
+        allowLikes: settings.allowLikes ?? currentSettings.allowLikes ?? true,
+        allowComments: settings.allowComments ?? currentSettings.allowComments ?? true,
+        privacy: settings.privacy ?? currentSettings.privacy ?? 'friends'
+    };
 
-        revalidatePath('/');
-        if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
-        if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
-    }
+    await postRef.update({ engagementSettings: newSettings });
+
+    revalidatePath('/');
+    if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
+    if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
+}
