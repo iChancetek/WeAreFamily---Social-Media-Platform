@@ -43,7 +43,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                 </TabsTrigger>
                 <TabsTrigger value="family" className="gap-2">
                     <Users className="w-4 h-4" />
-                    <span className="hidden sm:inline">Family</span>
+                    <span className="hidden sm:inline">Companions</span>
                 </TabsTrigger>
             </TabsList>
 
@@ -106,7 +106,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                                 </Avatar>
                                 <div>
                                     <p className="font-semibold">{member.displayName}</p>
-                                    <p className="text-sm text-gray-500">Member</p>
+                                    <p className="text-sm text-gray-500">Companion</p>
                                 </div>
                             </div>
                         ))}
