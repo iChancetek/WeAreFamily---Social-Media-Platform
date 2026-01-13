@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
         // Use actual image URL from Firebase Storage or fallback to a placeholder
         // Firebase Storage URLs are publicly accessible if the bucket has public read rules
-        const imageUrl = userData.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=400&background=random`;
+        const imageUrl = userData.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=630&background=random`;
 
         // Use the actual deployment URL (production or preview)
         // This ensures the URLs work regardless of where the app is hosted
@@ -85,14 +85,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
                 images: [
                     {
                         url: imageUrl,
-                        width: 400,
-                        height: 400,
+                        width: 1200,
+                        height: 630,
                         alt: `${displayName}'s profile photo`
                     }
                 ]
             },
             twitter: {
-                card: 'summary',
+                card: 'summary_large_image',
                 title: `${displayName} | Famio`,
                 description: bio,
                 images: [imageUrl]

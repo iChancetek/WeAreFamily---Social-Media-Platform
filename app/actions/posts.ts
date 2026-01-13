@@ -15,7 +15,8 @@ import { resolveDisplayName } from "@/lib/user-utils";
 export async function createPost(
     content: string,
     mediaUrls: string[] = [],
-    engagementSettings?: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' }
+    engagementSettings?: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' },
+    thumbnailUrl?: string | null
 ) {
     const user = await getUserProfile()
     if (!user) {
@@ -37,6 +38,7 @@ export async function createPost(
             authorId: user.id,
             content,
             mediaUrls: safeMediaUrls,
+            thumbnailUrl: thumbnailUrl || null,
             reactions: {}, // Map of userId -> reactionType
             engagementSettings: settings,
             createdAt: FieldValue.serverTimestamp(),

@@ -24,6 +24,7 @@ export function CreatePost() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+    const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null); // New State
     const [isUploading, setIsUploading] = useState(false);
     const [lastUploadError, setLastUploadError] = useState<string | null>(null);
 
@@ -31,11 +32,7 @@ export function CreatePost() {
 
     const { isListening, startListening, stopListening, isSupported: isSpeechSupported } = useSpeechRecognition({
         onResult: (result) => setContent(prev => {
-            // If empty, just set it regarding
             if (!prev) return result;
-            // Avoid duplicate appends if hook returns partials aggressively, 
-            // but for simple cases, appending with space is fine.
-            // Note: Simplest reliable way is to let user type or speak linearly.
             return prev + " " + result;
         })
     });
@@ -45,12 +42,13 @@ export function CreatePost() {
 
         setIsSubmitting(true);
         try {
-            await createPost(content, mediaUrls);
+            // Pass thumbnailUrl (undefined for engagement settings to use default)
+            await createPost(content, mediaUrls, undefined, thumbnailUrl);
             setContent("");
             setMediaUrls([]);
+            setThumbnailUrl(null);
             toast.success("Moment shared successfully! ❤️");
 
-            // Refresh the page to show the new post
             window.location.reload();
         } catch (err: any) {
             console.error("Post creation error:", err);
@@ -60,6 +58,7 @@ export function CreatePost() {
         }
     }
 
+    // ... handleMagic ...
     const handleMagic = async () => {
         if (!content.trim()) {
             toast.error("Please type a topic first!");
@@ -68,7 +67,6 @@ export function CreatePost() {
 
         setIsGenerating(true);
         try {
-            // Use the 'general' agent for creative writing
             const magicText = await chatWithAgent(
                 `Write a warm, engaging social media post about: "${content}". Use emojis. Keep it under 280 chars.`,
                 'general'
@@ -84,7 +82,6 @@ export function CreatePost() {
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         setLastUploadError(null);
-        // 1. Initial UI check
         if (!user) {
             toast.error("Please log in to share a moment.");
             return;
@@ -95,10 +92,8 @@ export function CreatePost() {
             try {
                 const file = e.target.files[0];
 
-                // 2. Strict SDK Auth Check (Fixes "User does not have permission")
                 const { getAuth } = await import("firebase/auth");
                 const auth = getAuth();
-                // Ensure we have a valid firebase user token before attempting upload
                 if (!auth.currentUser) {
                     const msg = "Firebase SDK not authenticated. Storage rules will reject.";
                     console.error(msg);
@@ -108,16 +103,27 @@ export function CreatePost() {
                 }
 
                 const userId = user.uid || (user as any).id;
-                if (!userId) {
-                    throw new Error("User ID is missing. Cannot upload.");
+                if (!userId) throw new Error("User ID is missing.");
+
+                // --- THUMBNAIL GENERATION FOR VIDEOS ---
+                if (file.type.startsWith('video/')) {
+                    try {
+                        console.log("Generating video thumbnail...");
+                        const thumbBlob = await generateVideoThumbnail(file);
+                        if (thumbBlob) {
+                            const thumbRef = ref(storage, `users/${userId}/thumbnails/${Date.now()}_thumb.jpg`);
+                            await uploadBytes(thumbRef, thumbBlob);
+                            const tUrl = await getDownloadURL(thumbRef);
+                            setThumbnailUrl(tUrl);
+                            console.log("Thumbnail generated & uploaded:", tUrl);
+                        }
+                    } catch (err) {
+                        console.error("Thumbnail generation failed (non-blocking):", err);
+                    }
                 }
-                console.log("DEBUG: Uploading as User:", userId);
+                // ---------------------------------------
 
-                // Switch to 'users' path which we KNOW works for profile pictures
-                // Path: users/{userId}/posts/{timestamp}-{filename}
                 const storageRef = ref(storage, `users/${userId}/posts/${Date.now()}-${file.name}`);
-
-                // Explicitly set content type to ensure correct playback/serving
                 const metadata = {
                     contentType: file.type || 'application/octet-stream',
                     customMetadata: {
@@ -133,27 +139,17 @@ export function CreatePost() {
                 toast.success("Photo uploaded! 📸");
             } catch (error: any) {
                 console.error("Upload failed", error);
-
-                // robust error extraction
+                // ... error handling ...
                 const debugObj = {
                     message: error.message || "Unknown error",
                     code: error.code || "No code",
                     name: error.name,
                     stack: error.stack
                 };
-
                 const fullError = JSON.stringify(debugObj, null, 2);
-                window.alert("UPLOAD ERROR:\n" + fullError); // FORCE ALERT TO USER
+                window.alert("UPLOAD ERROR:\n" + fullError);
                 setLastUploadError(fullError);
-
-                // Detailed error messaging
-                if (error.code === 'storage/unauthorized') {
-                    toast.error("Permission denied. rules rejected.");
-                } else if (error.code === 'storage/canceled') {
-                    toast.error("Upload canceled.");
-                } else {
-                    toast.error(`Upload failed: ${debugObj.message}`);
-                }
+                toast.error(`Upload failed: ${error.message}`);
             } finally {
                 setIsUploading(false);
             }
@@ -259,4 +255,42 @@ export function CreatePost() {
             </CardContent>
         </Card>
     );
+}
+
+// Helper: Generate video thumbnail from file
+const generateVideoThumbnail = (file: File): Promise<Blob | null> => {
+    return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.src = URL.createObjectURL(file);
+        video.muted = true;
+        video.playsInline = true;
+        video.currentTime = 1; // Capture at 1s
+
+        video.onloadeddata = () => {
+            // 
+        };
+
+        video.onseeked = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(video, 0, 0);
+                canvas.toBlob((blob) => {
+                    URL.revokeObjectURL(video.src);
+                    resolve(blob);
+                }, 'image/jpeg', 0.8);
+            } catch (e) {
+                console.error("Canvas draw failed", e);
+                resolve(null);
+            }
+        };
+
+        video.onerror = () => {
+            URL.revokeObjectURL(video.src);
+            resolve(null);
+        };
+    });
 }
