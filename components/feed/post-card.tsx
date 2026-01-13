@@ -175,8 +175,8 @@ export function PostCard({ post, currentUserId, isEnlarged = false }: { post: an
 
     // Card Styles
     const cardClasses = isEnlarged
-        ? "w-full max-w-3xl bg-white dark:bg-card rounded-2xl overflow-hidden shadow-2xl border border-border flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar"
-        : "group relative break-inside-avoid mb-4 border-none shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-white dark:bg-card rounded-2xl overflow-hidden flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 duration-700 fill-mode-backwards cursor-pointer";
+        ? "w-full max-w-3xl bg-card rounded-[1.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar ring-1 ring-black/5"
+        : "group relative break-inside-avoid mb-6 border-none shadow-sm hover:shadow-md transition-shadow duration-300 bg-card rounded-[1.5rem] overflow-hidden flex flex-col cursor-pointer ring-1 ring-black/5";
 
     return (
         <>

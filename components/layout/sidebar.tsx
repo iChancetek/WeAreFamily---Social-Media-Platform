@@ -61,7 +61,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     }
 
     return (
-        <div className={cn("hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-3xl glass-panel w-64 fixed left-0 top-0 z-50 overflow-hidden shadow-2xl transition-all duration-300", className)}>
+        <div className={cn("hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-[1.5rem] glass-panel w-64 fixed left-0 top-0 z-50 overflow-hidden shadow-2xl transition-all duration-300 ring-1 ring-black/5", className)}>
             <div className="px-6 py-6 flex-shrink-0">
                 <a
                     href="/"

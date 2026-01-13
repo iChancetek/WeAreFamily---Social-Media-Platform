@@ -4,43 +4,42 @@
 
 @layer base {
   :root {
-    /* Reference Image Theme (Light Mode) */
-    --background: 0 0% 100%;
-    /* Pure White */
-    --foreground: 0 0% 0%;
-    /* Pure Black (High Contrast) */
+    /* Reference Image Theme (Light Mode) - Clean, Elegant, Rich */
+    --background: 0 0% 98%;
+    /* #FAFAFA - Soft Off-White for depth */
+    --foreground: 240 10% 3.9%;
+    /* #09090B - Soft Black */
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    /* Pure White */
+    --card-foreground: 240 10% 3.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover-foreground: 240 10% 3.9%;
 
     --primary: 250 95% 64%;
-    /* #6F4CFF - Vibrant Violet from image button */
+    /* #6F4CFF - Keep Vibrant Violet Branding */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 96%;
-    /* #F4F4F5 - Light Grey for notes/secondary */
-    --secondary-foreground: 240 6% 10%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 240 5% 96%;
-    /* Matches Secondary */
-    --muted-foreground: 240 4% 46%;
-    /* #71717A - Subtle text */
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 250 95% 97%;
-    /* Very faint purple tint for hover/active */
-    --accent-foreground: 240 6% 10%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 240 6% 90%;
-    /* #E4E4E7 */
-    --input: 240 6% 90%;
+    --border: 240 5.9% 90%;
+    /* Soft border */
+    --input: 240 5.9% 90%;
     --ring: 250 95% 64%;
-    --radius: 0.5rem;
+
+    --radius: 1rem;
+    /* 16px - Generous, modern rounding */
 
     /* Charts */
     --chart-1: 12 76% 61%;
