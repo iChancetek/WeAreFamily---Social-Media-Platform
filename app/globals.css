@@ -4,38 +4,39 @@
 
 @layer base {
   :root {
-    /* FAMIO AI - LIGHT MODE */
-    --background: 248 250 252;
-    /* Slate-50 */
-    --foreground: 15 23 42;
-    /* Slate-900 */
+    /* Truth Social Theme (Original) */
+    --background: 255 255 255;
+    /* Strict White */
+    --foreground: 15 20 25;
+    /* High Contrast Dark */
 
     --card: 255 255 255;
-    --card-foreground: 15 23 42;
+    --card-foreground: 15 20 25;
 
     --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
+    --popover-foreground: 15 20 25;
 
-    --primary: 99 102 241;
-    /* Indigo-500 */
+    --primary: 84 72 238;
+    /* Vibrant Violet-Blue #5448EE */
     --primary-foreground: 255 255 255;
 
-    --secondary: 241 245 249;
-    --secondary-foreground: 15 23 42;
+    --secondary: 245 248 250;
+    /* Light Gray Accent */
+    --secondary-foreground: 15 20 25;
 
-    --muted: 241 245 249;
-    --muted-foreground: 100 116 139;
+    --muted: 245 248 250;
+    --muted-foreground: 83 100 113;
 
-    --accent: 236 253 245;
-    --accent-foreground: 15 23 42;
+    --accent: 245 248 250;
+    --accent-foreground: 15 20 25;
 
-    --destructive: 239 68 68;
+    --destructive: 244 33 46;
     --destructive-foreground: 255 255 255;
 
-    --border: 226 232 240;
-    --input: 226 232 240;
-    --ring: 99 102 241;
-    --radius: 0.75rem;
+    --border: 239 243 244;
+    --input: 239 243 244;
+    --ring: 84 72 238;
+    --radius: 0.5rem;
 
     /* Charts */
     --chart-1: 12 118 221;
@@ -46,42 +47,42 @@
   }
 
   .dark {
-    /* FAMIO AI - DARK MODE */
-    --background: 10 10 12;
-    --foreground: 226 232 240;
+    /* Sexy Pure Black Theme (Original) */
+    --background: 0 0 0;
+    --foreground: 84 72 238;
+    /* Blurple Text */
 
-    --card: 17 17 20;
-    --card-foreground: 226 232 240;
+    --card: 9 9 11;
+    /* Deep Onyx */
+    --card-foreground: 84 72 238;
 
-    --popover: 17 17 20;
-    --popover-foreground: 226 232 240;
+    --popover: 9 9 11;
+    --popover-foreground: 84 72 238;
 
-    --primary: 99 102 241;
+    --primary: 84 72 238;
     --primary-foreground: 255 255 255;
 
-    --secondary: 30 41 59;
-    --secondary-foreground: 226 232 240;
+    --secondary: 24 24 27;
+    --secondary-foreground: 84 72 238;
 
-    --muted: 30 41 59;
-    --muted-foreground: 148 163 184;
+    --muted: 24 24 27;
+    --muted-foreground: 133 125 219;
 
-    --accent: 30 41 59;
-    --accent-foreground: 226 232 240;
+    --accent: 24 24 27;
+    --accent-foreground: 84 72 238;
 
     --destructive: 127 29 29;
     --destructive-foreground: 255 255 255;
 
-    --border: 30 41 59;
-    --input: 30 41 59;
-    --ring: 99 102 241;
+    --border: 39 39 42;
+    --input: 39 39 42;
+    --ring: 84 72 238;
 
     /* Charts */
     --chart-1: 220 70 80;
     --chart-2: 0 160 40;
-    /* Corrected typo */
     --chart-3: 30 144 255;
     --chart-4: 216 28 216;
-    /* Corrected typo */
     --chart-5: 255 165 0;
   }
 }
@@ -97,7 +98,7 @@
   }
 
   .dark body {
-    background-color: #0a0a0c;
+    background-color: black;
   }
 }
 
