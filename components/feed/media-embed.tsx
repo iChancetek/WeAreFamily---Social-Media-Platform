@@ -10,10 +10,6 @@ import { LinkedInViewer } from "./linkedin-viewer";
 // Lazy load ReactPlayer for embeddable sources (Vimeo, SoundCloud, etc.)
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any;
 
-interface MediaEmbedProps {
-    url: string;
-}
-
 type Provider = 'youtube' | 'linkedin' | 'facebook' | 'instagram' | 'vimeo' | 'other';
 
 function detectProvider(url: string): Provider {
@@ -43,7 +39,13 @@ function detectProvider(url: string): Provider {
     }
 }
 
-export function MediaEmbed({ url }: MediaEmbedProps) {
+interface MediaEmbedProps {
+    url: string;
+    playInline?: boolean;
+    onPlayRequest?: () => void;
+}
+
+export function MediaEmbed({ url, playInline = true, onPlayRequest }: MediaEmbedProps) {
     const [embedUrl, setEmbedUrl] = useState<string | null>(null);
     const [provider, setProvider] = useState<Provider>('other');
     const [isLoaded, setIsLoaded] = useState(false);
@@ -65,8 +67,40 @@ export function MediaEmbed({ url }: MediaEmbedProps) {
         }
     }, [url]);
 
-    // YouTube: Render optimized iframe with youtube-nocookie
+    // YouTube: Custom Player Control
     if (provider === 'youtube' && embedUrl) {
+        // If playInline is FALSE, we show a static preview that looks like a player.
+        // Clicking it should trigger the ENLARGEMENT (via parent onClick) rather than playing.
+        if (!playInline) {
+            const videoId = embedUrl.split('/').pop();
+            const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+            return (
+                <div
+                    className="relative w-full overflow-hidden rounded-xl bg-black border border-border mt-3 aspect-video group cursor-pointer"
+                    onClick={(e) => {
+                        // If we have a play request handler (enlarge), call it.
+                        // Otherwise, do nothing (let bubble up)
+                        if (onPlayRequest) {
+                            e.stopPropagation();
+                            onPlayRequest();
+                        }
+                    }}
+                >
+                    {/* Thumbnail */}
+                    <img src={thumbnailUrl} alt="Video Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+
+                    {/* Play Button Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">
+                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm shadow-lg group-hover:scale-110 transition-transform">
+                            <Play className="w-6 h-6 text-white fill-current" />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Inline Playback (Standard)
         return (
             <div className="relative w-full overflow-hidden rounded-xl bg-black border border-border mt-3 aspect-video group">
                 {!isLoaded && (
@@ -113,14 +147,30 @@ export function MediaEmbed({ url }: MediaEmbedProps) {
     }
 
     // Vimeo and other embeddable providers: Use ReactPlayer
+    // If !playInline, we use 'light' mode which shows thumbnail.
     return (
-        <div className="mt-3 rounded-xl overflow-hidden border border-border bg-black aspect-video relative group">
+        <div
+            className="mt-3 rounded-xl overflow-hidden border border-border bg-black aspect-video relative group cursor-pointer"
+            onClick={!playInline && onPlayRequest ? (e) => { e.stopPropagation(); onPlayRequest(); } : undefined}
+        >
             <ReactPlayer
                 url={url}
                 width="100%"
                 height="100%"
-                controls
-                light={false}
+                controls={playInline}
+                light={!playInline} // Shows thumbnail if not inline
+                // If light=true, clicking it normally plays it. We intercept via wrapper onClick if needed.
+                // However, ReactPlayer 'light' mode usually handles click to play.
+                // To force our custom enlargement, we might need a custom overlay or use playIcon prop.
+                playIcon={
+                    !playInline ? (
+                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm shadow-lg group-hover:scale-110 transition-transform">
+                                <Play className="w-6 h-6 text-white fill-current" />
+                            </div>
+                        </div>
+                    ) : undefined
+                }
                 config={{
                     facebook: { appId: '130969678083861' }
                 }}

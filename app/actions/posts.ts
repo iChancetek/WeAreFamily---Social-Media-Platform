@@ -56,14 +56,66 @@ export async function createPost(
     revalidatePath('/profile');
 }
 
-export async function getPosts(limit = 20) {
+export type PostFilters = {
+    timeRange: 'day' | 'week' | 'month' | 'year' | 'all';
+    contentType: 'text' | 'photo' | 'video' | 'all';
+};
+
+export async function getPosts(limit = 50, filters: PostFilters = { timeRange: 'all', contentType: 'all' }) {
     const user = await getUserProfile();
 
     try {
+        // Base Query: Strictly Chronological
         const postsRef = adminDb.collection("posts").orderBy("createdAt", "desc").limit(limit);
         const snapshot = await postsRef.get();
 
-        const posts = await Promise.all(snapshot.docs.map(async (doc) => {
+        let rawDocs = snapshot.docs;
+
+        // --- FILTERING (In-Memory for flexibility without composite indexes) ---
+        // Note: For production scale, specific composite indexes should be created and 'where' clauses used.
+        // Current scale allows robust in-memory filtering of the fetched batch.
+
+        // 1. Time Filtering
+        if (filters.timeRange !== 'all') {
+            const now = new Date();
+            const cutoff = new Date();
+
+            switch (filters.timeRange) {
+                case 'day': cutoff.setHours(0, 0, 0, 0); break;
+                case 'week': cutoff.setDate(now.getDate() - 7); break;
+                case 'month': cutoff.setMonth(now.getMonth() - 1); break;
+                case 'year': cutoff.setFullYear(now.getFullYear() - 1); break;
+            }
+
+            rawDocs = rawDocs.filter(doc => {
+                const createdAt = doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : new Date();
+                return createdAt >= cutoff;
+            });
+        }
+
+        // 2. Content Type Filtering
+        if (filters.contentType !== 'all') {
+            rawDocs = rawDocs.filter(doc => {
+                const data = doc.data();
+                const hasMedia = data.mediaUrls && data.mediaUrls.length > 0;
+
+                // Check if content string has a video URL (YouTube, etc)
+                const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek\.com)\/\S+/i;
+                const hasVideoLink = videoUrlRegex.test(data.content || "");
+
+                // Classification
+                const isVideo = (hasMedia && data.mediaUrls.some((u: string) => u.match(/\.(mp4|mov|webm)$/i))) || hasVideoLink;
+                const isPhoto = hasMedia && !isVideo; // If has media but not video, assume photo
+                const isText = !hasMedia && !hasVideoLink;
+
+                if (filters.contentType === 'video') return isVideo;
+                if (filters.contentType === 'photo') return isPhoto;
+                if (filters.contentType === 'text') return isText;
+                return true;
+            });
+        }
+
+        const posts = await Promise.all(rawDocs.map(async (doc) => {
             const data = doc.data();
 
             // Hydrate Author
