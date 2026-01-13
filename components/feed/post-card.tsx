@@ -460,7 +460,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                     {/* 3. Ask AI Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="flex-1 gap-2 text-muted-foreground hover:text-indigo-500 hover:bg-white dark:hover:bg-black/20 rounded-xl h-10">
+                            <Button variant="ghost" className="flex-1 gap-2 text-muted-foreground hover:text-primary hover:bg-white dark:hover:bg-primary/10 rounded-xl h-10">
                                 <Sparkles className="w-4 h-4" />
                                 <span>AI</span>
                             </Button>
@@ -542,7 +542,7 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
                                         variant="ghost"
                                         onClick={handleCommentMagic}
                                         disabled={isGeneratingComment}
-                                        className="text-indigo-600 hover:bg-indigo-50"
+                                        className="text-primary hover:bg-primary/10"
                                         title="Magic AI"
                                     >
                                         {isGeneratingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}

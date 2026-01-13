@@ -423,7 +423,7 @@ export function CommentItem({
                             variant="ghost"
                             onClick={handleReplyMagic}
                             disabled={isGeneratingReply}
-                            className="text-indigo-600 hover:bg-indigo-50"
+                            className="text-primary hover:bg-primary/10"
                             title="Magic AI"
                         >
                             {isGeneratingReply ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}

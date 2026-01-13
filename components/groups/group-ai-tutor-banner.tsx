@@ -17,7 +17,7 @@ export function GroupAITutorBanner() {
             <Button
                 variant="secondary"
                 size="sm"
-                className="gap-2 font-semibold text-indigo-700 hover:bg-white/90"
+                className="gap-2 font-semibold text-primary hover:bg-white/90"
                 onClick={() => {
                     const event = new CustomEvent('famio:open-ai', {
                         detail: {

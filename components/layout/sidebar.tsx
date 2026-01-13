@@ -74,7 +74,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                         <Heart className="w-8 h-8 text-primary fill-primary/20 group-hover:scale-110 transition-transform duration-300" />
                         <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-50 group-hover:opacity-80 transition-opacity" />
                     </div>
-                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 tracking-tight">Famio</span>
+                    <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
                 </a>
             </div>
 
