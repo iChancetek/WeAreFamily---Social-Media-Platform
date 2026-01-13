@@ -3,6 +3,7 @@
 import { useAuth } from "@/components/auth-provider"
 import { useLanguage } from "@/components/language-context"
 import { PostCard } from "./post-card"
+import { MasonryFeed } from "./masonry-feed"
 import { useEffect, useState } from "react"
 import { getPosts } from "@/app/actions/posts"
 import { Loader2 } from "lucide-react"
@@ -63,10 +64,7 @@ export function FeedList() {
                 </div>
             )}
 
-            {posts.map((post) => (
-                <PostCard key={post.id} post={post as any} currentUserId={profile?.id} />
-            ))}
-
+            <MasonryFeed posts={posts} currentUserId={profile?.id} />
 
         </div>
     )

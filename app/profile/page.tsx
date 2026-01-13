@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { FamilyMembersCard } from "@/components/profile/family-members-card";
 import { PostCard } from "@/components/feed/post-card";
+import { MasonryFeed } from "@/components/feed/masonry-feed";
 import { getUserPosts } from "@/app/actions/posts";
 import { getFamilyMembers } from "@/app/actions/family";
 import { CreatePost } from "@/components/feed/create-post";
@@ -51,9 +52,7 @@ export default async function ProfilePage() {
                         <CreatePost />
 
                         {posts.length > 0 ? (
-                            posts.map((post: any) => (
-                                <PostCard key={post.id} post={post as any} currentUserId={user.id} />
-                            ))
+                            <MasonryFeed posts={posts} currentUserId={user.id} />
                         ) : (
                             <div className="bg-white dark:bg-card rounded-xl p-12 text-center border border-dashed border-gray-200 dark:border-white/10">
                                 <p className="text-muted-foreground">No posts yet. Share your first moment!</p>

@@ -14,6 +14,7 @@ import { CreatePost } from "@/components/feed/create-post";
 
 import { Card } from "@/components/ui/card";
 import { PostCard } from "@/components/feed/post-card"; // Assuming this creates the post view
+import { MasonryFeed } from "@/components/feed/masonry-feed";
 import { GroupPostCreator } from "@/components/groups/group-post-creator"; // Will create this next
 import { JoinGroupButton } from "@/components/groups/join-group-button"; // Client component for actions
 import { GroupAITutorBanner } from "@/components/groups/group-ai-tutor-banner";
@@ -135,9 +136,7 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
                             )}
 
                             <div className="space-y-4">
-                                {posts.map(post => (
-                                    <PostCard key={post.id} post={post} currentUserId={user?.id || ''} />
-                                ))}
+                                <MasonryFeed posts={posts} currentUserId={user?.id} />
                                 {posts.length === 0 && (
                                     <div className="text-center py-12 bg-muted/30 rounded-lg">
                                         <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>

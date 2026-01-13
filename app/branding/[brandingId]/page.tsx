@@ -7,6 +7,7 @@ import { Briefcase, Users, Heart } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { PostCard } from "@/components/feed/post-card";
+import { MasonryFeed } from "@/components/feed/masonry-feed";
 import { FollowBrandingButton } from "@/components/branding/follow-branding-button";
 import { BrandingPostCreator } from "@/components/branding/branding-post-creator";
 import { BrandingCoverButton } from "@/components/branding/branding-cover-button";
@@ -92,9 +93,7 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
                     )}
 
                     <div className="space-y-4">
-                        {posts.map(post => (
-                            <PostCard key={post.id} post={post} currentUserId={user?.id || ''} />
-                        ))}
+                        <MasonryFeed posts={posts} currentUserId={user?.id} />
                         {posts.length === 0 && (
                             <div className="text-center py-12 bg-muted/30 rounded-lg">
                                 <p className="text-muted-foreground">No updates yet.</p>

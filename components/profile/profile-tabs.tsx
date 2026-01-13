@@ -2,6 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PostCard } from "@/components/feed/post-card";
+import { MasonryFeed } from "@/components/feed/masonry-feed";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { Grid, Image, Film, Users, LayoutList } from "lucide-react";
@@ -53,9 +54,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                         No posts yet.
                     </div>
                 ) : (
-                    posts.map(post => (
-                        <PostCard key={post.id} post={post} currentUserId={currentUserId} />
-                    ))
+                    <MasonryFeed posts={posts} currentUserId={currentUserId} />
                 )}
             </TabsContent>
 
