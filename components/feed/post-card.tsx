@@ -199,10 +199,13 @@ export function PostCard({ post, currentUserId, isEnlarged = false }: { post: an
                         ) : isVideoFile ? (
                             <div className="w-full bg-black rounded-lg overflow-hidden relative">
                                 <video
-                                    src={mainMedia}
+                                    src={`${mainMedia}#t=0.001`}
+                                    poster={post.thumbnailUrl || undefined}
                                     className="w-full h-auto object-cover max-h-[500px]"
                                     controls={isEnlarged} // Only controls if enlarged
                                     autoPlay={isEnlarged}
+                                    preload="metadata"
+                                    playsInline
                                     onClick={(e) => {
                                         if (!isEnlarged) {
                                             e.stopPropagation();
