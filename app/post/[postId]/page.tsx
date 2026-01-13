@@ -14,13 +14,14 @@ type Props = {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
+import { generateContentMetadata } from "@/lib/metadata";
+
 export async function generateMetadata(
     { params, searchParams }: Props,
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const { postId } = await params;
 
-    // Fetch post data
     const post = await getPostGlobal(postId);
 
     if (!post || post.engagementSettings?.privacy === 'private') {
@@ -30,7 +31,6 @@ export async function generateMetadata(
         };
     }
 
-    // Use actual deployment URL
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
         || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
         || 'https://we-are-family-221.web.app';
@@ -38,128 +38,7 @@ export async function generateMetadata(
     const postUrl = `${baseUrl}/post/${postId}`;
     const embedUrl = `${baseUrl}/embed/post/${postId}`;
 
-    const youtubeUrlMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/\S+/gi);
-    const youtubeUrl = youtubeUrlMatch ? youtubeUrlMatch[0].replace(/[\s.,!?;:]+$/, '').trim() : null;
-
-    // Fetch YouTube Title if available
-    let videoTitle = null;
-    if (youtubeUrl) {
-        const yId = extractYouTubeId(youtubeUrl);
-        if (yId) {
-            videoTitle = await fetchYouTubeTitle(yId);
-        }
-    }
-
-    const title = videoTitle || `${post.author.displayName} on Famio`;
-    const description = post.content?.substring(0, 200) || `Check out this post by ${post.author.displayName}`;
-
-    // Also check mediaUrls for uploaded videos
-    const firstMedia = post.mediaUrls?.[0];
-    const isVideo = isUrlVideo(firstMedia);
-
-    // PRIORITY ORDER for thumbnail selection:
-    // 1. YouTube video thumbnail (highest priority)
-    // 2. Photo from mediaUrls
-    // 3. Native video (future: poster frame)
-    // 4. Author avatar (last resort)
-
-    let imageUrl: string;
-    let hasYouTubeVideo = false;
-
-    // Priority 1: YouTube video thumbnail
-    if (youtubeUrl) {
-        const youtubeId = extractYouTubeId(youtubeUrl);
-        if (youtubeId) {
-            hasYouTubeVideo = true;
-            // Try maxresdefault first, with fallbacks
-            imageUrl = `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
-        } else {
-            imageUrl = post.author.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.displayName)}&size=1200&background=random`;
-        }
-    }
-    // Priority 2: Photo from mediaUrls
-    else if (firstMedia) {
-        imageUrl = firstMedia;
-    }
-    // Priority 3: Native video (future enhancement for poster frame)
-    // Priority 4: Author avatar (fallback)
-    else {
-        imageUrl = post.author.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.displayName)}&size=1200&background=random`;
-    }
-
-    // Determine if this is a video post (YouTube or uploaded video)
-    const isVideoPost = hasYouTubeVideo || isVideo;
-
-    if (isVideoPost) {
-        return {
-            title,
-            description,
-            openGraph: {
-                title,
-                description,
-                type: 'video.other',
-                url: postUrl,
-                siteName: 'Famio',
-                images: [
-                    {
-                        url: imageUrl,
-                        width: 1200,
-                        height: 630,
-                        alt: 'Video Thumbnail'
-                    }
-                ],
-                videos: [
-                    {
-                        url: embedUrl,
-                        width: 1280,
-                        height: 720,
-                        type: 'text/html'
-                    }
-                ],
-            },
-            twitter: {
-                card: 'player',
-                title,
-                description,
-                images: [imageUrl],
-                players: [
-                    {
-                        playerUrl: embedUrl,
-                        streamUrl: embedUrl,
-                        width: 1280,
-                        height: 720
-                    }
-                ]
-            }
-        };
-    }
-
-    // Photo or text post
-    return {
-        title,
-        description,
-        openGraph: {
-            title,
-            description,
-            type: 'article',
-            url: postUrl,
-            siteName: 'Famio',
-            images: [
-                {
-                    url: imageUrl,
-                    width: 1200,
-                    height: 630,
-                    alt: 'Post Image'
-                }
-            ]
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title,
-            description,
-            images: [imageUrl],
-        }
-    };
+    return generateContentMetadata(post, postUrl, embedUrl);
 }
 
 

@@ -15,14 +15,20 @@ type Props = {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
+import { generateContentMetadata } from "@/lib/metadata";
+
 export async function generateMetadata(
     { params, searchParams }: Props,
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const { groupId, postId } = await params;
 
-    // Note: getGroupPost might return null, handle gracefully
-    // We need to import it if it's not imported? It is imported in the file.
+    // We can use getGroupPost if we exported it, OR getPostGlobal if permission allows, 
+    // OR the inline logic we saw before. 
+    // The previous code used 'getGroupPost' but caught error.
+
+    // Let's use getGroupPost safely.
+    const { getGroupPost } = await import("@/app/actions/groups");
     let post = null;
     try {
         post = await getGroupPost(groupId, postId);
@@ -41,72 +47,8 @@ export async function generateMetadata(
 
     const postUrl = `${baseUrl}/groups/${groupId}/post/${postId}`;
 
-    // Check for YouTube URL in post content
-    const youtubeUrlMatch = post.content?.match(/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/\S+/gi);
-    const youtubeUrl = youtubeUrlMatch ? youtubeUrlMatch[0].replace(/[\s.,!?;:]+$/, '').trim() : null;
-
-    // Fetch YouTube Title if available
-    let videoTitle = null;
-    if (youtubeUrl) {
-        const yId = extractYouTubeId(youtubeUrl);
-        if (yId) {
-            videoTitle = await fetchYouTubeTitle(yId);
-        }
-    }
-
-    const title = videoTitle || (post.author?.displayName ? `${post.author.displayName} on Famio` : 'Famio Post');
-    const description = post.content?.substring(0, 200) || `Check out this post on Famio`;
-
-    // Also check mediaUrls for uploaded videos
-    const firstMedia = post.mediaUrls?.[0];
-    const isVideo = isUrlVideo(firstMedia);
-
-    let imageUrl: string;
-    let hasYouTubeVideo = false;
-
-    // Priority 1: YouTube video thumbnail
-    if (youtubeUrl) {
-        const youtubeId = extractYouTubeId(youtubeUrl);
-        if (youtubeId) {
-            hasYouTubeVideo = true;
-            imageUrl = `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
-        } else {
-            imageUrl = post.author?.imageUrl || `https://ui-avatars.com/api/?name=Famio&size=1200&background=random`;
-        }
-    }
-    // Priority 2: Photo from mediaUrls
-    else if (firstMedia && !isVideo) {
-        imageUrl = firstMedia;
-    }
-    else {
-        imageUrl = post.author?.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author?.displayName || 'User')}&size=1200&background=random`;
-    }
-
-    return {
-        title,
-        description,
-        openGraph: {
-            title,
-            description,
-            type: 'article',
-            url: postUrl,
-            siteName: 'Famio',
-            images: [
-                {
-                    url: imageUrl,
-                    width: 1200,
-                    height: 630,
-                    alt: 'Post Image'
-                }
-            ]
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title,
-            description,
-            images: [imageUrl],
-        }
-    };
+    // Use Shared Logic
+    return generateContentMetadata(post, postUrl);
 }
 
 export default async function GroupPostPage({ params }: { params: Promise<{ groupId: string; postId: string }> }) {

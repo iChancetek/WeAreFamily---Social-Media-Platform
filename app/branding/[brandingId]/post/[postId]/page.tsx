@@ -56,60 +56,7 @@ export async function generateMetadata(
             videoTitle = await fetchYouTubeTitle(yId);
         }
     }
-
-    const title = videoTitle || (post.author?.displayName ? `${post.author.displayName} on Famio` : 'Famio Post');
-    const description = post.content?.substring(0, 200) || `Check out this post on Famio`;
-
-    // Also check mediaUrls for uploaded videos
-    const firstMedia = post.mediaUrls?.[0];
-    const isVideo = isUrlVideo(firstMedia);
-
-    let imageUrl: string;
-    let hasYouTubeVideo = false;
-
-    // Priority 1: YouTube video thumbnail
-    if (youtubeUrl) {
-        const youtubeId = extractYouTubeId(youtubeUrl);
-        if (youtubeId) {
-            hasYouTubeVideo = true;
-            imageUrl = `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
-        } else {
-            imageUrl = post.author?.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author?.displayName || 'Page')}&size=1200&background=random`;
-        }
-    }
-    // Priority 2: Photo from mediaUrls
-    else if (firstMedia && !isVideo) {
-        imageUrl = firstMedia;
-    }
-    else {
-        imageUrl = post.author?.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author?.displayName || 'Page')}&size=1200&background=random`;
-    }
-
-    return {
-        title,
-        description,
-        openGraph: {
-            title,
-            description,
-            type: 'article',
-            url: postUrl,
-            siteName: 'Famio',
-            images: [
-                {
-                    url: imageUrl,
-                    width: 1200,
-                    height: 630,
-                    alt: 'Post Image'
-                }
-            ]
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title,
-            description,
-            images: [imageUrl],
-        }
-    };
+    return generateContentMetadata(post, postUrl);
 }
 
 export default async function BrandingPostPage({ params }: { params: Promise<{ brandingId: string; postId: string }> }) {
