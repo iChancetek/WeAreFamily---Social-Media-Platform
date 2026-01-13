@@ -19,10 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { searchUsers } from "@/app/actions/family";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useDebounce } from "@/hooks/use-debounce"; // Assuming this exists, or I'll implement simple debounce
-
-// Simple debounce hook if not present, but I'll implement inline logic to be safe or assuming the user wants me to use standard patterns
-// If hooks/use-debounce doesn't exist, I'll just use a timeout.
+// Simple debounce hook logic implemented inline below
 // Let's implement a self-contained one to avoid dependency issues.
 
 export function UserSearch({ onSelect }: { onSelect: (userId: string) => void }) {
