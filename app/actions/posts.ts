@@ -33,33 +33,31 @@ export async function createPost(
         allowComments: engagementSettings?.allowComments ?? true,
         privacy: engagementSettings?.privacy ?? 'public' // Changed default to public
     };
-};
 
-try {
-    await adminDb.collection("posts").add({
-        authorId: user.id,
-        content,
-        mediaUrls: safeMediaUrls,
-        thumbnailUrl: thumbnailUrl || null,
-        reactions: {}, // Map of userId -> reactionType
-        engagementSettings: settings,
-        engagementSettings: settings,
-        allowedViewerIds: allowedViewerIds || [], // Store specific viewers if any
-        createdAt: FieldValue.serverTimestamp(),
+    try {
+        await adminDb.collection("posts").add({
+            authorId: user.id,
+            content,
+            mediaUrls: safeMediaUrls,
+            thumbnailUrl: thumbnailUrl || null,
+            reactions: {}, // Map of userId -> reactionType
+            engagementSettings: settings,
+            allowedViewerIds: allowedViewerIds || [], // Store specific viewers if any
+            createdAt: FieldValue.serverTimestamp(),
+        });
+    } catch (e: any) {
+        console.error("Create Post Failed:", e);
+        throw new Error(e.message || "Database write failed");
+    }
+
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("post.create", {
+        targetType: "post",
+        details: { content: content.substring(0, 20) }
     });
-} catch (e: any) {
-    console.error("Create Post Failed:", e);
-    throw new Error(e.message || "Database write failed");
-}
 
-const { logAuditEvent } = await import("./audit");
-await logAuditEvent("post.create", {
-    targetType: "post",
-    details: { content: content.substring(0, 20) }
-});
-
-revalidatePath('/');
-revalidatePath('/profile');
+    revalidatePath('/');
+    revalidatePath('/profile');
 }
 
 export type PostFilters = {
@@ -239,14 +237,14 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
             });
         }));
 
-    }));
 
-    // Filter out nulls (hidden posts)
-    return posts.filter(p => p !== null);
-} catch (error) {
-    console.error("Error fetching posts:", error);
-    return [];
-}
+
+        // Filter out nulls (hidden posts)
+        return posts.filter(p => p !== null);
+    } catch (error) {
+        console.error("Error fetching posts:", error);
+        return [];
+    }
 }
 
 // Helper to get correct collection based on context
