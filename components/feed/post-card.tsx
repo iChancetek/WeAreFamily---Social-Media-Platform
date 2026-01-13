@@ -161,31 +161,77 @@ export function PostCard({ post, currentUserId }: { post: any, currentUserId?: s
 
     // --- RENDER ---
     const hasMedia = (post.mediaUrls && post.mediaUrls.length > 0) || mediaUrl;
-    // Determine Main Media Anchor (use first image/video)
+    // Determine Main Media Anchor (use first image/video, OR the embedded link)
+    // Priority: Uploaded Media > Link Preview
     const mainMedia = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls[0] : mediaUrl;
-    const isMainVideo = isUrlVideo(mainMedia) || (mediaUrl && isUrlVideo(mediaUrl)); // Basic check
+
+    // Check if mainMedia is the extracted URL (Embeddable)
+    const isEmbeddable = mainMedia === mediaUrl;
+    const isVideoFile = isUrlVideo(mainMedia);
+
+    const [lightboxOpen, setLightboxOpen] = useState(false);
 
     return (
         <Card id={`post-${post.id}`} className="group relative break-inside-avoid mb-4 border-none shadow-sm hover:shadow-md transition-all duration-300 bg-white dark:bg-card rounded-2xl overflow-hidden flex flex-col">
 
             {/* 1. MEDIA ANCHOR (Top) */}
             {hasMedia && (
-                <div className="w-full relative cursor-pointer" onClick={() => setShowComments(!showComments)}>
-                    {mainMedia && (
-                        isMainVideo ? (
-                            <div className="w-full bg-black rounded-lg overflow-hidden">
-                                {mediaUrl ? <MediaEmbed url={mediaUrl} /> : <video src={mainMedia} controls className="w-full h-auto object-cover max-h-[500px]" />}
-                            </div>
-                        ) : (
-                            <img src={mainMedia} alt="Post content" className="w-full h-auto object-cover hover:brightness-95 transition-all" />
-                        )
+                <div className="w-full relative cursor-pointer" onClick={() => !isEmbeddable && setLightboxOpen(true)}>
+                    {isEmbeddable && mediaUrl ? (
+                        // Embeddable Content (YouTube, etc) - No Lightbox for iframes usually
+                        <div className="w-full">
+                            <MediaEmbed url={mediaUrl} />
+                        </div>
+                    ) : isVideoFile ? (
+                        <div className="w-full bg-black rounded-lg overflow-hidden relative">
+                            <video
+                                src={mainMedia}
+                                className="w-full h-auto object-cover max-h-[500px]"
+                                // Don't use standard controls in preview if we want a clean look, 
+                                // but for now controls are safer for usability.
+                                controls
+                                onClick={(e) => { e.stopPropagation(); }} // Let controls work
+                            />
+                        </div>
+                    ) : (
+                        <div className="w-full relative overflow-hidden bg-muted">
+                            <img
+                                src={mainMedia}
+                                alt=""
+                                className="w-full h-auto object-cover hover:scale-105 transition-transform duration-500"
+                                onError={(e) => {
+                                    // Hide image if broken to prevent "Post content" alt text
+                                    e.currentTarget.style.display = 'none';
+                                }}
+                            />
+                        </div>
                     )}
-                    {/* Additional media indicator if multiple */}
+
+                    {/* Additional media indicator */}
                     {post.mediaUrls?.length > 1 && (
-                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
+                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-medium pointer-events-none">
                             +{post.mediaUrls.length - 1} more
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* LIGHTBOX DIALOG */}
+            {lightboxOpen && !isEmbeddable && (
+                <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setLightboxOpen(false)}>
+                    <button onClick={() => setLightboxOpen(false)} className="absolute top-4 right-4 p-2 text-white/70 hover:text-white rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+                        <X className="w-6 h-6" />
+                    </button>
+
+                    <div className="relative w-full max-w-5xl max-h-[90vh] flex items-center justify-center" onClick={e => e.stopPropagation()}>
+                        {isVideoFile ? (
+                            <video src={mainMedia} controls className="max-w-full max-h-[85vh] rounded-lg shadow-2xl" autoPlay />
+                        ) : (
+                            <img src={mainMedia} alt="Full size" className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" />
+                        )}
+
+                        {/* If multiple images, we could add carousel controls here later */}
+                    </div>
                 </div>
             )}
 
