@@ -1,89 +1,99 @@
+@import "tw-animate-css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Truth Social Theme (Original) */
-    --background: 255 255 255;
-    /* Strict White */
-    --foreground: 15 20 25;
-    /* High Contrast Dark */
+    /* Truth Social Theme (Light Mode) - HSL Values */
+    --background: 0 0% 100%;
+    /* White */
+    --foreground: 210 25% 8%;
+    /* #0F1419 */
 
-    --card: 255 255 255;
-    --card-foreground: 15 20 25;
+    --card: 0 0% 100%;
+    --card-foreground: 210 25% 8%;
 
-    --popover: 255 255 255;
-    --popover-foreground: 15 20 25;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 25% 8%;
 
-    --primary: 84 72 238;
-    /* Vibrant Violet-Blue #5448EE */
-    --primary-foreground: 255 255 255;
+    --primary: 244 83% 61%;
+    /* #5448EE Violet-Blue */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 245 248 250;
-    /* Light Gray Accent */
-    --secondary-foreground: 15 20 25;
+    --secondary: 204 33% 94%;
+    /* #F5F8FA */
+    --secondary-foreground: 210 25% 8%;
 
-    --muted: 245 248 250;
-    --muted-foreground: 83 100 113;
+    --muted: 204 33% 94%;
+    --muted-foreground: 206 15% 38%;
+    /* #536471 */
 
-    --accent: 245 248 250;
-    --accent-foreground: 15 20 25;
+    --accent: 204 33% 94%;
+    --accent-foreground: 210 25% 8%;
 
-    --destructive: 244 33 46;
-    --destructive-foreground: 255 255 255;
+    --destructive: 356 90% 54%;
+    /* #F4212E */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 239 243 244;
-    --input: 239 243 244;
-    --ring: 84 72 238;
+    --border: 192 17% 95%;
+    /* #EFF3F4 */
+    --input: 192 17% 95%;
+    --ring: 244 83% 61%;
     --radius: 0.5rem;
 
     /* Charts */
-    --chart-1: 12 118 221;
-    --chart-2: 173 250 29;
-    --chart-3: 197 48 48;
-    --chart-4: 43 121 137;
-    --chart-5: 255 165 0;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
   }
 
   .dark {
-    /* Sexy Pure Black Theme (Original) */
-    --background: 0 0 0;
-    --foreground: 84 72 238;
-    /* Blurple Text */
+    /* Sexy Pure Black Theme (Original) - HSL Values */
+    --background: 0 0% 0%;
+    /* Pure Black */
+    --foreground: 244 83% 61%;
+    /* #5448EE Blurple Text */
 
-    --card: 9 9 11;
-    /* Deep Onyx */
-    --card-foreground: 84 72 238;
+    --card: 240 10% 4%;
+    /* #09090B Deep Onyx */
+    --card-foreground: 244 83% 61%;
 
-    --popover: 9 9 11;
-    --popover-foreground: 84 72 238;
+    --popover: 240 10% 4%;
+    --popover-foreground: 244 83% 61%;
 
-    --primary: 84 72 238;
-    --primary-foreground: 255 255 255;
+    --primary: 244 83% 61%;
+    /* #5448EE */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 24 24 27;
-    --secondary-foreground: 84 72 238;
+    --secondary: 240 6% 10%;
+    /* #18181B */
+    --secondary-foreground: 244 83% 61%;
 
-    --muted: 24 24 27;
-    --muted-foreground: 133 125 219;
+    --muted: 240 6% 10%;
+    --muted-foreground: 245 53% 67%;
+    /* #857DDB */
 
-    --accent: 24 24 27;
-    --accent-foreground: 84 72 238;
+    --accent: 240 6% 10%;
+    --accent-foreground: 244 83% 61%;
 
-    --destructive: 127 29 29;
-    --destructive-foreground: 255 255 255;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 39 39 42;
-    --input: 39 39 42;
-    --ring: 84 72 238;
+    --border: 240 4% 16%;
+    /* #27272A */
+    --input: 240 4% 16%;
+    --ring: 244 83% 61%;
 
     /* Charts */
-    --chart-1: 220 70 80;
-    --chart-2: 0 160 40;
-    --chart-3: 30 144 255;
-    --chart-4: 216 28 216;
-    --chart-5: 255 165 0;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -95,10 +105,6 @@
   body {
     @apply bg-background text-foreground transition-colors duration-300;
     font-family: var(--font-inter), system-ui, sans-serif;
-  }
-
-  .dark body {
-    background-color: black;
   }
 }
 
