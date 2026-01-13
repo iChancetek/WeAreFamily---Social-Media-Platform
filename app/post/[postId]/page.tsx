@@ -78,7 +78,7 @@ export async function generateMetadata(
         }
     }
     // Priority 2: Photo from mediaUrls
-    else if (firstMedia && !isVideo) {
+    else if (firstMedia) {
         imageUrl = firstMedia;
     }
     // Priority 3: Native video (future enhancement for poster frame)
