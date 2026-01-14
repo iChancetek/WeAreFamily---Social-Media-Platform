@@ -68,6 +68,7 @@ jobs:
           vuln-type: 'os,library'
           scanners: 'vuln'
           severity: 'CRITICAL,HIGH'
+          skip-dirs: '/app/node_modules'
 
       - name: Push to Docker Hub
         if: success()
