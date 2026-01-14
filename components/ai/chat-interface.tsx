@@ -68,10 +68,7 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
     const { speak, stop: stopSpeaking, isSpeaking } = useTextToSpeech();
 
     const { isListening, transcript, startListening, stopListening, isSupported: isSpeechSupported } = useSpeechRecognition({
-        onResult: (result) => setInputValue(prev => {
-            // If previous content exists, add a space
-            return result;
-        })
+        onResult: (result) => setInputValue(result) // Transcript is handled here
     });
 
     useEffect(() => {
@@ -79,13 +76,6 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
             scrollRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [chat.messages]);
-
-    // Update input with voice transcript (moved to useEffect with proper dependency)
-    useEffect(() => {
-        if (isListening && transcript) {
-            setInputValue(transcript);
-        }
-    }, [transcript]); // Only depend on transcript, not isListening
 
     const handleSendMessage = async (e?: React.FormEvent) => {
         e?.preventDefault();
