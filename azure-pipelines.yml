@@ -1,0 +1,44 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  imageName: 'famio-web'
+  tag: '$(Build.SourceVersion)'
+
+jobs:
+- job: BuildAndDeploy
+  displayName: 'Build, Scan and Push'
+  steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Install Node.js'
+
+  - script: |
+      npm ci
+      npm run lint
+      npm test
+    displayName: 'Quality Check (Lint & Test)'
+
+  - script: |
+      docker build -t $(DOCKER_USERNAME)/$(imageName):$(tag) .
+      docker tag $(DOCKER_USERNAME)/$(imageName):$(tag) $(DOCKER_USERNAME)/$(imageName):latest
+    displayName: 'Build Docker Image'
+
+  - script: |
+      wget https://github.com/aquasecurity/trivy/releases/download/v0.58.1/trivy_0.58.1_Linux-64bit.deb
+      sudo dpkg -i trivy_0.58.1_Linux-64bit.deb
+    displayName: 'Install Trivy'
+
+  - script: |
+      trivy image --exit-code 1 --severity CRITICAL,HIGH --ignore-unfixed --skip-dirs /app/node_modules $(DOCKER_USERNAME)/$(imageName):$(tag)
+    displayName: 'Run Trivy Scan'
+
+  - script: |
+      echo $(DOCKER_PASSWORD) | docker login -u $(DOCKER_USERNAME) --password-stdin
+      docker push $(DOCKER_USERNAME)/$(imageName):$(tag)
+      docker push $(DOCKER_USERNAME)/$(imageName):latest
+    displayName: 'Push to Docker Hub'
