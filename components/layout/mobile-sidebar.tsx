@@ -1,13 +1,13 @@
 "use client";
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot, Newspaper } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot, Newspaper, Sun, Moon, Laptop } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/mode-toggle";
 import { useLanguage } from "@/components/language-context";
+import { useTheme } from "next-themes";
 
 interface MobileSidebarProps {
     isAdmin?: boolean;
@@ -20,6 +20,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
     const router = useRouter();
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
+    const { theme, setTheme } = useTheme();
 
     const handleNavigation = (href: string, label: string) => {
         console.log('🔵 MOBILE NAV CLICK:', label, href);
@@ -150,11 +151,49 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                 ))}
             </nav>
 
-            <div className="px-4 mt-6 pt-4 border-t border-border flex-shrink-0 space-y-2">
-                <div className="px-2">
-                    <ModeToggle />
+            <div className="px-4 mt-6 pt-4 border-t border-border flex-shrink-0 space-y-4">
+                {/* Inline Theme Toggle for Mobile Reliability */}
+                <div className="flex items-center p-1 bg-muted/50 rounded-xl border border-border/50">
+                    <button
+                        onClick={() => setTheme("light")}
+                        className={cn(
+                            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all",
+                            theme === 'light' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
+                        <Sun className="w-4 h-4" />
+                        <span className="hidden xs:inline">Light</span>
+                    </button>
+                    <button
+                        onClick={() => setTheme("dark")}
+                        className={cn(
+                            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all",
+                            theme === 'dark' ? "bg-zinc-800 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
+                        <Moon className="w-4 h-4" />
+                        <span className="hidden xs:inline">Dark</span>
+                    </button>
+                    <button
+                        onClick={() => setTheme("system")}
+                        className={cn(
+                            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all",
+                            theme === 'system' ? "bg-white dark:bg-zinc-800 shadow-sm" : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
+                        <Laptop className="w-4 h-4" />
+                        <span className="hidden xs:inline">System</span>
+                    </button>
                 </div>
-                <Button variant="ghost" className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl px-3" onClick={() => signOut()}>
+
+                <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl px-3 h-12"
+                    onClick={() => {
+                        if (onLinkClick) onLinkClick();
+                        signOut();
+                    }}
+                >
                     <LogOut className="h-5 w-5" />
                     {t("nav.signout")}
                 </Button>

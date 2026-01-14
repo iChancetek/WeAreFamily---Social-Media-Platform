@@ -1,14 +1,14 @@
 'use client'
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot, Sun, Moon, Laptop } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 // import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/mode-toggle";
 import { useLanguage } from "@/components/language-context";
+import { useTheme } from "next-themes";
 
 interface SidebarProps {
     isAdmin?: boolean;
@@ -20,6 +20,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     const pathname = usePathname();
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
+    const { theme, setTheme } = useTheme();
 
     const groups = [
         {
@@ -115,14 +116,50 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                 ))}
             </nav>
 
-            <div className="px-4 py-4 mt-auto border-t border-border/50 bg-white/50 dark:bg-black/20 backdrop-blur-md">
-                <div className="mb-2 px-2">
-                    <ModeToggle />
+            <div className="px-4 py-4 mt-auto border-t border-border/50 bg-white/50 dark:bg-black/20 backdrop-blur-md space-y-3">
+                {/* Inline Theme Toggle for Desktop Reliability */}
+                <div className="flex items-center p-1 bg-muted/50 rounded-xl border border-border/50">
+                    <button
+                        onClick={() => setTheme("light")}
+                        className={cn(
+                            "flex-1 flex items-center justify-center p-2 rounded-lg transition-all",
+                            theme === 'light' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                        )}
+                        title="Light Mode"
+                    >
+                        <Sun className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => setTheme("dark")}
+                        className={cn(
+                            "flex-1 flex items-center justify-center p-2 rounded-lg transition-all",
+                            theme === 'dark' ? "bg-zinc-800 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+                        )}
+                        title="Dark Mode"
+                    >
+                        <Moon className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => setTheme("system")}
+                        className={cn(
+                            "flex-1 flex items-center justify-center p-2 rounded-lg transition-all",
+                            theme === 'system' ? "bg-white dark:bg-zinc-800 shadow-sm" : "text-muted-foreground hover:text-foreground"
+                        )}
+                        title="System Theme"
+                    >
+                        <Laptop className="w-4 h-4" />
+                    </button>
                 </div>
+
                 <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl px-3 h-10"
-                    onClick={() => signOut()}
+                    className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-destructive/10 rounded-xl px-3 h-10"
+                    onClick={() => {
+                        // Force a hard navigation to login if needed, or stick to router
+                        signOut().then(() => {
+                            window.location.href = '/login';
+                        });
+                    }}
                 >
                     <LogOut className="h-5 w-5" />
                     {t("nav.signout")}
