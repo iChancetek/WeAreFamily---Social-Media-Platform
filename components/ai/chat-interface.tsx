@@ -16,6 +16,8 @@ import { Loader2 } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Linkify } from "@/components/shared/linkify";
+import { useChat } from "@/hooks/use-chat";
+import { MemoryControls } from "@/components/ai/memory-controls";
 
 type Message = {
     role: 'user' | 'assistant';
@@ -36,12 +38,18 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ isCompact = false, externalContext, initialMode, onContextHandled }: ChatInterfaceProps) {
     const { user } = useAuth();
-    const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: isCompact ? "Hi! How can I help?" : "Hello! I am your AI Research Assistant. I can help you find information, write code, or explain complex topics. What are we working on today?" }
-    ]);
-    const [inputValue, setInputValue] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+
+    // Enhanced chat with memory support
+    const [memoryEnabled, setMemoryEnabled] = useState(true);
     const [selectedMode, setSelectedMode] = useState<AgentMode>('general');
+    const chat = useChat({
+        userId: user?.uid || 'anonymous',
+        memoryEnabled,
+        mode: selectedMode,
+        model: 'gpt-4o'
+    });
+
+    const [inputValue, setInputValue] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [attachedFile, setAttachedFile] = useState<FileAttachment | null>(null);
@@ -58,21 +66,11 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
         if (externalContext) {
             const contextMsg = `[Shared Context]: "${externalContext.substring(0, 200)}${externalContext.length > 200 ? '...' : ''}"`;
 
-            // Check if we already have this context to avoid loops
-            setMessages(prev => {
-                const lastMsg = prev[prev.length - 1];
-                if (lastMsg.role === 'user' && lastMsg.content === contextMsg) return prev;
-
-                return [
-                    ...prev,
-                    { role: 'user', content: contextMsg },
-                    { role: 'assistant', content: "I see the context. What would you like to know?" }
-                ];
-            });
-
+            // Send the context as a message using chat hook
+            chat.sendMessage(contextMsg);
             if (onContextHandled) onContextHandled();
         }
-    }, [externalContext, onContextHandled]);
+    }, [externalContext, onContextHandled, chat]);
 
     const { speak, stop: stopSpeaking, isSpeaking } = useTextToSpeech();
 
@@ -87,7 +85,7 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
         if (scrollRef.current) {
             scrollRef.current.scrollIntoView({ behavior: "smooth" });
         }
-    }, [messages]);
+    }, [chat.messages]);
 
     useEffect(() => {
         // Update input with voice transcript
@@ -99,29 +97,17 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
     const handleSendMessage = async (e?: React.FormEvent) => {
         e?.preventDefault();
         const textToSend = inputValue.trim();
-        if ((!textToSend && !attachedFile) || isLoading) return;
+        if ((!textToSend && !attachedFile) || chat.isLoading) return;
 
         let fullMessage = textToSend;
         if (attachedFile) {
             fullMessage = `[Attached File: ${attachedFile.name}]\n\n${attachedFile.content}\n\n${textToSend}`;
         }
 
-        setMessages(prev => [...prev, { role: 'user', content: fullMessage }]);
+        // Use chat hook to send message
+        await chat.sendMessage(fullMessage);
         setInputValue("");
         setAttachedFile(null);
-        setIsLoading(true);
-
-        try {
-            const response = await chatWithAgent(fullMessage, selectedMode);
-            const responseText = response || "I couldn't generate a response.";
-            setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
-            // Auto-speak if voice mode was used (optional, maybe just visual for now)
-        } catch (error) {
-            console.error(error);
-            setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error. Please try again." }]);
-        } finally {
-            setIsLoading(false);
-        }
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,7 +179,7 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
             <Card className="flex-1 flex flex-col overflow-hidden border-border/50 shadow-sm bg-card/50 glass-effect">
                 <ScrollArea className="flex-1 p-4">
                     <div className="space-y-6 max-w-3xl mx-auto">
-                        {messages.map((msg, idx) => (
+                        {chat.messages.map((msg, idx) => (
                             <div
                                 key={idx}
                                 className={cn(
@@ -289,7 +275,7 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
                             }}
                             placeholder={isListening ? "Listening..." : `Ask the ${selectedMode} agent anything...`}
                             className="flex-1 min-h-[50px] py-3 pr-12 text-base rounded-2xl bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm focus-visible:ring-primary resize-none"
-                            disabled={isLoading}
+                            disabled={chat.isLoading}
                             autoFocus
                         />
 
@@ -314,13 +300,13 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
                             <Button
                                 type="submit"
                                 size="icon"
-                                disabled={(!inputValue.trim() && !attachedFile) || isLoading}
+                                disabled={(!inputValue.trim() && !attachedFile) || chat.isLoading}
                                 className={cn(
                                     "h-[42px] w-[42px] rounded-full transition-all shadow-sm",
                                     (inputValue.trim() || attachedFile) ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground hover:bg-muted"
                                 )}
                             >
-                                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                                {chat.isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                             </Button>
                         </div>
                     </form>

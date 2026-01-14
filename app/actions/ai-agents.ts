@@ -4,12 +4,14 @@ import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { adminDb } from "@/lib/firebase-admin";
+import { queryVectors, upsertVectors } from "@/lib/vector-db";
+import { getRelevantMemories } from "@/lib/memory-manager";
 
 // ------------------------------------------------------------------
 // 🤖 Agent Definitions
 // ------------------------------------------------------------------
 
-import { AgentMode, AIModel } from "@/types/ai";
+import { AgentMode, AIModel, ConversationMessage } from "@/types/ai";
 
 // ------------------------------------------------------------------
 // 🤖 Agent Definitions
@@ -59,6 +61,7 @@ async function generateEmbedding(text: string) {
         model: "text-embedding-3-small",
         input: text,
         encoding_format: "float",
+        dimensions: 512, // Match Pinecone index configuration
     });
     return response.data[0].embedding;
 }
@@ -138,27 +141,30 @@ export async function chatWithAgent(
     try {
         console.log(`🤖 AI Agent Activated: [${mode.toUpperCase()}] using [${model}] with [${attachments.length}] attachments`);
 
-        // 1. Get RAG Context (Shared Knowledge Base) - if no attachments (to save tokens/complexity for now)
+        // 1. Get RAG Context using Vector Database (Pinecone)
         let contextText = "";
         if (attachments.length === 0) {
-            const userEmbedding = await generateEmbedding(userMessage);
-            const snapshot = await adminDb.collection("knowledge_base").get();
+            try {
+                const userEmbedding = await generateEmbedding(userMessage);
 
-            if (!snapshot.empty) {
-                const docs = snapshot.docs.map((doc: any) => ({
-                    content: doc.data().content,
-                    embedding: doc.data().embedding,
-                    metadata: doc.data().metadata
-                }));
+                // Query vector database for relevant knowledge
+                const results = await queryVectors(
+                    'knowledge',
+                    userEmbedding,
+                    3, // top 3 results
+                    undefined,
+                    0.7 // minimum similarity score
+                );
 
-                const scoredDocs = docs.map((doc: any) => ({
-                    ...doc,
-                    score: cosineSimilarity(userEmbedding, doc.embedding)
-                }));
-
-                scoredDocs.sort((a: any, b: any) => b.score - a.score);
-                const topDocs = scoredDocs.slice(0, 3);
-                contextText = topDocs.map((d: any) => `[Possible Context: ${d.metadata.title}]: ${d.content}`).join("\n\n");
+                if (results.length > 0) {
+                    contextText = results
+                        .map((r: any) => `[Knowledge: ${r.metadata.title || 'Reference'}]: ${r.metadata.content}`)
+                        .join("\n\n");
+                    console.log(`📚 Found ${results.length} relevant knowledge items`);
+                }
+            } catch (error) {
+                console.warn('Vector DB query failed, continuing without context:', error);
+                // Graceful degradation - continue without RAG context
             }
         }
 
@@ -390,24 +396,28 @@ export async function seedKnowledgeBase() {
         }
     ];
 
-    console.log("Starting Knowledge Base Seed...");
-    const batch = adminDb.batch();
-    const collectionRef = adminDb.collection("knowledge_base");
+    console.log("🌱 Starting Knowledge Base Seed to Pinecone...");
+
+    const vectors = [];
 
     for (const item of knowledgeData) {
         const embedding = await generateEmbedding(item.content);
-        // Create a new doc reference
-        const docRef = collectionRef.doc();
-        batch.set(docRef, {
-            content: item.content,
-            embedding: embedding,
-            metadata: { title: item.title },
-            createdAt: new Date()
+        vectors.push({
+            id: `knowledge_${item.title.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')}`,
+            values: embedding,
+            metadata: {
+                title: item.title,
+                content: item.content,
+                createdAt: new Date().toISOString()
+            }
         });
-        console.log(`Prepared doc: ${item.title}`);
+        console.log(`✅ Prepared vector: ${item.title}`);
     }
 
-    await batch.commit();
-    console.log("Knowledge Base Seeded Successfully!");
+    // Upsert to Pinecone 'knowledge' namespace
+    await upsertVectors('knowledge', vectors);
+
+    console.log("✅ Knowledge Base Seeded Successfully to Pinecone!");
     return { success: true, count: knowledgeData.length };
 }
+

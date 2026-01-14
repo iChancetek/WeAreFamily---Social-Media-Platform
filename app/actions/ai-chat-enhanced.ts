@@ -1,0 +1,190 @@
+/**
+ * Enhanced Chat with Agent - With LLM Failover, Memory, and Streaming Support
+ */
+
+'use server';
+
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
+import { AgentMode, AIModel, ConversationMessage } from '@/types/ai';
+import { queryVectors } from '@/lib/vector-db';
+import {
+    getConversationHistory,
+    saveMessage,
+    getRelevantMemories
+} from '@/lib/memory-manager';
+import { chatWithAgent as originalChatWithAgent } from './ai-agents';
+
+// Tavily search function (from ai-agents.ts)
+async function searchTavily(query: string) {
+    const apiKey = process.env.TAVILY_API_KEY;
+    if (!apiKey) {
+        console.warn('Tavily API Key missing');
+        return 'Search functionality is currently unavailable (Missing API Key).';
+    }
+
+    try {
+        console.log(`🔍 Performing Tavily Search for: "${query}"`);
+        const response = await fetch('https://api.tavily.com/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                api_key: apiKey,
+                query: query,
+                search_depth: 'basic',
+                include_answer: true,
+                max_results: 5,
+                include_images: false,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Tavily API Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const results =
+            data.results
+                ?.map((r: any) => `[${r.title}](${r.url}): ${r.content}`)
+                .join('\n\n') || '';
+        const answer = data.answer ? `Direct Answer: ${data.answer}\n\n` : '';
+
+        return `${answer}Search Results:\n${results}`.trim() || 'No relevant results found.';
+    } catch (error) {
+        console.error('Tavily Search Error:', error);
+        return 'An error occurred while searching the internet.';
+    }
+}
+
+/**
+ * Enhanced chat function with automatic LLM failover
+ */
+export async function chatWithAgentEnhanced(
+    userMessage: string,
+    userId: string,
+    conversationId: string,
+    mode: AgentMode = 'general',
+    model: AIModel = 'gpt-4o',
+    memoryEnabled: boolean = true
+): Promise<{
+    response: string;
+    model: string;
+    responseTimeMs: number;
+    failedOver: boolean;
+}> {
+    const startTime = Date.now();
+    const timeout = Number(process.env.AI_RESPONSE_TIMEOUT_MS) || 8000;
+    let failedOver = false;
+    let actualModel = model;
+
+    try {
+        // 1. Get conversation history if memory enabled
+        let previousMessages: ConversationMessage[] = [];
+        if (memoryEnabled) {
+            previousMessages = await getConversationHistory(userId, conversationId, 10);
+        }
+
+        // 2. Try primary model (OpenAI)
+        let response: string;
+        try {
+            const timeoutPromise = new Promise<string>((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout')), timeout)
+            );
+
+            const chatPromise = originalChatWithAgent(
+                userMessage,
+                mode,
+                model,
+                [],
+                previousMessages.map((m) => ({ role: m.role, content: m.content }))
+            );
+
+            response = await Promise.race([chatPromise, timeoutPromise]);
+        } catch (primaryError: any) {
+            // Check if error is timeout or API failure
+            if (
+                primaryError.message === 'Timeout' ||
+                primaryError.status === 429 ||
+                primaryError.code === 'rate_limit_exceeded' ||
+                primaryError.code === 'server_error'
+            ) {
+                console.warn(`⚠️ Primary model failed (${model}), failing over to Claude...`);
+                failedOver = true;
+                actualModel = 'claude-3-5-sonnet-20240620';
+
+                // Failover to Claude
+                response = await originalChatWithAgent(
+                    userMessage,
+                    mode,
+                    actualModel as AIModel,
+                    [],
+                    previousMessages.map((m) => ({ role: m.role, content: m.content }))
+                );
+            } else {
+                throw primaryError;
+            }
+        }
+
+        // 3. Save messages to memory
+        if (memoryEnabled) {
+            await saveMessage(
+                userId,
+                conversationId,
+                {
+                    role: 'user',
+                    content: userMessage,
+                    timestamp: new Date(),
+                },
+                mode,
+                memoryEnabled
+            );
+
+            await saveMessage(
+                userId,
+                conversationId,
+                {
+                    role: 'assistant',
+                    content: response,
+                    timestamp: new Date(),
+                    metadata: {
+                        model: actualModel,
+                        responseTime: Date.now() - startTime,
+                    },
+                },
+                mode,
+                memoryEnabled
+            );
+        }
+
+        const responseTimeMs = Date.now() - startTime;
+        console.log(
+            `✅ Response generated in ${responseTimeMs}ms using ${actualModel}${failedOver ? ' (failover)' : ''}`
+        );
+
+        return {
+            response,
+            model: actualModel,
+            responseTimeMs,
+            failedOver,
+        };
+    } catch (error) {
+        console.error('Error in chatWithAgentEnhanced:', error);
+        throw error;
+    }
+}
+
+/**
+ * Generate a conversation title from the first user message
+ */
+export async function generateConversationTitle(
+    firstMessage: string
+): Promise<string> {
+    // Simple extraction: take first 50 chars or first sentence
+    const title = firstMessage
+        .split(/[.!?]/)[0]
+        .trim()
+        .substring(0, 50);
+    return title + (firstMessage.length > 50 ? '...' : '');
+}
