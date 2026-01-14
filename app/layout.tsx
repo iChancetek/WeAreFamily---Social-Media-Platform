@@ -48,7 +48,7 @@ export default function RootLayout({
               </MessageNotificationProvider>
             </LanguageProvider>
           </ThemeProvider>
-          {/* <AIAssistant /> */}
+          <AIAssistant />
         </body>
       </html>
     </AuthProvider>
