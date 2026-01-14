@@ -49,12 +49,12 @@ export async function POST(request: NextRequest) {
             failedOver: result.failedOver,
             timestamp: new Date().toISOString(),
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error in chat API:', error);
         return NextResponse.json(
             {
                 error: 'Internal server error',
-                message: error.message || 'An unexpected error occurred',
+                message: error instanceof Error ? error.message : 'An unexpected error occurred',
             },
             { status: 500 }
         );

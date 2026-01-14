@@ -4,14 +4,10 @@
 
 'use server';
 
-import OpenAI from 'openai';
-import Anthropic from '@anthropic-ai/sdk';
 import { AgentMode, AIModel, ConversationMessage } from '@/types/ai';
-import { queryVectors } from '@/lib/vector-db';
 import {
     getConversationHistory,
-    saveMessage,
-    getRelevantMemories
+    saveMessage
 } from '@/lib/memory-manager';
 import { chatWithAgent as originalChatWithAgent } from './ai-agents';
 
@@ -52,7 +48,7 @@ async function searchTavily(query: string) {
         const answer = data.answer ? `Direct Answer: ${data.answer}\n\n` : '';
 
         return `${answer}Search Results:\n${results}`.trim() || 'No relevant results found.';
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('Tavily Search Error:', error);
         return 'An error occurred while searching the internet.';
     }
@@ -98,17 +94,21 @@ export async function chatWithAgentEnhanced(
                 mode,
                 model,
                 [],
-                previousMessages.map((m) => ({ role: m.role, content: m.content }))
+                previousMessages
+                    .filter((m) => m.role === 'user' || m.role === 'assistant')
+                    .map((m) => ({ role: m.role, content: m.content }))
             );
 
             response = await Promise.race([chatPromise, timeoutPromise]);
-        } catch (primaryError: any) {
+        } catch (primaryError: unknown) {
             // Check if error is timeout or API failure
             if (
-                primaryError.message === 'Timeout' ||
-                primaryError.status === 429 ||
-                primaryError.code === 'rate_limit_exceeded' ||
-                primaryError.code === 'server_error'
+                primaryError instanceof Error && (
+                    primaryError.message === 'Timeout' ||
+                    (primaryError as Error & { status?: number; code?: string }).status === 429 ||
+                    (primaryError as Error & { code?: string }).code === 'rate_limit_exceeded' ||
+                    (primaryError as Error & { code?: string }).code === 'server_error'
+                )
             ) {
                 console.warn(`⚠️ Primary model failed (${model}), failing over to Claude...`);
                 failedOver = true;
@@ -120,7 +120,9 @@ export async function chatWithAgentEnhanced(
                     mode,
                     actualModel as AIModel,
                     [],
-                    previousMessages.map((m) => ({ role: m.role, content: m.content }))
+                    previousMessages
+                        .filter((m) => m.role === 'user' || m.role === 'assistant')
+                        .map((m) => ({ role: m.role, content: m.content }))
                 );
             } else {
                 throw primaryError;
@@ -169,7 +171,7 @@ export async function chatWithAgentEnhanced(
             responseTimeMs,
             failedOver,
         };
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('Error in chatWithAgentEnhanced:', error);
         throw error;
     }

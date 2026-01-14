@@ -17,13 +17,6 @@ interface UseChatOptions {
     model?: string;
 }
 
-interface ChatState {
-    messages: ConversationMessage[];
-    isLoading: boolean;
-    error: string | null;
-    conversationId: string;
-}
-
 export function useChat(options: UseChatOptions) {
     const {
         userId,
@@ -117,9 +110,9 @@ export function useChat(options: UseChatOptions) {
                 };
 
                 setMessages((prev) => [...prev, assistantMessage]);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error('Chat error:', err);
-                setError(err.message || 'Failed to send message');
+                setError(err instanceof Error ? err.message : 'Failed to send message');
 
                 // Remove the user message if the request failed
                 setMessages((prev) => prev.slice(0, -1));

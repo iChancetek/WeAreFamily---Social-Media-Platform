@@ -3,15 +3,13 @@
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { adminDb } from "@/lib/firebase-admin";
 import { queryVectors, upsertVectors } from "@/lib/vector-db";
-import { getRelevantMemories } from "@/lib/memory-manager";
 
 // ------------------------------------------------------------------
 // 🤖 Agent Definitions
 // ------------------------------------------------------------------
 
-import { AgentMode, AIModel, ConversationMessage } from "@/types/ai";
+import type { AgentMode, AIModel } from "@/types/ai";
 
 // ------------------------------------------------------------------
 // 🤖 Agent Definitions

@@ -8,7 +8,6 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, Send, User, Sparkles, Terminal, BookOpen, Briefcase, Mic, MicOff, Volume2, Paperclip, FileText, X } from "lucide-react";
-import { chatWithAgent } from "@/app/actions/ai-agents";
 import { AgentMode } from "@/types/ai";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
@@ -17,7 +16,6 @@ import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Linkify } from "@/components/shared/linkify";
 import { useChat } from "@/hooks/use-chat";
-import { MemoryControls } from "@/components/ai/memory-controls";
 
 type Message = {
     role: 'user' | 'assistant';
@@ -41,7 +39,7 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
 
     // Enhanced chat with memory support
     const [memoryEnabled, setMemoryEnabled] = useState(true);
-    const [selectedMode, setSelectedMode] = useState<AgentMode>('general');
+    const [selectedMode, setSelectedMode] = useState<AgentMode>(initialMode || 'general');
     const chat = useChat({
         userId: user?.uid || 'anonymous',
         memoryEnabled,
@@ -54,12 +52,7 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [attachedFile, setAttachedFile] = useState<FileAttachment | null>(null);
 
-    // Update mode if passed externally
-    useEffect(() => {
-        if (initialMode) {
-            setSelectedMode(initialMode);
-        }
-    }, [initialMode]);
+    // Mode is now set directly in useState initialization above
 
     // Handle External Context (e.g. "Ask AI")
     useEffect(() => {
@@ -87,12 +80,12 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
         }
     }, [chat.messages]);
 
+    // Update input with voice transcript (moved to useEffect with proper dependency)
     useEffect(() => {
-        // Update input with voice transcript
-        if (isListening) {
+        if (isListening && transcript) {
             setInputValue(transcript);
         }
-    }, [transcript, isListening]);
+    }, [transcript]); // Only depend on transcript, not isListening
 
     const handleSendMessage = async (e?: React.FormEvent) => {
         e?.preventDefault();
