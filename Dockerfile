@@ -22,6 +22,9 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Upgrade npm to fix vulnerabilities in system dependencies
+RUN npm install -g npm@latest && npm cache clean --force
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
