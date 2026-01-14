@@ -330,6 +330,17 @@ export async function chatWithAgent(
 
     } catch (error) {
         console.error(`Error in chatWithAgent (${mode}/${model}):`, error);
+        // Log more details for debugging
+        if (error instanceof Error) {
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+        }
+        // Check if it's an OpenAI API error
+        if (typeof error === 'object' && error !== null && 'status' in error) {
+            console.error('API Error status:', (error as any).status);
+            console.error('API Error details:', (error as any).message);
+        }
         return "I'm having trouble connecting to my neural core. Please try again in a moment. 🧠";
     }
 }
