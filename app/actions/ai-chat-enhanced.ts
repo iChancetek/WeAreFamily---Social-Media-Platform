@@ -99,7 +99,8 @@ export async function chatWithAgentEnhanced(
                     .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
             );
 
-            response = await Promise.race([chatPromise, timeoutPromise]);
+            const result = await Promise.race([chatPromise, timeoutPromise]);
+            response = result || 'I apologize, but I was unable to generate a response.';
         } catch (primaryError: unknown) {
             // Check if error is timeout or API failure
             if (
@@ -115,7 +116,7 @@ export async function chatWithAgentEnhanced(
                 actualModel = 'claude-3-5-sonnet-20240620';
 
                 // Failover to Claude
-                response = await originalChatWithAgent(
+                const fallbackResult = await originalChatWithAgent(
                     userMessage,
                     mode,
                     actualModel as AIModel,
@@ -124,6 +125,7 @@ export async function chatWithAgentEnhanced(
                         .filter((m) => m.role === 'user' || m.role === 'assistant')
                         .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
                 );
+                response = fallbackResult || 'I apologize, but I was unable to generate a response.';
             } else {
                 throw primaryError;
             }
