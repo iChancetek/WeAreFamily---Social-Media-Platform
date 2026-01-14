@@ -1,0 +1,7 @@
+apiVersion: v2
+name: famio
+description: A Helm chart for deploying Famio.us using Argo Rollouts
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+dependencies: []
