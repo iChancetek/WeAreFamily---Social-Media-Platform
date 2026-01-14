@@ -16,6 +16,7 @@ export function Linkify({ text, className, onMediaFound, hideUrls }: LinkifyProp
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 
@@ -30,7 +31,7 @@ export function Linkify({ text, className, onMediaFound, hideUrls }: LinkifyProp
         // But since we can't easily sync "capturedMedia" across renders without state,
         // we'll skip the complex deduping here and assume onMediaFound handles it or is stable.
 
-        let found = false;
+
         const matches = text.match(urlRegex) || [];
 
         for (const url of matches) {
@@ -45,7 +46,7 @@ export function Linkify({ text, className, onMediaFound, hideUrls }: LinkifyProp
 
             if (isVideo) {
                 onMediaFound(url);
-                found = true;
+
                 break; // Only report the first one
             }
         }
