@@ -3,7 +3,7 @@
 import { useAuth } from "@/components/auth-provider";
 import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot, Sun, Moon, Laptop } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
-// import Link from "next/link";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -64,7 +64,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     return (
         <div className={cn("hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-[1.5rem] glass-panel w-64 fixed left-0 top-0 z-50 overflow-hidden shadow-2xl transition-all duration-300 ring-1 ring-black/5", className)}>
             <div className="px-6 py-6 flex-shrink-0">
-                <a
+                <Link
                     href="/"
                     className="flex items-center gap-3 pointer-events-auto cursor-pointer group"
                     onClick={() => {
@@ -76,7 +76,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                         <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-50 group-hover:opacity-80 transition-opacity" />
                     </div>
                     <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
-                </a>
+                </Link>
             </div>
 
             <nav className="flex-1 px-4 mt-2 space-y-8 overflow-y-auto custom-scrollbar">

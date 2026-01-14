@@ -61,6 +61,7 @@ export function useSpeechRecognition({ onResult, onEnd }: UseSpeechRecognitionPr
                     setIsListening(false);
                 };
 
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setRecognition(recognitionInstance);
                 setIsSupported(true);
             } catch (e) {

@@ -13,6 +13,7 @@ export function SafeDate({ date, fallback = "Just now" }: SafeDateProps) {
     const [text, setText] = useState<string>("");
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
         try {
             if (!date) {

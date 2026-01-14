@@ -38,22 +38,21 @@ function isUrlVideo(url: string | null | undefined): boolean {
 // ... imports ...
 
 export function PostCard({ post, currentUserId, isEnlarged = false }: { post: any, currentUserId?: string, isEnlarged?: boolean }) {
-    if (!post || post.isDeleted) return null;
-
+    // Hooks must be called unconditionally
     const [reportDialogOpen, setReportDialogOpen] = useState(false);
     const [showComments, setShowComments] = useState(isEnlarged); // Auto-show comments if enlarged
     const [commentText, setCommentText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [editContent, setEditContent] = useState(post.content || "");
+    const [editContent, setEditContent] = useState(post?.content || "");
     const [isSavingEdit, setIsSavingEdit] = useState(false);
     const [translatedContent, setTranslatedContent] = useState<string | null>(null);
     const [isTranslating, setIsTranslating] = useState(false);
     const [currentReaction, setCurrentReaction] = useState<ReactionType | undefined>(
-        currentUserId && post.reactions ? post.reactions[currentUserId] : undefined
+        currentUserId && post?.reactions ? post.reactions[currentUserId] : undefined
     );
-    const [reactionCount, setReactionCount] = useState(post.reactions ? Object.keys(post.reactions).length : 0);
-    const [comments, setComments] = useState<any[]>(post.comments || []);
+    const [reactionCount, setReactionCount] = useState(post?.reactions ? Object.keys(post.reactions).length : 0);
+    const [comments, setComments] = useState<any[]>(post?.comments || []);
     const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
     const [commentMediaUrl, setCommentMediaUrl] = useState<string | null>(null);
     const [isUploadingComment, setIsUploadingComment] = useState(false);
@@ -62,6 +61,10 @@ export function PostCard({ post, currentUserId, isEnlarged = false }: { post: an
 
     // Enlargement State (Only used if !isEnlarged)
     const [enlargedViewOpen, setEnlargedViewOpen] = useState(false);
+
+    // Early return AFTER hooks
+    if (!post || post.isDeleted) return null;
+
     const handleEnlarge = () => {
         if (!isEnlarged) setEnlargedViewOpen(true);
     };

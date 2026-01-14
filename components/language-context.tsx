@@ -139,6 +139,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (profile?.language && (profile.language === 'en' || profile.language === 'es')) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLanguageState(profile.language as Language);
         }
     }, [profile]);

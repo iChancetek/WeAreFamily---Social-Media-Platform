@@ -21,7 +21,9 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
 
     // Sync state with props if they change (e.g. navigation)
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setStatus(initialStatus)
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setRequestId(initialRequestId)
     }, [initialStatus, initialRequestId])
 

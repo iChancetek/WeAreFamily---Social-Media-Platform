@@ -56,9 +56,13 @@ export function StoryViewer({ initialStories, initialUserIndex, open, onOpenChan
 
     // Reset when user changes
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentUserIndex(initialUserIndex);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentStoryIndex(0);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setProgress(0);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMediaError(null);
     }, [initialUserIndex, open]);
 

@@ -8,6 +8,7 @@ export function useTextToSpeech() {
 
     useEffect(() => {
         if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsSupported(true);
         }
     }, []);

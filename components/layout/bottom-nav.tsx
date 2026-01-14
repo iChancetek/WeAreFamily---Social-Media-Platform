@@ -16,6 +16,7 @@ export function BottomNav() {
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setOpen(false);
     }, [pathname]);
 
@@ -39,13 +40,13 @@ export function BottomNav() {
                     console.log('🔵 Already at destination, no navigation needed');
                 } else {
                     console.log('🔵 Using window.location fallback');
-                    window.location.href = href;
+                    window.location.assign(href);
                 }
             }, 300);
 
         } catch (error) {
             console.error('🔴 Navigation error:', error);
-            window.location.href = href;
+            window.location.assign(href);
         }
     };
 

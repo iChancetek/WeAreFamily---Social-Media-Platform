@@ -1,4 +1,5 @@
 import Link from "next/link";
+import React, { useState, useEffect } from "react";
 
 interface LinkifyProps {
     text: string;
@@ -8,46 +9,67 @@ interface LinkifyProps {
 }
 
 export function Linkify({ text, className, onMediaFound, hideUrls }: LinkifyProps) {
-    if (!text) return null;
-
     // improved regex to separate punctuation at the end of a URL
     // This captures the URL provided it starts with http/https and doesn't contain whitespace.
     // It blindly captures until a space. We will clean it up inside.
     const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+
+
+    // Detect media in a side effect, not during render
+    useEffect(() => {
+        if (!mounted || !onMediaFound) return;
+
+        // Re-scan text for media to notify parent (idempotent check ideally handled by parent or here)
+        // For simplicity, we just find the first video and report it once if needed.
+        // But since we can't easily sync "capturedMedia" across renders without state,
+        // we'll skip the complex deduping here and assume onMediaFound handles it or is stable.
+
+        let found = false;
+        const matches = text.match(urlRegex) || [];
+
+        for (const url of matches) {
+            const lower = url.toLowerCase();
+            const isVideo = lower.includes('youtube.com') ||
+                lower.includes('youtu.be') ||
+                lower.includes('facebook.com') ||
+                lower.includes('linkedin.com') ||
+                lower.includes('.mp4') ||
+                lower.includes('vimeo.com') ||
+                lower.includes('dailymotion.com');
+
+            if (isVideo) {
+                onMediaFound(url);
+                found = true;
+                break; // Only report the first one
+            }
+        }
+    }, [text, mounted, onMediaFound]); // urlRegex is constant enough or we can recreate logic
+
+    if (!text) return null;
+
+    if (!mounted) return <span className={className}>{text}</span>;
 
     const parts = text.split(urlRegex);
-    let capturedMedia = false;
 
     return (
         <span className={className}>
             {parts.map((part, i) => {
                 if (part.match(urlRegex)) {
-                    // Check for trailing punctuation (common issue: "Check this https://link.com.")
-                    // match a URL that might end with punctuation
-                    const match = part.match(/^(https?:\/\/[^\s]+?)([.,!?;:]?)$/);
+                    // This part is a URL
                     let url = part;
-                    let suffix = "";
+                    let suffix = '';
 
-                    if (match) {
-                        url = match[1];
-                        suffix = match[2];
-                    }
-
-                    // Simple check for video URL to notify parent
-                    if (onMediaFound && !capturedMedia) {
-                        const lower = url.toLowerCase();
-                        const isVideo = lower.includes('youtube.com') ||
-                            lower.includes('youtu.be') ||
-                            lower.includes('facebook.com') ||
-                            lower.includes('linkedin.com') ||
-                            lower.includes('.mp4') ||
-                            lower.includes('vimeo.com') ||
-                            lower.includes('dailymotion.com');
-
-                        if (isVideo) {
-                            onMediaFound(url);
-                            capturedMedia = true;
-                        }
+                    // Basic cleanup for punctuation at the end of a URL
+                    const lastChar = url[url.length - 1];
+                    if (lastChar && (lastChar === '.' || lastChar === ',' || lastChar === '!' || lastChar === '?')) {
+                        url = url.slice(0, -1);
+                        suffix = lastChar;
                     }
 
                     // Check if this URL should be hidden (e.g. because it's embedded)

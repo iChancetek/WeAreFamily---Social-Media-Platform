@@ -46,26 +46,11 @@ interface MediaEmbedProps {
 }
 
 export function MediaEmbed({ url, playInline = true, onPlayRequest }: MediaEmbedProps) {
-    const [embedUrl, setEmbedUrl] = useState<string | null>(null);
-    const [provider, setProvider] = useState<Provider>('other');
     const [isLoaded, setIsLoaded] = useState(false);
 
-    useEffect(() => {
-        if (!url) {
-            setProvider('other');
-            return;
-        }
-
-        const detectedProvider = detectProvider(url);
-        setProvider(detectedProvider);
-
-        if (detectedProvider === 'youtube') {
-            const parsed = parseYouTubeUrl(url);
-            if (parsed) {
-                setEmbedUrl(parsed);
-            }
-        }
-    }, [url]);
+    // Derived state (no effects needed)
+    const provider = detectProvider(url || '');
+    const embedUrl = provider === 'youtube' && url ? parseYouTubeUrl(url) : null;
 
     // YouTube: Custom Player Control
     if (provider === 'youtube' && embedUrl) {
