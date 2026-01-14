@@ -96,7 +96,7 @@ export async function chatWithAgentEnhanced(
                 [],
                 previousMessages
                     .filter((m) => m.role === 'user' || m.role === 'assistant')
-                    .map((m) => ({ role: m.role, content: m.content }))
+                    .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
             );
 
             response = await Promise.race([chatPromise, timeoutPromise]);
@@ -122,7 +122,7 @@ export async function chatWithAgentEnhanced(
                     [],
                     previousMessages
                         .filter((m) => m.role === 'user' || m.role === 'assistant')
-                        .map((m) => ({ role: m.role, content: m.content }))
+                        .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
                 );
             } else {
                 throw primaryError;
