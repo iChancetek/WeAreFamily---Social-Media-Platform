@@ -10,4 +10,4 @@
 A comprehensive social media platform for families, featuring groups, branding pages, stories, events, and AI-powered assistance.
 
 ## Build Status
-[![Build Status](https://github.com/iChancetek/WeAreFamily---Social-Media-Platform/actions/workflows/main.yml/badge.svg)](https://github.com/iChancetek/WeAreFamily---Social-Media-Platform/actions)
+[![CI/CD Pipeline](https://github.com/iChancetek/WeAreFamily---Social-Media-Platform/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/iChancetek/WeAreFamily---Social-Media-Platform/actions/workflows/ci-cd.yml)
