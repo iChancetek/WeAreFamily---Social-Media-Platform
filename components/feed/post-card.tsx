@@ -332,48 +332,46 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                     isPinterest ? "px-3 py-2 flex flex-col gap-1.5" : "px-4 pt-3 pb-2 flex flex-col gap-2",
                     !hasMedia && !isPinterest && "pt-4"
                 )}>
-                    {/* Author Info - Hidden on Pinterest mobile unless enlarged */}
-                    {!isPinterest && (
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                <Link href={`/u/${post.authorId}`}>
-                                    <Avatar className="w-6 h-6 border border-border">
-                                        <AvatarImage src={profilePic || undefined} />
-                                        <AvatarFallback className="text-[10px]">{name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                </Link>
-                                <div className="flex flex-col">
-                                    <Link href={`/u/${post.authorId}`} className="text-xs font-semibold hover:underline line-clamp-1">{name}</Link>
-                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                        <SafeDate date={post.createdAt} />
-                                        {post.context?.name && <span>in {post.context.name}</span>}
-                                        <span className="opacity-50 flex items-center gap-1">
-                                            {getPrivacyIcon()}
-                                            {engagementSettings.privacy === 'specific' && post.allowedViewerIds?.length > 0 && (
-                                                <span className="text-[9px] bg-blue-50 text-blue-600 px-1 rounded-sm">
-                                                    +{post.allowedViewerIds.length}
-                                                </span>
-                                            )}
-                                        </span>
-                                    </div>
+                    {/* Author Info - Always visible, but styled differently for Pinterest */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                            <Link href={`/u/${post.authorId}`}>
+                                <Avatar className="w-6 h-6 border border-border">
+                                    <AvatarImage src={profilePic || undefined} />
+                                    <AvatarFallback className="text-[10px]">{name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                            </Link>
+                            <div className="flex flex-col">
+                                <Link href={`/u/${post.authorId}`} className="text-xs font-semibold hover:underline line-clamp-1">{name}</Link>
+                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                    <SafeDate date={post.createdAt} />
+                                    {post.context?.name && <span>in {post.context.name}</span>}
+                                    <span className="opacity-50 flex items-center gap-1">
+                                        {getPrivacyIcon()}
+                                        {engagementSettings.privacy === 'specific' && post.allowedViewerIds?.length > 0 && (
+                                            <span className="text-[9px] bg-blue-50 text-blue-600 px-1 rounded-sm">
+                                                +{post.allowedViewerIds.length}
+                                            </span>
+                                        )}
+                                    </span>
                                 </div>
                             </div>
-                            {/* Menu - Stop Propagation */}
-                            <div onClick={e => e.stopPropagation()}>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"><MoreHorizontal className="w-4 h-4" /></Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={handleTranslate}>{translatedContent ? "Show Original" : "Translate"}</DropdownMenuItem>
-                                        {isAuthor && <DropdownMenuItem onClick={() => setIsEditing(true)}>Edit</DropdownMenuItem>}
-                                        {isAuthor && <DropdownMenuItem onClick={handleDeletePost} className="text-red-500">Delete</DropdownMenuItem>}
-                                        {!isAuthor && <DropdownMenuItem className="text-red-500">Report</DropdownMenuItem>}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
                         </div>
-                    )}
+                        {/* Menu - Stop Propagation */}
+                        <div onClick={e => e.stopPropagation()}>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"><MoreHorizontal className="w-4 h-4" /></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={handleTranslate}>{translatedContent ? "Show Original" : "Translate"}</DropdownMenuItem>
+                                    {isAuthor && <DropdownMenuItem onClick={() => setIsEditing(true)}>Edit</DropdownMenuItem>}
+                                    {isAuthor && <DropdownMenuItem onClick={handleDeletePost} className="text-red-500">Delete</DropdownMenuItem>}
+                                    {!isAuthor && <DropdownMenuItem className="text-red-500">Report</DropdownMenuItem>}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
 
                     {/* Text Content */}
                     <div onClick={e => !isEditing && isEnlarged ? e.stopPropagation() : undefined}>
@@ -395,54 +393,56 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                     </div>
                 </div>
 
-                {/* 3. ACTIONS & STATS (Bottom) - Hidden on Pinterest mobile */}
-                {!isPinterest && (
-                    <div className="mt-auto pt-2 pb-3 px-3" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between">
-                            {/* Reactions */}
-                            <div className="flex items-center gap-1">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="sm" className={cn("h-8 px-2 gap-1.5 rounded-full hover:bg-pink-50 dark:hover:bg-pink-900/20", currentReaction && "text-pink-600 bg-pink-50 dark:bg-pink-900/10")}>
-                                            {currentReaction ? <span className="text-lg">{getReactionIcon(currentReaction)}</span> : <Heart className="w-4 h-4" />}
-                                            <span className="text-xs font-medium">{reactionCount > 0 ? reactionCount : ""}</span>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="flex p-2 gap-1">
-                                        {REACTIONS.map(r => <button key={r.type} onClick={() => handleReaction(r.type as ReactionType)} className="text-2xl hover:scale-125 transition-transform p-1">{r.emoji}</button>)}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                {/* 3. ACTIONS & STATS (Bottom) - Minimal on Pinterest, full on standard */}
+                <div className={cn(
+                    "mt-auto pt-2 pb-3",
+                    isPinterest ? "px-3" : "px-3"
+                )} onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between">
+                        {/* Reactions */}
+                        <div className="flex items-center gap-1">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className={cn("h-8 px-2 gap-1.5 rounded-full hover:bg-pink-50 dark:hover:bg-pink-900/20", currentReaction && "text-pink-600 bg-pink-50 dark:bg-pink-900/10")}>
+                                        {currentReaction ? <span className="text-lg">{getReactionIcon(currentReaction)}</span> : <Heart className="w-4 h-4" />}
+                                        <span className="text-xs font-medium">{reactionCount > 0 ? reactionCount : ""}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" className="flex p-2 gap-1">
+                                    {REACTIONS.map(r => <button key={r.type} onClick={() => handleReaction(r.type as ReactionType)} className="text-2xl hover:scale-125 transition-transform p-1">{r.emoji}</button>)}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
 
-                                <Button variant="ghost" size="sm" onClick={() => !isEnlarged ? handleEnlarge() : setShowComments(!showComments)} className="h-8 px-2 gap-1.5 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/20 text-muted-foreground hover:text-blue-600">
-                                    <MessageCircle className="w-4 h-4" />
-                                    <span className="text-xs font-medium">{comments.length > 0 ? comments.length : ""}</span>
-                                </Button>
+                            <Button variant="ghost" size="sm" onClick={() => !isEnlarged ? handleEnlarge() : setShowComments(!showComments)} className="h-8 px-2 gap-1.5 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/20 text-muted-foreground hover:text-blue-600">
+                                <MessageCircle className="w-4 h-4" />
+                                <span className="text-xs font-medium">{comments.length > 0 ? comments.length : ""}</span>
+                            </Button>
 
-                                <Button variant="ghost" size="sm" onClick={() => handleShare('native')} className="h-8 w-8 rounded-full text-muted-foreground hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 p-0">
-                                    <Share2 className="w-4 h-4" />
+                            <Button variant="ghost" size="sm" onClick={() => handleShare('native')} className="h-8 w-8 rounded-full text-muted-foreground hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 p-0">
+                                <Share2 className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* COMMENTS SECTION (Expandable) */}
+                    {(showComments || isEnlarged) && (
+                        <div className="mt-3 pt-3 border-t border-border animate-in fade-in zoom-in-95 duration-200">
+                            {/* Comment Input */}
+                            <div className="flex gap-2 items-center mb-3">
+                                <Input placeholder="Write a comment..." value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCommentSubmit()} className="h-9 text-sm rounded-full bg-muted/50 border-none focus-visible:ring-1" />
+                                <Button size="icon" className="h-9 w-9 rounded-full shrink-0" onClick={handleCommentSubmit} disabled={!commentText.trim() || isSubmitting}>
+                                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                 </Button>
+                            </div>
+                            {/* Comments List */}
+                            <div className={cn("space-y-3 pr-1 custom-scrollbar", isEnlarged ? "max-h-[min(300px,40vh)] overflow-y-auto" : "max-h-[300px] overflow-y-auto")}>
+                                {comments.map(c => (
+                                    <CommentItem key={c.id} comment={c} postId={post.id} currentUserId={currentUserId} contextType={contextType} contextId={contextId} postAuthorId={post.authorId} />
+                                ))}
                             </div>
                         </div>
-
-                        {/* COMMENTS SECTION (Expandable) */}
-                        {(showComments || isEnlarged) && (
-                            <div className="mt-3 pt-3 border-t border-border animate-in fade-in zoom-in-95 duration-200">
-                                {/* Comment Input */}
-                                <div className="flex gap-2 items-center mb-3">
-                                    <Input placeholder="Write a comment..." value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCommentSubmit()} className="h-9 text-sm rounded-full bg-muted/50 border-none focus-visible:ring-1" />
-                                    <Button size="icon" className="h-9 w-9 rounded-full shrink-0" onClick={handleCommentSubmit} disabled={!commentText.trim() || isSubmitting}>
-                                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                    </Button>
-                                </div>
-                                {/* Comments List */}
-                                <div className={cn("space-y-3 pr-1 custom-scrollbar", isEnlarged ? "max-h-[min(300px,40vh)] overflow-y-auto" : "max-h-[300px] overflow-y-auto")}>
-                                    {comments.map(c => (
-                                        <CommentItem key={c.id} comment={c} postId={post.id} currentUserId={currentUserId} contextType={contextType} contextId={contextId} postAuthorId={post.authorId} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    )}
+                </div>
                 )}
 
                 <ReportDialog open={reportDialogOpen} onOpenChange={setReportDialogOpen} targetType="post" targetId={post.id} context={{ contextType, contextId, authorId: post.authorId }} />
