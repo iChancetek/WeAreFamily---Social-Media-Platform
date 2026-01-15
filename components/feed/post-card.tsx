@@ -201,7 +201,12 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
 
     return (
         <>
-            <Card id={`post-${post.id}`} className={cardClasses} onClick={!isEnlarged ? handleEnlarge : undefined}>
+            <Card
+                id={`post-${post.id}`}
+                className={cardClasses}
+                onClick={!isEnlarged ? handleEnlarge : undefined}
+                data-post-card="true"
+            >
 
                 {/* 1. MEDIA ANCHOR (Top) */}
                 {hasMedia && (

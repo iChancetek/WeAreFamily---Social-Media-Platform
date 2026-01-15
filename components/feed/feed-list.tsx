@@ -7,6 +7,8 @@ import { MasonryFeed } from "./masonry-feed"
 import { useEffect, useState } from "react"
 import { getPosts } from "@/app/actions/posts"
 import { Loader2 } from "lucide-react"
+import { useAutoScroll } from "@/hooks/use-auto-scroll"
+import { AutoScrollToggle } from "./auto-scroll-toggle"
 
 
 import { debugEnv } from "@/app/actions/debug";
@@ -22,6 +24,19 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [debugInfo, setDebugInfo] = useState<any>(null)
+
+    // Auto-scroll integration
+    const {
+        isEnabled,
+        isPaused,
+        toggleAutoScroll,
+        containerRef,
+    } = useAutoScroll({
+        enabled: true,
+        speed: 30,
+        pauseOnHover: true,
+        pauseOnInteraction: true,
+    });
 
     // Filters
     const [timeRange, setTimeRange] = useState<'all' | 'day' | 'week' | 'month' | 'year'>('all');
@@ -106,16 +121,33 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
     }
 
     return (
-        <div className="space-y-4">
-            <FilterBar />
+        <>
+            <div className="space-y-4">
+                <FilterBar />
 
-            {posts.length === 0 && (
-                <div className="text-center py-10 text-gray-500">
-                    <p>{t("feed.empty")}</p>
+                {posts.length === 0 && (
+                    <div className="text-center py-10 text-gray-500">
+                        <p>{t("feed.empty")}</p>
+                    </div>
+                )}
+
+                {/* Scrollable container with auto-scroll */}
+                <div
+                    ref={containerRef}
+                    className="max-h-[calc(100vh-200px)] overflow-y-auto scroll-smooth"
+                >
+                    <MasonryFeed posts={posts} currentUserId={profile?.id} variant={variant} />
                 </div>
-            )}
+            </div>
 
-            <MasonryFeed posts={posts} currentUserId={profile?.id} variant={variant} />
-        </div>
+            {/* Auto-scroll toggle button */}
+            {posts.length > 0 && (
+                <AutoScrollToggle
+                    isEnabled={isEnabled}
+                    isPaused={isPaused}
+                    onToggle={toggleAutoScroll}
+                />
+            )}
+        </>
     )
 }
