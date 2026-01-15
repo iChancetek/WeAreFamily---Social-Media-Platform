@@ -6,15 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { createPost } from "@/app/actions/posts";
-import { chatWithAgent } from "@/app/actions/ai-agents"; // UPDATED IMPORT
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
-import { ImageIcon, Loader2, Send, Sparkles, X, Mic, MicOff } from "lucide-react";
+import { ImageIcon, Loader2, Send, X, Mic, MicOff } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useLanguage } from "@/components/language-context";
 import { VisibilitySelector, PrivacyType } from "./visibility-selector";
+import { useMagicAI } from "@/hooks/use-magic-ai";
+import { MagicAIButton } from "@/components/magic-ai/magic-ai-button";
+import { AIPreviewPanel } from "@/components/magic-ai/ai-preview-panel";
 
 
 
@@ -23,13 +25,15 @@ export function CreatePost() {
     const { t } = useLanguage();
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
     const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
     const [privacy, setPrivacy] = useState<PrivacyType>('public');
     const [allowedViewers, setAllowedViewers] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [lastUploadError, setLastUploadError] = useState<string | null>(null);
+
+    // Magic AI Integration
+    const magicAI = useMagicAI({ context: { type: 'timeline' } });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,27 +74,22 @@ export function CreatePost() {
         }
     }
 
-    // ... handleMagic ...
-    const handleMagic = async () => {
-        if (!content.trim()) {
-            toast.error("Please type a topic first!");
-            return;
-        }
+    // Magic AI handlers
+    const handleOpenMagicAI = () => {
+        magicAI.openMagic(content);
+    };
 
-        setIsGenerating(true);
-        try {
-            const magicText = await chatWithAgent(
-                `Write a warm, engaging social media post about: "${content}". Use emojis. Keep it under 280 chars.`,
-                'general'
-            );
-            setContent(magicText || content);
-            toast.success("Magic applied! ✨");
-        } catch {
-            toast.error("Magic failed. Try again!");
-        } finally {
-            setIsGenerating(false);
+    const handleAcceptMagic = () => {
+        const enhancedContent = magicAI.acceptEnhanced();
+        if (enhancedContent) {
+            setContent(enhancedContent);
         }
-    }
+    };
+
+    const handleRevertMagic = () => {
+        const originalContent = magicAI.revertToOriginal();
+        setContent(originalContent);
+    };
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         setLastUploadError(null);
@@ -233,16 +232,11 @@ export function CreatePost() {
                                     {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-6 h-6 text-primary" />}
                                     <span className="text-[15px] font-semibold text-foreground">Photo/Video</span>
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleMagic}
-                                    disabled={isGenerating}
-                                    className="gap-2 flex-1 md:flex-none text-primary hover:bg-primary/10 border border-primary/20 bg-primary/5"
-                                >
-                                    {isGenerating ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <Sparkles className="w-6 h-6 text-primary" />}
-                                    <span className="text-[15px] font-bold text-primary">Magic AI ✨</span>
-                                </Button>
+                                <MagicAIButton
+                                    onClick={handleOpenMagicAI}
+                                    disabled={!content.trim()}
+                                    isGenerating={magicAI.isGenerating}
+                                />
                             </div>
 
                             <VisibilitySelector
@@ -273,6 +267,19 @@ export function CreatePost() {
                         </div>
                     </div>
                 </div>
+
+                {/* Magic AI Preview Panel */}
+                <AIPreviewPanel
+                    isOpen={magicAI.isPreviewOpen}
+                    onClose={magicAI.closePreview}
+                    originalContent={magicAI.originalContent}
+                    enhancedContent={magicAI.enhancedContent}
+                    selectedTone={magicAI.selectedTone}
+                    isGenerating={magicAI.isGenerating}
+                    onSelectTone={magicAI.generatePreview}
+                    onAccept={handleAcceptMagic}
+                    onRevert={handleRevertMagic}
+                />
             </CardContent>
         </Card>
     );

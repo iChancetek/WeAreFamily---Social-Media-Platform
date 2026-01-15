@@ -430,3 +430,128 @@ export async function seedKnowledgeBase() {
     return { success: true, count: knowledgeData.length };
 }
 
+// ------------------------------------------------------------------
+// ✨ Magic AI - User-Controlled Emotional Intelligence
+// ------------------------------------------------------------------
+
+import type { EmotionalTone, MagicAIRequest, MagicAIResponse } from "@/types/magic-ai";
+
+const TONE_PROMPTS: Record<EmotionalTone, string> = {
+    default: `You are helping a user write a warm, engaging social media post for their family platform.
+    
+Guidelines:
+- Keep it natural and conversational
+- Use emojis sparingly (1-3 max)
+- Stay under 280 characters
+- Maintain a balanced, family-friendly tone
+- Keep the original meaning and intent`,
+
+    enthusiastic: `You are helping a user write an ENTHUSIASTIC, high-energy social media post.
+    
+Guidelines:
+- Use exclamation points to show excitement!
+- Include celebratory emojis (🎉🎊✨🌟)
+- Add energy words like "amazing", "incredible", "awesome"
+- Keep under 280 characters
+- Make it feel like a celebration!`,
+
+    positive_energy: `You are helping a user write an UPLIFTING, motivational social media post.
+    
+Guidelines:
+- Use encouraging, empowering language
+- Include positive emojis (⚡💪🌟✨)
+- Focus on growth, progress, and possibilities
+- Keep under 280 characters
+- Inspire and energize the reader`,
+
+    healing_energy: `You are helping a user write a GENTLE, compassionate social media post.
+    
+Guidelines:
+- Use soft, supportive language
+- Include calming emojis (🌿💚🕊️✨)
+- Acknowledge emotions with empathy
+- Keep under 280 characters
+- Provide comfort and reassurance`,
+
+    sad: `You are helping a user write a REFLECTIVE, empathetic social media post.
+    
+Guidelines:
+- Honor difficult emotions respectfully
+- Use gentle, understanding language
+- Include thoughtful emojis (💙🙏✨)
+- Keep under 280 characters
+- Validate feelings without being overly heavy`,
+
+    professional: `You are helping a user write a POLISHED, professional social media post.
+    
+Guidelines:
+- Use clear, concise language
+- Minimal or no emojis (use sparingly if needed)
+- Focus on clarity and impact
+- Keep under 280 characters
+- Sound confident and competent`,
+
+    love: `You are helping a user write an AFFECTIONATE, heartfelt social media post.
+    
+Guidelines:
+- Use warm, loving language
+- Include heart emojis (❤️💕💖✨)
+- Express genuine care and appreciation
+- Keep under 280 characters
+- Make it feel personal and meaningful`,
+
+    emotional_intelligence: `You are helping a user write an EMOTIONALLY INTELLIGENT social media post.
+    
+Guidelines:
+- Demonstrate awareness of emotional nuances and context
+- Use thoughtful, perceptive language that acknowledges feelings
+- Include reflective emojis (🧠💭🌟✨)
+- Show empathy and emotional maturity
+- Keep under 280 characters
+- Balance emotion with insight`
+};
+
+export async function generateMagicContent(request: MagicAIRequest): Promise<MagicAIResponse> {
+    try {
+        const { content, tone, context } = request;
+
+        if (!content.trim()) {
+            throw new Error("Content cannot be empty");
+        }
+
+        // Select appropriate prompt based on tone
+        const systemPrompt = TONE_PROMPTS[tone];
+
+        // Build context-aware user message
+        let contextPrefix = "";
+        if (context?.type === 'group' && context.name) {
+            contextPrefix = `[Context: Posting in group "${context.name}"] `;
+        } else if (context?.type === 'branding' && context.name) {
+            contextPrefix = `[Context: Posting as brand "${context.name}"] `;
+        }
+
+        const userMessage = `${contextPrefix}Transform this into a ${tone === 'default' ? 'warm, engaging' : tone.replace('_', ' ')} post:\n\n"${content}"`;
+
+        // Call AI with appropriate tone
+        const enhancedContent = await chatWithAgent(
+            userMessage,
+            'general',
+            'gpt-4o-mini', // Use mini for faster responses
+            [],
+            [{ role: 'user', content: systemPrompt }]
+        );
+
+        return {
+            enhancedContent: enhancedContent || content,
+            tone,
+            originalContent: content,
+            timestamp: new Date().toISOString(),
+            characterCount: enhancedContent?.length || 0
+        };
+
+    } catch (error) {
+        console.error('Magic AI generation error:', error);
+        throw new Error('Failed to generate enhanced content. Please try again.');
+    }
+}
+

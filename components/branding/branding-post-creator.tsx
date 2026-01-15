@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { createBrandingPost } from "@/app/actions/branding"
 import { toast } from "sonner"
-import { Image as ImageIcon, Send, Loader2, X, Video, Mic, MicOff, Sparkles } from "lucide-react"
+import { Image as ImageIcon, Send, Loader2, X, Video, Mic, MicOff } from "lucide-react"
 import { storage } from "@/lib/firebase"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition"
-import { chatWithAgent } from "@/app/actions/ai-agents"
+import { useMagicAI } from "@/hooks/use-magic-ai"
+import { MagicAIButton } from "@/components/magic-ai/magic-ai-button"
+import { AIPreviewPanel } from "@/components/magic-ai/ai-preview-panel"
 
 interface BrandingPostCreatorProps {
     brandingId: string;
@@ -27,7 +29,6 @@ export function BrandingPostCreator({ brandingId, branding, currentUser, role }:
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const isAdmin = role === 'admin';
@@ -37,31 +38,29 @@ export function BrandingPostCreator({ brandingId, branding, currentUser, role }:
     const postingAsImage = isAdmin ? branding.imageUrl : currentUser.imageUrl;
     const placeholder = isAdmin ? `Post as ${branding.name}...` : `Write on ${branding.name}'s page...`;
 
+    // Magic AI Integration
+    const magicAI = useMagicAI({ context: { type: 'branding', name: branding.name } });
+
     const { isListening, startListening, stopListening, isSupported: isSpeechSupported } = useSpeechRecognition({
         onResult: (result) => setContent(prev => prev ? prev + " " + result : result)
     });
 
-    const handleMagic = async () => {
-        if (!content.trim()) {
-            toast.error("Please type a topic first!");
-            return;
-        }
+    // Magic AI handlers
+    const handleOpenMagicAI = () => {
+        magicAI.openMagic(content);
+    };
 
-        setIsGenerating(true);
-        try {
-            const contextRole = isAdmin ? `the brand ${branding.name}` : `a fan of ${branding.name}`;
-            const magicText = await chatWithAgent(
-                `Write a professional yet engaging post for social media as ${contextRole}. Content: "${content}". Keep it under 280 chars.`,
-                'general'
-            );
-            setContent(magicText || content);
-            toast.success("Magic applied! ✨");
-        } catch {
-            toast.error("Magic failed. Try again!");
-        } finally {
-            setIsGenerating(false);
+    const handleAcceptMagic = () => {
+        const enhancedContent = magicAI.acceptEnhanced();
+        if (enhancedContent) {
+            setContent(enhancedContent);
         }
-    }
+    };
+
+    const handleRevertMagic = () => {
+        const originalContent = magicAI.revertToOriginal();
+        setContent(originalContent);
+    };
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -195,16 +194,11 @@ export function BrandingPostCreator({ brandingId, branding, currentUser, role }:
                                     )}
                                     <span className="hidden sm:inline">Photo/Video</span>
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleMagic}
-                                    disabled={isGenerating}
-                                    className="text-primary hover:bg-primary/10 gap-2 border border-primary/20 bg-primary/5"
-                                >
-                                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <Sparkles className="w-4 h-4 text-primary" />}
-                                    <span className="hidden sm:inline font-medium">Magic AI</span>
-                                </Button>
+                                <MagicAIButton
+                                    onClick={handleOpenMagicAI}
+                                    disabled={!content.trim()}
+                                    isGenerating={magicAI.isGenerating}
+                                />
                             </div>
                             <Button
                                 size="sm"
@@ -218,6 +212,19 @@ export function BrandingPostCreator({ brandingId, branding, currentUser, role }:
                         </div>
                     </div>
                 </div>
+
+                {/* Magic AI Preview Panel */}
+                <AIPreviewPanel
+                    isOpen={magicAI.isPreviewOpen}
+                    onClose={magicAI.closePreview}
+                    originalContent={magicAI.originalContent}
+                    enhancedContent={magicAI.enhancedContent}
+                    selectedTone={magicAI.selectedTone}
+                    isGenerating={magicAI.isGenerating}
+                    onSelectTone={magicAI.generatePreview}
+                    onAccept={handleAcceptMagic}
+                    onRevert={handleRevertMagic}
+                />
             </CardContent>
         </Card>
     );
