@@ -16,7 +16,7 @@ interface UseAutoScrollReturn {
   toggleAutoScroll: () => void;
   pauseAutoScroll: () => void;
   resumeAutoScroll: () => void;
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScrollReturn {
@@ -31,14 +31,15 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
   const containerRef = useRef<HTMLDivElement>(null);
   const [isEnabled, setIsEnabled] = useState(enabled);
   const [isPaused, setIsPaused] = useState(false);
-  const animationFrameRef = useRef<number>();
-  const lastTimestampRef = useRef<number>();
-  const pauseTimeoutRef = useRef<NodeJS.Timeout>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
+  const lastTimestampRef = useRef<number | undefined>(undefined);
+  const pauseTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Check for reduced motion preference
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsEnabled(false);
     }
   }, []);
@@ -48,6 +49,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     try {
       const savedPreference = localStorage.getItem('famio-auto-scroll-enabled');
       if (savedPreference !== null) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsEnabled(savedPreference === 'true');
       }
     } catch (error) {
@@ -55,51 +57,60 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     }
   }, []);
 
+  // Function ref to hold the latest animation function
+  const animateFuncRef = useRef<((timestamp: number) => void) | null>(null);
+
   // Smooth scroll animation using requestAnimationFrame
-  const animate = useCallback((timestamp: number) => {
-    if (!containerRef.current || isPaused || !isEnabled) {
-      lastTimestampRef.current = undefined;
-      return;
-    }
+  useEffect(() => {
+    animateFuncRef.current = (timestamp: number) => {
+      if (!containerRef.current || isPaused || !isEnabled) {
+        lastTimestampRef.current = undefined;
+        return;
+      }
 
-    // Initialize timestamp on first frame
-    if (!lastTimestampRef.current) {
-      lastTimestampRef.current = timestamp;
-    }
-
-    const deltaTime = timestamp - lastTimestampRef.current;
-    const scrollAmount = (speed * deltaTime) / 1000; // Convert to pixels per frame
-
-    const container = containerRef.current;
-    const currentScroll = container.scrollTop;
-    const maxScroll = container.scrollHeight - container.clientHeight;
-
-    // Check if we've reached the bottom
-    if (currentScroll + scrollAmount >= maxScroll) {
-      // Seamless loop: scroll to top smoothly
-      container.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
-      lastTimestampRef.current = undefined; // Reset for next cycle
-      
-      // Pause briefly at the top before resuming
-      setTimeout(() => {
+      // Initialize timestamp on first frame
+      if (!lastTimestampRef.current) {
         lastTimestampRef.current = timestamp;
-        animationFrameRef.current = requestAnimationFrame(animate);
-      }, 1000); // 1 second pause at top
-    } else {
-      // Continue scrolling
-      container.scrollTop = currentScroll + scrollAmount;
-      lastTimestampRef.current = timestamp;
-      animationFrameRef.current = requestAnimationFrame(animate);
-    }
+      }
+
+      const deltaTime = timestamp - lastTimestampRef.current;
+      const scrollAmount = (speed * deltaTime) / 1000; // Convert to pixels per frame
+
+      const container = containerRef.current;
+      const currentScroll = container.scrollTop;
+      const maxScroll = container.scrollHeight - container.clientHeight;
+
+      // Check if we've reached the bottom
+      if (currentScroll + scrollAmount >= maxScroll) {
+        // Seamless loop: scroll to top smoothly
+        container.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+        lastTimestampRef.current = undefined; // Reset for next cycle
+
+        // Pause briefly at the top before resuming
+        setTimeout(() => {
+          lastTimestampRef.current = timestamp;
+          if (containerRef.current && !isPaused && isEnabled && animateFuncRef.current) {
+            animationFrameRef.current = requestAnimationFrame(animateFuncRef.current);
+          }
+        }, 1000); // 1 second pause at top
+      } else {
+        // Continue scrolling
+        container.scrollTop = currentScroll + scrollAmount;
+        lastTimestampRef.current = timestamp;
+        if (animateFuncRef.current) {
+          animationFrameRef.current = requestAnimationFrame(animateFuncRef.current);
+        }
+      }
+    };
   }, [speed, isPaused, isEnabled]);
 
   // Start/stop animation based on enabled/paused state
   useEffect(() => {
-    if (isEnabled && !isPaused) {
-      animationFrameRef.current = requestAnimationFrame(animate);
+    if (isEnabled && !isPaused && animateFuncRef.current) {
+      animationFrameRef.current = requestAnimationFrame(animateFuncRef.current);
     } else {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -112,7 +123,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isEnabled, isPaused, animate]);
+  }, [isEnabled, isPaused]);
 
   // Pause on hover
   useEffect(() => {
@@ -179,7 +190,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
   const toggleAutoScroll = useCallback(() => {
     const newState = !isEnabled;
     setIsEnabled(newState);
-    
+
     // Save preference
     try {
       localStorage.setItem('famio-auto-scroll-enabled', String(newState));
