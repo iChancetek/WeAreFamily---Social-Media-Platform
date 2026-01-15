@@ -2,7 +2,6 @@
 
 import { PostCard } from "./post-card";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/lib/device-detection";
 
 interface MasonryFeedProps {
     posts: any[];
@@ -17,12 +16,11 @@ export function MasonryFeed({
     className,
     variant = 'standard'
 }: MasonryFeedProps) {
-    const isMobile = useIsMobile();
-
     if (!posts || posts.length === 0) return null;
 
-    // Pinterest mode: only active on mobile with pinterest-mobile variant
-    const isPinterestMode = variant === 'pinterest-mobile' && isMobile;
+    // Pinterest mode: active when variant is pinterest-mobile (works on all screen sizes)
+    // The grid itself handles responsive column counts (2 on mobile, 3 on desktop)
+    const isPinterestMode = variant === 'pinterest-mobile';
 
     // STABILITY FIX:
     // Replaced react-masonry-css with Native CSS Columns.
@@ -33,7 +31,7 @@ export function MasonryFeed({
         <div className={cn("w-full block", className)}>
             <div className={cn(
                 isPinterestMode
-                    ? "columns-2 gap-3 space-y-0" // Pinterest mobile: always 2 cols, tight gap
+                    ? "columns-2 lg:columns-3 gap-3 space-y-0" // Pinterest: 2 cols mobile, 3 cols desktop
                     : "columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4" // Standard: responsive
             )}>
                 {posts.map((post) => (
