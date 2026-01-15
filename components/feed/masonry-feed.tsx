@@ -1,3 +1,5 @@
+'use client';
+
 import { PostCard } from "./post-card";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/lib/device-detection";
