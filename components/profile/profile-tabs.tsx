@@ -66,6 +66,18 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                     </TabsTrigger>
                 </TabsList>
 
+                {/* Auto-scroll toggle - only show on Timeline tab */}
+                {activeTab === "timeline" && posts.length > 0 && (
+                    <div className="flex justify-end mb-4">
+                        <AutoScrollToggle
+                            isEnabled={isEnabled}
+                            isPaused={isPaused}
+                            onToggle={toggleAutoScroll}
+                            className="relative bottom-auto right-auto"
+                        />
+                    </div>
+                )}
+
                 <TabsContent value="timeline" className="space-y-4">
                     {posts.length === 0 ? (
                         <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900 text-gray-500">
@@ -136,15 +148,6 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                     )}
                 </TabsContent>
             </Tabs>
-
-            {/* Auto-scroll toggle - only show on Timeline tab */}
-            {activeTab === "timeline" && posts.length > 0 && (
-                <AutoScrollToggle
-                    isEnabled={isEnabled}
-                    isPaused={isPaused}
-                    onToggle={toggleAutoScroll}
-                />
-            )}
         </>
     );
 }

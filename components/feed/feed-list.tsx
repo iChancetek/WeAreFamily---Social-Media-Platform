@@ -65,7 +65,7 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
 
     // Filter UI Components
     const FilterBar = () => (
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
             {/* Time Filter */}
             <select
                 value={timeRange}
@@ -94,6 +94,16 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
                     </button>
                 ))}
             </div>
+
+            {/* Auto-scroll Toggle */}
+            {posts.length > 0 && (
+                <AutoScrollToggle
+                    isEnabled={isEnabled}
+                    isPaused={isPaused}
+                    onToggle={toggleAutoScroll}
+                    className="relative bottom-auto right-auto ml-auto"
+                />
+            )}
         </div>
     );
 
@@ -121,33 +131,22 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
     }
 
     return (
-        <>
-            <div className="space-y-4">
-                <FilterBar />
+        <div className="space-y-4">
+            <FilterBar />
 
-                {posts.length === 0 && (
-                    <div className="text-center py-10 text-gray-500">
-                        <p>{t("feed.empty")}</p>
-                    </div>
-                )}
-
-                {/* Scrollable container with auto-scroll */}
-                <div
-                    ref={containerRef}
-                    className="max-h-[calc(100vh-200px)] overflow-y-auto scroll-smooth"
-                >
-                    <MasonryFeed posts={posts} currentUserId={profile?.id} variant={variant} />
+            {posts.length === 0 && (
+                <div className="text-center py-10 text-gray-500">
+                    <p>{t("feed.empty")}</p>
                 </div>
-            </div>
-
-            {/* Auto-scroll toggle button */}
-            {posts.length > 0 && (
-                <AutoScrollToggle
-                    isEnabled={isEnabled}
-                    isPaused={isPaused}
-                    onToggle={toggleAutoScroll}
-                />
             )}
-        </>
+
+            {/* Scrollable container with auto-scroll */}
+            <div
+                ref={containerRef}
+                className="max-h-[calc(100vh-200px)] overflow-y-auto scroll-smooth"
+            >
+                <MasonryFeed posts={posts} currentUserId={profile?.id} variant={variant} />
+            </div>
+        </div>
     )
 }
