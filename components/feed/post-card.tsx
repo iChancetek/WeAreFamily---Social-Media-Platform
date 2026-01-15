@@ -443,7 +443,6 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                         </div>
                     )}
                 </div>
-                )}
 
                 <ReportDialog open={reportDialogOpen} onOpenChange={setReportDialogOpen} targetType="post" targetId={post.id} context={{ contextType, contextId, authorId: post.authorId }} />
                 {isAuthor && <EngagementSettingsDialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen} postId={post.id} currentSettings={engagementSettings} contextType={contextType} contextId={contextId} />}
