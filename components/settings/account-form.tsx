@@ -166,70 +166,70 @@ export function AccountForm({ user }: { user: any }) {
                                     <FormMessage />
                                 </FormItem>
                             )}
-                        </FormField>
+                        />
 
-                    {/* Feed Preferences Section */}
-                    <div className="space-y-6 pt-6 border-t">
-                        <div>
-                            <h3 className="text-lg font-medium">Feed Preferences</h3>
-                            <p className="text-sm text-muted-foreground">Configure your auto-scrolling experience</p>
+                        {/* Feed Preferences Section */}
+                        <div className="space-y-6 pt-6 border-t">
+                            <div>
+                                <h3 className="text-lg font-medium">Feed Preferences</h3>
+                                <p className="text-sm text-muted-foreground">Configure your auto-scrolling experience</p>
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="autoScrollEnabled"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                        <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Auto-Scroll Feeds</FormLabel>
+                                            <FormDescription>
+                                                Automatically scroll through your feed and profiles
+                                            </FormDescription>
+                                        </div>
+                                        <FormControl>
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="autoScrollSpeed"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <div className="flex items-center justify-between">
+                                            <FormLabel>Scroll Speed</FormLabel>
+                                            <span className="text-sm text-muted-foreground">{field.value} px/s</span>
+                                        </div>
+                                        <FormControl>
+                                            <Slider
+                                                min={10}
+                                                max={100}
+                                                step={5}
+                                                value={[field.value || 30]}
+                                                onValueChange={(values: number[]) => field.onChange(values[0])}
+                                                className="w-full"
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Adjust how fast the feed scrolls automatically (10-100 pixels per second)
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
 
-                        <FormField
-                            control={form.control}
-                            name="autoScrollEnabled"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                    <div className="space-y-0.5">
-                                        <FormLabel className="text-base">Auto-Scroll Feeds</FormLabel>
-                                        <FormDescription>
-                                            Automatically scroll through your feed and profiles
-                                        </FormDescription>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
+                        {/* Security Section Removed - Managed via Firebase Auth directly */}
 
-                        <FormField
-                            control={form.control}
-                            name="autoScrollSpeed"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <div className="flex items-center justify-between">
-                                        <FormLabel>Scroll Speed</FormLabel>
-                                        <span className="text-sm text-muted-foreground">{field.value} px/s</span>
-                                    </div>
-                                    <FormControl>
-                                        <Slider
-                                            min={10}
-                                            max={100}
-                                            step={5}
-                                            value={[field.value || 30]}
-                                            onValueChange={(values) => field.onChange(values[0])}
-                                            className="w-full"
-                                        />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Adjust how fast the feed scrolls automatically (10-100 pixels per second)
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-
-                    {/* Security Section Removed - Managed via Firebase Auth directly */}
-
-                    <Button type="submit">{t("settings.updateAccount")}</Button>
-                </form>
-            </Form>
-        </CardContent>
+                        <Button type="submit">{t("settings.updateAccount")}</Button>
+                    </form>
+                </Form>
+            </CardContent>
         </Card >
     )
 }
