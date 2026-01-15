@@ -29,45 +29,37 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
   } = options;
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isEnabled, setIsEnabled] = useState(false); // Start disabled
-  const [isPaused, setIsPaused] = useState(false);
-  const animationFrameRef = useRef<number | undefined>(undefined);
-  const lastTimestampRef = useRef<number | undefined>(undefined);
-  const pauseTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const [initialized, setInitialized] = useState(false);
 
-  // Check for reduced motion preference and load saved preference
-  useEffect(() => {
+  // Initialize state lazily to avoid setState in useEffect
+  const [isEnabled, setIsEnabled] = useState(() => {
+    // SSR-safe check
+    if (typeof window === 'undefined') return false;
+
+    // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (prefersReducedMotion) {
-      setIsEnabled(false);
-      setInitialized(true);
-      return;
-    }
+    if (prefersReducedMotion) return false;
 
     // Load saved preference from localStorage
     try {
       const savedPreference = localStorage.getItem('famio-auto-scroll-enabled');
       if (savedPreference !== null) {
-        setIsEnabled(savedPreference === 'true');
-      } else {
-        // If no saved preference, use the option parameter
-        setIsEnabled(enabled);
+        return savedPreference === 'true';
       }
     } catch (error) {
       console.warn('Failed to load auto-scroll preference:', error);
-      setIsEnabled(enabled);
     }
 
-    setInitialized(true);
-  }, [enabled]);
+    // Default to the enabled option parameter
+    return enabled;
+  });
+
+  const [isPaused, setIsPaused] = useState(false);
+  const animationFrameRef = useRef<number | undefined>(undefined);
+  const lastTimestampRef = useRef<number | undefined>(undefined);
+  const pauseTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Smooth scroll animation using requestAnimationFrame
   useEffect(() => {
-    // Only start if initialized to avoid race conditions
-    if (!initialized) return;
-
     const animate = (timestamp: number) => {
       if (!containerRef.current || isPaused || !isEnabled) {
         lastTimestampRef.current = undefined;
@@ -133,7 +125,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
         animationFrameRef.current = undefined;
       }
     };
-  }, [speed, isPaused, isEnabled, initialized]);
+  }, [speed, isPaused, isEnabled]);
 
   // Pause on hover
   useEffect(() => {
