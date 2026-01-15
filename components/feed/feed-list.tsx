@@ -32,7 +32,6 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
         toggleAutoScroll,
         containerRef,
     } = useAutoScroll({
-        enabled: true,
         speed: 30,
         pauseOnHover: true,
         pauseOnInteraction: true,
