@@ -21,8 +21,7 @@ interface UseAutoScrollReturn {
 
 export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScrollReturn {
   const {
-    enabled = true, // Default to true - enable auto-scroll by default
-    speed = 30, // 30 pixels per second - calm and smooth
+    speed: initialSpeed = 30, // Default speed fallback
     pauseOnHover = true,
     pauseOnInteraction = true,
     onToggle,
@@ -49,14 +48,48 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
       console.warn('Failed to load auto-scroll preference:', error);
     }
 
-    // Default to the enabled option parameter
-    return enabled;
+    // Default to true (enabled)
+    return true;
+  });
+
+  // Load speed from localStorage
+  const [speed, setSpeed] = useState(() => {
+    if (typeof window === 'undefined') return initialSpeed;
+    try {
+      const savedSpeed = localStorage.getItem('famio-auto-scroll-speed');
+      if (savedSpeed !== null) {
+        const parsedSpeed = parseInt(savedSpeed, 10);
+        return isNaN(parsedSpeed) ? initialSpeed : parsedSpeed;
+      }
+    } catch (error) {
+      console.warn('Failed to load auto-scroll speed:', error);
+    }
+    return initialSpeed;
   });
 
   const [isPaused, setIsPaused] = useState(false);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastTimestampRef = useRef<number | undefined>(undefined);
   const pauseTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // Listen for localStorage changes (when settings are updated)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'famio-auto-scroll-enabled' && e.newValue !== null) {
+        setIsEnabled(e.newValue === 'true');
+      }
+      if (e.key === 'famio-auto-scroll-speed' && e.newValue !== null) {
+        const newSpeed = parseInt(e.newValue, 10);
+        if (!isNaN(newSpeed)) {
+          setSpeed(newSpeed);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
 
   // Smooth scroll animation using requestAnimationFrame
   useEffect(() => {

@@ -9,7 +9,6 @@ import { Grid, Image, Film, Users, LayoutList } from "lucide-react";
 import { useLanguage } from "@/components/language-context";
 import { useState } from "react";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
-import { AutoScrollToggle } from "@/components/feed/auto-scroll-toggle";
 
 interface ProfileTabsProps {
     posts: any[];
@@ -27,11 +26,8 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
     const {
         isEnabled,
         isPaused,
-        toggleAutoScroll,
         containerRef,
     } = useAutoScroll({
-        enabled: true,
-        speed: 30,
         pauseOnHover: true,
         pauseOnInteraction: true,
     });
@@ -66,18 +62,6 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                     </TabsTrigger>
                 </TabsList>
 
-                {/* Auto-scroll toggle - only show on Timeline tab */}
-                {activeTab === "timeline" && posts.length > 0 && (
-                    <div className="flex justify-end mb-4">
-                        <AutoScrollToggle
-                            isEnabled={isEnabled}
-                            isPaused={isPaused}
-                            onToggle={toggleAutoScroll}
-                            className="relative bottom-auto right-auto"
-                        />
-                    </div>
-                )}
-
                 <TabsContent value="timeline" className="space-y-4">
                     {posts.length === 0 ? (
                         <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900 text-gray-500">
@@ -86,7 +70,8 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                     ) : (
                         <div
                             ref={containerRef}
-                            className="max-h-[calc(100vh-300px)] overflow-y-auto scroll-smooth"
+                            className="max-h-[calc(100vh-300px)] md:max-h-[calc(100vh-350px)] overflow-y-auto scroll-smooth overscroll-contain"
+                            style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
                         >
                             <MasonryFeed posts={posts} currentUserId={currentUserId} />
                         </div>

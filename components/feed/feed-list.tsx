@@ -8,7 +8,6 @@ import { useEffect, useState } from "react"
 import { getPosts } from "@/app/actions/posts"
 import { Loader2 } from "lucide-react"
 import { useAutoScroll } from "@/hooks/use-auto-scroll"
-import { AutoScrollToggle } from "./auto-scroll-toggle"
 
 
 import { debugEnv } from "@/app/actions/debug";
@@ -29,10 +28,8 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
     const {
         isEnabled,
         isPaused,
-        toggleAutoScroll,
         containerRef,
     } = useAutoScroll({
-        speed: 30,
         pauseOnHover: true,
         pauseOnInteraction: true,
     });
@@ -93,16 +90,6 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
                     </button>
                 ))}
             </div>
-
-            {/* Auto-scroll Toggle */}
-            {posts.length > 0 && (
-                <AutoScrollToggle
-                    isEnabled={isEnabled}
-                    isPaused={isPaused}
-                    onToggle={toggleAutoScroll}
-                    className="relative bottom-auto right-auto ml-auto"
-                />
-            )}
         </div>
     );
 
@@ -142,7 +129,8 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
             {/* Scrollable container with auto-scroll */}
             <div
                 ref={containerRef}
-                className="max-h-[calc(100vh-200px)] overflow-y-auto scroll-smooth"
+                className="max-h-[calc(100vh-200px)] md:max-h-[calc(100vh-250px)] overflow-y-auto scroll-smooth overscroll-contain"
+                style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
             >
                 <MasonryFeed posts={posts} currentUserId={profile?.id} variant={variant} />
             </div>
