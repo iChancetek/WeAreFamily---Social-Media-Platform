@@ -11,7 +11,11 @@ import { Loader2 } from "lucide-react"
 
 import { debugEnv } from "@/app/actions/debug";
 
-export function FeedList() {
+interface FeedListProps {
+    variant?: 'standard' | 'pinterest-mobile';
+}
+
+export function FeedList({ variant = 'standard' }: FeedListProps) {
     const { profile, user } = useAuth()
     const { t } = useLanguage()
     const [posts, setPosts] = useState<any[]>([])
@@ -67,8 +71,8 @@ export function FeedList() {
                         key={type}
                         onClick={() => setContentType(type)}
                         className={`text-xs px-3 py-1 rounded-full transition-all capitalize ${contentType === type
-                                ? 'bg-background shadow-sm text-foreground font-medium'
-                                : 'text-muted-foreground hover:text-foreground'
+                            ? 'bg-background shadow-sm text-foreground font-medium'
+                            : 'text-muted-foreground hover:text-foreground'
                             }`}
                     >
                         {type}
@@ -111,7 +115,7 @@ export function FeedList() {
                 </div>
             )}
 
-            <MasonryFeed posts={posts} currentUserId={profile?.id} />
+            <MasonryFeed posts={posts} currentUserId={profile?.id} variant={variant} />
         </div>
     )
 }

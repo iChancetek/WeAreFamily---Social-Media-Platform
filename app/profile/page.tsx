@@ -52,7 +52,7 @@ export default async function ProfilePage() {
                         <CreatePost />
 
                         {posts.length > 0 ? (
-                            <MasonryFeed posts={posts} currentUserId={user.id} />
+                            <MasonryFeed posts={posts} currentUserId={user.id} variant="pinterest-mobile" />
                         ) : (
                             <div className="bg-white dark:bg-card rounded-xl p-12 text-center border border-dashed border-gray-200 dark:border-white/10">
                                 <p className="text-muted-foreground">No posts yet. Share your first moment!</p>

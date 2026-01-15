@@ -47,7 +47,7 @@ export default async function Home() {
         <BirthdayModal hasBirthday={!!dbUser.birthday} />
         <StoriesTray />
         <CreatePost />
-        <FeedList />
+        <FeedList variant="pinterest-mobile" />
       </div>
     </MainLayout>
   );
