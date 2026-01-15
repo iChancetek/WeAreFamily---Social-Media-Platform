@@ -46,6 +46,7 @@ import { useAuth } from "@/components/auth-provider"
 // import { useClerk } from "@clerk/nextjs" // Removed
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { Slider } from "@/components/ui/slider"
 
 // --- Schemas ---
 const profileFormSchema = z.object({
@@ -64,6 +65,8 @@ const profileFormSchema = z.object({
 const accountFormSchema = z.object({
     language: z.string().optional(),
     theme: z.string().optional(),
+    autoScrollEnabled: z.boolean().optional(),
+    autoScrollSpeed: z.number().min(10).max(100).optional(),
 })
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
@@ -114,6 +117,19 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
     const [blockedList, setBlockedList] = useState(blockedUsers);
     const [searchResults, setSearchResults] = useState<any[]>([]);
 
+    // Auto-scroll state
+    const [autoScrollEnabled, setAutoScrollEnabled] = useState(() => {
+        if (typeof window === 'undefined') return true;
+        const saved = localStorage.getItem('famio-auto-scroll-enabled');
+        return saved !== null ? saved === 'true' : true;
+    });
+
+    const [autoScrollSpeed, setAutoScrollSpeed] = useState(() => {
+        if (typeof window === 'undefined') return 30;
+        const saved = localStorage.getItem('famio-auto-scroll-speed');
+        return saved !== null ? parseInt(saved, 10) : 30;
+    });
+
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
@@ -132,6 +148,8 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
         defaultValues: {
             language: user.language || "en",
             theme: user.theme || "system",
+            autoScrollEnabled,
+            autoScrollSpeed,
         },
     })
 
@@ -163,6 +181,16 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
 
     async function onAccountSubmit(data: AccountFormValues) {
         try {
+            // Save auto-scroll settings to localStorage
+            if (data.autoScrollEnabled !== undefined) {
+                localStorage.setItem('famio-auto-scroll-enabled', String(data.autoScrollEnabled));
+                setAutoScrollEnabled(data.autoScrollEnabled);
+            }
+            if (data.autoScrollSpeed !== undefined) {
+                localStorage.setItem('famio-auto-scroll-speed', String(data.autoScrollSpeed));
+                setAutoScrollSpeed(data.autoScrollSpeed);
+            }
+
             await updateAccountSettings(data)
             if (data.language) {
                 setLanguage(data.language as 'en' | 'es')
@@ -455,6 +483,62 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Feed Preferences Section */}
+                                    <div className="space-y-6 pt-6 border-t">
+                                        <div>
+                                            <h3 className="text-lg font-medium">Feed Preferences</h3>
+                                            <p className="text-sm text-muted-foreground">Configure your auto-scrolling experience</p>
+                                        </div>
+
+                                        <FormField
+                                            control={accountForm.control}
+                                            name="autoScrollEnabled"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel className="text-base">Auto-Scroll Feeds</FormLabel>
+                                                        <FormDescription>
+                                                            Automatically scroll through your feed and profiles
+                                                        </FormDescription>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch
+                                                            checked={field.value}
+                                                            onCheckedChange={field.onChange}
+                                                        />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={accountForm.control}
+                                            name="autoScrollSpeed"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <div className="flex items-center justify-between">
+                                                        <FormLabel>Scroll Speed</FormLabel>
+                                                        <span className="text-sm text-muted-foreground">{field.value} px/s</span>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Slider
+                                                            min={10}
+                                                            max={100}
+                                                            step={5}
+                                                            value={[field.value || 30]}
+                                                            onValueChange={(values: number[]) => field.onChange(values[0])}
+                                                            className="w-full"
+                                                        />
+                                                    </FormControl>
+                                                    <FormDescription>
+                                                        Adjust how fast the feed scrolls automatically (10-100 pixels per second)
+                                                    </FormDescription>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
 
                                     <div className="space-y-4 pt-4 border-t border-border">
                                         <Label className="text-base">Security</Label>
