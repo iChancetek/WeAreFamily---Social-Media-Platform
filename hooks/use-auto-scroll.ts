@@ -93,18 +93,17 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
   }, []);
 
 
-  // Track when container becomes available
+  // Track when container becomes available using callback ref
   const [containerReady, setContainerReady] = useState(false);
 
-  // Check if container is ready (runs when containerRef changes)
-  useEffect(() => {
-    if (containerRef.current) {
-      console.log('[Auto-Scroll] Container mounted, ready to scroll');
+  const callbackRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      console.log('[Auto-Scroll] Container mounted via callback ref');
       setContainerReady(true);
     } else {
       setContainerReady(false);
     }
-  }, [containerRef]);
+  }, []);
 
   // Smooth scroll animation using requestAnimationFrame
   useEffect(() => {
@@ -277,12 +276,18 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     setIsPaused(false);
   }, []);
 
+  // Combined ref that updates both containerRef and containerReady state
+  const combinedRef = useCallback((node: HTMLDivElement | null) => {
+    containerRef.current = node;
+    callbackRef(node);
+  }, [callbackRef]);
+
   return {
     isEnabled,
     isPaused,
     toggleAutoScroll,
     pauseAutoScroll,
     resumeAutoScroll,
-    containerRef,
+    containerRef: combinedRef, // Return combined ref
   };
 }
