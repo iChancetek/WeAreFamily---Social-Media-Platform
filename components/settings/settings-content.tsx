@@ -130,6 +130,23 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
         return saved !== null ? parseInt(saved, 10) : 30;
     });
 
+    // Initialize localStorage with defaults if not set
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const enabledSaved = localStorage.getItem('famio-auto-scroll-enabled');
+            const speedSaved = localStorage.getItem('famio-auto-scroll-speed');
+
+            if (enabledSaved === null) {
+                console.log('[Settings] Setting default auto-scroll enabled: true');
+                localStorage.setItem('famio-auto-scroll-enabled', 'true');
+            }
+            if (speedSaved === null) {
+                console.log('[Settings] Setting default auto-scroll speed: 30');
+                localStorage.setItem('famio-auto-scroll-speed', '30');
+            }
+        }
+    }, []);
+
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
@@ -153,14 +170,16 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
         },
     })
 
-    // Listen to theme changes - Only apply if user interacts (form is dirty) to avoid overriding local preference on mount
+    // Listen to theme changes - Only apply if theme field specifically changed
     const themeValue = accountForm.watch("theme")
-    const { isDirty: isAccountDirty } = accountForm.formState
     useEffect(() => {
-        if (themeValue && isAccountDirty) {
+        // Only apply theme if the theme field itself was changed (not other fields)
+        const themeFieldState = accountForm.getFieldState("theme");
+        if (themeValue && themeFieldState.isDirty) {
+            console.log('[Settings] Applying theme:', themeValue);
             setTheme(themeValue)
         }
-    }, [themeValue, setTheme, isAccountDirty])
+    }, [themeValue, setTheme, accountForm])
 
     // --- Submit Handlers ---
     async function onProfileSubmit(data: ProfileFormValues) {
