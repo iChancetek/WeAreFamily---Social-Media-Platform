@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Newspaper } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StockTicker } from "./stock-ticker";
 
 const CATEGORIES = [
     { id: 'general', label: 'Top Stories' },
@@ -49,6 +50,9 @@ export function NewsFeed() {
 
     return (
         <div className="flex flex-col gap-3">
+            {/* Integrated Stock Ticker */}
+            <StockTicker />
+
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-2 text-sm font-semibold text-gray-500 uppercase tracking-wider">
                     <Newspaper className="w-4 h-4" />
