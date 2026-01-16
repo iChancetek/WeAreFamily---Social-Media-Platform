@@ -220,31 +220,48 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     };
   }, [pauseOnHover]);
 
-  // Pause on click/tap interactions
+  // Pause on interaction (wheel/touch) with auto-resume
   useEffect(() => {
     if (!pauseOnInteraction || !containerRef.current) return;
 
     const container = containerRef.current;
+    let resumeTimeout: NodeJS.Timeout;
 
-    const handleInteraction = (e: Event) => {
-      // Check if the click was on a post card or interactive element
-      const target = e.target as HTMLElement;
-      const isPostCard = target.closest('[data-post-card]');
-      const isVideo = target.closest('video');
-      const isButton = target.closest('button');
-      const isLink = target.closest('a');
+    const handleInteraction = () => {
+      console.log('[Auto-Scroll] User interaction detected - pausing');
+      setIsPaused(true);
 
-      if (isPostCard || isVideo || isButton || isLink) {
-        setIsPaused(true);
+      // Clear existing timeout
+      if (resumeTimeout) clearTimeout(resumeTimeout);
+
+      // Resume after 2 seconds of inactivity
+      resumeTimeout = setTimeout(() => {
+        console.log('[Auto-Scroll] Resuming after inactivity');
+        setIsPaused(false);
+      }, 2000);
+    };
+
+    // Listen for scroll, touch, and wheel events
+    container.addEventListener('wheel', handleInteraction, { passive: true });
+    container.addEventListener('touchstart', handleInteraction, { passive: true });
+    container.addEventListener('touchmove', handleInteraction, { passive: true });
+
+    // Manual scroll detection
+    const handleScroll = () => {
+      if (!animationFrameRef.current) {
+        // User is manually scrolling (not auto-scroll)
+        handleInteraction();
       }
     };
 
-    container.addEventListener('click', handleInteraction);
-    container.addEventListener('touchstart', handleInteraction);
+    container.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      container.removeEventListener('click', handleInteraction);
+      if (resumeTimeout) clearTimeout(resumeTimeout);
+      container.removeEventListener('wheel', handleInteraction);
       container.removeEventListener('touchstart', handleInteraction);
+      container.removeEventListener('touchmove', handleInteraction);
+      container.removeEventListener('scroll', handleScroll);
     };
   }, [pauseOnInteraction]);
 
