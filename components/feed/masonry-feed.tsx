@@ -31,15 +31,15 @@ export function MasonryFeed({
         <div className={cn("w-full block", className)}>
             <div className={cn(
                 isPinterestMode
-                    ? "columns-2 lg:columns-3 gap-4 lg:gap-8 space-y-0" // Pinterest: 2 cols mobile, 3 cols desktop, generous desktop gaps
-                    : "columns-1 sm:columns-2 lg:columns-3 gap-4 lg:gap-8 space-y-4" // Standard: responsive, enhanced desktop gaps
+                    ? "columns-2 lg:columns-3 gap-4 lg:gap-6 space-y-0" // Pinterest: 2 cols mobile, 3 cols desktop, uniform gaps
+                    : "columns-1 sm:columns-2 lg:columns-3 gap-4 lg:gap-6 space-y-0" // Standard: responsive, uniform gaps
             )}>
                 {posts.map((post) => (
                     <div
                         key={post.id}
                         className={cn(
                             "break-inside-avoid-column",
-                            isPinterestMode ? "mb-6 lg:mb-12" : "mb-6 lg:mb-12"
+                            "mb-4 lg:mb-6" // Equal to gap values for symmetry
                         )}
                     >
                         <PostCard
