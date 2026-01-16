@@ -94,13 +94,20 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
 
 
   // Track when container becomes available using callback ref
-  const [containerReady, setContainerReady] = useState(false);
+  const [containerReady, setContainerReady] = useState(false); // Callback ref tracks when container mounts
 
   const callbackRef = useCallback((node: HTMLDivElement | null) => {
     if (node) {
-      console.log('[Auto-Scroll] Container mounted via callback ref');
+      console.log('[Auto-Scroll] ✅ Container mounted via callback ref');
+      console.log('[Auto-Scroll] Container details:', {
+        scrollHeight: node.scrollHeight,
+        clientHeight: node.clientHeight,
+        isScrollable: node.scrollHeight > node.clientHeight,
+        className: node.className,
+      });
       setContainerReady(true);
     } else {
+      console.log('[Auto-Scroll] ❌ Container unmounted');
       setContainerReady(false);
     }
   }, []);
