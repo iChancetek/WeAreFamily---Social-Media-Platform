@@ -39,7 +39,7 @@ export function MasonryFeed({
                         key={post.id}
                         className={cn(
                             "break-inside-avoid-column",
-                            isPinterestMode ? "mb-3 lg:mb-6" : "mb-4 lg:mb-8"
+                            isPinterestMode ? "mb-4 lg:mb-8" : "mb-6 lg:mb-12"
                         )}
                     >
                         <PostCard
