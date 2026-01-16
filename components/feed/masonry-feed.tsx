@@ -31,7 +31,7 @@ export function MasonryFeed({
         <div className={cn("w-full block", className)}>
             <div className={cn(
                 isPinterestMode
-                    ? "columns-2 lg:columns-3 gap-3 lg:gap-6 space-y-0" // Pinterest: 2 cols mobile, 3 cols desktop, enhanced desktop gaps
+                    ? "columns-2 lg:columns-3 gap-4 lg:gap-8 space-y-0" // Pinterest: 2 cols mobile, 3 cols desktop, generous desktop gaps
                     : "columns-1 sm:columns-2 lg:columns-3 gap-4 lg:gap-8 space-y-4" // Standard: responsive, enhanced desktop gaps
             )}>
                 {posts.map((post) => (
@@ -39,7 +39,7 @@ export function MasonryFeed({
                         key={post.id}
                         className={cn(
                             "break-inside-avoid-column",
-                            isPinterestMode ? "mb-4 lg:mb-8" : "mb-6 lg:mb-12"
+                            isPinterestMode ? "mb-6 lg:mb-12" : "mb-6 lg:mb-12"
                         )}
                     >
                         <PostCard
