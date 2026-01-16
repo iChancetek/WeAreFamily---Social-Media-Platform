@@ -93,6 +93,19 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
   }, []);
 
 
+  // Track when container becomes available
+  const [containerReady, setContainerReady] = useState(false);
+
+  // Check if container is ready (runs when containerRef changes)
+  useEffect(() => {
+    if (containerRef.current) {
+      console.log('[Auto-Scroll] Container mounted, ready to scroll');
+      setContainerReady(true);
+    } else {
+      setContainerReady(false);
+    }
+  }, [containerRef]);
+
   // Smooth scroll animation using requestAnimationFrame
   useEffect(() => {
     const animate = (timestamp: number) => {
@@ -138,10 +151,10 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     };
 
     // Start/stop animation based on enabled/paused state
-    console.log('[Auto-Scroll] Animation check - isEnabled:', isEnabled, 'isPaused:', isPaused, 'speed:', speed);
+    console.log('[Auto-Scroll] Animation check - isEnabled:', isEnabled, 'isPaused:', isPaused, 'speed:', speed, 'containerReady:', containerReady);
 
     // Only start if enabled, not paused, AND container exists
-    if (isEnabled && !isPaused && containerRef.current) {
+    if (isEnabled && !isPaused && containerReady && containerRef.current) {
       console.log('[Auto-Scroll] Starting animation at speed:', speed, 'px/s', 'container exists:', !!containerRef.current);
       // Cancel any existing animation first
       if (animationFrameRef.current) {
@@ -165,7 +178,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
         animationFrameRef.current = undefined;
       }
     };
-  }, [speed, isPaused, isEnabled, containerRef.current]); // Added containerRef.current
+  }, [speed, isPaused, isEnabled, containerReady]); // Use containerReady state instead
 
   // Debug: Log container status on mount
   useEffect(() => {
