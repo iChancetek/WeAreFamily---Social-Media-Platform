@@ -16,7 +16,7 @@ interface UseAutoScrollReturn {
   toggleAutoScroll: () => void;
   pauseAutoScroll: () => void;
   resumeAutoScroll: () => void;
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  containerRef: React.Ref<HTMLDivElement>; // Changed from RefObject to Ref
 }
 
 export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScrollReturn {
