@@ -99,13 +99,37 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
   const callbackRef = useCallback((node: HTMLDivElement | null) => {
     if (node) {
       console.log('[Auto-Scroll] ✅ Container mounted via callback ref');
-      console.log('[Auto-Scroll] Container details:', {
-        scrollHeight: node.scrollHeight,
-        clientHeight: node.clientHeight,
-        isScrollable: node.scrollHeight > node.clientHeight,
-        className: node.className,
-      });
-      setContainerReady(true);
+
+      // Check if mobile device
+      const isMobile = typeof navigator !== 'undefined' ? /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) : false;
+      console.log('[Auto-Scroll] Device type:', isMobile ? 'Mobile' : 'Desktop');
+
+      // On mobile, wait for masonry layout to finish before checking scrollability
+      const checkScrollability = () => {
+        console.log('[Auto-Scroll] Container details:', {
+          scrollHeight: node.scrollHeight,
+          clientHeight: node.clientHeight,
+          isScrollable: node.scrollHeight > node.clientHeight,
+          className: node.className,
+          isMobile,
+        });
+
+        if (node.scrollHeight > node.clientHeight) {
+          console.log('[Auto-Scroll] ✅ Container is scrollable, enabling auto-scroll');
+          setContainerReady(true);
+        } else {
+          console.log('[Auto-Scroll] ⚠️ Container not scrollable yet, checking again...');
+          // Retry after a short delay (masonry might still be loading)
+          setTimeout(checkScrollability, 500);
+        }
+      };
+
+      // On mobile, wait a bit for layout to settle
+      if (isMobile) {
+        setTimeout(checkScrollability, 300);
+      } else {
+        checkScrollability();
+      }
     } else {
       console.log('[Auto-Scroll] ❌ Container unmounted');
       setContainerReady(false);
