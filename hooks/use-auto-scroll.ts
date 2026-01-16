@@ -139,8 +139,10 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
 
     // Start/stop animation based on enabled/paused state
     console.log('[Auto-Scroll] Animation check - isEnabled:', isEnabled, 'isPaused:', isPaused, 'speed:', speed);
-    if (isEnabled && !isPaused) {
-      console.log('[Auto-Scroll] Starting animation at speed:', speed, 'px/s');
+
+    // Only start if enabled, not paused, AND container exists
+    if (isEnabled && !isPaused && containerRef.current) {
+      console.log('[Auto-Scroll] Starting animation at speed:', speed, 'px/s', 'container exists:', !!containerRef.current);
       // Cancel any existing animation first
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -149,7 +151,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
       lastTimestampRef.current = undefined;
       animationFrameRef.current = requestAnimationFrame(animate);
     } else {
-      console.log('[Auto-Scroll] Stopping animation - isEnabled:', isEnabled, 'isPaused:', isPaused);
+      console.log('[Auto-Scroll] Stopping animation - isEnabled:', isEnabled, 'isPaused:', isPaused, 'container:', !!containerRef.current);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = undefined;
@@ -163,7 +165,15 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
         animationFrameRef.current = undefined;
       }
     };
-  }, [speed, isPaused, isEnabled]);
+  }, [speed, isPaused, isEnabled, containerRef.current]); // Added containerRef.current
+
+  // Debug: Log container status on mount
+  useEffect(() => {
+    console.log('[Auto-Scroll] Container check - exists:', !!containerRef.current,
+      'scrollHeight:', containerRef.current?.scrollHeight,
+      'clientHeight:', containerRef.current?.clientHeight,
+      'isScrollable:', (containerRef.current?.scrollHeight || 0) > (containerRef.current?.clientHeight || 0));
+  }, [containerRef]);
 
   // Pause on hover
   useEffect(() => {
