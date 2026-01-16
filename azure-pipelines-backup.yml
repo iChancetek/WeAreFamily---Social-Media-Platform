@@ -1,0 +1,128 @@
+name: Backup-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+
+schedules:
+  - cron: "0 2 * * *"  # daily at 2 AM UTC
+    displayName: Daily backup
+    branches:
+      include:
+        - main
+
+variables:
+  # TODO: Set these variables in the Pipeline Library or replace with actual values
+  AcrName: 'famioacr' # Replace with your ACR name
+  StorageAccountName: 'famiostorage' # Replace with your Storage Account name
+  BackupContainerName: 'backups'
+  VmImage: 'ubuntu-latest'
+
+pool:
+  vmImage: $(VmImage)
+
+stages:
+- stage: BackupRepo
+  displayName: 'Backup Azure Repo'
+  jobs:
+  - job: ArchiveAndUploadRepo
+    displayName: 'Archive Repo & Upload'
+    steps:
+    - checkout: self
+      path: s/repo # Checkout to specific path to avoid confusion with scripts
+
+    - task: AzureCLI@2
+      displayName: 'Archive and Upload to Blob'
+      inputs:
+        azureSubscription: 'AzureConnection' # Ensure you have a service connection named 'AzureConnection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Starting Repo Backup..."
+          
+          # Create timestamp for filename
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE="repo_backup_${TIMESTAMP}_$(Build.BuildId).zip"
+          
+          echo "Archiving repository..."
+          # Archive the checked out repo
+          cd $(Agent.BuildDirectory)/s/repo
+          git archive -o $(Agent.TempDirectory)/$BACKUP_FILE HEAD
+          
+          echo "Repo archived as $BACKUP_FILE. Size:"
+          ls -lh $(Agent.TempDirectory)/$BACKUP_FILE
+          
+          echo "Uploading to Azure Blob Storage..."
+          az storage blob upload \
+            --account-name $(StorageAccountName) \
+            --container-name $(BackupContainerName) \
+            --file $(Agent.TempDirectory)/$BACKUP_FILE \
+            --name repo/$BACKUP_FILE \
+            --auth-mode login
+            
+          echo "Repo backup completed successfully."
+
+- stage: BackupACR
+  displayName: 'Backup ACR Images'
+  jobs:
+  - job: PullSaveUploadImages
+    displayName: 'Pull, Save & Upload Images'
+    steps:
+    - task: Docker@2
+      displayName: 'Login to ACR'
+      inputs:
+        command: login
+        containerRegistry: $(AcrName) # Service connection to ACR required with this name usually
+
+    - task: AzureCLI@2
+      displayName: 'Backup ACR Images'
+      inputs:
+        azureSubscription: 'AzureConnection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Starting ACR Image Backup..."
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          
+          echo "Logging into ACR via AZ CLI..."
+          az acr login --name $(AcrName)
+          
+          echo "Listing repositories..."
+          repos=$(az acr repository list --name $(AcrName) --output tsv)
+          
+          for repo in $repos; do
+              echo "Processing repository: $repo"
+              tags=$(az acr repository show-tags --name $(AcrName) --repository $repo --output tsv)
+              
+              for tag in $tags; do
+                  IMAGE_TAG="$repo:$tag"
+                  FULL_IMAGE_NAME="$(AcrName).azurecr.io/$IMAGE_TAG"
+                  SAFE_FILENAME="${repo//\//_}_${tag}.tar" # Replace slashes with underscores
+                  BACKUP_PATH="$(Agent.TempDirectory)/$SAFE_FILENAME"
+                  
+                  echo "Backing up $IMAGE_TAG..."
+                  
+                  # Pull Image
+                  docker pull $FULL_IMAGE_NAME
+                  
+                  # Save Image
+                  docker save $FULL_IMAGE_NAME -o $BACKUP_PATH
+                  
+                  # Optional: Compress
+                  # gzip $BACKUP_PATH
+                  # BACKUP_PATH="${BACKUP_PATH}.gz"
+                  # SAFE_FILENAME="${SAFE_FILENAME}.gz"
+                  
+                  echo "Uploading $SAFE_FILENAME to Blob Storage..."
+                  az storage blob upload \
+                    --account-name $(StorageAccountName) \
+                    --container-name $(BackupContainerName) \
+                    --file $BACKUP_PATH \
+                    --name acr/${repo}/${TIMESTAMP}_${SAFE_FILENAME} \
+                    --auth-mode login
+                    
+                  # Cleanup to save space
+                  rm $BACKUP_PATH
+                  docker rmi $FULL_IMAGE_NAME
+              done
+          done
+          
+          echo "All images backed up successfully."
