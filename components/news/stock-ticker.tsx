@@ -38,7 +38,15 @@ export function StockTicker() {
     }, []);
 
     if (loading) return <div className="h-10 w-full bg-muted/30 animate-pulse rounded-md mb-2" />;
-    if (!stocks.length) return null;
+
+    // Show debug message if no stocks loaded
+    if (!stocks.length) {
+        return (
+            <div className="w-full bg-yellow-500/10 border border-yellow-500/30 rounded-md px-4 py-2 mb-2 text-xs text-yellow-700 dark:text-yellow-400">
+                Stock ticker: No data available. Check server logs for [Stocks] entries or verify FMP_API_KEY in .env.local
+            </div>
+        );
+    }
 
     // Duplicate list for seamless infinite scroll
     const marqueeItems = [...stocks, ...stocks];
