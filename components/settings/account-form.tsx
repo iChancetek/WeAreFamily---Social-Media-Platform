@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import {
@@ -73,7 +73,11 @@ export function AccountForm({ user }: { user: any }) {
     })
 
     // Listen to theme changes from the form to update live
-    const themeValue = form.watch("theme");
+    const themeValue = useWatch({
+        control: form.control,
+        name: "theme",
+    });
+
     useEffect(() => {
         if (themeValue) {
             setTheme(themeValue);
