@@ -13,7 +13,8 @@ interface BrandingHeaderProps {
     currentUser: any;
     isBrandingAdmin: boolean;
     isFollowing: boolean;
-    followStatusRole?: string;
+    isFollowing: boolean;
+    followStatusRole?: "admin" | "follower" | null;
 }
 
 export function BrandingHeader({
