@@ -22,9 +22,8 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Upgrade npm and force update tar to fix CVE-2026-23745
-RUN npm install -g npm@latest && \
-    cd /usr/local/lib/node_modules/npm && \
+# Force update tar in global npm to fix CVE-2026-23745
+RUN cd /usr/local/lib/node_modules/npm && \
     npm install tar@^7.5.3 && \
     npm cache clean --force
 
