@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Briefcase, Users } from "lucide-react";
 import { Branding } from "@/app/actions/branding";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export function BrandingCard({ branding }: { branding: Branding }) {
     const [imageError, setImageError] = useState(false);
