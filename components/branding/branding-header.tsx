@@ -13,7 +13,6 @@ interface BrandingHeaderProps {
     currentUser: any;
     isBrandingAdmin: boolean;
     isFollowing: boolean;
-    isFollowing: boolean;
     followStatusRole?: "admin" | "follower" | null;
 }
 
