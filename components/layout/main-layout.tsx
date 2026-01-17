@@ -1,24 +1,24 @@
+"use client";
+
 import { Sidebar } from "./sidebar";
 import { TopNav } from "./top-nav";
 import { RightSidebar } from "./right-sidebar";
 import { ActivityTracker } from "@/components/auth/activity-tracker";
-import { BirthdayOnboarding } from "@/components/onboarding/birthday-onboarding";
 import { BottomNav } from "./bottom-nav";
-
-import { getUserProfile } from "@/lib/auth";
+import { useAuth } from "@/components/auth-provider";
 
 import { cn } from "@/lib/utils";
 
-export async function MainLayout({ children, className }: { children: React.ReactNode, className?: string }) {
-    const user = await getUserProfile();
-    const isAdmin = user?.role === 'admin';
+export function MainLayout({ children, className }: { children: React.ReactNode, className?: string }) {
+    const { user, profile } = useAuth();
+    const isAdmin = profile?.role === 'admin';
 
     // Default to max-w-2xl if no class provided, but allow override
     const containerClass = className ? cn("mx-auto", className) : "mx-auto max-w-2xl";
 
     return (
         <div className="flex h-screen bg-background overflow-hidden relative">
-            <ActivityTracker userId={user?.id} />
+            <ActivityTracker userId={user?.uid} />
 
             {/* Sidebar is now floating, fixed position */}
             <Sidebar isAdmin={isAdmin} className="hidden md:flex" />
@@ -35,8 +35,6 @@ export async function MainLayout({ children, className }: { children: React.Reac
 
             <RightSidebar className="hidden xl:flex border-l border-border/50 bg-background/50 backdrop-blur-sm w-80 p-4" />
 
-            {/* BirthdayOnboarding disabled to debug sidebar interactions - potentially blocking clicks */}
-            {/* <BirthdayOnboarding currentBirthday={user?.birthday || null} /> */}
             <BottomNav />
         </div>
     );
