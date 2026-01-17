@@ -12,10 +12,13 @@ export function BrandingCard({ branding }: { branding: Branding }) {
     const imgRef = useRef<HTMLImageElement>(null);
 
     // Check for broken image on mount/update (catches pre-hydration errors)
+    // Check for broken image on mount/update (catches pre-hydration errors)
     useEffect(() => {
         const img = imgRef.current;
         if (img && img.complete && (img.naturalWidth === 0)) {
-            setImageError(true);
+            // Move state update to next tick to avoid "setState in useEffect" warning
+            const timer = setTimeout(() => setImageError(true), 0);
+            return () => clearTimeout(timer);
         }
     }, [branding.coverUrl, branding.imageUrl]);
 
