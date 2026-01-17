@@ -11,25 +11,41 @@ export function TopNav({ className }: { className?: string }) {
     const [open, setOpen] = useState(false);
 
     return (
-        <header className={`flex items-center justify-between px-4 h-14 text-white relative z-50 ${className}`}>
-            <div className="flex items-center gap-2 font-bold text-lg text-primary">
-                <Heart className="w-5 h-5 fill-current" />
-                WeAreFamily
+        <header className={`flex items-center justify-between px-4 h-16 fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${className} bg-background/80 backdrop-blur-md border-b border-white/5`}>
+            {/* Logo Area */}
+            <div className="flex items-center gap-3">
+                <div className="relative flex items-center justify-center w-8 h-8">
+                    <Heart className="w-6 h-6 text-primary fill-primary/20" />
+                    <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-50" />
+                </div>
+                <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
+                    Famio
+                </span>
             </div>
-            <Sheet open={open} onOpenChange={setOpen}>
-                <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                        <Menu className="w-5 h-5" />
-                    </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="p-0 w-72">
-                    <VisuallyHidden>
-                        <SheetTitle>Navigation Menu</SheetTitle>
-                        <SheetDescription>Main navigation links</SheetDescription>
-                    </VisuallyHidden>
-                    <MobileSidebar className="w-full h-full" onLinkClick={() => setOpen(false)} />
-                </SheetContent>
-            </Sheet>
+
+            {/* Right Actions */}
+            <div className="flex items-center gap-1">
+                {/* Mobile AI Status Orb (Mini) */}
+                <div className="mr-2">
+                    {/* Placeholder for AI state pass-through or context consumption */}
+                    <div className="w-2 h-2 rounded-full bg-zinc-500/50" />
+                </div>
+
+                <Sheet open={open} onOpenChange={setOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className="hover:bg-white/10 rounded-full w-10 h-10">
+                            <Menu className="w-6 h-6 text-zinc-300" />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0 w-[85vw] max-w-[300px] border-r border-white/10 bg-[#0B0F14]">
+                        <VisuallyHidden>
+                            <SheetTitle>Navigation Menu</SheetTitle>
+                            <SheetDescription>Main navigation links</SheetDescription>
+                        </VisuallyHidden>
+                        <MobileSidebar className="w-full h-full bg-transparent" onLinkClick={() => setOpen(false)} />
+                    </SheetContent>
+                </Sheet>
+            </div>
         </header>
     );
 }

@@ -51,51 +51,76 @@ export function BottomNav() {
     };
 
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-gray-200 dark:border-white/10 px-4 py-2 flex justify-around items-center z-[100] pb-safe shadow-xl">
-            {links.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                    <button
-                        key={link.href}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleNavigation(link.href, link.label);
-                        }}
-                        onTouchStart={() => console.log('🔵 Bottom nav touch:', link.label)}
-                        className={cn(
-                            "flex flex-col items-center justify-center p-2 rounded-lg transition-colors cursor-pointer border-none bg-transparent",
-                            isActive
-                                ? "text-primary"
-                                : "text-muted-foreground hover:text-foreground active:text-foreground"
-                        )}
-                        type="button"
-                    >
-                        <link.icon className={cn("w-6 h-6", isActive && "fill-current")} />
-                        <span className="text-[10px] font-medium mt-1">{link.label}</span>
-                    </button>
-                );
-            })}
+        <div className="md:hidden fixed bottom-6 left-4 right-4 z-[100] pb-safe">
+            {/* Floating Glass Island */}
+            <div className="flex justify-around items-center px-2 py-3 bg-[rgba(11,15,20,0.85)] dark:bg-[rgba(11,15,20,0.85)] backdrop-blur-xl rounded-[24px] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+                {links.map((link) => {
+                    const isActive = pathname === link.href;
+                    return (
+                        <button
+                            key={link.href}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleNavigation(link.href, link.label);
+                            }}
+                            className={cn(
+                                "relative flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-300 w-16 group",
+                                isActive ? "text-primary" : "text-zinc-400 hover:text-white"
+                            )}
+                            type="button"
+                        >
+                            {/* Active Background Glow */}
+                            {isActive && (
+                                <div className="absolute inset-0 bg-primary/10 blur-md rounded-full transform scale-75" />
+                            )}
 
-            {/* Menu Trigger for the rest of the items */}
-            <Sheet open={open} onOpenChange={setOpen}>
-                <SheetTrigger asChild>
-                    <button
-                        className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-foreground active:text-foreground cursor-pointer border-none bg-transparent"
-                        type="button"
-                    >
-                        <Menu className="w-6 h-6" />
-                        <span className="text-[10px] font-medium mt-1">Menu</span>
-                    </button>
-                </SheetTrigger>
-                <SheetContent side="left" className="p-0 w-72">
-                    <VisuallyHidden>
-                        <SheetTitle>Navigation Menu</SheetTitle>
-                        <SheetDescription>Main navigation links</SheetDescription>
-                    </VisuallyHidden>
-                    <MobileSidebar className="w-full h-full" onLinkClick={() => setOpen(false)} />
-                </SheetContent>
-            </Sheet>
+                            <link.icon
+                                className={cn(
+                                    "w-6 h-6 transition-all duration-300 relative z-10",
+                                    isActive ? "-translate-y-1 scale-110 drop-shadow-[0_0_8px_rgba(111,76,255,0.6)]" : "scale-100"
+                                )}
+                                strokeWidth={isActive ? 2.5 : 2}
+                            />
+
+                            {/* Animated Label */}
+                            <span className={cn(
+                                "text-[10px] font-medium mt-1 transition-all duration-300 relative z-10",
+                                isActive ? "text-white opacity-100 translate-y-0" : "opacity-0 -translate-y-2 absolute"
+                            )}>
+                                {link.label}
+                            </span>
+
+                            {/* Active Dot */}
+                            {isActive && (
+                                <div className="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-[0_0_5px_currentColor]" />
+                            )}
+                        </button>
+                    );
+                })}
+
+                {/* Menu Trigger */}
+                <Sheet open={open} onOpenChange={setOpen}>
+                    <SheetTrigger asChild>
+                        <button
+                            className="relative flex flex-col items-center justify-center p-2 rounded-xl text-zinc-400 hover:text-white transition-colors w-16"
+                            type="button"
+                        >
+                            <Menu className="w-6 h-6" />
+                        </button>
+                    </SheetTrigger>
+                    <SheetContent side="bottom" className="p-0 h-[80vh] rounded-t-[32px] border-t border-white/10 bg-[#0B0F14]/95 backdrop-blur-xl">
+                        <VisuallyHidden>
+                            <SheetTitle>Navigation Menu</SheetTitle>
+                            <SheetDescription>Main navigation links</SheetDescription>
+                        </VisuallyHidden>
+                        <div className="p-6 h-full overflow-y-auto">
+                            <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-8" /> {/* Drag Handle */}
+                            <MobileSidebar className="w-full h-full bg-transparent shadow-none border-none p-0" onLinkClick={() => setOpen(false)} />
+                        </div>
+                    </SheetContent>
+                </Sheet>
+            </div>
         </div>
     );
 }
