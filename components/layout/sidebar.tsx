@@ -73,8 +73,8 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
         <motion.div
             className={cn(
                 "hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-[24px] fixed left-0 top-0 z-50 shadow-2xl overflow-hidden",
-                // Edgy Design: Dark charcoal background, slight border, glass effect
-                "bg-[#0B0F14] border border-white/5 shadow-[0_0_40px_-10px_rgba(0,0,0,0.5)]",
+                // Edgy Design: Dark charcoal background in dark mode, clean white in light mode
+                "bg-white/80 dark:bg-[#0B0F14] backdrop-blur-xl border border-zinc-200 dark:border-white/5 shadow-xl dark:shadow-[0_0_40px_-10px_rgba(0,0,0,0.5)]",
                 className
             )}
             initial={{ width: 80 }}
@@ -97,14 +97,14 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                                 "w-6 h-6 text-primary fill-primary/20",
                                 isHovered ? "scale-100" : "scale-90"
                             )} />
-                            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
                         </div>
 
                         {/* Title text fades in */}
                         <AnimatePresence>
                             {isHovered && (
                                 <motion.span
-                                    className="text-xl font-bold tracking-tight text-white whitespace-nowrap"
+                                    className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white whitespace-nowrap"
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -10 }}
@@ -120,7 +120,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                 <div className="w-full">
                     <VoiceStatusIndicator
                         state={aiState}
-                        className="w-full bg-white/5 hover:bg-white/10"
+                        className="w-full bg-zinc-100/50 hover:bg-zinc-100 dark:bg-white/5 dark:hover:bg-white/10"
                         onClick={() => {
                             // Demo Interaction
                             setAiState(prev => prev === 'idle' ? 'listening' : prev === 'listening' ? 'speaking' : 'idle');
@@ -158,13 +158,13 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
             </nav>
 
             {/* 3. Footer: User & Settings */}
-            <div className="p-3 bg-gradient-to-t from-black/50 to-transparent">
+            <div className="p-3 bg-gradient-to-t from-zinc-100/80 to-transparent dark:from-black/50 dark:to-transparent">
                 {/* Theme Toggles (Simplified) */}
                 {isHovered ? (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex gap-1 p-1 mb-2 bg-white/5 rounded-xl border border-white/5"
+                        className="flex gap-1 p-1 mb-2 bg-zinc-100 dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/5"
                     >
                         {['light', 'dark', 'system'].map((tMode) => (
                             <button
@@ -173,8 +173,8 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                                 className={cn(
                                     "flex-1 p-1.5 rounded-lg text-xs font-medium transition-all",
                                     theme === tMode
-                                        ? "bg-zinc-800 text-white shadow-sm"
-                                        : "text-zinc-500 hover:text-zinc-300"
+                                        ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-white"
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
                                 )}
                             >
                                 {tMode === 'light' && <p>☀</p>}
@@ -187,13 +187,13 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                     // Collapsed Theme Toggle (Cycle)
                     <button
                         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        className="w-full flex items-center justify-center h-10 text-zinc-500 hover:text-white transition-colors mb-2"
+                        className="w-full flex items-center justify-center h-10 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors mb-2"
                     >
                         {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                     </button>
                 )}
 
-                <div className="border-t border-white/10 pt-3 mt-1">
+                <div className="border-t border-zinc-200 dark:border-white/10 pt-3 mt-1">
                     <SidebarItem
                         icon={LogOut}
                         label={t("nav.signout")}
@@ -206,7 +206,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
             </div>
 
             {/* Drag Handle Indicator (Optional visual cue) */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-white/5 rounded-l-full" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-zinc-200/50 dark:bg-white/5 rounded-l-full" />
         </motion.div>
     );
 }

@@ -31,15 +31,15 @@ export function SidebarItem({
             className={cn(
                 "relative flex items-center h-12 px-3 rounded-xl transition-all duration-200 group overflow-hidden",
                 isActive
-                    ? "bg-gradient-to-r from-primary/20 to-transparent text-white"
-                    : "text-zinc-400 hover:text-white hover:bg-white/5"
+                    ? "bg-primary/10 text-primary dark:bg-gradient-to-r dark:from-primary/20 dark:to-transparent dark:text-white"
+                    : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/5"
             )}
         >
             {/* Active Indicator Bar (Neon Glow) */}
             {isActive && (
                 <motion.div
                     layoutId="sidebar-active"
-                    className="absolute left-0 top-2 bottom-2 w-1 bg-primary rounded-r-full shadow-[0_0_12px_rgba(var(--primary-rgb),0.8)]"
+                    className="absolute left-0 top-2 bottom-2 w-1 bg-primary rounded-r-full shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)] dark:shadow-[0_0_12px_rgba(var(--primary-rgb),0.8)]"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -56,7 +56,7 @@ export function SidebarItem({
 
                 {/* Notification Dot on Icon (Collpased state) */}
                 {hasNotification && !isExpanded && (
-                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-[#0B0F14]" />
+                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-[#0B0F14]" />
                 )}
             </div>
 
@@ -67,7 +67,7 @@ export function SidebarItem({
             )}>
                 <span className={cn(
                     "text-sm font-medium tracking-wide",
-                    isActive ? "text-white font-semibold" : "text-zinc-400 group-hover:text-zinc-100"
+                    isActive ? "font-bold text-primary dark:text-white" : "text-zinc-500 group-hover:text-zinc-900 dark:text-zinc-400 dark:group-hover:text-zinc-100"
                 )}>
                     {label}
                 </span>
@@ -79,7 +79,7 @@ export function SidebarItem({
             )}
 
             {/* Hover Glow Background - Subtle Glass */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-zinc-100/50 to-transparent dark:from-white/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </Link>
     );
 }

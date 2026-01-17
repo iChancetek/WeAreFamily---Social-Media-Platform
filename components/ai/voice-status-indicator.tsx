@@ -23,7 +23,7 @@ export function VoiceStatusIndicator({
             case 'listening': return "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.6)]";
             case 'processing': return "bg-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)]";
             case 'speaking': return "bg-primary shadow-[0_0_15px_rgba(111,76,255,0.6)]";
-            default: return "bg-zinc-600 group-hover:bg-zinc-400"; // Idle
+            default: return "bg-zinc-400 group-hover:bg-zinc-600 dark:bg-zinc-600 dark:group-hover:bg-zinc-400"; // Idle
         }
     };
 
@@ -41,7 +41,7 @@ export function VoiceStatusIndicator({
             onClick={onClick}
             className={cn(
                 "group relative flex items-center justify-center p-2 rounded-xl transition-all duration-300",
-                "hover:bg-white/5 border border-transparent hover:border-white/10",
+                "hover:bg-zinc-100 dark:hover:bg-white/5 border border-transparent hover:border-zinc-200 dark:hover:border-white/10",
                 className
             )}
         >
@@ -109,7 +109,7 @@ export function VoiceStatusIndicator({
             <div className="ml-3 overflow-hidden hidden group-hover:block md:group-[.expanded]:block">
                 <span className={cn(
                     "text-xs font-medium uppercase tracking-wider",
-                    state !== 'idle' ? "text-white" : "text-zinc-500"
+                    state !== 'idle' ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-500"
                 )}>
                     {getStatusText()}
                 </span>
