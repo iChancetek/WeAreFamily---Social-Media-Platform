@@ -716,12 +716,17 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
         let allDocs: any[] = [];
 
         // 1. Fetch by authorId (Standard)
+        // NOTE: We do not use orderBy("createdAt", "desc") here to avoid needing a Composite Index.
+        // We fetch all posts (which is what it was doing anyway) and sort in memory.
         const postsRef = adminDb.collection("posts")
-            .where("authorId", "==", userId)
-            .orderBy("createdAt", "desc");
+            .where("authorId", "==", userId);
 
         const snapshot = await postsRef.get();
-        allDocs = snapshot.docs;
+        allDocs = snapshot.docs.sort((a, b) => {
+            const timeA = a.data().createdAt?.toMillis() || 0;
+            const timeB = b.data().createdAt?.toMillis() || 0;
+            return timeB - timeA; // Descending
+        });
 
         // 2. Fallback: If no posts found, try legacy email match (slow path)
         if (snapshot.empty) {
