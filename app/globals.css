@@ -53,12 +53,13 @@
     /* Sexy Pure Black Theme (Original) - HSL Values */
     --background: 0 0% 0%;
     /* Pure Black */
-    --foreground: 244 83% 61%;
-    /* #5448EE Blurple Text */
+    /* Pure Black */
+    --foreground: 0 0% 100%;
+    /* Pure White Text */
 
     --card: 240 10% 4%;
     /* #09090B Deep Onyx */
-    --card-foreground: 244 83% 61%;
+    --card-foreground: 0 0% 100%;
 
     --popover: 240 10% 4%;
     --popover-foreground: 244 83% 61%;
@@ -72,11 +73,11 @@
     --secondary-foreground: 244 83% 61%;
 
     --muted: 240 6% 10%;
-    --muted-foreground: 245 53% 67%;
-    /* #857DDB */
+    --muted-foreground: 240 5% 65%;
+    /* Light Zinc/Gray for secondary text */
 
     --accent: 240 6% 10%;
-    --accent-foreground: 244 83% 61%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
