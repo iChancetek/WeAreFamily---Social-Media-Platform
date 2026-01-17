@@ -1,15 +1,34 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getActiveUsers } from "@/app/actions/users";
 import { cn } from "@/lib/utils";
 import { ContactItem } from "./contact-item";
 import { NewsFeed } from "@/components/news/news-feed";
+import { useEffect, useState } from "react";
 
 interface RightSidebarProps {
     className?: string;
 }
 
-export async function RightSidebar({ className }: RightSidebarProps) {
-    const activeUsers = await getActiveUsers();
+export function RightSidebar({ className }: RightSidebarProps) {
+    const [activeUsers, setActiveUsers] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const users = await getActiveUsers();
+                setActiveUsers(users);
+            } catch (error) {
+                console.error("Failed to load active users", error);
+            }
+        };
+
+        fetchUsers();
+        // Refresh every minute
+        const interval = setInterval(fetchUsers, 60000);
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <aside className={cn("hidden lg:flex flex-col gap-4 p-4 w-80 overflow-y-auto border-l border-border/50", className)}>
