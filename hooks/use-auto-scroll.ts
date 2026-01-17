@@ -46,7 +46,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     try {
       const savedPreference = localStorage.getItem('famio-auto-scroll-enabled');
       if (savedPreference !== null) return savedPreference === 'true';
-    } catch (error) { }
+    } catch { }
     return true; // Default enabled
   });
 
@@ -58,7 +58,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
         const parsedSpeed = parseInt(savedSpeed, 10);
         return isNaN(parsedSpeed) ? initialSpeed : parsedSpeed;
       }
-    } catch (error) { }
+    } catch { }
     return initialSpeed;
   });
 
@@ -300,7 +300,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     isEnabledRef.current = newState;
     try {
       localStorage.setItem('famio-auto-scroll-enabled', String(newState));
-    } catch (_) { }
+    } catch { }
     if (onToggle) onToggle(newState);
   }, [isEnabled, onToggle]);
 

@@ -51,7 +51,7 @@ export function BottomNav() {
             setTimeout(() => {
                 if (pathname !== href) window.location.assign(href);
             }, 300);
-        } catch (error) {
+        } catch {
             window.location.assign(href);
         }
     };
