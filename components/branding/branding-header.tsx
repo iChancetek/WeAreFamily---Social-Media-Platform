@@ -1,7 +1,6 @@
 "use client";
 
 import { Branding } from "@/app/actions/branding";
-import { Button } from "@/components/ui/button";
 import { BrandingCoverButton } from "@/components/branding/branding-cover-button";
 import { BrandingManagementDialog } from "@/components/branding/branding-management-dialog";
 import { FollowBrandingButton } from "@/components/branding/follow-branding-button";
@@ -31,7 +30,9 @@ export function BrandingHeader({
     useEffect(() => {
         const img = imgRef.current;
         if (img && img.complete && (img.naturalWidth === 0)) {
-            setImageError(true);
+            // Move state update to next tick to avoid "setState in useEffect" warning
+            const timer = setTimeout(() => setImageError(true), 0);
+            return () => clearTimeout(timer);
         }
     }, [branding.coverUrl]);
 
