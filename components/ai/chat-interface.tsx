@@ -65,10 +65,14 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
         }
     }, [externalContext, onContextHandled, chat]);
 
-    const { speak, stop: stopSpeaking, isSpeaking } = useTextToSpeech();
+    const { speak, stop: stopSpeaking, isSpeaking } = useTextToSpeech({
+        useOpenAI: true, // Enable premium OpenAI voices
+        voice: 'nova' // Choose from: alloy, echo, fable, onyx, nova, shimmer
+    });
 
-    const { isListening, transcript, startListening, stopListening, isSupported: isSpeechSupported } = useSpeechRecognition({
-        onResult: (result) => setInputValue(result) // Transcript is handled here
+    const { isListening, transcript, startListening, stopListening, isSupported: isSpeechSupported, isProcessing } = useSpeechRecognition({
+        onResult: (result) => setInputValue(result), // Transcript is handled here
+        useWhisper: true // Enable OpenAI Whisper for superior accuracy
     });
 
     useEffect(() => {
@@ -256,7 +260,7 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
                                     handleSendMessage();
                                 }
                             }}
-                            placeholder={isListening ? "Listening..." : `Ask the ${selectedMode} agent anything...`}
+                            placeholder={isListening ? "Listening..." : isProcessing ? "Processing with Whisper..." : `Ask the ${selectedMode} agent anything...`}
                             className="flex-1 min-h-[50px] py-3 pr-12 text-base rounded-2xl bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm focus-visible:ring-primary resize-none"
                             disabled={chat.isLoading}
                             autoFocus

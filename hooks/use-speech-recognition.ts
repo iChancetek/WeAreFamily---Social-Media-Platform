@@ -1,16 +1,25 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 export interface UseSpeechRecognitionProps {
     onResult?: (transcript: string) => void;
     onEnd?: () => void;
+    useWhisper?: boolean; // NEW: Use OpenAI Whisper instead of browser API
 }
 
-export function useSpeechRecognition({ onResult, onEnd }: UseSpeechRecognitionProps = {}) {
+export function useSpeechRecognition({
+    onResult,
+    onEnd,
+    useWhisper = true // Default to Whisper for better accuracy
+}: UseSpeechRecognitionProps = {}) {
     const [isListening, setIsListening] = useState(false);
     const [transcript, setTranscript] = useState('');
     const [isSupported, setIsSupported] = useState(false);
     const [recognition, setRecognition] = useState<any>(null);
+
+    // Whisper-specific state
+    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+    const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // Use refs to avoid recreating recognition instance
     const onResultRef = useRef(onResult);
@@ -22,6 +31,7 @@ export function useSpeechRecognition({ onResult, onEnd }: UseSpeechRecognitionPr
         onEndRef.current = onEnd;
     }, [onResult, onEnd]);
 
+    // Initialize browser Speech Recognition (fallback)
     useEffect(() => {
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -61,7 +71,6 @@ export function useSpeechRecognition({ onResult, onEnd }: UseSpeechRecognitionPr
                     setIsListening(false);
                 };
 
-                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setRecognition(recognitionInstance);
                 setIsSupported(true);
             } catch (e) {
@@ -69,32 +78,116 @@ export function useSpeechRecognition({ onResult, onEnd }: UseSpeechRecognitionPr
                 setIsSupported(false);
             }
         }
-    }, []); // Empty dependency array - only runs once
+    }, []);
 
-    const startListening = useCallback(() => {
-        if (recognition && !isListening) {
+    // Initialize MediaRecorder for Whisper
+    useEffect(() => {
+        if (!useWhisper || typeof window === 'undefined') return;
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(() => {
+                setIsSupported(true);
+            })
+            .catch((err) => {
+                console.error('Microphone access denied:', err);
+                setIsSupported(false);
+            });
+    }, [useWhisper]);
+
+    // Whisper transcription
+    const transcribeWithWhisper = useCallback(async (audioBlob: Blob) => {
+        setIsProcessing(true);
+        try {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+
+            const response = await fetch('/api/transcribe', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Transcription failed');
+            }
+
+            const data = await response.json();
+            const transcriptText = data.text;
+
+            setTranscript(transcriptText);
+            if (onResultRef.current) {
+                onResultRef.current(transcriptText);
+            }
+        } catch (error) {
+            console.error('Whisper transcription error:', error);
+        } finally {
+            setIsProcessing(false);
+            if (onEndRef.current) onEndRef.current();
+        }
+    }, []);
+
+    const startListening = useCallback(async () => {
+        if (isListening) return;
+
+        // Use Whisper if enabled
+        if (useWhisper) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const recorder = new MediaRecorder(stream);
+                const chunks: Blob[] = [];
+
+                recorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        chunks.push(e.data);
+                    }
+                };
+
+                recorder.onstop = async () => {
+                    const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+                    await transcribeWithWhisper(audioBlob);
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                recorder.start();
+                setMediaRecorder(recorder);
+                setAudioChunks([]);
+                setIsListening(true);
+                setTranscript('');
+            } catch (e) {
+                console.error("Failed to start Whisper recording", e);
+            }
+        }
+        // Fallback to browser API
+        else if (recognition && !isListening) {
             try {
                 recognition.start();
                 setIsListening(true);
                 setTranscript('');
             } catch (e) {
-                console.error("Failed to start recognition", e);
+                console.error("Failed to start browser recognition", e);
             }
         }
-    }, [recognition, isListening]);
+    }, [recognition, isListening, useWhisper, transcribeWithWhisper]);
 
     const stopListening = useCallback(() => {
-        if (recognition && isListening) {
+        if (!isListening) return;
+
+        if (useWhisper && mediaRecorder) {
+            mediaRecorder.stop();
+            setMediaRecorder(null);
+        } else if (recognition) {
             recognition.stop();
-            setIsListening(false);
         }
-    }, [recognition, isListening]);
+
+        setIsListening(false);
+    }, [recognition, isListening, useWhisper, mediaRecorder]);
 
     return {
         isListening,
         transcript,
         startListening,
         stopListening,
-        isSupported
+        isSupported,
+        isProcessing,
+        mode: useWhisper ? 'whisper' : 'browser',
     };
 }
