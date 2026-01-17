@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client lazily to avoid build-time errors if env vars are missing
+const getOpenAIClient = () => {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+        throw new Error("OPENAI_API_KEY is not set");
+    }
+    return new OpenAI({ apiKey });
+};
 
 export async function POST(req: NextRequest) {
     try {
@@ -41,6 +46,7 @@ export async function POST(req: NextRequest) {
         });
 
         // Transcribe using Whisper
+        const openai = getOpenAIClient();
         const transcription = await openai.audio.transcriptions.create({
             file: audioFile,
             model: 'whisper-1',

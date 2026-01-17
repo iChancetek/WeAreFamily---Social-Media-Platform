@@ -70,8 +70,11 @@ export function useVoiceConversation({ onMessage, onStateChange }: UseVoiceConve
     useEffect(() => {
         if (isContinuous && state === 'speaking' && !isSpeaking) {
             // Finished speaking, back to listening
-            updateState('listening');
-            startListening();
+            // Use setTimeout to avoid "cannot update component while rendering" warning
+            setTimeout(() => {
+                updateState('listening');
+                startListening();
+            }, 0);
         }
     }, [isContinuous, state, isSpeaking, updateState, startListening]);
 
