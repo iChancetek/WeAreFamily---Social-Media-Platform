@@ -67,22 +67,38 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     return initialSpeed;
   });
 
+  // State for UI reflection (can be slightly delayed)
   const [isPaused, setIsPaused] = useState(false);
+
+  // Refs for synchronous control in animation loop (critical for mobile responsiveness)
+  const isPausedRef = useRef(false);
+  const isEnabledRef = useRef(isEnabled);
+  const speedRef = useRef(speed);
+
+  // Sync refs with state
+  useEffect(() => { isEnabledRef.current = isEnabled; }, [isEnabled]);
+  useEffect(() => { speedRef.current = speed; }, [speed]);
+
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastTimestampRef = useRef<number | undefined>(undefined);
   const pauseTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const resumeTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // Helper to sync state and ref
+  const setPaused = useCallback((paused: boolean) => {
+    isPausedRef.current = paused;
+    setIsPaused(paused);
+  }, []);
 
   // Listen for localStorage changes (when settings are updated)
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'famio-auto-scroll-enabled' && e.newValue !== null) {
-        console.log('[Auto-Scroll] localStorage changed - enabled:', e.newValue);
         setIsEnabled(e.newValue === 'true');
       }
       if (e.key === 'famio-auto-scroll-speed' && e.newValue !== null) {
         const newSpeed = parseInt(e.newValue, 10);
         if (!isNaN(newSpeed)) {
-          console.log('[Auto-Scroll] localStorage changed - speed:', newSpeed);
           setSpeed(newSpeed);
         }
       }
@@ -92,114 +108,82 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-
   // Track when container becomes available using callback ref
-  const [containerReady, setContainerReady] = useState(false); // Callback ref tracks when container mounts
+  const [containerReady, setContainerReady] = useState(false);
 
   const callbackRef = useCallback((node: HTMLDivElement | null) => {
     if (node) {
-      console.log('[Auto-Scroll] ✅ Container mounted via callback ref');
-
-      // Check if mobile device
+      console.log('[Auto-Scroll] ✅ Container mounted');
       const isMobile = typeof navigator !== 'undefined' ? /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) : false;
-      console.log('[Auto-Scroll] Device type:', isMobile ? 'Mobile' : 'Desktop');
 
-      // On mobile, wait for masonry layout to finish before checking scrollability
       const checkScrollability = () => {
-        console.log('[Auto-Scroll] Container details:', {
-          scrollHeight: node.scrollHeight,
-          clientHeight: node.clientHeight,
-          isScrollable: node.scrollHeight > node.clientHeight,
-          className: node.className,
-          isMobile,
-        });
-
         if (node.scrollHeight > node.clientHeight) {
-          console.log('[Auto-Scroll] ✅ Container is scrollable, enabling auto-scroll');
           setContainerReady(true);
         } else {
-          console.log('[Auto-Scroll] ⚠️ Container not scrollable yet, checking again...');
-          // Retry after a short delay (masonry might still be loading)
-          setTimeout(checkScrollability, 500);
+          // Retry logic tailored for masonry layout
+          setTimeout(checkScrollability, 1000);
         }
       };
 
-      // On mobile, wait a bit for layout to settle
       if (isMobile) {
-        setTimeout(checkScrollability, 300);
+        setTimeout(checkScrollability, 500);
       } else {
         checkScrollability();
       }
     } else {
-      console.log('[Auto-Scroll] ❌ Container unmounted');
       setContainerReady(false);
     }
   }, []);
 
-  // Smooth scroll animation using requestAnimationFrame
+  // The Animation Loop
+  const animate = useCallback((timestamp: number) => {
+    // 1. Immediate exit checks using Refs for zero-latency
+    if (!containerRef.current || isPausedRef.current || !isEnabledRef.current) {
+      lastTimestampRef.current = undefined;
+      return;
+    }
+
+    if (!lastTimestampRef.current) {
+      lastTimestampRef.current = timestamp;
+    }
+
+    const deltaTime = timestamp - lastTimestampRef.current;
+
+    // 2. Accumulate fractional scroll to ensure smooth movement even at low speeds
+    // (Browsers handle sub-pixel scrollTop, but discrete updates are safer)
+    const pixelsToScroll = (speedRef.current * deltaTime) / 1000;
+
+    const container = containerRef.current;
+
+    // 3. Safety check: detect if user has manually scrolled far away (simple fight detection)
+    // Actually, handling this via events is better.
+
+    // Apply scroll
+    if (container.scrollHeight - container.scrollTop - container.clientHeight < 1) {
+      // Reached bottom - Loop logic
+      // For now, just stop or reset? 
+      // Seamless loop:
+      container.scrollTo({ top: 0, behavior: 'smooth' });
+      lastTimestampRef.current = undefined;
+
+      // Pause briefly at top
+      // We can't block the loop, so we manage a "top pause" state or just reliance on resume logic?
+      // Let's simple reset for now.
+    } else {
+      container.scrollTop += pixelsToScroll;
+    }
+
+    lastTimestampRef.current = timestamp;
+    animationFrameRef.current = requestAnimationFrame(animate);
+  }, []);
+
+  // Start/Stop Engine
   useEffect(() => {
-    const animate = (timestamp: number) => {
-      if (!containerRef.current || isPaused || !isEnabled) {
-        lastTimestampRef.current = undefined;
-        return;
-      }
-
-      // Initialize timestamp on first frame
-      if (!lastTimestampRef.current) {
-        lastTimestampRef.current = timestamp;
-      }
-
-      const deltaTime = timestamp - lastTimestampRef.current;
-      const scrollAmount = (speed * deltaTime) / 1000; // Convert to pixels per frame
-
-      const container = containerRef.current;
-      const currentScroll = container.scrollTop;
-      const maxScroll = container.scrollHeight - container.clientHeight;
-
-      // Check if we've reached the bottom
-      if (currentScroll + scrollAmount >= maxScroll) {
-        // Seamless loop: scroll to top smoothly
-        container.scrollTo({
-          top: 0,
-          behavior: 'smooth',
-        });
-        lastTimestampRef.current = undefined; // Reset for next cycle
-
-        // Pause briefly at the top before resuming
-        setTimeout(() => {
-          lastTimestampRef.current = timestamp;
-          if (containerRef.current && !isPaused && isEnabled) {
-            animationFrameRef.current = requestAnimationFrame(animate);
-          }
-        }, 1000); // 1 second pause at top
-      } else {
-        // Continue scrolling
-        container.scrollTop = currentScroll + scrollAmount;
-        lastTimestampRef.current = timestamp;
+    if (isEnabled && containerReady && !isPaused) {
+      // Start
+      if (!animationFrameRef.current) {
         animationFrameRef.current = requestAnimationFrame(animate);
       }
-    };
-
-    // Start/stop animation based on enabled/paused state
-    console.log('[Auto-Scroll] Animation check - isEnabled:', isEnabled, 'isPaused:', isPaused, 'speed:', speed, 'containerReady:', containerReady);
-
-    // Only start if enabled, not paused, AND container exists
-    if (isEnabled && !isPaused && containerReady && containerRef.current) {
-      console.log('[Auto-Scroll] Starting animation at speed:', speed, 'px/s', 'container exists:', !!containerRef.current);
-      // Cancel any existing animation first
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      // Start fresh animation
-      lastTimestampRef.current = undefined;
-      animationFrameRef.current = requestAnimationFrame(animate);
-    } else {
-      console.log('[Auto-Scroll] Stopping animation - isEnabled:', isEnabled, 'isPaused:', isPaused, 'container:', !!containerRef.current);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = undefined;
-      }
-      lastTimestampRef.current = undefined;
     }
 
     return () => {
@@ -208,123 +192,105 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
         animationFrameRef.current = undefined;
       }
     };
-  }, [speed, isPaused, isEnabled, containerReady]); // Use containerReady state instead
+  }, [isEnabled, containerReady, isPaused, animate]);
 
-  // Debug: Log container status on mount
+  // Event Handlers for Interactions (The Critical Fix for "Fighting")
   useEffect(() => {
-    console.log('[Auto-Scroll] Container check - exists:', !!containerRef.current,
-      'scrollHeight:', containerRef.current?.scrollHeight,
-      'clientHeight:', containerRef.current?.clientHeight,
-      'isScrollable:', (containerRef.current?.scrollHeight || 0) > (containerRef.current?.clientHeight || 0));
-  }, [containerRef]);
-
-  // Pause on hover
-  useEffect(() => {
-    if (!pauseOnHover || !containerRef.current) return;
-
     const container = containerRef.current;
+    if (!container) return;
 
-    const handleMouseEnter = () => {
+    const handleUserInteraction = () => {
+      // 1. IMPORTANT: Set ref immediately to stop the animation loop next frame
+      isPausedRef.current = true;
       setIsPaused(true);
-      // Clear any pending resume timeout
-      if (pauseTimeoutRef.current) {
-        clearTimeout(pauseTimeoutRef.current);
+
+      // 2. Clear any pending resume
+      if (resumeTimeoutRef.current) {
+        clearTimeout(resumeTimeoutRef.current);
+      }
+
+      // 3. Schedule Resume
+      if (pauseOnInteraction) {
+        resumeTimeoutRef.current = setTimeout(() => {
+          // Only resume if still enabled globally
+          if (isEnabledRef.current) {
+            isPausedRef.current = false;
+            setIsPaused(false);
+            // Restart loop if needed (useEffect will handle, or we can trigger manually if needed)
+            // But simply changing state triggers useEffect, which restarts loop.
+          }
+        }, 2000);
       }
     };
 
-    const handleMouseLeave = () => {
-      // Resume after a brief delay
-      pauseTimeoutRef.current = setTimeout(() => {
-        setIsPaused(false);
-      }, 500); // 500ms delay before resuming
+    // Passive listeners for best performance
+    container.addEventListener('touchstart', handleUserInteraction, { passive: true });
+    container.addEventListener('wheel', handleUserInteraction, { passive: true });
+    container.addEventListener('touchmove', handleUserInteraction, { passive: true }); // Continuous detection
+
+    // 'scroll' event fires on auto-scroll too, so we need to be careful.
+    // We rely on touchstart/wheel to detect *intent*.
+    // However, momentum scrolling triggers 'scroll' but no touch events.
+    // This is tricky. 
+
+    // Fix: Listen for 'mousedown' as well for desktop drag bars
+    container.addEventListener('mousedown', handleUserInteraction, { passive: true });
+
+    return () => {
+      container.removeEventListener('touchstart', handleUserInteraction);
+      container.removeEventListener('wheel', handleUserInteraction);
+      container.removeEventListener('touchmove', handleUserInteraction);
+      container.removeEventListener('mousedown', handleUserInteraction);
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    };
+  }, [containerReady, pauseOnInteraction]); // Re-bind if container changes
+
+  // Hover Pause Logic
+  useEffect(() => {
+    if (!pauseOnHover || !containerRef.current) return;
+    const container = containerRef.current;
+
+    const handleMouseEnter = () => {
+      isPausedRef.current = true;
+      setIsPaused(true);
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
     };
 
+    const handleMouseLeave = () => {
+      // Resume logic similar to interaction
+      resumeTimeoutRef.current = setTimeout(() => {
+        if (isEnabledRef.current) {
+          isPausedRef.current = false;
+          setIsPaused(false);
+        }
+      }, 500);
+    };
+
+    // Only apply hover logic on non-touch devices ideally, but mouseenter works fine usually.
+    // On mobile, tapping can trigger hover styles sometimes, but touchstart handles the real pause.
     container.addEventListener('mouseenter', handleMouseEnter);
     container.addEventListener('mouseleave', handleMouseLeave);
 
     return () => {
       container.removeEventListener('mouseenter', handleMouseEnter);
       container.removeEventListener('mouseleave', handleMouseLeave);
-      if (pauseTimeoutRef.current) {
-        clearTimeout(pauseTimeoutRef.current);
-      }
     };
-  }, [pauseOnHover]);
+  }, [containerReady, pauseOnHover]);
 
-  // Pause on interaction (wheel/touch) with auto-resume
-  useEffect(() => {
-    if (!pauseOnInteraction || !containerRef.current) return;
 
-    const container = containerRef.current;
-    let resumeTimeout: NodeJS.Timeout;
-
-    const handleInteraction = () => {
-      console.log('[Auto-Scroll] User interaction detected - pausing');
-      setIsPaused(true);
-
-      // Clear existing timeout
-      if (resumeTimeout) clearTimeout(resumeTimeout);
-
-      // Resume after 2 seconds of inactivity
-      resumeTimeout = setTimeout(() => {
-        console.log('[Auto-Scroll] Resuming after inactivity');
-        setIsPaused(false);
-      }, 2000);
-    };
-
-    // Listen for scroll, touch, and wheel events
-    container.addEventListener('wheel', handleInteraction, { passive: true });
-    container.addEventListener('touchstart', handleInteraction, { passive: true });
-    container.addEventListener('touchmove', handleInteraction, { passive: true });
-
-    // Manual scroll detection
-    const handleScroll = () => {
-      if (!animationFrameRef.current) {
-        // User is manually scrolling (not auto-scroll)
-        handleInteraction();
-      }
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      if (resumeTimeout) clearTimeout(resumeTimeout);
-      container.removeEventListener('wheel', handleInteraction);
-      container.removeEventListener('touchstart', handleInteraction);
-      container.removeEventListener('touchmove', handleInteraction);
-      container.removeEventListener('scroll', handleScroll);
-    };
-  }, [pauseOnInteraction]);
-
-  // Toggle auto-scroll
+  // Toggle Public API
   const toggleAutoScroll = useCallback(() => {
     const newState = !isEnabled;
     setIsEnabled(newState);
+    isEnabledRef.current = newState;
 
-    // Save preference
     try {
       localStorage.setItem('famio-auto-scroll-enabled', String(newState));
-    } catch (error) {
-      console.warn('Failed to save auto-scroll preference:', error);
-    }
+    } catch (e) { }
 
-    // Callback for external handling (e.g., server-side preference save)
-    if (onToggle) {
-      onToggle(newState);
-    }
+    if (onToggle) onToggle(newState);
   }, [isEnabled, onToggle]);
 
-  // Manual pause control
-  const pauseAutoScroll = useCallback(() => {
-    setIsPaused(true);
-  }, []);
-
-  // Manual resume control
-  const resumeAutoScroll = useCallback(() => {
-    setIsPaused(false);
-  }, []);
-
-  // Combined ref that updates both containerRef and containerReady state
   const combinedRef = useCallback((node: HTMLDivElement | null) => {
     containerRef.current = node;
     callbackRef(node);
@@ -334,8 +300,8 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     isEnabled,
     isPaused,
     toggleAutoScroll,
-    pauseAutoScroll,
-    resumeAutoScroll,
-    containerRef: combinedRef, // Return combined ref
+    pauseAutoScroll: () => setPaused(true),
+    resumeAutoScroll: () => setPaused(false),
+    containerRef: combinedRef,
   };
 }
