@@ -14,9 +14,10 @@ import { debugEnv } from "@/app/actions/debug";
 
 interface FeedListProps {
     variant?: 'standard' | 'pinterest-mobile';
+    headerAction?: React.ReactNode;
 }
 
-export function FeedList({ variant = 'standard' }: FeedListProps) {
+export function FeedList({ variant = 'standard', headerAction }: FeedListProps) {
     const { profile, user } = useAuth()
     const { t } = useLanguage()
     const [posts, setPosts] = useState<any[]>([])
@@ -61,7 +62,7 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
 
     // Filter UI Components
     const FilterBar = () => (
-        <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-4 w-full">
             {/* Time Filter */}
             <select
                 value={timeRange}
@@ -90,6 +91,13 @@ export function FeedList({ variant = 'standard' }: FeedListProps) {
                     </button>
                 ))}
             </div>
+
+            {/* Custom Header Action (Right Aligned) */}
+            {headerAction && (
+                <div className="ml-auto">
+                    {headerAction}
+                </div>
+            )}
         </div>
     );
 

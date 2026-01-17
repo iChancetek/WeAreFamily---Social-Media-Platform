@@ -20,7 +20,11 @@ import { AIPreviewPanel } from "@/components/magic-ai/ai-preview-panel";
 
 
 
-export function CreatePost() {
+interface CreatePostProps {
+    onClose?: () => void;
+}
+
+export function CreatePost({ onClose }: CreatePostProps) {
     const { user } = useAuth();
     const { t } = useLanguage();
     const [content, setContent] = useState("");
@@ -64,6 +68,9 @@ export function CreatePost() {
             setPrivacy('public');
             setAllowedViewers([]);
             toast.success("Moment shared successfully! ❤️");
+
+            // If we have an onClose handler (e.g. valid submission in modal mode), close it
+            if (onClose) onClose();
 
             window.location.reload();
         } catch (err: any) {
@@ -160,6 +167,7 @@ export function CreatePost() {
                 const fullError = JSON.stringify(debugObj, null, 2);
                 window.alert("UPLOAD ERROR:\n" + fullError);
                 setLastUploadError(fullError);
+                setLastUploadError(fullError);
                 toast.error(`Upload failed: ${error.message}`);
             } finally {
                 setIsUploading(false);
@@ -168,7 +176,15 @@ export function CreatePost() {
     }
 
     return (
-        <Card className="mb-6 border-none glass-card rounded-lg">
+        <Card className="mb-6 border-none glass-card rounded-lg relative group">
+            {/* Close Button for Toggle Mode */}
+            {onClose && (
+                <div className="absolute top-2 right-2 z-10">
+                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full opacity-50 hover:opacity-100 hover:bg-gray-100 dark:hover:bg-white/10" onClick={onClose}>
+                        <X className="w-4 h-4" />
+                    </Button>
+                </div>
+            )}
             <CardContent className="p-4">
                 <div className="flex gap-3">
                     <Avatar className="w-10 h-10 border border-gray-200">
@@ -179,7 +195,7 @@ export function CreatePost() {
 
                         <Textarea
                             placeholder={isListening ? (t("feed.listening") || "Listening...") : (t("feed.placeholder") + " 🎙️")}
-                            className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500"
+                            className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500 pr-10" // Added pr-10 for close button overlap protection
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                         />
@@ -190,6 +206,7 @@ export function CreatePost() {
                                     size="icon"
                                     variant="ghost"
                                     onClick={isListening ? stopListening : startListening}
+                                    disabled={isUploading || isSubmitting}
                                     className={isListening ? "text-red-500 hover:bg-red-50 animate-pulse" : "text-gray-400 hover:text-gray-600"}
                                 >
                                     {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
