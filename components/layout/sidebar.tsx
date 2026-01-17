@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot, Sun, Moon, Laptop } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Heart, Briefcase, Bell, User, Video, Bot, Laptop, Sun, Moon, ChevronRight } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,6 +10,9 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/components/language-context";
 import { useTheme } from "next-themes";
+import { motion, AnimatePresence } from "framer-motion";
+import { SidebarItem } from "./sidebar-item";
+import { VoiceStatusIndicator } from "@/components/ai/voice-status-indicator";
 
 interface SidebarProps {
     isAdmin?: boolean;
@@ -21,22 +25,26 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
     const { theme, setTheme } = useTheme();
+    const [isHovered, setIsHovered] = useState(false);
+
+    // AI Status (Placeholder for global context integration)
+    const [aiState, setAiState] = useState<'idle' | 'listening' | 'speaking'>('idle');
 
     const groups = [
         {
             title: "Main",
             items: [
                 { href: "/", label: "Home", icon: Home },
+                { href: "/chat", label: "AI Assistant", icon: Bot }, // Moved up for AI-first focus
                 { href: "/profile", label: profile?.displayName || "Profile", icon: User },
-                { href: "/family", label: "Companions", icon: Users },
-                { href: "/groups", label: "Groups", icon: Tent },
-                { href: "/chat", label: "AI Assistant", icon: Bot },
+                { href: "/messages", label: "Messages", icon: MessageSquare, hasNotification: true }, // Example notif
             ]
         },
         {
-            title: "Social",
+            title: "Discover",
             items: [
-                { href: "/messages", label: "Messages", icon: MessageSquare },
+                { href: "/family", label: "Companions", icon: Users },
+                { href: "/groups", label: "Groups", icon: Tent },
                 { href: "/live", label: "Live", icon: Video },
                 { href: "/events", label: "Events", icon: Ticket },
                 { href: "/gallery", label: "Gallery", icon: ImageIcon },
@@ -62,110 +70,144 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     }
 
     return (
-        <div className={cn("hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-[1.5rem] glass-panel w-64 fixed left-0 top-0 z-50 overflow-hidden shadow-2xl transition-all duration-300 ring-1 ring-black/5", className)}>
-            <div className="px-6 py-6 flex-shrink-0">
-                <Link
-                    href="/"
-                    className="flex items-center gap-3 pointer-events-auto cursor-pointer group"
-                    onClick={() => {
-                        onLinkClick?.();
-                    }}
-                >
-                    <div className="relative">
-                        <Heart className="w-8 h-8 text-primary fill-primary/20 group-hover:scale-110 transition-transform duration-300" />
-                        <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-50 group-hover:opacity-80 transition-opacity" />
-                    </div>
-                    <span className="text-2xl font-bold text-primary tracking-tight">Famio</span>
-                </Link>
+        <motion.div
+            className={cn(
+                "hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-[24px] fixed left-0 top-0 z-50 shadow-2xl overflow-hidden",
+                // Edgy Design: Dark charcoal background, slight border, glass effect
+                "bg-[#0B0F14] border border-white/5 shadow-[0_0_40px_-10px_rgba(0,0,0,0.5)]",
+                className
+            )}
+            initial={{ width: 80 }}
+            animate={{ width: isHovered ? 260 : 84 }} // 84px collapsed, 260px expanded
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            {/* 1. Header: Logo & AI Indicator */}
+            <div className="flex flex-col items-center px-4 pt-6 pb-2">
+                <div className="flex items-center justify-between w-full mb-4 pl-1">
+                    <Link
+                        href="/"
+                        className="flex items-center gap-3 group"
+                        onClick={onLinkClick}
+                    >
+                        <div className="relative flex items-center justify-center w-10 h-10">
+                            {/* Animated Logo Mark */}
+                            <Heart className={cn(
+                                "w-6 h-6 text-primary fill-primary/20",
+                                isHovered ? "scale-100" : "scale-90"
+                            )} />
+                            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        </div>
+
+                        {/* Title text fades in */}
+                        <AnimatePresence>
+                            {isHovered && (
+                                <motion.span
+                                    className="text-xl font-bold tracking-tight text-white whitespace-nowrap"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                >
+                                    Famio
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
+                    </Link>
+                </div>
+
+                {/* AI Presence Bar */}
+                <div className="w-full">
+                    <VoiceStatusIndicator
+                        state={aiState}
+                        className="w-full bg-white/5 hover:bg-white/10"
+                        onClick={() => {
+                            // Demo Interaction
+                            setAiState(prev => prev === 'idle' ? 'listening' : prev === 'listening' ? 'speaking' : 'idle');
+                        }}
+                    />
+                </div>
             </div>
 
-            <nav className="flex-1 px-4 mt-2 space-y-8 overflow-y-auto custom-scrollbar">
-                {groups.map((group, index) => (
-                    <div key={group.title} className="space-y-2">
-                        {group.title !== "Main" && (
-                            <h4 className="px-4 text-xs font-bold text-muted-foreground/70 uppercase tracking-widest mb-3">
-                                {group.title}
-                            </h4>
-                        )}
-                        {group.items.map((link) => {
-                            const isActive = pathname === link.href;
-                            return (
-                                <a
-                                    key={link.href}
-                                    href={link.href}
-                                    onClick={onLinkClick}
-                                    className={cn(
-                                        "flex items-center gap-3 w-full text-[15px] font-medium transition-all h-11 rounded-xl px-4 relative group",
-                                        isActive
-                                            ? "bg-primary/10 text-primary shadow-sm"
-                                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:pl-5"
-                                    )}
-                                >
-                                    {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />}
-                                    <link.icon className={cn("w-5 h-5 transition-colors", isActive ? "text-primary fill-primary/10" : "text-muted-foreground group-hover:text-primary")} />
-                                    <span className="truncate">{link.label}</span>
-                                    {link.href === '/notifications' && (
-                                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                                            <NotificationBadge />
-                                        </div>
-                                    )}
-                                </a>
-                            )
-                        })}
+            {/* 2. Scrollable Navigation */}
+            <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto overflow-x-hidden custom-scrollbar">
+                {groups.map((group) => (
+                    <div key={group.title} className="space-y-1">
+                        {/* Section Title (Only visible when expanded) */}
+                        <div className={cn(
+                            "px-3 text-[10px] font-bold text-zinc-500 uppercase tracking-widest transition-opacity duration-200 h-4 mb-2 flex items-center",
+                            isHovered ? "opacity-100" : "opacity-0"
+                        )}>
+                            {group.title}
+                        </div>
+
+                        {group.items.map((link) => (
+                            <SidebarItem
+                                key={link.href}
+                                icon={link.icon}
+                                label={link.label}
+                                href={link.href}
+                                isActive={pathname === link.href}
+                                isExpanded={isHovered}
+                                hasNotification={link.href === '/notifications' || link.href === '/messages'} // Logic for demo
+                                onClick={onLinkClick}
+                            />
+                        ))}
                     </div>
                 ))}
             </nav>
 
-            <div className="px-4 py-4 mt-auto border-t border-border/50 bg-white/50 dark:bg-black/20 backdrop-blur-md space-y-3">
-                {/* Inline Theme Toggle for Desktop Reliability */}
-                <div className="flex items-center p-1 bg-muted/50 rounded-xl border border-border/50">
-                    <button
-                        onClick={() => setTheme("light")}
-                        className={cn(
-                            "flex-1 flex items-center justify-center p-2 rounded-lg transition-all",
-                            theme === 'light' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
-                        )}
-                        title="Light Mode"
+            {/* 3. Footer: User & Settings */}
+            <div className="p-3 bg-gradient-to-t from-black/50 to-transparent">
+                {/* Theme Toggles (Simplified) */}
+                {isHovered ? (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex gap-1 p-1 mb-2 bg-white/5 rounded-xl border border-white/5"
                     >
-                        <Sun className="w-4 h-4" />
-                    </button>
+                        {['light', 'dark', 'system'].map((tMode) => (
+                            <button
+                                key={tMode}
+                                onClick={() => setTheme(tMode)}
+                                className={cn(
+                                    "flex-1 p-1.5 rounded-lg text-xs font-medium transition-all",
+                                    theme === tMode
+                                        ? "bg-zinc-800 text-white shadow-sm"
+                                        : "text-zinc-500 hover:text-zinc-300"
+                                )}
+                            >
+                                {tMode === 'light' && <p>☀</p>}
+                                {tMode === 'dark' && <p>☾</p>}
+                                {tMode === 'system' && <p>💻</p>}
+                            </button>
+                        ))}
+                    </motion.div>
+                ) : (
+                    // Collapsed Theme Toggle (Cycle)
                     <button
-                        onClick={() => setTheme("dark")}
-                        className={cn(
-                            "flex-1 flex items-center justify-center p-2 rounded-lg transition-all",
-                            theme === 'dark' ? "bg-zinc-800 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
-                        )}
-                        title="Dark Mode"
+                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                        className="w-full flex items-center justify-center h-10 text-zinc-500 hover:text-white transition-colors mb-2"
                     >
-                        <Moon className="w-4 h-4" />
+                        {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                     </button>
-                    <button
-                        onClick={() => setTheme("system")}
-                        className={cn(
-                            "flex-1 flex items-center justify-center p-2 rounded-lg transition-all",
-                            theme === 'system' ? "bg-white dark:bg-zinc-800 shadow-sm" : "text-muted-foreground hover:text-foreground"
-                        )}
-                        title="System Theme"
-                    >
-                        <Laptop className="w-4 h-4" />
-                    </button>
-                </div>
+                )}
 
-                <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-destructive/10 rounded-xl px-3 h-10"
-                    onClick={() => {
-                        // Force a hard navigation to login if needed, or stick to router
-                        signOut().then(() => {
-                            window.location.href = '/login';
-                        });
-                    }}
-                >
-                    <LogOut className="h-5 w-5" />
-                    {t("nav.signout")}
-                </Button>
+                <div className="border-t border-white/10 pt-3 mt-1">
+                    <SidebarItem
+                        icon={LogOut}
+                        label={t("nav.signout")}
+                        href="#"
+                        onClick={() => signOut().then(() => window.location.href = '/login')}
+                        isExpanded={isHovered}
+                        isActive={false}
+                    />
+                </div>
             </div>
-        </div>
+
+            {/* Drag Handle Indicator (Optional visual cue) */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-white/5 rounded-l-full" />
+        </motion.div>
     );
 }
 

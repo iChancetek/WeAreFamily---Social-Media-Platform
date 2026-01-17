@@ -24,7 +24,7 @@ export async function MainLayout({ children, className }: { children: React.Reac
             <Sidebar isAdmin={isAdmin} className="hidden md:flex" />
 
             {/* Main Content Area - Added left margin to account for floating sidebar */}
-            <div className="flex-1 flex flex-col min-w-0 md:ml-72 transition-all duration-300">
+            <div className="flex-1 flex flex-col min-w-0 md:ml-[105px] transition-all duration-300">
                 <TopNav className="md:hidden border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-40" />
                 <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
                     <div className={containerClass}>
