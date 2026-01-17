@@ -64,8 +64,8 @@ export function useChat(options: UseChatOptions) {
     }, [messages, conversationId, memoryEnabled]);
 
     const sendMessage = useCallback(
-        async (content: string) => {
-            if (!content.trim() || isLoading) return;
+        async (content: string): Promise<string | null> => {
+            if (!content.trim() || isLoading) return null;
 
             const userMessage: ConversationMessage = {
                 role: 'user',
@@ -110,12 +110,14 @@ export function useChat(options: UseChatOptions) {
                 };
 
                 setMessages((prev) => [...prev, assistantMessage]);
+                return assistantMessage.content;
             } catch (err: unknown) {
                 console.error('Chat error:', err);
                 setError(err instanceof Error ? err.message : 'Failed to send message');
 
                 // Remove the user message if the request failed
                 setMessages((prev) => prev.slice(0, -1));
+                return null;
             } finally {
                 setIsLoading(false);
             }

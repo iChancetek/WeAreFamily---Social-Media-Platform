@@ -3,13 +3,15 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 export interface UseSpeechRecognitionProps {
     onResult?: (transcript: string) => void;
     onEnd?: () => void;
-    useWhisper?: boolean; // NEW: Use OpenAI Whisper instead of browser API
+    useWhisper?: boolean; // Use OpenAI Whisper instead of browser API
+    continuous?: boolean; // NEW: Continuous listening mode
 }
 
 export function useSpeechRecognition({
     onResult,
     onEnd,
-    useWhisper = true // Default to Whisper for better accuracy
+    useWhisper = true, // Default to Whisper for better accuracy
+    continuous = false // Default to single-turn
 }: UseSpeechRecognitionProps = {}) {
     const [isListening, setIsListening] = useState(false);
     const [transcript, setTranscript] = useState('');
@@ -24,21 +26,25 @@ export function useSpeechRecognition({
     // Use refs to avoid recreating recognition instance
     const onResultRef = useRef(onResult);
     const onEndRef = useRef(onEnd);
+    const continuousRef = useRef(continuous);
 
-    // Update refs when callbacks change
+    // Update refs when props change
     useEffect(() => {
         onResultRef.current = onResult;
         onEndRef.current = onEnd;
-    }, [onResult, onEnd]);
+        continuousRef.current = continuous;
+    }, [onResult, onEnd, continuous]);
 
     // Initialize browser Speech Recognition (fallback)
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
-        if (typeof window !== 'undefined' && SpeechRecognition) {
+        if (SpeechRecognition) {
             try {
                 const recognitionInstance = new SpeechRecognition();
-                recognitionInstance.continuous = false;
+                recognitionInstance.continuous = continuous; // Use continuous flag
                 recognitionInstance.interimResults = true;
                 recognitionInstance.lang = 'en-US';
 
@@ -62,7 +68,10 @@ export function useSpeechRecognition({
                 };
 
                 recognitionInstance.onend = () => {
-                    setIsListening(false);
+                    // Only stop listening state if NOT continuous, or if explicitly stopped
+                    if (!continuousRef.current) {
+                        setIsListening(false);
+                    }
                     if (onEndRef.current) onEndRef.current();
                 };
 
@@ -78,7 +87,7 @@ export function useSpeechRecognition({
                 setIsSupported(false);
             }
         }
-    }, []);
+    }, [continuous]);
 
     // Initialize MediaRecorder for Whisper
     useEffect(() => {
@@ -145,6 +154,9 @@ export function useSpeechRecognition({
                     const audioBlob = new Blob(chunks, { type: 'audio/webm' });
                     await transcribeWithWhisper(audioBlob);
                     stream.getTracks().forEach(track => track.stop());
+
+                    // If continuous, restart recording after processing (or handled by wrapper)
+                    // Note: Whisper continuous mode is better handled by VAD wrapper essentially calling start/stop
                 };
 
                 recorder.start();

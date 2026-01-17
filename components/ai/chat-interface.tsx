@@ -12,6 +12,7 @@ import { AgentMode } from "@/types/ai";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
 import { Loader2 } from "lucide-react";
+import { useVoiceConversation } from "@/hooks/use-voice-conversation";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Linkify } from "@/components/shared/linkify";
@@ -101,18 +102,31 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Simple text extraction for now
-        // TODO: Expand to PDF/Docx using a library or service if needed
+        // Simple text file read for demo; image handling would need upload logic
         const reader = new FileReader();
-        reader.onload = async (event) => {
-            const text = event.target?.result as string;
-            setAttachedFile({
-                name: file.name,
-                content: text
-            });
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            setAttachedFile({ name: file.name, content });
         };
         reader.readAsText(file);
     };
+
+    // Agentic Voice Conversation Hook
+    const {
+        state: voiceState,
+        isContinuous,
+        toggleContinuous,
+        isSpeaking: isAgentSpeaking
+    } = useVoiceConversation({
+        onMessage: async (msg) => {
+            const response = await chat.sendMessage(msg);
+            return response || "I processed that, but have no verbal response.";
+        }
+    });
+
+    // NOTE: The above onMessage has a limitation because useChat doesn't return the text.
+    // We will fix useChat in the next step to return the response string.
+
 
     const modes = [
         { id: 'general', label: 'General', icon: Sparkles, desc: 'Everyday assistance' },
@@ -268,20 +282,42 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
 
                         <div className="flex gap-2 pb-1">
                             {/* Voice Input Trigger */}
+                            {/* Voice Input Trigger */}
                             {isSpeechSupported && (
-                                <Button
-                                    type="button"
-                                    variant={isListening ? "destructive" : "secondary"}
-                                    size="icon"
-                                    className="rounded-full h-[42px] w-[42px] shadow-sm"
-                                    onClick={isListening ? stopListening : startListening}
-                                >
-                                    {isListening ? (
-                                        <MicOff className="w-5 h-5 animate-pulse" />
-                                    ) : (
-                                        <Mic className="w-5 h-5" />
+                                <>
+                                    {/* Continuous Mode Toggle */}
+                                    <Button
+                                        type="button"
+                                        variant={isContinuous ? "destructive" : "ghost"}
+                                        size="icon"
+                                        className={cn(
+                                            "rounded-full h-[42px] w-[42px] shadow-sm transition-all",
+                                            isContinuous && "animate-pulse ring-2 ring-red-500 ring-offset-2"
+                                        )}
+                                        onClick={toggleContinuous}
+                                        title={isContinuous ? "Stop Agentic Voice Mode" : "Start Agentic Voice Mode (Continuous)"}
+                                    >
+                                        <Bot className={cn("w-6 h-6", isContinuous ? "text-white" : "text-muted-foreground")} />
+                                    </Button>
+
+                                    {/* Standard Mic (Push to Talk) - Hide if continuous is on */}
+                                    {!isContinuous && (
+                                        <Button
+                                            type="button"
+                                            variant={isListening ? "destructive" : "secondary"}
+                                            size="icon"
+                                            className="rounded-full h-[42px] w-[42px] shadow-sm"
+                                            onClick={isListening ? stopListening : startListening}
+                                            title="Hold or click to speak"
+                                        >
+                                            {isListening ? (
+                                                <MicOff className="w-5 h-5 animate-pulse" />
+                                            ) : (
+                                                <Mic className="w-5 h-5" />
+                                            )}
+                                        </Button>
                                     )}
-                                </Button>
+                                </>
                             )}
 
                             <Button
