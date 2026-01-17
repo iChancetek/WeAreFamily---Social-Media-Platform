@@ -1,4 +1,4 @@
-import { getBranding, getBrandingPosts, getBrandingFollowStatus } from "@/app/actions/branding";
+import { getBranding, getBrandingFollowStatus } from "@/app/actions/branding";
 import { MainLayout } from "@/components/layout/main-layout";
 import { notFound } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
@@ -6,15 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Briefcase, Users, Heart } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
-import { PostCard } from "@/components/feed/post-card";
-import { MasonryFeed } from "@/components/feed/masonry-feed";
 import { FollowBrandingButton } from "@/components/branding/follow-branding-button";
-import { BrandingPostCreator } from "@/components/branding/branding-post-creator";
 import { BrandingCoverButton } from "@/components/branding/branding-cover-button";
-
 import { BrandingManagementDialog } from "@/components/branding/branding-management-dialog";
 import { ShareButton } from "@/components/shared/share-button";
 import { Trash2 } from "lucide-react";
+import { BrandingFeed } from "@/components/branding/branding-feed";
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +23,6 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
     const user = await getUserProfile();
     // Use branding.id (resolved) instead of params.brandingId (potential slug)
     const followStatus = await getBrandingFollowStatus(branding.id);
-    const posts = await getBrandingPosts(branding.id);
 
     const isFollowing = !!followStatus;
     const isBrandingAdmin = followStatus?.role === 'admin';
@@ -83,23 +79,12 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
             <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8"> {/* Adjusted margin top for profile pic overlap */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Post Creator for Followers and Admins */}
-                    {followStatus && (
-                        <BrandingPostCreator
-                            brandingId={branding.id}
-                            branding={brandingAuthor}
-                            currentUser={user!}
-                            role={followStatus.role}
-                        />
-                    )}
-
-                    <div className="space-y-4">
-                        <MasonryFeed posts={posts} currentUserId={user?.id} />
-                        {posts.length === 0 && (
-                            <div className="text-center py-12 bg-muted/30 rounded-lg">
-                                <p className="text-muted-foreground">No updates yet.</p>
-                            </div>
-                        )}
-                    </div>
+                    <BrandingFeed
+                        brandingId={branding.id}
+                        currentUser={user}
+                        brandingAuthor={brandingAuthor}
+                        role={followStatus?.role || ''}
+                    />
                 </div>
 
                 <div className="space-y-6">

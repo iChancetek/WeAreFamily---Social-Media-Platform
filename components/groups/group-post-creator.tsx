@@ -19,9 +19,10 @@ import { AIPreviewPanel } from "@/components/magic-ai/ai-preview-panel"
 interface GroupPostCreatorProps {
     groupId: string;
     user: { displayName?: string | null; imageUrl?: string | null };
+    onClose?: () => void;
 }
 
-export function GroupPostCreator({ groupId, user }: GroupPostCreatorProps) {
+export function GroupPostCreator({ groupId, user, onClose }: GroupPostCreatorProps) {
     const router = useRouter();
     const [content, setContent] = useState("");
     const [isPosting, setIsPosting] = useState(false);
@@ -96,6 +97,7 @@ export function GroupPostCreator({ groupId, user }: GroupPostCreatorProps) {
             setContent("");
             setMediaUrls([]);
             toast.success("Posted to group!");
+            if (onClose) onClose();
             router.refresh();
         } catch (error) {
             console.error(error);

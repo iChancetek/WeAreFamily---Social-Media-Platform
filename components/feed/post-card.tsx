@@ -28,6 +28,7 @@ import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { chatWithAgent } from '@/app/actions/ai-agents';
 import { MediaEmbed } from "./media-embed";
+import { AskAIDialog } from "./ask-ai-dialog";
 
 function isUrlVideo(url: string | null | undefined): boolean {
     if (!url) return false;
@@ -69,6 +70,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
 
     // Enlargement State (Only used if !isEnlarged)
     const [enlargedViewOpen, setEnlargedViewOpen] = useState(false);
+    const [askAIDialogOpen, setAskAIDialogOpen] = useState(false);
 
     // Early return AFTER hooks
     if (!post || post.isDeleted) return null;
@@ -370,6 +372,10 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={handleTranslate}>{translatedContent ? "Show Original" : "Translate"}</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setAskAIDialogOpen(true)} className="text-purple-600 dark:text-purple-400 gap-2">
+                                        <Sparkles className="w-4 h-4" />
+                                        Ask AI
+                                    </DropdownMenuItem>
                                     {isAuthor && <DropdownMenuItem onClick={() => setIsEditing(true)}>Edit</DropdownMenuItem>}
                                     {isAuthor && <DropdownMenuItem onClick={handleDeletePost} className="text-red-500">Delete</DropdownMenuItem>}
                                     {!isAuthor && <DropdownMenuItem className="text-red-500">Report</DropdownMenuItem>}
@@ -451,6 +457,12 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
 
                 <ReportDialog open={reportDialogOpen} onOpenChange={setReportDialogOpen} targetType="post" targetId={post.id} context={{ contextType, contextId, authorId: post.authorId }} />
                 {isAuthor && <EngagementSettingsDialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen} postId={post.id} currentSettings={engagementSettings} contextType={contextType} contextId={contextId} />}
+                <AskAIDialog
+                    isOpen={askAIDialogOpen}
+                    onClose={() => setAskAIDialogOpen(false)}
+                    postContent={translatedContent || post.content}
+                    postAuthor={name}
+                />
             </Card>
 
             {/* ENLARGED VIEW MODAL */}

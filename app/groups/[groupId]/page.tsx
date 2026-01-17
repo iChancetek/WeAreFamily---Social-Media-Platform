@@ -1,4 +1,4 @@
-import { getGroup, getGroupPosts, joinGroup, leaveGroup, getGroupMemberStatus } from "@/app/actions/groups";
+import { getGroup, joinGroup, leaveGroup, getGroupMemberStatus } from "@/app/actions/groups";
 import { MainLayout } from "@/components/layout/main-layout";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -7,21 +7,14 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Lock, Globe, Plus, Sparkles } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
-import { CreatePost } from "@/components/feed/create-post";
-// Note: CreatePost might need adjustment to support group posting context.
-// For now, I'll create a dedicated GroupPostCreator or adapt the existing one if possible.
-// Let's create a simple inline poster for groups for now.
-
 import { Card } from "@/components/ui/card";
-import { PostCard } from "@/components/feed/post-card"; // Assuming this creates the post view
-import { MasonryFeed } from "@/components/feed/masonry-feed";
-import { GroupPostCreator } from "@/components/groups/group-post-creator"; // Will create this next
-import { JoinGroupButton } from "@/components/groups/join-group-button"; // Client component for actions
+import { JoinGroupButton } from "@/components/groups/join-group-button";
 import { GroupAITutorBanner } from "@/components/groups/group-ai-tutor-banner";
 import { GroupCoverButton } from "@/components/groups/group-cover-button";
 import { GroupManagementDialog } from "@/components/groups/group-management-dialog";
 import { ShareButton } from "@/components/shared/share-button";
 import { Trash2 } from "lucide-react";
+import { GroupFeed } from "@/components/groups/group-feed";
 
 export default async function GroupPage({ params }: { params: Promise<{ groupId: string }> }) {
     const { groupId } = await params;
@@ -32,7 +25,7 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
     // Use group.id (resolved) instead of params.groupId (potential slug)
     const memberStatus = await getGroupMemberStatus(group.id);
     const isMember = !!memberStatus;
-    const posts = await getGroupPosts(group.id);
+
 
     // If private and not member, check if we can see anything?
     // Usually show basic info and join button.
@@ -126,25 +119,15 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
                 <div className="lg:col-span-2 space-y-6">
                     {canViewContent ? (
                         <>
-                            {isMember && (
-                                <GroupPostCreator groupId={group.id} user={user!} />
-                            )}
-
                             {/* AI Tutor Banner for School Groups */}
                             {(group.name.toLowerCase().includes('school') || group.name.toLowerCase().includes('homework') || group.category.toLowerCase() === 'education') && (
                                 <GroupAITutorBanner />
                             )}
 
-                            <div className="space-y-4">
-                                <MasonryFeed posts={posts} currentUserId={user?.id} />
-                                {posts.length === 0 && (
-                                    <div className="text-center py-12 bg-muted/30 rounded-lg">
-                                        <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
-                                    </div>
-                                )}
-                            </div>
+                            <GroupFeed groupId={group.id} currentUser={user} />
                         </>
                     ) : (
+
                         <div className="text-center py-12 bg-muted/30 rounded-lg border border-dashed">
                             <Lock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                             <h3 className="text-xl font-medium mb-2">This group is private</h3>
@@ -177,6 +160,6 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
                 </div>
             </div>
 
-        </MainLayout>
+        </MainLayout >
     );
 }

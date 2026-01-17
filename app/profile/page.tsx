@@ -3,11 +3,8 @@ import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { FamilyMembersCard } from "@/components/profile/family-members-card";
-import { PostCard } from "@/components/feed/post-card";
-import { MasonryFeed } from "@/components/feed/masonry-feed";
-import { getUserPosts } from "@/app/actions/posts";
 import { getFamilyMembers } from "@/app/actions/family";
-import { CreatePost } from "@/components/feed/create-post";
+import { ProfileFeed } from "@/components/profile/profile-feed";
 
 export const dynamic = 'force-dynamic';
 
@@ -18,17 +15,12 @@ export default async function ProfilePage() {
         redirect("/");
     }
 
-    const [familyMembers, posts] = await Promise.all([
-        getFamilyMembers(),
-        getUserPosts(user.id)
-    ]);
+    const familyMembers = await getFamilyMembers();
 
     // DEBUG: Log to server console
     console.log("Profile Debug:", {
         userId: user.id,
-        userEmail: user.email,
-        postsCount: posts?.length || 0,
-        hasPosts: posts && posts.length > 0
+        userEmail: user.email
     });
 
     return (
@@ -48,19 +40,7 @@ export default async function ProfilePage() {
 
                     {/* Right Column: Timeline Feed */}
                     <div className="lg:col-span-8 space-y-6">
-                        {/* Add CreatePost component */}
-                        <CreatePost />
-
-                        {posts.length > 0 ? (
-                            <MasonryFeed posts={posts} currentUserId={user.id} variant="pinterest-mobile" />
-                        ) : (
-                            <div className="bg-white dark:bg-card rounded-xl p-12 text-center border border-dashed border-gray-200 dark:border-white/10">
-                                <p className="text-muted-foreground">No posts yet. Share your first moment!</p>
-                                <p className="text-xs text-muted-foreground mt-2 font-mono">
-                                    User ID: {user.id?.substring(0, 12)}... | Posts: {posts?.length || 0}
-                                </p>
-                            </div>
-                        )}
+                        <ProfileFeed userId={user.id} />
                     </div>
                 </div>
             </div>

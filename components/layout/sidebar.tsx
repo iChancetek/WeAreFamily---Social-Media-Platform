@@ -14,6 +14,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SidebarItem } from "./sidebar-item";
 import { VoiceStatusIndicator } from "@/components/ai/voice-status-indicator";
 
+import { useVoice } from "@/components/ai/voice-provider";
+
 interface SidebarProps {
     isAdmin?: boolean;
     className?: string;
@@ -27,8 +29,8 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     const { theme, setTheme } = useTheme();
     const [isHovered, setIsHovered] = useState(false);
 
-    // AI Status (Placeholder for global context integration)
-    const [aiState, setAiState] = useState<'idle' | 'listening' | 'speaking'>('idle');
+    // Global Voice State
+    const { state: aiState, toggleContinuous } = useVoice();
 
     const groups = [
         {
@@ -121,10 +123,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                     <VoiceStatusIndicator
                         state={aiState}
                         className="w-full bg-zinc-100/50 hover:bg-zinc-100 dark:bg-white/5 dark:hover:bg-white/10"
-                        onClick={() => {
-                            // Demo Interaction
-                            setAiState(prev => prev === 'idle' ? 'listening' : prev === 'listening' ? 'speaking' : 'idle');
-                        }}
+                        onClick={toggleContinuous}
                     />
                 </div>
             </div>

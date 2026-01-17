@@ -20,10 +20,11 @@ interface BrandingPostCreatorProps {
     brandingId: string;
     branding: { name: string; imageUrl?: string };
     currentUser: { displayName?: string | null; imageUrl?: string | null; id: string };
-    role?: 'admin' | 'follower' | null;
+    role?: string | null; // Broadened to accept any string role
+    onClose?: () => void;
 }
 
-export function BrandingPostCreator({ brandingId, branding, currentUser, role }: BrandingPostCreatorProps) {
+export function BrandingPostCreator({ brandingId, branding, currentUser, role, onClose }: BrandingPostCreatorProps) {
     const router = useRouter();
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,6 +104,7 @@ export function BrandingPostCreator({ brandingId, branding, currentUser, role }:
             setContent("");
             setMediaUrls([]);
             toast.success("Posted to branding!");
+            if (onClose) onClose();
             router.refresh();
         } catch (error) {
             console.error(error);

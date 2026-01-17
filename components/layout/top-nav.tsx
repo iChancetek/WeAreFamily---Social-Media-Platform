@@ -6,9 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Menu, Heart } from "lucide-react";
 import { MobileSidebar } from "./mobile-sidebar";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { useVoice } from "@/components/ai/voice-provider";
+import { VoiceStatusIndicator } from "@/components/ai/voice-status-indicator";
 
 export function TopNav({ className }: { className?: string }) {
     const [open, setOpen] = useState(false);
+    const { state: aiState, toggleContinuous } = useVoice();
 
     return (
         <header className={`flex items-center justify-between px-4 h-16 fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${className} bg-background/80 backdrop-blur-md border-b border-white/5`}>
@@ -27,8 +30,11 @@ export function TopNav({ className }: { className?: string }) {
             <div className="flex items-center gap-1">
                 {/* Mobile AI Status Orb (Mini) */}
                 <div className="mr-2">
-                    {/* Placeholder for AI state pass-through or context consumption */}
-                    <div className="w-2 h-2 rounded-full bg-zinc-500/50" />
+                    <VoiceStatusIndicator
+                        state={aiState}
+                        onClick={toggleContinuous}
+                        className="w-10 h-10 p-1 bg-transparent hover:bg-white/10 border-none"
+                    />
                 </div>
 
                 <Sheet open={open} onOpenChange={setOpen}>

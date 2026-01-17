@@ -11,7 +11,12 @@ export type EmotionalTone =
     | "sad"
     | "professional"
     | "love"
-    | "emotional_intelligence";
+    | "emotional_intelligence"
+    | "grammar"
+    | "shorter"
+    | "longer"
+    | "witty"
+    | "storyteller";
 
 export interface ToneMetadata {
     id: EmotionalTone;
@@ -54,6 +59,41 @@ export const TONE_METADATA: Record<EmotionalTone, ToneMetadata> = {
         icon: "✨",
         description: "Warm, balanced, and family-friendly",
         color: "bg-gradient-to-br from-blue-500 to-purple-500"
+    },
+    grammar: {
+        id: "grammar",
+        name: "Grammar Polish",
+        icon: "📝",
+        description: "Fix grammar and improve clarity",
+        color: "bg-gradient-to-br from-slate-500 to-gray-500"
+    },
+    shorter: {
+        id: "shorter",
+        name: "Make Shorter",
+        icon: "✂️",
+        description: "Condense and summarize",
+        color: "bg-gradient-to-br from-red-400 to-orange-400"
+    },
+    longer: {
+        id: "longer",
+        name: "Make Longer",
+        icon: "➕",
+        description: "Expand and add detail",
+        color: "bg-gradient-to-br from-blue-400 to-cyan-400"
+    },
+    witty: {
+        id: "witty",
+        name: "Witty",
+        icon: "😜",
+        description: "Clever, humorous, and fun",
+        color: "bg-gradient-to-br from-yellow-400 to-amber-500"
+    },
+    storyteller: {
+        id: "storyteller",
+        name: "Storyteller",
+        icon: "📖",
+        description: "Turn it into a narrative",
+        color: "bg-gradient-to-br from-indigo-500 to-purple-600"
     },
     enthusiastic: {
         id: "enthusiastic",

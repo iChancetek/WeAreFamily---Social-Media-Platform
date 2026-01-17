@@ -11,12 +11,15 @@ import { useAutoScroll } from "@/hooks/use-auto-scroll"
 import { AutoScrollToggle } from "./auto-scroll-toggle"
 import { debugEnv } from "@/app/actions/debug";
 
+import { PostFilters } from "@/app/actions/posts";
+
 interface FeedListProps {
     variant?: 'standard' | 'pinterest-mobile';
     headerAction?: React.ReactNode;
+    fetcher?: (limit: number, filters: PostFilters) => Promise<any[]>;
 }
 
-export function FeedList({ variant = 'standard', headerAction }: FeedListProps) {
+export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedListProps) {
     const { profile, user } = useAuth()
     const { t } = useLanguage()
     const [posts, setPosts] = useState<any[]>([])
@@ -43,9 +46,12 @@ export function FeedList({ variant = 'standard', headerAction }: FeedListProps) 
         const fetchPosts = async () => {
             setLoading(true);
             try {
+                // Determine which fetcher to use
+                const fetchFn = fetcher || getPosts;
+
                 // Parallel fetch for speed + debug
                 const [data, debug] = await Promise.all([
-                    getPosts(50, { timeRange, contentType }),
+                    fetchFn(50, { timeRange, contentType }),
                     debugEnv()
                 ]);
                 setPosts(data)
@@ -58,7 +64,7 @@ export function FeedList({ variant = 'standard', headerAction }: FeedListProps) 
             }
         }
         fetchPosts()
-    }, [timeRange, contentType]) // Re-fetch when filters change
+    }, [timeRange, contentType, fetcher]) // Re-fetch when filters change
 
     // Filter UI Components
     const FilterBar = () => (

@@ -219,12 +219,51 @@ export async function editBrandingPost(brandingId: string, postId: string, conte
     revalidatePath(`/branding/${brandingId}`);
 }
 
-export async function getBrandingPosts(brandingId: string) {
+import { PostFilters } from "./posts";
+
+export async function getBrandingPosts(brandingId: string, limit = 50, filters: PostFilters = { timeRange: 'all', contentType: 'all' }) {
     const postsSnapshot = await adminDb.collection("pages").doc(brandingId).collection("posts")
         .orderBy("createdAt", "desc")
         .get();
 
-    const allPosts = await Promise.all(postsSnapshot.docs.map(async (postDoc: any) => {
+    let allDocs = postsSnapshot.docs;
+
+    // Apply Memory Filters
+    if (filters.contentType !== 'all') {
+        allDocs = allDocs.filter(doc => {
+            const data = doc.data();
+            const hasMedia = data.mediaUrls && data.mediaUrls.length > 0;
+            const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
+            const hasVideoLink = videoUrlRegex.test(data.content || "");
+            const isVideo = (hasMedia && data.mediaUrls.some((u: string) => u.match(/\.(mp4|mov|webm)$/i))) || hasVideoLink;
+            const isPhoto = hasMedia && !isVideo;
+            const isText = !hasMedia && !hasVideoLink;
+
+            if (filters.contentType === 'video') return isVideo;
+            if (filters.contentType === 'photo') return isPhoto;
+            if (filters.contentType === 'text') return isText;
+            return true;
+        });
+    }
+
+    if (filters.timeRange !== 'all') {
+        const now = new Date();
+        const msPerDay = 24 * 60 * 60 * 1000;
+        allDocs = allDocs.filter(doc => {
+            const data = doc.data();
+            const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
+            const diff = now.getTime() - createdAt.getTime();
+            if (filters.timeRange === 'day') return diff < msPerDay;
+            if (filters.timeRange === 'week') return diff < msPerDay * 7;
+            if (filters.timeRange === 'month') return diff < msPerDay * 30;
+            if (filters.timeRange === 'year') return diff < msPerDay * 365;
+            return true;
+        });
+    }
+
+    const slicedDocs = allDocs.slice(0, limit);
+
+    const allPosts = await Promise.all(slicedDocs.map(async (postDoc: any) => {
         const postData = postDoc.data();
 
         // If postedAsBranding, Fetch Branding Details as Author

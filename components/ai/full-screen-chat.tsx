@@ -46,7 +46,11 @@ type Message = {
     content: string;
 };
 
-export function FullScreenChat() {
+interface FullScreenChatProps {
+    initialChatId?: string;
+}
+
+export function FullScreenChat({ initialChatId }: FullScreenChatProps) {
     const { user } = useAuth();
     const { speak, stop, isSpeaking, isSupported } = useTextToSpeech();
 
@@ -87,6 +91,13 @@ export function FullScreenChat() {
             loadConversations();
         }
     }, [user]);
+
+    // Handle Deep Link
+    useEffect(() => {
+        if (initialChatId) {
+            setActiveConversationId(initialChatId);
+        }
+    }, [initialChatId]);
 
     // Load Messages when Active Chat Changes
     useEffect(() => {

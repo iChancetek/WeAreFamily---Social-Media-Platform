@@ -3,10 +3,16 @@ import { FullScreenChat } from "@/components/ai/full-screen-chat";
 
 export const dynamic = 'force-dynamic';
 
-export default function ChatPage() {
+interface ChatPageProps {
+    searchParams?: {
+        id?: string;
+    };
+}
+
+export default function ChatPage({ searchParams }: ChatPageProps) {
     return (
         <MainLayout>
-            <FullScreenChat />
+            <FullScreenChat initialChatId={searchParams?.id} />
         </MainLayout>
     );
 }
