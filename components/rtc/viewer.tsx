@@ -23,14 +23,20 @@ export function Viewer({ sessionId }: ViewerProps) {
     const remoteVideoRef = useRef<HTMLVideoElement>(null)
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
 
-    useEffect(() => {
-        joinStream()
-        return () => {
-            cleanup()
+    const cleanup = useCallback(() => {
+        if (peerConnectionRef.current) {
+            peerConnectionRef.current.close()
         }
-    }, [sessionId])
+    }, [])
 
-    const joinStream = async () => {
+    const handleLeave = () => {
+        cleanup()
+        router.push("/live")
+    }
+
+    const joinStream = useCallback(async () => {
+        if (!user) return undefined
+
         try {
             // Add viewer to session (checks privacy and kicked status)
             await addViewer(sessionId)
@@ -84,11 +90,12 @@ export function Viewer({ sessionId }: ViewerProps) {
             const signalsRef = collection(db, `active_sessions/${sessionId}/signals`)
             const signalsQuery = query(
                 signalsRef,
-                where("to", "==", user!.uid),
+                where("to", "==", user.uid),
                 orderBy("timestamp", "asc")
             )
 
-            onSnapshot(signalsQuery, async (snapshot) => {
+            // Return unsubscribe for cleanup
+            const unsubscribe = onSnapshot(signalsQuery, async (snapshot) => {
                 for (const change of snapshot.docChanges()) {
                     if (change.type === "added") {
                         const signal = change.doc.data()
@@ -116,23 +123,30 @@ export function Viewer({ sessionId }: ViewerProps) {
                 to: session.hostId,
             })
 
+            return unsubscribe
+
         } catch (error) {
             console.error("Viewer setup error:", error)
             toast.error("Failed to join stream")
             router.push("/live")
+            return undefined
         }
-    }
+    }, [sessionId, user, router, cleanup])
 
-    const cleanup = () => {
-        if (peerConnectionRef.current) {
-            peerConnectionRef.current.close()
+    useEffect(() => {
+        let unsubscribe: (() => void) | undefined;
+
+        const init = async () => {
+            unsubscribe = await joinStream()
         }
-    }
 
-    const handleLeave = () => {
-        cleanup()
-        router.push("/live")
-    }
+        init()
+
+        return () => {
+            if (unsubscribe) unsubscribe()
+            cleanup()
+        }
+    }, [joinStream, cleanup])
 
     return (
         <div className="relative w-full h-full min-h-[600px] bg-black rounded-lg overflow-hidden">
