@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { useAuth } from "@/components/auth-provider"
 import { sendSignal, endSession, updateSessionPrivacy, updateSessionHeartbeat } from "@/app/actions/rtc"
 import { Button } from "@/components/ui/button"
