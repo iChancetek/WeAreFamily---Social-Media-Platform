@@ -35,14 +35,7 @@ export function ViewerListPanel({ sessionId, viewerCount }: ViewerListPanelProps
     const [kickingViewerId, setKickingViewerId] = useState<string | null>(null)
     const [viewerToKick, setViewerToKick] = useState<Viewer | null>(null)
 
-    useEffect(() => {
-        loadViewers()
-        // Refresh viewer list every 5 seconds
-        const interval = setInterval(loadViewers, 5000)
-        return () => clearInterval(interval)
-    }, [sessionId, viewerCount])
-
-    const loadViewers = async () => {
+    const loadViewers = useCallback(async () => {
         try {
             const data = await getSessionViewers(sessionId)
             setViewers(data)
@@ -51,7 +44,14 @@ export function ViewerListPanel({ sessionId, viewerCount }: ViewerListPanelProps
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [sessionId])
+
+    useEffect(() => {
+        loadViewers()
+        // Refresh viewer list every 5 seconds
+        const interval = setInterval(loadViewers, 5000)
+        return () => clearInterval(interval)
+    }, [loadViewers, viewerCount])
 
     const handleKickClick = (viewer: Viewer) => {
         setViewerToKick(viewer)

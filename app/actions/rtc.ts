@@ -116,8 +116,11 @@ export async function sendSignal(sessionId: string, payload: Omit<SignalPayload,
 
     const sessionData = sessionDoc.data();
 
-    // Verify user is a participant
-    if (!sessionData?.participants?.includes(user.id)) {
+    // Verify user is a participant or viewer
+    const isParticipant = sessionData?.participants?.includes(user.id);
+    const isViewer = sessionData?.type === "broadcast" && sessionData?.viewers?.includes(user.id);
+
+    if (!isParticipant && !isViewer) {
         throw new Error("Unauthorized to signal in this session");
     }
 
