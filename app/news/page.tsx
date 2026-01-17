@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { MainLayout } from "@/components/layout/main-layout";
 import { NewsFeed } from "@/components/news/news-feed";
 import { ArrowLeft } from "lucide-react";

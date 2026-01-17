@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { MainLayout } from "@/components/layout/main-layout";
 import AnalyticsDashboard from "@/components/admin/analytics/analytics-dashboard";
 import { getUserProfile } from "@/lib/auth";
