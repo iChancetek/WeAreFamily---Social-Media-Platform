@@ -42,63 +42,18 @@ export function BroadcastView({ sessionId, onEnd }: BroadcastViewProps) {
 
 
 
-    useEffect(() => {
-        startBroadcast()
-        return () => {
-            cleanup()
+    const cleanup = useCallback(() => {
+        // Stop local stream
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach((track) => track.stop())
         }
-    }, [sessionId])
 
-    const startBroadcast = async () => {
-        try {
-            // Get user media
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true,
-            })
+        // Close all peer connections
+        peerConnectionsRef.current.forEach((pc) => pc.close())
+        peerConnectionsRef.current.clear()
+    }, [])
 
-            localStreamRef.current = stream
-            if (localVideoRef.current) {
-                localVideoRef.current.srcObject = stream
-            }
-
-            setIsLive(true)
-
-            // Listen for viewers joining (signals with type 'offer')
-            const signalsRef = collection(db, `active_sessions/${sessionId}/signals`)
-            const signalsQuery = query(
-                signalsRef,
-                where("to", "==", user!.uid),
-                orderBy("timestamp", "asc")
-            )
-
-            onSnapshot(signalsQuery, async (snapshot) => {
-                for (const change of snapshot.docChanges()) {
-                    if (change.type === "added") {
-                        const signal = change.doc.data()
-
-                        if (signal.type === "offer") {
-                            // New viewer joining
-                            await handleNewViewer(signal.from, signal.sdp)
-                        } else if (signal.type === "candidate") {
-                            // ICE candidate from viewer
-                            const pc = peerConnectionsRef.current.get(signal.from)
-                            if (pc) {
-                                await pc.addIceCandidate(new RTCIceCandidate(signal.candidate))
-                            }
-                        }
-                    }
-                }
-            })
-
-            toast.success("You're now live!")
-        } catch (error) {
-            console.error("Broadcast setup error:", error)
-            toast.error("Failed to start broadcast")
-        }
-    }
-
-    const handleNewViewer = async (viewerId: string, offerSdp: string) => {
+    const handleNewViewer = useCallback(async (viewerId: string, offerSdp: string) => {
         if (!localStreamRef.current) return
 
         // Create peer connection for this viewer
@@ -144,18 +99,77 @@ export function BroadcastView({ sessionId, onEnd }: BroadcastViewProps) {
         })
 
         peerConnectionsRef.current.set(viewerId, pc)
-    }
+    }, [sessionId])
 
-    const cleanup = () => {
-        // Stop local stream
-        if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach((track) => track.stop())
+    const startBroadcast = useCallback(async () => {
+        if (!user) return
+
+        try {
+            // Get user media
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true,
+            })
+
+            localStreamRef.current = stream
+            if (localVideoRef.current) {
+                localVideoRef.current.srcObject = stream
+            }
+
+            setIsLive(true)
+
+            // Listen for viewers joining (signals with type 'offer')
+            const signalsRef = collection(db, `active_sessions/${sessionId}/signals`)
+            const signalsQuery = query(
+                signalsRef,
+                where("to", "==", user.uid),
+                orderBy("timestamp", "asc")
+            )
+
+            // Return unsubscribe function for cleanup
+            return onSnapshot(signalsQuery, async (snapshot) => {
+                for (const change of snapshot.docChanges()) {
+                    if (change.type === "added") {
+                        const signal = change.doc.data()
+
+                        if (signal.type === "offer") {
+                            // New viewer joining
+                            await handleNewViewer(signal.from, signal.sdp)
+                        } else if (signal.type === "candidate") {
+                            // ICE candidate from viewer
+                            const pc = peerConnectionsRef.current.get(signal.from)
+                            if (pc) {
+                                await pc.addIceCandidate(new RTCIceCandidate(signal.candidate))
+                            }
+                        }
+                    }
+                }
+            })
+
+        } catch (error) {
+            console.error("Broadcast setup error:", error)
+            toast.error("Failed to start broadcast")
+            return undefined
+        }
+    }, [sessionId, user, handleNewViewer])
+
+    useEffect(() => {
+        let unsubscribe: (() => void) | undefined;
+
+        const init = async () => {
+            unsubscribe = await startBroadcast()
+            if (unsubscribe) {
+                toast.success("You're now live!")
+            }
         }
 
-        // Close all peer connections
-        peerConnectionsRef.current.forEach((pc) => pc.close())
-        peerConnectionsRef.current.clear()
-    }
+        init()
+
+        return () => {
+            if (unsubscribe) unsubscribe()
+            cleanup()
+        }
+    }, [startBroadcast, cleanup])
 
     const handleEndBroadcast = async () => {
         cleanup()
