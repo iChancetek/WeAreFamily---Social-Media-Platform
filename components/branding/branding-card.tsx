@@ -9,6 +9,15 @@ import { useState, useRef, useEffect } from "react";
 
 export function BrandingCard({ branding }: { branding: Branding }) {
     const [imageError, setImageError] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
+
+    // Check for broken image on mount/update (catches pre-hydration errors)
+    useEffect(() => {
+        const img = imgRef.current;
+        if (img && img.complete && (img.naturalWidth === 0)) {
+            setImageError(true);
+        }
+    }, [branding.coverUrl, branding.imageUrl]);
 
     // Determines what to show.
     // If we have a coverUrl and no error -> show cover
@@ -39,6 +48,7 @@ export function BrandingCard({ branding }: { branding: Branding }) {
                             />
                         ) : (
                             <img
+                                ref={imgRef}
                                 src={branding.coverUrl}
                                 alt={branding.name}
                                 className="w-full h-full object-cover"
@@ -53,10 +63,7 @@ export function BrandingCard({ branding }: { branding: Branding }) {
                                         src={branding.imageUrl}
                                         alt={branding.name}
                                         className="w-full h-full object-cover"
-                                    // If logo fails, we just don't show it? or show default? 
-                                    // For now, let's just let logo fail gracefully by hiding it if needed, 
-                                    // but standard <img> broken icon is small in a circle.
-                                    // Let's rely on standard browser behavior for the small logo for now to keep diff small.
+                                        onError={(e) => (e.currentTarget.style.display = 'none')}
                                     />
                                 </div>
                             </div>
@@ -65,6 +72,7 @@ export function BrandingCard({ branding }: { branding: Branding }) {
                 ) : branding.imageUrl && !imageError ? (
                     // Logic when NO cover but YES logo -> use logo as cover
                     <img
+                        ref={imgRef}
                         src={branding.imageUrl}
                         alt={branding.name}
                         className="w-full h-full object-cover"
