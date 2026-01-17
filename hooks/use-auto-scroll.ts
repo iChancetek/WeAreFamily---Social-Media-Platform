@@ -137,8 +137,10 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     }
   }, []);
 
-
   // The Animation Loop
+  // Use a ref to allow specific recursive access without circular dependency lint errors
+  const animateRef = useRef<((timestamp: number) => void) | null>(null);
+
   const animate = useCallback((timestamp: number) => {
     if (!containerRef.current || isPausedRef.current || !isEnabledRef.current) {
       lastTimestampRef.current = undefined;
@@ -171,9 +173,16 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     }
 
     lastTimestampRef.current = timestamp;
-    animationFrameRef.current = requestAnimationFrame(animate);
+
+    if (animateRef.current) {
+      animationFrameRef.current = requestAnimationFrame(animateRef.current);
+    }
   }, []);
 
+  // Sync ref
+  useEffect(() => {
+    animateRef.current = animate;
+  }, [animate]);
 
   // Interaction Handler
   const handleInteraction = useCallback(() => {
@@ -202,7 +211,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
         }
       }, 2000); // 2 seconds resume delay
     }
-  }, [pauseOnInteraction, setPaused, isEnabled]);
+  }, [pauseOnInteraction, setPaused]);
 
 
   // Event Listeners setup
@@ -268,10 +277,10 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
   // Start/Stop Loop
   useEffect(() => {
     if (isEnabled && containerReady && !isPaused) {
-      if (!animationFrameRef.current) {
+      if (!animationFrameRef.current && animateRef.current) {
         console.log('[Auto-Scroll] Starting Loop');
         lastTimestampRef.current = undefined;
-        animationFrameRef.current = requestAnimationFrame(animate);
+        animationFrameRef.current = requestAnimationFrame(animateRef.current);
       }
     } else {
       // cleanup
@@ -281,7 +290,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
         animationFrameRef.current = undefined;
       }
     }
-  }, [isEnabled, containerReady, isPaused, animate]);
+  }, [isEnabled, containerReady, isPaused]); // animate is now stable via ref usage
 
 
   // Public toggle
@@ -291,7 +300,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     isEnabledRef.current = newState;
     try {
       localStorage.setItem('famio-auto-scroll-enabled', String(newState));
-    } catch (e) { }
+    } catch (_) { }
     if (onToggle) onToggle(newState);
   }, [isEnabled, onToggle]);
 
