@@ -22,12 +22,15 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Force update tar in global npm to fix CVE-2026-23745
-# We install tar globally first, then replace the vulnerable nested version
-# This avoids 'npm install' inside the npm directory triggering 404 errors for other dependencies
-RUN npm install -g tar@^7.5.3 && \
-    rm -rf /usr/local/lib/node_modules/npm/node_modules/tar && \
+# Force update tar, cross-spawn, and glob in global npm to fix CVEs
+# We install globally first, then manually replace to bypass npm's internal dependency resolution during install
+RUN npm install -g tar@^7.5.3 cross-spawn@^7.0.5 glob@^10.5.0 && \
+    rm -rf /usr/local/lib/node_modules/npm/node_modules/tar \
+    /usr/local/lib/node_modules/npm/node_modules/cross-spawn \
+    /usr/local/lib/node_modules/npm/node_modules/glob && \
     cp -r /usr/local/lib/node_modules/tar /usr/local/lib/node_modules/npm/node_modules/ && \
+    cp -r /usr/local/lib/node_modules/cross-spawn /usr/local/lib/node_modules/npm/node_modules/ && \
+    cp -r /usr/local/lib/node_modules/glob /usr/local/lib/node_modules/npm/node_modules/ && \
     npm cache clean --force
 
 RUN addgroup --system --gid 1001 nodejs
