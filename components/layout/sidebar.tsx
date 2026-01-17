@@ -57,6 +57,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
             items: [
                 { href: "/branding", label: "Branding", icon: Briefcase },
                 { href: "/notifications", label: "Notifications", icon: Bell },
+                { href: "/privacy", label: "Privacy & Trust", icon: Shield },
                 { href: "/settings", label: "Settings", icon: Settings },
             ]
         }

@@ -1,16 +1,34 @@
+"use client";
+
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Users } from "lucide-react";
 import { Branding } from "@/app/actions/branding";
+import { useState } from "react";
 
 export function BrandingCard({ branding }: { branding: Branding }) {
+    const [imageError, setImageError] = useState(false);
+
+    // Determines what to show.
+    // If we have a coverUrl and no error -> show cover
+    // If coverUrl fails or is missing -> try imageUrl
+    // If imageUrl fails or is missing -> show fallback
+
+    const hasCover = !!branding.coverUrl && !imageError;
+    // We treat video covers as robust for now, assuming valid URL if mp4/webm. 
+    // Ideally we'd wrap video in error boundaries too, but <img> is the main culprit here.
+    const isVideo = hasCover && (branding.coverUrl!.includes('mp4') || branding.coverUrl!.includes('webm'));
+
+    // Fallback logic is tricky with dual images. 
+    // Simplest robust fix: If the MAIN display image fails, revert to the "Default Gradient" state.
+
     return (
         <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
             <div className="h-32 w-full bg-muted relative rounded-t-lg overflow-hidden">
-                {branding.coverUrl ? (
+                {hasCover ? (
                     <>
-                        {branding.coverUrl.includes('mp4') || branding.coverUrl.includes('webm') ? (
+                        {isVideo ? (
                             <video
                                 src={branding.coverUrl}
                                 className="w-full h-full object-cover"
@@ -24,8 +42,10 @@ export function BrandingCard({ branding }: { branding: Branding }) {
                                 src={branding.coverUrl}
                                 alt={branding.name}
                                 className="w-full h-full object-cover"
+                                onError={() => setImageError(true)}
                             />
                         )}
+                        {/* Overlay Logo if Cover exists */}
                         {branding.imageUrl && (
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <div className="w-16 h-16 rounded-full border-4 border-white dark:border-gray-800 overflow-hidden bg-white shadow-lg">
@@ -33,18 +53,25 @@ export function BrandingCard({ branding }: { branding: Branding }) {
                                         src={branding.imageUrl}
                                         alt={branding.name}
                                         className="w-full h-full object-cover"
+                                    // If logo fails, we just don't show it? or show default? 
+                                    // For now, let's just let logo fail gracefully by hiding it if needed, 
+                                    // but standard <img> broken icon is small in a circle.
+                                    // Let's rely on standard browser behavior for the small logo for now to keep diff small.
                                     />
                                 </div>
                             </div>
                         )}
                     </>
-                ) : branding.imageUrl ? (
+                ) : branding.imageUrl && !imageError ? (
+                    // Logic when NO cover but YES logo -> use logo as cover
                     <img
                         src={branding.imageUrl}
                         alt={branding.name}
                         className="w-full h-full object-cover"
+                        onError={() => setImageError(true)}
                     />
                 ) : (
+                    // Fallback to Gradient
                     <div className="w-full h-full bg-gradient-to-br from-green-600/20 to-green-600/10 flex items-center justify-center">
                         <Briefcase className="w-12 h-12 text-green-600/40" />
                     </div>

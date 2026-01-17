@@ -185,7 +185,7 @@ export function LandingPage() {
             {/* Footer */}
             <footer className="bg-white border-t border-gray-200 py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col items-center justify-center space-y-4">
+                    <div className="flex flex-col items-center justify-center space-y-6">
                         <div className="flex items-center gap-2">
                             <Heart className="w-6 h-6 text-blue-600" fill="currentColor" />
                             <div>
@@ -193,7 +193,18 @@ export function LandingPage() {
                                 <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>
                             </div>
                         </div>
+
+                        {/* Privacy Link */}
+                        <div className="flex gap-6">
+                            <Link href="/privacy" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+                                Privacy Policy
+                            </Link>
+                        </div>
+
                         <div className="text-center space-y-2">
+                            <p className="text-sm text-gray-500 font-medium">
+                                "Built with privacy and security at the core."
+                            </p>
                             <p className="text-gray-600 text-sm">
                                 © 2026 Famio by ChanceTEK. All Rights Reserved.
                             </p>

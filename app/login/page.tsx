@@ -271,6 +271,15 @@ export default function LoginPage() {
                     </div>
                 </CardContent>
             </Card>
-        </div>
+
+            <div className="absolute bottom-4 left-0 right-0 text-center space-y-2 z-[50]">
+                <Link href="/privacy" className="text-xs text-muted-foreground hover:text-blue-600 font-medium transition-colors">
+                    Privacy Policy
+                </Link>
+                <p className="text-[10px] text-muted-foreground/60">
+                    Built with privacy and security at the core. © ChanceTEK
+                </p>
+            </div>
+        </div >
     )
 }
