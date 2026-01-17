@@ -2,16 +2,12 @@ import { getBranding, getBrandingFollowStatus } from "@/app/actions/branding";
 import { MainLayout } from "@/components/layout/main-layout";
 import { notFound } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Briefcase, Users, Heart } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
-import { FollowBrandingButton } from "@/components/branding/follow-branding-button";
-import { BrandingCoverButton } from "@/components/branding/branding-cover-button";
-import { BrandingManagementDialog } from "@/components/branding/branding-management-dialog";
-import { ShareButton } from "@/components/shared/share-button";
 import { Trash2 } from "lucide-react";
 import { BrandingFeed } from "@/components/branding/branding-feed";
+import { BrandingHeader } from "@/components/branding/branding-header";
 
 export const dynamic = 'force-dynamic';
 
@@ -35,34 +31,18 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
 
     return (
         <MainLayout>
-            {/* ... */}
-            <div className="flex items-center gap-3">
-                {/* Management Dialog for Admins */}
-                {isBrandingAdmin && user && (
-                    <BrandingManagementDialog
-                        branding={branding}
-                        currentUser={user}
-                        isAdmin={true}
-                    />
-                )}
-                <FollowBrandingButton
-                    brandingId={branding.id}
-                    isFollowing={isFollowing}
-                    role={followStatus?.role}
-                />
-                <ShareButton
-                    title={branding.name}
-                    text={`Check out this page: ${branding.name}`}
-                    variant="secondary"
-                />
-            </div>
-
-
+            <BrandingHeader
+                branding={branding}
+                currentUser={user}
+                isBrandingAdmin={isBrandingAdmin}
+                isFollowing={isFollowing}
+                followStatusRole={followStatus?.role}
+            />
 
             {/* Soft Delete Notice for Owner */}
             {
                 branding.deletedAt && (user?.id === branding.founderId) && (
-                    <div className="mt-8 mb-4 p-4 bg-yellow-500/10 border border-yellow-500 rounded-lg flex items-center justify-between mx-4 lg:mx-0">
+                    <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500 rounded-lg flex items-center justify-between mx-4 lg:mx-0">
                         <div className="flex items-center gap-3">
                             <Trash2 className="h-5 w-5 text-yellow-500" />
                             <div>
@@ -76,7 +56,7 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
                 )
             }
 
-            <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8"> {/* Adjusted margin top for profile pic overlap */}
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
                     {/* Post Creator for Followers and Admins */}
                     <BrandingFeed
@@ -93,7 +73,7 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
                             <Briefcase className="w-4 h-4" />
                             About
                         </h3>
-                        <p className="text-sm text-muted-foreground mb-4">
+                        <p className="text-sm text-muted-foreground mb-4 whitespace-pre-wrap">
                             {branding.description}
                         </p>
                         <Separator className="my-4" />
