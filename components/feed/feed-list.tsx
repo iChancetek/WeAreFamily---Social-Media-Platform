@@ -8,8 +8,7 @@ import { useEffect, useState } from "react"
 import { getPosts } from "@/app/actions/posts"
 import { Loader2 } from "lucide-react"
 import { useAutoScroll } from "@/hooks/use-auto-scroll"
-
-
+import { AutoScrollToggle } from "./auto-scroll-toggle"
 import { debugEnv } from "@/app/actions/debug";
 
 interface FeedListProps {
@@ -29,6 +28,7 @@ export function FeedList({ variant = 'standard', headerAction }: FeedListProps) 
     const {
         isEnabled,
         isPaused,
+        toggleAutoScroll,
         containerRef,
     } = useAutoScroll({
         pauseOnHover: true,
@@ -68,6 +68,7 @@ export function FeedList({ variant = 'standard', headerAction }: FeedListProps) 
                 value={timeRange}
                 onChange={(e) => setTimeRange(e.target.value as any)}
                 className="text-xs bg-muted/50 border-none rounded-full px-3 py-1.5 focus:ring-1 focus:ring-primary outline-none cursor-pointer hover:bg-muted transition-colors"
+                aria-label="Filter by time"
             >
                 <option value="all">All Time</option>
                 <option value="day">Today</option>
@@ -77,12 +78,12 @@ export function FeedList({ variant = 'standard', headerAction }: FeedListProps) 
             </select>
 
             {/* Content Filter */}
-            <div className="flex bg-muted/50 rounded-full p-1 gap-1">
+            <div className="flex bg-muted/50 rounded-full p-1 gap-1 overflow-x-auto scrollbar-hide max-w-[150px] md:max-w-none">
                 {(['all', 'text', 'photo', 'video'] as const).map((type) => (
                     <button
                         key={type}
                         onClick={() => setContentType(type)}
-                        className={`text-xs px-3 py-1 rounded-full transition-all capitalize ${contentType === type
+                        className={`text-xs px-3 py-1 rounded-full transition-all capitalize whitespace-nowrap ${contentType === type
                             ? 'bg-background shadow-sm text-foreground font-medium'
                             : 'text-muted-foreground hover:text-foreground'
                             }`}
@@ -92,12 +93,21 @@ export function FeedList({ variant = 'standard', headerAction }: FeedListProps) 
                 ))}
             </div>
 
-            {/* Custom Header Action (Right Aligned) */}
-            {headerAction && (
-                <div className="ml-auto">
-                    {headerAction}
-                </div>
-            )}
+            <div className="ml-auto flex items-center gap-2">
+                {/* Auto-Scroll Toggle */}
+                <AutoScrollToggle
+                    isEnabled={isEnabled}
+                    isPaused={isPaused}
+                    onToggle={toggleAutoScroll}
+                />
+
+                {/* Custom Header Action (e.g. Create Post) */}
+                {headerAction && (
+                    <div className="pl-1 border-l border-border/50">
+                        {headerAction}
+                    </div>
+                )}
+            </div>
         </div>
     );
 
@@ -135,9 +145,10 @@ export function FeedList({ variant = 'standard', headerAction }: FeedListProps) 
             )}
 
             {/* Scrollable container with auto-scroll */}
+            {/* Added standard vh fallback and dvh for mobile browsers */}
             <div
                 ref={containerRef}
-                className="max-h-[calc(100vh-200px)] md:max-h-[calc(100vh-250px)] overflow-y-auto scroll-smooth overscroll-contain"
+                className="max-h-[calc(100vh-200px)] max-h-[calc(100dvh-200px)] md:max-h-[calc(100vh-250px)] md:max-h-[calc(100dvh-250px)] overflow-y-auto scroll-smooth overscroll-contain"
                 style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
             >
                 <MasonryFeed posts={posts} currentUserId={profile?.id} variant={variant} />
