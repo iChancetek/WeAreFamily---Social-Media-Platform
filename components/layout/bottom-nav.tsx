@@ -31,9 +31,9 @@ export function BottomNav() {
     // React to scroll direction
     useEffect(() => {
         if (scrollDirection === 'down') {
-            setIsVisible(false);
+            setIsVisible((prev) => (prev ? false : prev));
         } else if (scrollDirection === 'up') {
-            setIsVisible(true);
+            setIsVisible((prev) => (!prev ? true : prev));
         }
     }, [scrollDirection]);
 
