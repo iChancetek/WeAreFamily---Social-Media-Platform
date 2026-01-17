@@ -53,8 +53,8 @@ export function ToneSelector({ selectedTone, onSelectTone, disabled }: ToneSelec
                                     </span>
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>
-                                <p className="max-w-xs text-sm">{tone.description}</p>
+                            <TooltipContent className="max-w-md">
+                                <p className="text-sm">{tone.description}</p>
                             </TooltipContent>
                         </Tooltip>
                     ))}
