@@ -12,7 +12,6 @@ export function BrandingCard({ branding }: { branding: Branding }) {
     const imgRef = useRef<HTMLImageElement>(null);
 
     // Check for broken image on mount/update (catches pre-hydration errors)
-    // Check for broken image on mount/update (catches pre-hydration errors)
     useEffect(() => {
         const img = imgRef.current;
         if (img && img.complete && (img.naturalWidth === 0)) {
