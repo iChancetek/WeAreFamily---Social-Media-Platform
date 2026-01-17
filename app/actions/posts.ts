@@ -868,66 +868,86 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
         return [];
     }
 
-    // Global Post Lookup for /post/[id]
-    export async function getPostGlobal(postId: string) {
-        // 1. Try Main Feed
-        const mainRef = adminDb.collection("posts").doc(postId);
-        const mainDoc = await mainRef.get();
+}
 
-        if (mainDoc.exists) {
-            const post = mainDoc.data();
-            if (!post) return null;
-            const user = await getUserProfile();
+// Global Post Lookup for /post/[id]
+export async function getPostGlobal(postId: string) {
+    // 1. Try Main Feed
+    const mainRef = adminDb.collection("posts").doc(postId);
+    const mainDoc = await mainRef.get();
 
-            // VISIBILITY CHECK
-            const isAuthor = user?.id === post.authorId;
-            const privacy = post.engagementSettings?.privacy || 'public';
+    if (mainDoc.exists) {
+        const post = mainDoc.data();
+        if (!post) return null;
+        const user = await getUserProfile();
 
-            if (!isAuthor && privacy !== 'public') {
-                if (!user) return null; // prompt login or 404 in UI
-                if (privacy === 'private') return null;
+        // VISIBILITY CHECK
+        const isAuthor = user?.id === post.authorId;
+        const privacy = post.engagementSettings?.privacy || 'public';
 
-                const { getFamilyStatus } = await import("./family");
-                const status = await getFamilyStatus(post.authorId);
-                const isFamily = status.status === 'accepted';
+        if (!isAuthor && privacy !== 'public') {
+            if (!user) return null; // prompt login or 404 in UI
+            if (privacy === 'private') return null;
 
-                if ((privacy === 'friends' || privacy === 'companions') && !isFamily) return null;
+            const { getFamilyStatus } = await import("./family");
+            const status = await getFamilyStatus(post.authorId);
+            const isFamily = status.status === 'accepted';
 
-                if (privacy === 'specific') {
-                    const allowed = post.allowedViewerIds || [];
-                    if (!allowed.includes(user.id)) return null;
+            if ((privacy === 'friends' || privacy === 'companions') && !isFamily) return null;
+
+            if (privacy === 'specific') {
+                const allowed = post.allowedViewerIds || [];
+                if (!allowed.includes(user.id)) return null;
+            }
+        }
+
+        // Hydrate
+        let author = null;
+        if (post.authorId) {
+            const data = mainDoc.data()!;
+
+            let author = null;
+            if (data.authorId) {
+                const authorDoc = await adminDb.collection("users").doc(data.authorId).get();
+                if (authorDoc.exists) {
+                    const aData = authorDoc.data();
+                    author = {
+                        id: authorDoc.id,
+                        displayName: resolveDisplayName(aData),
+                        imageUrl: aData?.imageUrl,
+                        email: aData?.email
+                    };
                 }
             }
 
-            // Hydrate
-            let author = null;
-            if (post.authorId) {
-                const data = mainDoc.data()!;
-
-                let author = null;
-                if (data.authorId) {
-                    const authorDoc = await adminDb.collection("users").doc(data.authorId).get();
-                    if (authorDoc.exists) {
-                        const aData = authorDoc.data();
-                        author = {
-                            id: authorDoc.id,
-                            displayName: resolveDisplayName(aData),
-                            imageUrl: aData?.imageUrl,
-                            email: aData?.email
+            // Fetch comments
+            const commentsSnap = await mainRef.collection("comments").orderBy("createdAt", "asc").get();
+            const comments = await Promise.all(commentsSnap.docs.map(async c => {
+                const cData = c.data();
+                let cAuthor = null;
+                if (cData.authorId) {
+                    const u = await adminDb.collection("users").doc(cData.authorId).get();
+                    if (u.exists) {
+                        const uData = u.data();
+                        cAuthor = {
+                            id: u.id,
+                            displayName: resolveDisplayName(uData),
+                            imageUrl: uData?.imageUrl,
+                            email: uData?.email
                         };
                     }
                 }
 
-                // Fetch comments
-                const commentsSnap = await mainRef.collection("comments").orderBy("createdAt", "asc").get();
-                const comments = await Promise.all(commentsSnap.docs.map(async c => {
-                    const cData = c.data();
-                    let cAuthor = null;
-                    if (cData.authorId) {
-                        const u = await adminDb.collection("users").doc(cData.authorId).get();
+                // Fetch replies for this comment
+                const repliesSnap = await mainRef.collection("comments").doc(c.id).collection("replies").orderBy("createdAt", "asc").get();
+                const replies = await Promise.all(repliesSnap.docs.map(async (r) => {
+                    const rData = r.data();
+                    let rAuthor = null;
+                    if (rData.authorId) {
+                        const u = await adminDb.collection("users").doc(rData.authorId).get();
                         if (u.exists) {
                             const uData = u.data();
-                            cAuthor = {
+                            rAuthor = {
                                 id: u.id,
                                 displayName: resolveDisplayName(uData),
                                 imageUrl: uData?.imageUrl,
@@ -935,88 +955,70 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
                             };
                         }
                     }
-
-                    // Fetch replies for this comment
-                    const repliesSnap = await mainRef.collection("comments").doc(c.id).collection("replies").orderBy("createdAt", "asc").get();
-                    const replies = await Promise.all(repliesSnap.docs.map(async (r) => {
-                        const rData = r.data();
-                        let rAuthor = null;
-                        if (rData.authorId) {
-                            const u = await adminDb.collection("users").doc(rData.authorId).get();
-                            if (u.exists) {
-                                const uData = u.data();
-                                rAuthor = {
-                                    id: u.id,
-                                    displayName: resolveDisplayName(uData),
-                                    imageUrl: uData?.imageUrl,
-                                    email: uData?.email
-                                };
-                            }
-                        }
-                        return {
-                            id: r.id,
-                            ...rData,
-                            author: rAuthor,
-                            createdAt: rData.createdAt?.toDate ? rData.createdAt.toDate() : new Date()
-                        };
-                    }));
-
                     return {
-                        id: c.id,
-                        ...cData,
-                        createdAt: cData.createdAt?.toDate ? cData.createdAt.toDate() : new Date(),
-                        author: cAuthor,
-                        replies: replies || []
+                        id: r.id,
+                        ...rData,
+                        author: rAuthor,
+                        createdAt: rData.createdAt?.toDate ? rData.createdAt.toDate() : new Date()
                     };
                 }));
 
-                return sanitizeData({
-                    id: mainDoc.id,
-                    ...data,
-                    createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
-                    authorId: data.authorId, // CRITICAL
-                    author,
-                    comments,
-                    type: 'personal',
-                    context: null
-                });
-            }
+                return {
+                    id: c.id,
+                    ...cData,
+                    createdAt: cData.createdAt?.toDate ? cData.createdAt.toDate() : new Date(),
+                    author: cAuthor,
+                    replies: replies || []
+                };
+            }));
 
-            return null;
+            return sanitizeData({
+                id: mainDoc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+                authorId: data.authorId, // CRITICAL
+                author,
+                comments,
+                type: 'personal',
+                context: null
+            });
         }
 
         return null;
     }
 
-    /**
-     * Update post engagement settings (enable/disable likes, comments, change privacy)
-     */
-    export async function updatePostEngagementSettings(
-        postId: string,
-        settings: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' },
-        contextType?: string,
-        contextId?: string
-    ) {
-        const user = await getUserProfile();
-        if (!user) throw new Error("Unauthorized");
+    return null;
+}
 
-        const postRef = getPostRef(postId, contextType, contextId);
-        const postDoc = await postRef.get();
+/**
+ * Update post engagement settings (enable/disable likes, comments, change privacy)
+ */
+export async function updatePostEngagementSettings(
+    postId: string,
+    settings: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' },
+    contextType?: string,
+    contextId?: string
+) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
 
-        if (!postDoc.exists) throw new Error("Post not found");
-        if (postDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+    const postRef = getPostRef(postId, contextType, contextId);
+    const postDoc = await postRef.get();
 
-        // Update only provided settings
-        const currentSettings = postDoc.data()?.engagementSettings || {};
-        const newSettings = {
-            allowLikes: settings.allowLikes ?? currentSettings.allowLikes ?? true,
-            allowComments: settings.allowComments ?? currentSettings.allowComments ?? true,
-            privacy: settings.privacy ?? currentSettings.privacy ?? 'friends'
-        };
+    if (!postDoc.exists) throw new Error("Post not found");
+    if (postDoc.data()?.authorId !== user.id) throw new Error("Unauthorized");
 
-        await postRef.update({ engagementSettings: newSettings });
+    // Update only provided settings
+    const currentSettings = postDoc.data()?.engagementSettings || {};
+    const newSettings = {
+        allowLikes: settings.allowLikes ?? currentSettings.allowLikes ?? true,
+        allowComments: settings.allowComments ?? currentSettings.allowComments ?? true,
+        privacy: settings.privacy ?? currentSettings.privacy ?? 'friends'
+    };
 
-        revalidatePath('/');
-        if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
-        if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
-    }
+    await postRef.update({ engagementSettings: newSettings });
+
+    revalidatePath('/');
+    if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
+    if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
+}
