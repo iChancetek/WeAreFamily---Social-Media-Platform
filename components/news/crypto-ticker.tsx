@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getStockQuotes } from '@/app/actions/stocks';
+import { getCryptoQuotes } from '@/app/actions/crypto';
 import { cn } from '@/lib/utils';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
@@ -20,9 +20,9 @@ export function CryptoTicker() {
     useEffect(() => {
         const fetchCryptos = async () => {
             try {
-                // Fetch major cryptocurrencies
-                const data = await getStockQuotes([
-                    'BTCUSD', 'ETHUSD', 'SOLUSD'
+                // Fetch major cryptocurrencies using Yahoo Finance (free, no API key)
+                const data = await getCryptoQuotes([
+                    'BTC-USD', 'ETH-USD', 'SOL-USD'
                 ]);
                 setCryptos(data);
             } catch (error) {
@@ -45,7 +45,7 @@ export function CryptoTicker() {
     if (!cryptos.length) {
         return (
             <div className="w-full bg-yellow-500/10 border border-yellow-500/30 rounded-md px-4 py-2 mb-2 text-xs text-yellow-700 dark:text-yellow-400">
-                Crypto ticker: No data available. Check server logs for [Stocks] entries or verify FMP_API_KEY in .env.local
+                Crypto ticker: No data available. Check server logs for [Crypto] entries or verify Yahoo Finance API accessibility
             </div>
         );
     }
@@ -55,9 +55,9 @@ export function CryptoTicker() {
 
     // Asset-specific accent colors
     const getAccentColor = (symbol: string) => {
-        if (symbol === 'BTCUSD') return 'hsl(30, 95%, 55%)'; // Bitcoin Orange
-        if (symbol === 'ETHUSD') return 'hsl(255, 82%, 67%)'; // Ethereum Purple
-        if (symbol === 'SOLUSD') return 'hsl(180, 75%, 50%)'; // Solana Teal
+        if (symbol === 'BTC') return 'hsl(30, 95%, 55%)'; // Bitcoin Orange
+        if (symbol === 'ETH') return 'hsl(255, 82%, 67%)'; // Ethereum Purple
+        if (symbol === 'SOL') return 'hsl(180, 75%, 50%)'; // Solana Teal
         return 'hsl(199, 89%, 48%)'; // Default blue
     };
 
@@ -75,7 +75,7 @@ export function CryptoTicker() {
                                 textShadow: `0 0 10px ${getAccentColor(crypto.symbol)}40`
                             }}
                         >
-                            {crypto.symbol.replace('USD', '')}
+                            {crypto.symbol}
                         </span>
                         <span className="font-mono font-medium text-foreground/80 tracking-tighter ticker-glow-price">${crypto.price.toFixed(2)}</span>
                         <div className={cn(
