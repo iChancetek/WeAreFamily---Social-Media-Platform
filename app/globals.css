@@ -6,81 +6,60 @@
   :root {
     /* Polished White Theme (Light Mode) - Luminous, Studio-Lit */
     --background: 35 25% 98.5%;
-    /* Warm Studio White */
     --foreground: 240 10% 3.9%;
-    /* Soft Black for crisp text */
 
     --card: 0 0% 100%;
-    /* Pure White */
     --card-foreground: 240 10% 3.9%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
     --primary: 250 95% 64%;
-    /* Vibrant Violet - Pop against white */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 4.8% 96%;
-    /* Very light gray for subtle separation */
     --secondary-foreground: 240 5.9% 10%;
 
     --muted: 240 4.8% 96%;
     --muted-foreground: 240 3.8% 46%;
 
     --accent: 250 20% 97%;
-    /* Hint of violet in accents */
     --accent-foreground: 240 5.9% 10%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 220 13% 94%;
-    /* Much lighter, softer border */
     --input: 220 13% 94%;
     --ring: 250 95% 64%;
 
     --radius: 1rem;
 
-    /* Logic-based Charts (Luminous) */
     --chart-1: 250 95% 64%;
-    /* Primary Violet */
     --chart-2: 190 90% 50%;
-    /* Cyan/Blue */
     --chart-3: 340 85% 65%;
-    /* Pink/Rose */
     --chart-4: 45 95% 55%;
-    /* Gold */
     --chart-5: 160 85% 45%;
-    /* Emerald */
   }
 
   .dark {
-    /* Sexy Pure Black Theme (Original) - HSL Values */
     --background: 0 0% 0%;
-    /* Pure Black */
-    /* Pure Black */
     --foreground: 0 0% 100%;
-    /* Pure White Text */
 
     --card: 240 10% 4%;
-    /* #09090B Deep Onyx */
     --card-foreground: 0 0% 100%;
 
     --popover: 240 10% 4%;
     --popover-foreground: 244 83% 61%;
 
     --primary: 244 83% 61%;
-    /* #5448EE */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 6% 10%;
-    /* #18181B */
     --secondary-foreground: 244 83% 61%;
 
     --muted: 240 6% 10%;
     --muted-foreground: 240 5% 65%;
-    /* Light Zinc/Gray for secondary text */
 
     --accent: 240 6% 10%;
     --accent-foreground: 0 0% 100%;
@@ -89,11 +68,9 @@
     --destructive-foreground: 0 0% 100%;
 
     --border: 240 4% 16%;
-    /* #27272A */
     --input: 240 4% 16%;
     --ring: 244 83% 61%;
 
-    /* Charts */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -110,13 +87,11 @@
   html,
   body {
     @apply overflow-x-hidden w-full overscroll-none;
-    /* Lock horizontal, prevent bounce */
   }
 
   body {
     @apply bg-background text-foreground transition-colors duration-300;
     font-family: var(--font-inter), system-ui, sans-serif;
-    /* GLOSSY AI-Powered White: Pure bright white with subtle radial glow */
     background: radial-gradient(circle at center,
         hsl(0, 0%, 100%) 0%,
         hsl(210, 20%, 99%) 100%);
@@ -133,11 +108,8 @@
     @apply bg-white/70 dark:bg-black/60 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-xl;
   }
 
-  /* Polished Card Elevation - Light Mode */
-  /* Polished Card Elevation - Light Mode */
   .glass-card {
     @apply bg-white dark:bg-zinc-900/80 border border-white/60 dark:border-slate-800 backdrop-blur-lg transition-all duration-300;
-    /* DRAMATIC Premium Elevation */
     box-shadow:
       0 20px 60px -15px rgba(0, 0, 0, 0.15),
       0 0 0 1px rgba(255, 255, 255, 0.8) inset,
@@ -149,56 +121,70 @@
   }
 
   .glass-card:hover {
-    @apply translate-y-[-2px];
+    @apply translate-y-[-2px]];
     box-shadow:
       0 30px 80px -20px rgba(0, 0, 0, 0.2),
       0 0 0 1px rgba(255, 255, 255, 1.0) inset,
       0 2px 0 0 rgba(255, 255, 255, 1.0) inset;
-
-    .glow-text {
-      @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-400;
-    }
-
-    .pb-safe {
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    /* Context Engineering Spec: Energized Controls - BLUE for Light Mode */
-    :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
-      box-shadow: 0 0 16px -1px rgba(14, 165, 233, 0.6) !important;
-      background-color: hsl(199, 89%, 48%) !important;
-      border-color: hsl(199, 89%, 48%) !important;
-    }
-
-    .dark :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
-      box-shadow: 0 0 10px -1px hsla(var(--primary) / 0.5) !important;
-      background-color: hsl(var(--primary)) !important;
-    }
-
-    /* Context Engineering Spec: Luminous Icons - BLUE in Light Mode */
-    :is(button, a):hover>svg.lucide {
-      filter: drop-shadow(0 0 6px rgba(14, 165, 233, 0.5));
-      stroke: hsl(199, 89%, 48%);
-      stroke-width: 2.5px;
-      /* Slight bolding for "Crisp" feel */
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .dark :is(button, a):hover>svg.lucide {
-      filter: drop-shadow(0 0 4px hsla(var(--primary) / 0.4));
-      stroke: hsl(var(--primary));
-      stroke-width: 2.5px;
-      /* Slight bolding for "Crisp" feel */
-    }
-
-    /* Ensure active/nav icons glow BLUE in light mode */
-    .nav-active svg {
-      filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.7));
-      stroke: hsl(199, 89%, 48%);
-    }
-
-    .dark .nav-active svg {
-      filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.6));
-      stroke: hsl(var(--primary));
-    }
   }
+
+  .dark .glass-card:hover {
+    box-shadow: none;
+  }
+
+  .shadow-glow-sm {
+    box-shadow: 0 0 10px -2px hsla(var(--primary) / 0.2);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 20px -5px hsla(var(--primary) / 0.3);
+  }
+
+  .shadow-glow-lg {
+    box-shadow: 0 0 30px -5px hsla(var(--primary) / 0.4);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px hsla(var(--primary) / 0.5);
+  }
+
+  .glow-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-400;
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
+    box-shadow: 0 0 16px -1px rgba(14, 165, 233, 0.6) !important;
+    background-color: hsl(199, 89%, 48%) !important;
+    border-color: hsl(199, 89%, 48%) !important;
+  }
+
+  .dark :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
+    box-shadow: 0 0 10px -1px hsla(var(--primary) / 0.5) !important;
+    background-color: hsl(var(--primary)) !important;
+  }
+
+  :is(button, a):hover>svg.lucide {
+    filter: drop-shadow(0 0 6px rgba(14, 165, 233, 0.5));
+    stroke: hsl(199, 89%, 48%);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark :is(button, a):hover>svg.lucide {
+    filter: drop-shadow(0 0 4px hsla(var(--primary) / 0.4));
+    stroke: hsl(var(--primary));
+  }
+
+  .nav-active svg {
+    filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.7));
+    stroke: hsl(199, 89%, 48%);
+  }
+
+  .dark .nav-active svg {
+    filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.6));
+    stroke: hsl(var(--primary));
+  }
+}
