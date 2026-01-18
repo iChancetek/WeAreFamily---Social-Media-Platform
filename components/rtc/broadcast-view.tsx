@@ -42,7 +42,7 @@ export function BroadcastView({ sessionId, onEnd }: BroadcastViewProps) {
 
 
 
-    const cleanup = useCallback(() => {
+    const cleanup = useCallback(async () => {
         // Stop local stream
         if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach((track) => track.stop())
@@ -51,7 +51,14 @@ export function BroadcastView({ sessionId, onEnd }: BroadcastViewProps) {
         // Close all peer connections
         peerConnectionsRef.current.forEach((pc) => pc.close())
         peerConnectionsRef.current.clear()
-    }, [])
+
+        // Attempt to end session on server
+        try {
+            await endSession(sessionId)
+        } catch (err) {
+            console.error("Failed to end session during cleanup:", err)
+        }
+    }, [sessionId])
 
     const handleNewViewer = useCallback(async (viewerId: string, offerSdp: string) => {
         if (!localStreamRef.current) return
@@ -165,15 +172,21 @@ export function BroadcastView({ sessionId, onEnd }: BroadcastViewProps) {
 
         init()
 
+        // Handle page unload (tab close/refresh) to ensure session ends
+        const handleBeforeUnload = () => {
+            cleanup()
+        }
+        window.addEventListener('beforeunload', handleBeforeUnload)
+
         return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload)
             if (unsubscribe) unsubscribe()
             cleanup()
         }
     }, [startBroadcast, cleanup])
 
     const handleEndBroadcast = async () => {
-        cleanup()
-        await endSession(sessionId)
+        await cleanup() // Await cleanup to ensure session ends
         setIsLive(false)
         toast.success("Broadcast ended")
         onEnd?.()
