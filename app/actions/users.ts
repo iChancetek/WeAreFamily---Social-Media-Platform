@@ -56,12 +56,15 @@ export async function getActiveUsers() {
                 u.email?.split('@')[0] ||
                 "Unknown";
 
-            return {
+            // Manually sanitize to avoid import complexity or use JSON hack for now which is safe enough for profileData
+            // But prefer sanitizeData if possible. 
+            // Let's use the JSON parse/stringify hack for robust "remove non-serializables"
+            return JSON.parse(JSON.stringify({
                 id: u.id,
                 displayName: displayName,
                 imageUrl: u.imageUrl || null,
-                profileData: u.profileData // Pass this through just in case
-            };
+                profileData: u.profileData
+            }));
         });
     } catch (error) {
         console.error("Error fetching active users:", error);
