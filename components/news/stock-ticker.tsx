@@ -14,6 +14,11 @@ interface Stock {
 }
 
 export function StockTicker() {
+    // Debug: Verify Deployment
+    useEffect(() => {
+        console.log("Famio UI: Polished Light Mode Active");
+    }, []);
+
     const [stocks, setStocks] = useState<Stock[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -52,7 +57,7 @@ export function StockTicker() {
     const marqueeItems = [...stocks, ...stocks];
 
     return (
-        <div className="w-full overflow-hidden bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md border-y border-black/5 dark:border-white/5 py-2.5 select-none relative group z-20 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.05)] dark:shadow-none">
+        <div data-ui-version="polished-v1" className="w-full overflow-hidden bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md border-y border-black/5 dark:border-white/5 py-2.5 select-none relative group z-20 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.05)] dark:shadow-none">
             <div className="flex animate-marquee hover:pause-animation whitespace-nowrap">
                 {marqueeItems.map((stock, index) => (
                     <div
