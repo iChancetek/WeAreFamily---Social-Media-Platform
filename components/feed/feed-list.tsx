@@ -6,7 +6,8 @@ import { PostCard } from "./post-card"
 import { MasonryFeed } from "./masonry-feed"
 import { useEffect, useState } from "react"
 import { getPosts } from "@/app/actions/posts"
-import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Loader2, Video } from "lucide-react"
 import { useAutoScroll } from "@/hooks/use-auto-scroll"
 import { AutoScrollToggle } from "./auto-scroll-toggle"
 import { debugEnv } from "@/app/actions/debug";
@@ -20,6 +21,7 @@ interface FeedListProps {
 }
 
 export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedListProps) {
+    const router = useRouter()
     const { profile, user } = useAuth()
     const { t } = useLanguage()
     const [posts, setPosts] = useState<any[]>([])
@@ -98,6 +100,15 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
                     </button>
                 ))}
             </div>
+
+            {/* Go Live Action */}
+            <button
+                onClick={() => router.push('/live/broadcast')}
+                className="text-xs px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all flex items-center gap-1.5 font-medium border border-red-200/50 dark:border-red-500/20"
+            >
+                <Video className="w-3.5 h-3.5" />
+                <span className="whitespace-nowrap">Go Live</span>
+            </button>
 
             <div className="ml-auto flex items-center gap-2">
                 {/* Auto-Scroll Toggle */}
