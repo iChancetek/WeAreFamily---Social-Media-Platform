@@ -80,6 +80,9 @@ export async function startSession(type: SessionType, targetUserId?: string, isP
         return {
             sessionId: sessionRef.id,
             ...sessionData,
+            // OVERRIDE FieldValue objects with serializable values for the client
+            startedAt: new Date(),
+            lastActiveAt: new Date(),
         };
     } catch (error: any) {
         console.error("[startSession] Critical error:", error);
