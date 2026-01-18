@@ -121,7 +121,7 @@
   }
 
   .glass-card:hover {
-    @apply translate-y-[-2px]];
+    @apply translate-y-[-2px];
     box-shadow:
       0 30px 80px -20px rgba(0, 0, 0, 0.2),
       0 0 0 1px rgba(255, 255, 255, 1.0) inset,
