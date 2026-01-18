@@ -114,10 +114,10 @@
   }
 
   body {
-    @apply bg-background text-foreground transition-colors duration-300;
+    @apply text-foreground transition-colors duration-300;
     font-family: var(--font-inter), system-ui, sans-serif;
-    /* High-Contrast Studio Lighting: Pure white center fading to visible warm cream corners */
-    background-image: radial-gradient(circle at 50% 0%, #ffffff 0%, hsl(30, 30%, 92%) 130%);
+    /* DIAGNOSTIC TEST: BRIGHT RED BACKGROUND - IF YOU SEE THIS, DEPLOYMENT WORKS */
+    background: linear-gradient(135deg, #ff0000 0%, #ff6b6b 100%) !important;
     background-attachment: fixed;
   }
 
