@@ -5,8 +5,8 @@
 @layer base {
   :root {
     /* Polished White Theme (Light Mode) - Luminous, Studio-Lit */
-    --background: 30 15% 99%;
-    /* Very subtle warm white for luminosity */
+    --background: 35 25% 98.5%;
+    /* Warm Studio White */
     --foreground: 240 10% 3.9%;
     /* Soft Black for crisp text */
 
@@ -116,6 +116,13 @@
   body {
     @apply bg-background text-foreground transition-colors duration-300;
     font-family: var(--font-inter), system-ui, sans-serif;
+    /* Studio Lighting: Pure white center fading to warm gray corners */
+    background-image: radial-gradient(circle at 50% 0%, #ffffff, hsl(35, 15%, 95%));
+    background-attachment: fixed;
+  }
+
+  .dark body {
+    background-image: none;
   }
 }
 
@@ -168,5 +175,24 @@
 
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Context Engineering Spec: Energized Controls */
+  :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
+    box-shadow: 0 0 10px -1px hsla(var(--primary) / 0.5) !important;
+  }
+
+  /* Context Engineering Spec: Luminous Icons */
+  /* Target Lucide icons inside interactive elements on hover */
+  :is(button, a):hover>svg.lucide {
+    filter: drop-shadow(0 0 4px hsla(var(--primary) / 0.4));
+    stroke-width: 2.5px;
+    /* Slight bolding for "Crisp" feel */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Ensure active/nav icons glow */
+  .nav-active svg {
+    filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.6));
   }
 }
