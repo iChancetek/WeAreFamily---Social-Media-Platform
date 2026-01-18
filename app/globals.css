@@ -154,68 +154,72 @@
       0 30px 80px -20px rgba(0, 0, 0, 0.2),
       0 0 0 1px rgba(255, 255, 255, 1.0) inset,
       0 2px 0 0 rgba(255, 255, 255, 1.0) inset;
+
+
+    .dark .glass-card:hover {
+      box-shadow: none;
+    }
+
+    /* Luminous Glows */
+    .shadow-glow-sm {}
+
+    .shadow-glow {
+      box-shadow: 0 0 20px -5px hsla(var(--primary) / 0.3);
+    }
+
+    .shadow-glow-lg {
+      box-shadow: 0 0 30px -5px hsla(var(--primary) / 0.4);
+    }
+
+    /* Text Radiance */
+    .text-glow {
+      text-shadow: 0 0 10px hsla(var(--primary) / 0.5);
+    }
+
+    .glow-text {
+      @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-400;
+    }
+
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* Context Engineering Spec: Energized Controls - BLUE for Light Mode */
+    :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
+      box-shadow: 0 0 16px -1px rgba(14, 165, 233, 0.6) !important;
+      background-color: hsl(199, 89%, 48%) !important;
+      border-color: hsl(199, 89%, 48%) !important;
+    }
+
+    .dark :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
+      box-shadow: 0 0 10px -1px hsla(var(--primary) / 0.5) !important;
+      background-color: hsl(var(--primary)) !important;
+    }
+
+    /* Context Engineering Spec: Luminous Icons - BLUE in Light Mode */
+    :is(button, a):hover>svg.lucide {
+      filter: drop-shadow(0 0 6px rgba(14, 165, 233, 0.5));
+      stroke: hsl(199, 89%, 48%);
+      stroke-width: 2.5px;
+      /* Slight bolding for "Crisp" feel */
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dark :is(button, a):hover>svg.lucide {
+      filter: drop-shadow(0 0 4px hsla(var(--primary) / 0.4));
+      stroke: hsl(var(--primary));
+      stroke-width: 2.5px;
+      /* Slight bolding for "Crisp" feel */
+    }
+
+    /* Ensure active/nav icons glow BLUE in light mode */
+    .nav-active svg {
+      filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.7));
+      stroke: hsl(199, 89%, 48%);
+    }
+
+    .dark .nav-active svg {
+      filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.6));
+      stroke: hsl(var(--primary));
+    }
   }
-
-  box-shadow: 0 0 10px -2px hsla(var(--primary) / 0.2);
-}
-
-.shadow-glow {
-  box-shadow: 0 0 20px -5px hsla(var(--primary) / 0.3);
-}
-
-.shadow-glow-lg {
-  box-shadow: 0 0 30px -5px hsla(var(--primary) / 0.4);
-}
-
-/* Text Radiance */
-.text-glow {
-  text-shadow: 0 0 10px hsla(var(--primary) / 0.5);
-}
-
-.glow-text {
-  @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-400;
-}
-
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* Context Engineering Spec: Energized Controls - BLUE for Light Mode */
-:is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
-  box-shadow: 0 0 16px -1px rgba(14, 165, 233, 0.6) !important;
-  background-color: hsl(199, 89%, 48%) !important;
-  border-color: hsl(199, 89%, 48%) !important;
-}
-
-.dark :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
-  box-shadow: 0 0 10px -1px hsla(var(--primary) / 0.5) !important;
-  background-color: hsl(var(--primary)) !important;
-}
-
-/* Context Engineering Spec: Luminous Icons - BLUE in Light Mode */
-:is(button, a):hover>svg.lucide {
-  filter: drop-shadow(0 0 6px rgba(14, 165, 233, 0.5));
-  stroke: hsl(199, 89%, 48%);
-  stroke-width: 2.5px;
-  /* Slight bolding for "Crisp" feel */
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dark :is(button, a):hover>svg.lucide {
-  filter: drop-shadow(0 0 4px hsla(var(--primary) / 0.4));
-  stroke: hsl(var(--primary));
-  stroke-width: 2.5px;
-  /* Slight bolding for "Crisp" feel */
-}
-
-/* Ensure active/nav icons glow BLUE in light mode */
-.nav-active svg {
-  filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.7));
-  stroke: hsl(199, 89%, 48%);
-}
-
-.dark .nav-active svg {
-  filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.6));
-  stroke: hsl(var(--primary));
-}
-}
