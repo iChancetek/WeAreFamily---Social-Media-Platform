@@ -41,23 +41,6 @@ export default function RootLayout({
           >
             <LanguageProvider>
               <MessageNotificationProvider>
-                {/* DIAGNOSTIC TEST BANNER */}
-                <div style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  background: 'yellow',
-                  color: 'black',
-                  padding: '20px',
-                  textAlign: 'center',
-                  fontSize: '32px',
-                  fontWeight: 'bold',
-                  zIndex: 99999,
-                  border: '10px solid red'
-                }}>
-                  ⚠️ DEPLOYMENT TEST v0.1.3 - IF YOU SEE THIS, DEPLOYMENT WORKS ⚠️
-                </div>
 
                 {children}
                 <Toaster />

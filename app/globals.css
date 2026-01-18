@@ -114,10 +114,12 @@
   }
 
   body {
-    @apply text-foreground transition-colors duration-300;
+    @apply bg-background text-foreground transition-colors duration-300;
     font-family: var(--font-inter), system-ui, sans-serif;
-    /* DIAGNOSTIC TEST: BRIGHT RED BACKGROUND - IF YOU SEE THIS, DEPLOYMENT WORKS */
-    background: linear-gradient(135deg, #ff0000 0%, #ff6b6b 100%) !important;
+    /* GLOSSY AI-Powered White: Pure bright white with subtle radial glow */
+    background: radial-gradient(circle at center,
+        hsl(0, 0%, 100%) 0%,
+        hsl(210, 20%, 99%) 100%);
     background-attachment: fixed;
   }
 
@@ -134,12 +136,12 @@
   /* Polished Card Elevation - Light Mode */
   /* Polished Card Elevation - Light Mode */
   .glass-card {
-    @apply bg-white/90 dark:bg-zinc-900/80 border border-white/50 dark:border-slate-800 backdrop-blur-md transition-all duration-300;
-    /* Deep Shadow + Crisp Top Highlight (Studio Light) */
+    @apply bg-white dark:bg-zinc-900/80 border border-white/60 dark:border-slate-800 backdrop-blur-lg transition-all duration-300;
+    /* DRAMATIC Premium Elevation */
     box-shadow:
-      0 10px 40px -10px rgba(0, 0, 0, 0.08),
-      0 0 0 1px rgba(255, 255, 255, 0.6) inset,
-      0 1px 0 0 rgba(255, 255, 255, 1.0) inset;
+      0 20px 60px -15px rgba(0, 0, 0, 0.15),
+      0 0 0 1px rgba(255, 255, 255, 0.8) inset,
+      0 2px 0 0 rgba(255, 255, 255, 1.0) inset;
   }
 
   .dark .glass-card {
@@ -147,56 +149,73 @@
   }
 
   .glass-card:hover {
-    @apply translate-y-[-1px];
-    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+    @apply translate-y-[-2px];
+    box-shadow:
+      0 30px 80px -20px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(255, 255, 255, 1.0) inset,
+      0 2px 0 0 rgba(255, 255, 255, 1.0) inset;
   }
 
-  .dark .glass-card:hover {
-    box-shadow: none;
-  }
+  box-shadow: 0 0 10px -2px hsla(var(--primary) / 0.2);
+}
 
-  /* Luminous Glows */
-  .shadow-glow-sm {
-    box-shadow: 0 0 10px -2px hsla(var(--primary) / 0.2);
-  }
+.shadow-glow {
+  box-shadow: 0 0 20px -5px hsla(var(--primary) / 0.3);
+}
 
-  .shadow-glow {
-    box-shadow: 0 0 20px -5px hsla(var(--primary) / 0.3);
-  }
+.shadow-glow-lg {
+  box-shadow: 0 0 30px -5px hsla(var(--primary) / 0.4);
+}
 
-  .shadow-glow-lg {
-    box-shadow: 0 0 30px -5px hsla(var(--primary) / 0.4);
-  }
+/* Text Radiance */
+.text-glow {
+  text-shadow: 0 0 10px hsla(var(--primary) / 0.5);
+}
 
-  /* Text Radiance */
-  .text-glow {
-    text-shadow: 0 0 10px hsla(var(--primary) / 0.5);
-  }
+.glow-text {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-400;
+}
 
-  .glow-text {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-400;
-  }
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
 
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+/* Context Engineering Spec: Energized Controls - BLUE for Light Mode */
+:is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
+  box-shadow: 0 0 16px -1px rgba(14, 165, 233, 0.6) !important;
+  background-color: hsl(199, 89%, 48%) !important;
+  border-color: hsl(199, 89%, 48%) !important;
+}
 
-  /* Context Engineering Spec: Energized Controls */
-  :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
-    box-shadow: 0 0 10px -1px hsla(var(--primary) / 0.5) !important;
-  }
+.dark :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
+  box-shadow: 0 0 10px -1px hsla(var(--primary) / 0.5) !important;
+  background-color: hsl(var(--primary)) !important;
+}
 
-  /* Context Engineering Spec: Luminous Icons */
-  /* Target Lucide icons inside interactive elements on hover */
-  :is(button, a):hover>svg.lucide {
-    filter: drop-shadow(0 0 4px hsla(var(--primary) / 0.4));
-    stroke-width: 2.5px;
-    /* Slight bolding for "Crisp" feel */
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+/* Context Engineering Spec: Luminous Icons - BLUE in Light Mode */
+:is(button, a):hover>svg.lucide {
+  filter: drop-shadow(0 0 6px rgba(14, 165, 233, 0.5));
+  stroke: hsl(199, 89%, 48%);
+  stroke-width: 2.5px;
+  /* Slight bolding for "Crisp" feel */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  /* Ensure active/nav icons glow */
-  .nav-active svg {
-    filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.6));
-  }
+.dark :is(button, a):hover>svg.lucide {
+  filter: drop-shadow(0 0 4px hsla(var(--primary) / 0.4));
+  stroke: hsl(var(--primary));
+  stroke-width: 2.5px;
+  /* Slight bolding for "Crisp" feel */
+}
+
+/* Ensure active/nav icons glow BLUE in light mode */
+.nav-active svg {
+  filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.7));
+  stroke: hsl(199, 89%, 48%);
+}
+
+.dark .nav-active svg {
+  filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.6));
+  stroke: hsl(var(--primary));
+}
 }

@@ -20,8 +20,11 @@ export function StockTicker() {
     useEffect(() => {
         const fetchStocks = async () => {
             try {
-                // Fetch major tech and requested stocks
-                const data = await getStockQuotes(['AAPL', 'TSLA', 'MSFT', 'AMZN', 'GOOGL', 'NVDA', 'META']);
+                // Fetch major tech stocks + cryptocurrencies
+                const data = await getStockQuotes([
+                    'AAPL', 'TSLA', 'MSFT', 'AMZN', 'GOOGL', 'NVDA', 'META',
+                    'BTCUSD', 'ETHUSD', 'SOLUSD', 'BNBUSD'
+                ]);
                 setStocks(data);
             } catch (error) {
                 console.error("Failed to load ticker", error);
