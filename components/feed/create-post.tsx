@@ -25,8 +25,11 @@ interface CreatePostProps {
 }
 
 export function CreatePost({ onClose }: CreatePostProps) {
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const { t } = useLanguage();
+    // Admin or Verified
+    const isVerified = profile?.role === 'admin' || profile?.emailVerified;
+
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
@@ -194,13 +197,14 @@ export function CreatePost({ onClose }: CreatePostProps) {
                     <div className="flex-1 space-y-3">
 
                         <Textarea
-                            placeholder={isListening ? (t("feed.listening") || "Listening...") : (t("feed.placeholder") + " 🎙️")}
-                            className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500 pr-10" // Added pr-10 for close button overlap protection
+                            disabled={!isVerified}
+                            placeholder={!isVerified ? "Please verify your email to share a moment." : (isListening ? (t("feed.listening") || "Listening...") : (t("feed.placeholder") + " 🎙️"))}
+                            className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500 pr-10 disabled:opacity-60 disabled:cursor-not-allowed"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                         />
 
-                        {isSpeechSupported && (
+                        {isSpeechSupported && isVerified && (
                             <div className="absolute right-6 top-6">
                                 <Button
                                     size="icon"
@@ -238,12 +242,13 @@ export function CreatePost({ onClose }: CreatePostProps) {
                                     ref={fileInputRef}
                                     accept="image/*,video/*"
                                     onChange={handleFileSelect}
+                                    disabled={!isVerified}
                                 />
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => fileInputRef.current?.click()}
-                                    disabled={isUploading}
+                                    disabled={isUploading || !isVerified}
                                     className="gap-2 flex-1 md:flex-none text-muted-foreground hover:text-foreground"
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-6 h-6 text-primary" />}
@@ -251,7 +256,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
                                 </Button>
                                 <MagicAIButton
                                     onClick={handleOpenMagicAI}
-                                    disabled={!content.trim()}
+                                    disabled={!content.trim() || !isVerified}
                                     isGenerating={magicAI.isGenerating}
                                 />
                             </div>
@@ -275,7 +280,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
 
                             <Button
                                 onClick={handleSubmit}
-                                disabled={(!content.trim() && mediaUrls.length === 0) || isSubmitting || isUploading}
+                                disabled={(!content.trim() && mediaUrls.length === 0) || isSubmitting || isUploading || !isVerified}
                                 className="bg-primary hover:bg-primary/90 text-white font-semibold w-full md:w-auto px-8"
                             >
                                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}

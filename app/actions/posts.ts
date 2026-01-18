@@ -3,7 +3,7 @@
 
 import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
-import { getUserProfile } from "@/lib/auth";
+import { getUserProfile, requireVerifiedAction } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { sanitizeData } from "@/lib/serialization";
 import { ReactionType, NotificationType } from "@/types/posts";
@@ -48,10 +48,7 @@ export async function createPost(
     thumbnailUrl?: string | null,
     allowedViewerIds?: string[]
 ) {
-    const user = await getUserProfile()
-    if (!user) {
-        throw new Error("Unauthorized")
-    }
+    const user = await requireVerifiedAction();
 
     // Safe sanitization
     const safeMediaUrls = Array.isArray(mediaUrls) ? mediaUrls : [];
@@ -313,8 +310,7 @@ export async function editPost(postId: string, content: string, contextType?: st
 }
 
 export async function addComment(postId: string, content: string, contextType?: string, contextId?: string, mediaUrl?: string, youtubeUrl?: string) {
-    const user = await getUserProfile();
-    if (!user) throw new Error("Unauthorized");
+    const user = await requireVerifiedAction();
 
     const postRef = getPostRef(postId, contextType, contextId);
     const postDoc = await postRef.get();

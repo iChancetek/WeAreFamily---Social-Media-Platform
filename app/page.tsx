@@ -7,9 +7,10 @@ import { LandingChatWidget } from "@/components/landing/landing-chat-widget";
 import { WelcomeHeader } from "@/components/feed/welcome-header";
 import { StoriesTray } from "@/components/stories/stories-tray";
 import { HomeFeed } from "@/components/feed/home-feed";
-import { getUserProfile } from "@/lib/auth";
+import { getUserProfile, enforceVerificationAccess } from "@/lib/auth";
 
 export default async function Home() {
+    await enforceVerificationAccess();
     const profile = await getUserProfile();
 
     if (!profile) {
