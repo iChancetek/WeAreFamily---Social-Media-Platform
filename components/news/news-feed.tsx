@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, Newspaper } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StockTicker } from "./stock-ticker";
+import { CryptoTicker } from "./crypto-ticker";
 
 const CATEGORIES = [
     { id: 'general', label: 'Top Stories' },
@@ -53,6 +54,9 @@ export function NewsFeed() {
             {/* Integrated Stock Ticker */}
             <StockTicker />
 
+            {/* Integrated Crypto Ticker */}
+            <CryptoTicker />
+
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-2 text-sm font-semibold text-gray-500 uppercase tracking-wider">
                     <Newspaper className="w-4 h-4" />
@@ -76,9 +80,9 @@ export function NewsFeed() {
                         key={cat.id}
                         onClick={() => setCategory(cat.id)}
                         className={cn(
-                            "text-xs px-2 py-1 rounded-full whitespace-nowrap transition-colors",
+                            "text-xs px-2 py-1 rounded-full whitespace-nowrap transition-all duration-200",
                             category === cat.id
-                                ? "bg-primary text-primary-foreground font-medium"
+                                ? "bg-primary text-primary-foreground font-medium btn-elevated"
                                 : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                         )}
                     >

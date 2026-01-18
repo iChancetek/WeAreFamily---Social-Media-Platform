@@ -5,7 +5,7 @@ import { getStockQuotes } from '@/app/actions/stocks';
 import { cn } from '@/lib/utils';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
-interface Stock {
+interface Crypto {
     symbol: string;
     price: number;
     changesPercentage: number;
@@ -13,66 +13,81 @@ interface Stock {
     name: string;
 }
 
-export function StockTicker() {
-    const [stocks, setStocks] = useState<Stock[]>([]);
+export function CryptoTicker() {
+    const [cryptos, setCryptos] = useState<Crypto[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchStocks = async () => {
+        const fetchCryptos = async () => {
             try {
-                // Fetch major tech stocks only (crypto moved to separate ticker)
+                // Fetch major cryptocurrencies
                 const data = await getStockQuotes([
-                    'AAPL', 'TSLA', 'MSFT', 'AMZN', 'GOOGL', 'NVDA', 'META'
+                    'BTCUSD', 'ETHUSD', 'SOLUSD'
                 ]);
-                setStocks(data);
+                setCryptos(data);
             } catch (error) {
-                console.error("Failed to load ticker", error);
+                console.error("Failed to load crypto ticker", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchStocks();
+        fetchCryptos();
 
         // Refresh every 60s
-        const interval = setInterval(fetchStocks, 60000);
+        const interval = setInterval(fetchCryptos, 60000);
         return () => clearInterval(interval);
     }, []);
 
     if (loading) return <div className="h-10 w-full bg-muted/30 animate-pulse rounded-md mb-2" />;
 
-    // Show debug message if no stocks loaded
-    if (!stocks.length) {
+    // Show debug message if no cryptos loaded
+    if (!cryptos.length) {
         return (
             <div className="w-full bg-yellow-500/10 border border-yellow-500/30 rounded-md px-4 py-2 mb-2 text-xs text-yellow-700 dark:text-yellow-400">
-                Stock ticker: No data available. Check server logs for [Stocks] entries or verify FMP_API_KEY in .env.local
+                Crypto ticker: No data available. Check server logs for [Stocks] entries or verify FMP_API_KEY in .env.local
             </div>
         );
     }
 
     // Duplicate list for seamless infinite scroll
-    const marqueeItems = [...stocks, ...stocks];
+    const marqueeItems = [...cryptos, ...cryptos];
+
+    // Asset-specific accent colors
+    const getAccentColor = (symbol: string) => {
+        if (symbol === 'BTCUSD') return 'hsl(30, 95%, 55%)'; // Bitcoin Orange
+        if (symbol === 'ETHUSD') return 'hsl(255, 82%, 67%)'; // Ethereum Purple
+        if (symbol === 'SOLUSD') return 'hsl(180, 75%, 50%)'; // Solana Teal
+        return 'hsl(199, 89%, 48%)'; // Default blue
+    };
 
     return (
         <div className="w-full overflow-hidden ticker-professional py-2.5 select-none relative group z-20">
             <div className="flex animate-marquee hover:pause-animation whitespace-nowrap">
-                {marqueeItems.map((stock, index) => (
+                {marqueeItems.map((crypto, index) => (
                     <div
-                        key={`${stock.symbol}-${index}`}
-                        className="inline-flex items-center gap-3 mx-8 text-xs"
+                        key={`${crypto.symbol}-${index}`}
+                        className="inline-flex items-center gap-3 mx-8 text-xs group/item"
                     >
-                        <span className="font-bold tracking-tight text-foreground/90">{stock.symbol}</span>
-                        <span className="font-mono font-medium text-foreground/80 tracking-tighter ticker-glow-price">${stock.price.toFixed(2)}</span>
+                        <span
+                            className="font-bold tracking-tight text-foreground/90"
+                            style={{
+                                textShadow: `0 0 10px ${getAccentColor(crypto.symbol)}40`
+                            }}
+                        >
+                            {crypto.symbol.replace('USD', '')}
+                        </span>
+                        <span className="font-mono font-medium text-foreground/80 tracking-tighter ticker-glow-price">${crypto.price.toFixed(2)}</span>
                         <div className={cn(
                             "flex items-center gap-0.5 font-medium px-1.5 py-0.5 rounded-full bg-white/50 dark:bg-white/5 transition-colors",
-                            stock.change > 0
+                            crypto.change > 0
                                 ? "text-emerald-600 dark:text-emerald-400 ticker-glow-change-positive"
-                                : stock.change < 0
+                                : crypto.change < 0
                                     ? "text-rose-600 dark:text-rose-400 ticker-glow-change-negative"
                                     : "text-gray-500"
                         )}>
-                            {stock.change > 0 ? <TrendingUp className="w-3 h-3 stroke-[3px]" /> : stock.change < 0 ? <TrendingDown className="w-3 h-3 stroke-[3px]" /> : <Minus className="w-3 h-3" />}
-                            <span className="tracking-tight">{stock.change > 0 ? '+' : ''}{stock.changesPercentage.toFixed(2)}%</span>
+                            {crypto.change > 0 ? <TrendingUp className="w-3 h-3 stroke-[3px]" /> : crypto.change < 0 ? <TrendingDown className="w-3 h-3 stroke-[3px]" /> : <Minus className="w-3 h-3" />}
+                            <span className="tracking-tight">{crypto.change > 0 ? '+' : ''}{crypto.changesPercentage.toFixed(2)}%</span>
                         </div>
                     </div>
                 ))}

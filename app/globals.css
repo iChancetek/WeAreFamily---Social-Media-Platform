@@ -5,7 +5,7 @@
 @layer base {
   :root {
     /* Polished White Theme (Light Mode) - Luminous, Studio-Lit */
-    --background: 35 25% 98.5%;
+    --background: 210 20% 99%;
     --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 250 95% 64%;
+    --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 4.8% 96%;
@@ -23,7 +23,7 @@
     --muted: 240 4.8% 96%;
     --muted-foreground: 240 3.8% 46%;
 
-    --accent: 250 20% 97%;
+    --accent: 199 20% 97%;
     --accent-foreground: 240 5.9% 10%;
 
     --destructive: 0 84.2% 60.2%;
@@ -31,11 +31,11 @@
 
     --border: 220 13% 94%;
     --input: 220 13% 94%;
-    --ring: 250 95% 64%;
+    --ring: 199 89% 48%;
 
     --radius: 1rem;
 
-    --chart-1: 250 95% 64%;
+    --chart-1: 199 89% 48%;
     --chart-2: 190 90% 50%;
     --chart-3: 340 85% 65%;
     --chart-4: 45 95% 55%;
@@ -92,9 +92,10 @@
   body {
     @apply bg-background text-foreground transition-colors duration-300;
     font-family: var(--font-inter), system-ui, sans-serif;
-    background: radial-gradient(circle at center,
-        hsl(0, 0%, 100%) 0%,
-        hsl(210, 20%, 99%) 100%);
+    background: radial-gradient(ellipse at top,
+        hsl(199, 45%, 99%) 0%,
+        hsl(210, 30%, 98.5%) 40%,
+        hsl(0, 0%, 99.5%) 100%);
     background-attachment: fixed;
   }
 
@@ -186,5 +187,94 @@
   .dark .nav-active svg {
     filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.6));
     stroke: hsl(var(--primary));
+  }
+
+  /* Professional Ticker Styling */
+  .ticker-professional {
+    background-color: rgb(255 255 255 / 0.7);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid rgb(0 0 0 / 0.08);
+    border-bottom: 1px solid rgb(0 0 0 / 0.08);
+    box-shadow: 0 2px 20px -4px rgba(14, 165, 233, 0.12);
+  }
+
+  .dark .ticker-professional {
+    background-color: rgb(9 9 11 / 0.7);
+    border-top: 1px solid rgb(255 255 255 / 0.05);
+    border-bottom: 1px solid rgb(255 255 255 / 0.05);
+    box-shadow: none;
+  }
+
+  .ticker-glow-price {
+    text-shadow: 0 0 12px rgba(14, 165, 233, 0.15);
+  }
+
+  .dark .ticker-glow-price {
+    text-shadow: none;
+  }
+
+  .ticker-glow-change-positive {
+    box-shadow: 0 0 14px -2px rgba(16, 185, 129, 0.25);
+  }
+
+  .ticker-glow-change-negative {
+    box-shadow: 0 0 14px -2px rgba(244, 63, 94, 0.25);
+  }
+
+  .dark .ticker-glow-change-positive,
+  .dark .ticker-glow-change-negative {
+    box-shadow: none;
+  }
+
+  /* Button Elevation (Light Mode) */
+  .btn-elevated {
+    box-shadow: 0 2px 12px -3px rgba(14, 165, 233, 0.15), 0 0 0 1px rgba(14, 165, 233, 0.08);
+    transition: all 0.2s ease;
+  }
+
+  .btn-elevated:hover {
+    box-shadow: 0 4px 16px -2px rgba(14, 165, 233, 0.25), 0 0 0 1px rgba(14, 165, 233, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .btn-elevated:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 8px -2px rgba(14, 165, 233, 0.2);
+  }
+
+  .dark .btn-elevated {
+    box-shadow: none;
+  }
+
+  .dark .btn-elevated:hover {
+    box-shadow: none;
+    transform: translateY(0);
+  }
+
+  .dark .btn-elevated:active {
+    transform: scale(1);
+  }
+
+  /* Enhanced Radio/Checkbox Glow (Stronger for Light Mode) */
+  :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
+    box-shadow: 0 0 20px -2px rgba(14, 165, 233, 0.7), 0 0 8px -1px rgba(14, 165, 233, 0.4) inset !important;
+    background-color: hsl(199, 89%, 48%) !important;
+    border-color: hsl(199, 89%, 48%) !important;
+  }
+
+  :is([role="checkbox"], [role="radio"], [role="switch"]):hover {
+    box-shadow: 0 0 12px -2px rgba(14, 165, 233, 0.3);
+  }
+
+  /* Enhanced Icon Glow (Stronger for Light Mode) */
+  :is(button, a):hover>svg.lucide {
+    filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.6)) drop-shadow(0 0 3px rgba(14, 165, 233, 0.4));
+    stroke: hsl(199, 89%, 48%);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-active svg {
+    filter: drop-shadow(0 0 10px rgba(14, 165, 233, 0.8)) drop-shadow(0 0 4px rgba(14, 165, 233, 0.5));
+    stroke: hsl(199, 89%, 48%);
   }
 }
