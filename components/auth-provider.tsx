@@ -12,6 +12,7 @@ type AuthContextType = {
     profile: any | null
     loading: boolean
     signOut: () => Promise<void>
+    refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType>({
     profile: null,
     loading: true,
     signOut: async () => { },
+    refreshUser: async () => { },
 })
 
 export const useAuth = () => useContext(AuthContext)
@@ -94,8 +96,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         router.push("/login")
     }
 
+    const refreshUser = async () => {
+        if (!user) return;
+        try {
+            await user.reload();
+            // Re-sync to DB to update verification status there too
+            const nameParts = (user.displayName || "").split(' ');
+            const firstName = nameParts[0] || "Famio";
+            const lastName = nameParts.slice(1).join(' ') || "Member";
+
+            await syncUserToDb(
+                user.uid,
+                user.email || "",
+                user.displayName || user.email?.split('@')[0] || "User",
+                firstName,
+                lastName,
+                user.emailVerified
+            );
+
+            // Force state update
+            setUser({ ...user });
+            router.refresh();
+        } catch (e) {
+            console.error("User refresh failed", e);
+        }
+    }
+
     return (
-        <AuthContext.Provider value={{ user, profile, loading, signOut }}>
+        <AuthContext.Provider value={{ user, profile, loading, signOut, refreshUser }}>
             {children}
         </AuthContext.Provider>
     )

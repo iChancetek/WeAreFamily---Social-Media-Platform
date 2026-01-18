@@ -4,6 +4,7 @@ import { Sidebar } from "./sidebar";
 import { TopNav } from "./top-nav";
 import { RightSidebar } from "./right-sidebar";
 import { ActivityTracker } from "@/components/auth/activity-tracker";
+import { VerificationBanner } from "@/components/auth/verification-banner";
 import { BottomNav } from "./bottom-nav";
 import { useAuth } from "@/components/auth-provider";
 
@@ -28,6 +29,7 @@ export function MainLayout({ children, className }: { children: React.ReactNode,
 
                 {/* Main Content Area - Added left margin to account for floating sidebar */}
                 <div className="flex-1 flex flex-col min-w-0 md:ml-[105px] transition-all duration-300">
+                    <VerificationBanner />
                     <TopNav className="md:hidden border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-40" />
                     <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
                         <div className={containerClass}>

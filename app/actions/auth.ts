@@ -124,10 +124,30 @@ export async function syncUserToDb(
                 console.error("Failed to notify admins:", err);
             });
         } else {
-            // Check if we need to promote existing user
+            // UPDATE EXISTING USER
             const userData = userDoc.data();
+            const updates: any = {};
+
+            // 1. Sync Email Verification Status
+            // We trust the latest Auth Provider state.
+            if (emailVerified !== undefined && userData?.emailVerified !== emailVerified) {
+                updates.emailVerified = emailVerified;
+            }
+
+            // 2. Ensure createdAt exists (Critical for Grace Period logic)
+            // If missing, we backfill it now to start the clock or assume old user.
+            if (!userData?.createdAt) {
+                updates.createdAt = FieldValue.serverTimestamp();
+            }
+
+            // 3. Admin Promotion Check
             if (email === "chancellor@ichancetek.com" && userData?.role !== "admin") {
-                await userRef.update({ role: "admin" });
+                updates.role = "admin";
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await userRef.update(updates);
+                console.log(`[syncUserToDb] User ${uid} updated:`, Object.keys(updates));
             }
         }
     } catch (error) {
