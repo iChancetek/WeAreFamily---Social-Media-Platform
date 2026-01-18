@@ -22,9 +22,10 @@ export async function startTrackingSession() {
         lastHeartbeat: FieldValue.serverTimestamp()
     });
 
-    // Update User's lastSignInAt (if not recently updated or just to keep fresh)
+    // Update User's lastSignInAt and lastActiveAt to ensure they appear in online lists immediately
     await adminDb.collection("users").doc(user.id).update({
         lastSignInAt: FieldValue.serverTimestamp(),
+        lastActiveAt: FieldValue.serverTimestamp(),
         isOnline: true
     });
 

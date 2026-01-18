@@ -26,10 +26,7 @@ export default async function ProfilePage() {
     return (
         <MainLayout className="max-w-6xl">
             <div className="pb-16 pt-0">
-                {/* DEBUG: Show User ID to verify identity */}
-                <div className="text-xs text-center py-2 font-mono text-muted-foreground bg-secondary/20 rounded mb-2">
-                    Debug ID: {user.id}
-                </div>
+
                 <ProfileHeader user={user as any} isCurrentUser={true} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
