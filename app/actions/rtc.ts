@@ -179,7 +179,7 @@ export async function getActiveBroadcasts() {
         .get();
 
     const now = Date.now();
-    const STALE_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+    const STALE_TIMEOUT = 30 * 1000; // 30 seconds (reduced from 2 mins)
 
     const validDocs: any[] = [];
 
@@ -202,11 +202,15 @@ export async function getActiveBroadcasts() {
 
         if (now - lastActivityTime > STALE_TIMEOUT) {
             // Mark as ended
-            console.log(`Cleaning up stale session: ${doc.id}`);
-            await adminDb.collection("active_sessions").doc(doc.id).update({
-                status: "ended",
-                endedReason: "timeout"
-            });
+            console.log(`Cleaning up stale session: ${doc.id}, inactive for ${(now - lastActivityTime) / 1000}s`);
+            try {
+                await adminDb.collection("active_sessions").doc(doc.id).update({
+                    status: "ended",
+                    endedReason: "timeout"
+                });
+            } catch (err) {
+                console.error(`Failed to cleanup stale session ${doc.id}:`, err);
+            }
             continue;
         }
 
