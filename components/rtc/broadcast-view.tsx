@@ -33,9 +33,12 @@ export function BroadcastView({ sessionId, onEnd }: BroadcastViewProps) {
 
     // Heartbeat Effect
     useEffect(() => {
+        // Send heartbeat immediately on mount
+        updateSessionHeartbeat(sessionId).catch(console.error)
+
         const interval = setInterval(() => {
             updateSessionHeartbeat(sessionId).catch(console.error)
-        }, 30000) // 30 seconds
+        }, 5000) // 5 seconds (must be much faster than 30s stale timeout)
 
         return () => clearInterval(interval)
     }, [sessionId])

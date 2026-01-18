@@ -26,52 +26,65 @@ export interface SignalPayload {
 }
 
 export async function startSession(type: SessionType, targetUserId?: string, isPublic: boolean = false) {
-    const user = await getUserProfile();
-    if (!user) throw new Error("Unauthorized");
-
-    // Determine participants based on session type
-    const participants = type === "broadcast"
-        ? [user.id]
-        : [user.id, targetUserId!];
-
-    // For direct calls, check if target user has blocked caller
-    if (type !== "broadcast" && targetUserId) {
-        const targetUserDoc = await adminDb.collection("users").doc(targetUserId).get();
-        const targetUserData = targetUserDoc.data();
-
-        if (targetUserData?.blockedUsers?.includes(user.id)) {
-            throw new Error("Cannot call this user");
+    try {
+        const user = await getUserProfile();
+        if (!user) {
+            console.error("[startSession] Unauthorized: No user profile found");
+            throw new Error("Unauthorized");
         }
+
+        // Determine participants based on session type
+        const participants = type === "broadcast"
+            ? [user.id]
+            : [user.id, targetUserId!];
+
+        // For direct calls, check if target user has blocked caller
+        if (type !== "broadcast" && targetUserId) {
+            const targetUserDoc = await adminDb.collection("users").doc(targetUserId).get();
+            const targetUserData = targetUserDoc.data();
+
+            if (targetUserData?.blockedUsers?.includes(user.id)) {
+                throw new Error("Cannot call this user");
+            }
+        }
+
+        const sessionData = {
+            hostId: user.id,
+            type,
+            participants,
+            status: "active",
+            isPublic: type === "broadcast" ? isPublic : true, // Calls are always "public" to participants
+            viewers: type === "broadcast" ? [] : undefined, // Track active viewers for broadcasts
+            startedAt: FieldValue.serverTimestamp(),
+            lastActiveAt: FieldValue.serverTimestamp(), // Initialize heartbeat
+        };
+
+        console.log("[startSession] Creating session in Firestore:", sessionData);
+        const sessionRef = await adminDb.collection("active_sessions").add(sessionData);
+
+        // Log audit event
+        try {
+            await logAuditEvent(
+                type === "broadcast" ? "settings.update" : "message.sent",
+                {
+                    targetType: "rtc_session",
+                    targetId: sessionRef.id,
+                    targetName: type === "broadcast" ? "Live Broadcast" : "Direct Call",
+                    details: { sessionType: type, participants }
+                }
+            );
+        } catch (auditErr) {
+            console.error("[startSession] Audit log failed (non-critical):", auditErr);
+        }
+
+        return {
+            sessionId: sessionRef.id,
+            ...sessionData,
+        };
+    } catch (error: any) {
+        console.error("[startSession] Critical error:", error);
+        throw new Error(error.message || "Failed to start session");
     }
-
-    const sessionData = {
-        hostId: user.id,
-        type,
-        participants,
-        status: "active",
-        isPublic: type === "broadcast" ? isPublic : true, // Calls are always "public" to participants
-        viewers: type === "broadcast" ? [] : undefined, // Track active viewers for broadcasts
-        startedAt: FieldValue.serverTimestamp(),
-        lastActiveAt: FieldValue.serverTimestamp(), // Initialize heartbeat
-    };
-
-    const sessionRef = await adminDb.collection("active_sessions").add(sessionData);
-
-    // Log audit event
-    await logAuditEvent(
-        type === "broadcast" ? "settings.update" : "message.sent",
-        {
-            targetType: "rtc_session",
-            targetId: sessionRef.id,
-            targetName: type === "broadcast" ? "Live Broadcast" : "Direct Call",
-            details: { sessionType: type, participants }
-        }
-    );
-
-    return {
-        sessionId: sessionRef.id,
-        ...sessionData,
-    };
 }
 
 export async function endSession(sessionId: string) {
