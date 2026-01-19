@@ -163,7 +163,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
         catch { toast.error("Delete failed"); }
     };
 
-    const handleTranslate = async (targetLang: string = 'en') => {
+    const handleTranslate = async (targetLang: 'es' | 'en' | 'fr' | 'zh' | 'hi' | 'ar' = 'en') => {
         setIsTranslating(true);
         try {
             const { translateText } = await import("@/app/actions/ai");
