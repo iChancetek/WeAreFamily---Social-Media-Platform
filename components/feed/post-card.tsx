@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SafeDate } from "@/components/shared/safe-date";
 import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+    DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { Heart, MessageCircle, Share2, Sparkles, MoreHorizontal, Send, Loader2, Lock, Globe, Users, Image as ImageIcon, Video, X, Play } from "lucide-react";
 import Link from "next/link";
@@ -162,12 +163,11 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
         catch { toast.error("Delete failed"); }
     };
 
-    const handleTranslate = async () => {
-        if (translatedContent) return setTranslatedContent(null);
+    const handleTranslate = async (targetLang: string = 'en') => {
         setIsTranslating(true);
         try {
             const { translateText } = await import("@/app/actions/ai");
-            setTranslatedContent(await translateText(post.content, 'es'));
+            setTranslatedContent(await translateText(post.content, targetLang));
         } catch { toast.error("Translation failed"); } finally { setIsTranslating(false); }
     };
 
@@ -374,7 +374,30 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                     <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"><MoreHorizontal className="w-4 h-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={handleTranslate}>{translatedContent ? t("post.translate.original") : t("post.translate")}</DropdownMenuItem>
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                            <Globe className="w-4 h-4 mr-2" />
+                                            <span>{t("post.translate")}</span>
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuPortal>
+                                            <DropdownMenuSubContent>
+                                                <DropdownMenuItem onClick={() => handleTranslate('en')}>English</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleTranslate('zh')}>中文 (Mandarin)</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleTranslate('hi')}>हिन्दी (Hindi)</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleTranslate('es')}>Español</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleTranslate('fr')}>Français</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleTranslate('ar')}>العربية (Arabic)</DropdownMenuItem>
+                                                {translatedContent && (
+                                                    <>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem onClick={() => setTranslatedContent(null)}>
+                                                            {t("post.translate.original")}
+                                                        </DropdownMenuItem>
+                                                    </>
+                                                )}
+                                            </DropdownMenuSubContent>
+                                        </DropdownMenuPortal>
+                                    </DropdownMenuSub>
                                     <DropdownMenuItem onClick={() => setAskAIDialogOpen(true)} className="text-purple-600 dark:text-purple-400 gap-2">
                                         <Sparkles className="w-4 h-4" />
                                         {t("post.ask_ai")}
