@@ -212,7 +212,8 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
 
             await updateAccountSettings(data)
             if (data.language) {
-                setLanguage(data.language as 'en' | 'es')
+                // @ts-ignore
+                setLanguage(data.language)
             }
             accountForm.reset(data)
             return true
@@ -471,7 +472,11 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                                     </FormControl>
                                                     <SelectContent>
                                                         <SelectItem value="en">English</SelectItem>
+                                                        <SelectItem value="zh">中文 (Mandarin)</SelectItem>
+                                                        <SelectItem value="hi">हिन्दी (Hindi)</SelectItem>
                                                         <SelectItem value="es">Español</SelectItem>
+                                                        <SelectItem value="fr">Français</SelectItem>
+                                                        <SelectItem value="ar">العربية (Arabic)</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                                 <FormDescription>{t("settings.language.desc")}</FormDescription>

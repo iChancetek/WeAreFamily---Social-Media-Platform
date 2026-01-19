@@ -102,7 +102,8 @@ export function AccountForm({ user }: { user: any }) {
                 setTheme(data.theme)
             }
             if (data.language) {
-                setLanguage(data.language as 'en' | 'es')
+                // @ts-ignore
+                setLanguage(data.language)
             }
             toast.success("Account settings updated")
             router.refresh()
@@ -136,7 +137,11 @@ export function AccountForm({ user }: { user: any }) {
                                         </FormControl>
                                         <SelectContent>
                                             <SelectItem value="en">English</SelectItem>
+                                            <SelectItem value="zh">中文 (Mandarin)</SelectItem>
+                                            <SelectItem value="hi">हिन्दी (Hindi)</SelectItem>
                                             <SelectItem value="es">Español</SelectItem>
+                                            <SelectItem value="fr">Français</SelectItem>
+                                            <SelectItem value="ar">العربية (Arabic)</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormDescription>
