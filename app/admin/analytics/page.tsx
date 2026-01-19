@@ -17,7 +17,6 @@ export default async function AnalyticsPage() {
             <div className="container mx-auto py-10">
                 <AnalyticsDashboard />
             </div>
-        </div>
-        </MainLayout >
+        </MainLayout>
     );
 }
