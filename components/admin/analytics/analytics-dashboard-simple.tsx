@@ -4,27 +4,34 @@ import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Clock, LogIn, Activity, AlertCircle } from "lucide-react";
-
-// Simple mock data - no server calls, no complications
-function getMockStats(range: string) {
-    const baseStats = {
-        totalSignIns: 156,
-        uniqueUsers: 42,
-        avgSessionDuration: 1247000, // ~20 minutes in ms
-        avgSessionsPerUser: 3.7,
-    };
-
-    return baseStats;
-}
+import { Users, Clock, LogIn, Activity, AlertCircle, FileText, Briefcase } from "lucide-react";
+import { getSimpleAnalytics } from "@/app/actions/simple-analytics";
+import { toast } from "sonner";
 
 export default function AnalyticsDashboard() {
-    const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('day');
+    const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('week');
     const [stats, setStats] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Set mock stats immediately
-        setStats(getMockStats(timeRange));
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const data = await getSimpleAnalytics();
+                setStats(data);
+
+                if (data._error) {
+                    console.error("Analytics error:", data._error);
+                }
+            } catch (error) {
+                console.error("Failed to fetch analytics", error);
+                toast.error("Failed to load analytics data");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, [timeRange]);
 
     return (
@@ -59,55 +66,59 @@ export default function AnalyticsDashboard() {
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Sign-ins</CardTitle>
-                                <LogIn className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{stats?.totalSignIns || 0}</div>
-                                <p className="text-xs text-muted-foreground">In selected period</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Unique Users</CardTitle>
+                                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
                                 <Users className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats?.uniqueUsers || 0}</div>
-                                <p className="text-xs text-muted-foreground">Active in period</p>
+                                <div className="text-2xl font-bold">{loading ? "..." : (stats?.totalUsers || 0)}</div>
+                                <p className="text-xs text-muted-foreground">Platform members</p>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Avg Session Duration</CardTitle>
-                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+                                <FileText className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats?.avgSessionDuration ? Math.round(stats.avgSessionDuration / 60000) + 'm' : '0m'}</div>
-                                <p className="text-xs text-muted-foreground">Per session</p>
+                                <div className="text-2xl font-bold">{loading ? "..." : (stats?.totalPosts || 0)}</div>
+                                <p className="text-xs text-muted-foreground">All content created</p>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Avg Frequency</CardTitle>
+                                <CardTitle className="text-sm font-medium">Groups</CardTitle>
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{loading ? "..." : (stats?.totalGroups || 0)}</div>
+                                <p className="text-xs text-muted-foreground">Active communities</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
                                 <Activity className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats?.avgSessionsPerUser || 0}</div>
-                                <p className="text-xs text-muted-foreground">Sessions / User</p>
+                                <div className="text-2xl font-bold">{loading ? "..." : (stats?.recentActivity || 0)}</div>
+                                <p className="text-xs text-muted-foreground">Posts last 7 days</p>
                             </CardContent>
                         </Card>
                     </div>
 
-                    {/* Simple table view instead of charts */}
+                    {/* Activity Overview */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Activity Overview</CardTitle>
+                            <CardTitle>Platform Overview</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-sm text-muted-foreground">
-                                <p className="mb-2">📊 This simplified dashboard shows key metrics at a glance.</p>
-                                <p>Advanced charts and visualizations can be added once Firebase indexes are deployed.</p>
+                            <div className="text-sm text-muted-foreground space-y-2">
+                                <p>📊 Displaying real-time platform statistics from your Firebase database.</p>
+                                {stats?._isRealData === false && (
+                                    <p className="text-xs bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
+                                        ⚠️ Unable to fetch complete data. Showing available metrics.
+                                    </p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
