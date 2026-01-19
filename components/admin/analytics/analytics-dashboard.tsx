@@ -34,6 +34,22 @@ export default function AnalyticsDashboard() {
 
     return (
         <div className="space-y-6">
+            {/* Mock Data Warning Banner */}
+            {stats?._isMockData && (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start gap-3">
+                    <Activity className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                        <h4 className="font-semibold text-yellow-500 mb-1">Demo Mode - Using Mock Data</h4>
+                        <p className="text-sm text-yellow-500/90">
+                            {stats._error || "Firestore indexes are missing. Deploy indexes with:"}
+                        </p>
+                        <code className="text-xs bg-yellow-500/10 px-2 py-1 rounded mt-2 inline-block">
+                            firebase deploy --only firestore:indexes
+                        </code>
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
