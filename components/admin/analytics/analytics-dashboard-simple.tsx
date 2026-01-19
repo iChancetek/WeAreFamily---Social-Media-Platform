@@ -244,15 +244,18 @@ function IndividualUserAnalysis({ timeRange }: { timeRange: string }) {
             try {
                 const { getUserAnalyticsSimple } = await import("@/app/actions/user-analytics");
                 const stats = await getUserAnalyticsSimple(selectedUserId);
+                console.log('Fetched user stats:', stats);
                 setUserStats(stats);
             } catch (error) {
                 console.error("Failed to load user stats", error);
                 toast.error("Failed to load user analytics");
+                setUserStats(null);
             } finally {
                 setLoading(false);
             }
         };
 
+        console.log('Selected user ID:', selectedUserId);
         loadUserStats();
     }, [selectedUserId]);
 
@@ -348,7 +351,7 @@ function IndividualUserAnalysis({ timeRange }: { timeRange: string }) {
                 </>
             )}
 
-            {!loading && !userStats && selectedUserId && (
+            {!loading && userStats === null && selectedUserId && (
                 <Card>
                     <CardContent className="py-10 text-center text-muted-foreground">
                         User not found or unable to load analytics

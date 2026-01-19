@@ -10,29 +10,30 @@ export async function getSimpleAnalytics() {
     const user = await getUserProfile();
     if (!user || user.role !== 'admin') throw new Error("Unauthorized");
 
+    // Helper to get count with fallback for Firestore SDK versions
+    const getCount = async (query: any) => {
+        try {
+            const agg = await query.count().get();
+            return agg.data().count;
+        } catch (e) {
+            const snap = await query.get();
+            return snap.size;
+        }
+    };
     try {
-        // Fetch basic counts from collections
-        const usersSnapshot = await adminDb.collection("users").count().get();
-        const postsSnapshot = await adminDb.collection("posts").count().get();
-        const groupsSnapshot = await adminDb.collection("groups").count().get();
-        const brandingSnapshot = await adminDb.collection("branding").count().get();
-
-        const totalUsers = usersSnapshot.data().count;
-        const totalPosts = postsSnapshot.data().count;
-        const totalGroups = groupsSnapshot.data().count;
-        const totalBranding = brandingSnapshot.data().count;
+        // Fetch basic counts using fallback helper
+        const totalUsers = await getCount(adminDb.collection("users"));
+        const totalPosts = await getCount(adminDb.collection("posts"));
+        const totalGroups = await getCount(adminDb.collection("groups"));
+        const totalBranding = await getCount(adminDb.collection("branding"));
 
         // Get recent activity (last 7 days posts)
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-        const recentPostsSnapshot = await adminDb.collection("posts")
-            .where("createdAt", ">=", sevenDaysAgo)
-            .count()
-            .get();
-
-        const recentPosts = recentPostsSnapshot.data().count;
-
+        // Recent posts count with fallback
+        const recentPosts = await getCount(
+            adminDb.collection("posts").where("createdAt", ">=", sevenDaysAgo)
+        );
         return {
             totalUsers,
             totalPosts,

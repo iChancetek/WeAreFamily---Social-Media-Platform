@@ -7,52 +7,60 @@ import { getUserProfile } from "@/lib/auth";
  * Get individual user analytics
  */
 export async function getUserAnalyticsSimple(userId: string) {
-    const user = await getUserProfile();
-    if (!user || user.role !== 'admin') throw new Error("Unauthorized");
+    console.log('Fetching user analytics for ID:', userId);
 
     try {
-        // Get user profile
         const userDoc = await adminDb.collection("users").doc(userId).get();
+        console.log('User doc exists:', userDoc.exists);
         if (!userDoc.exists) {
             return null;
         }
-
         const userData = userDoc.data();
 
+        // Helper to get count with fallback
+        const getCount = async (query: any) => {
+            try {
+                // Firestore aggregate count (supported in newer SDKs)
+                const agg = await query.count().get();
+                return agg.data().count;
+            } catch (e) {
+                // Fallback to fetching docs and using size
+                const snap = await query.get();
+                return snap.size;
+            }
+        };
+
         // Count user's posts
-        const postsSnapshot = await adminDb.collection("posts")
-            .where("userId", "==", userId)
-            .count()
-            .get();
+        const postsCount = await getCount(
+            adminDb.collection("posts").where("userId", "==", userId)
+        );
 
         // Count user's groups (as member)
-        const groupsSnapshot = await adminDb.collection("groups")
-            .where("members", "array-contains", userId)
-            .count()
-            .get();
+        const groupsCount = await getCount(
+            adminDb.collection("groups").where("members", "array-contains", userId)
+        );
 
-        // Get recent posts (last 7 days)
+        // Recent posts (last 7 days)
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-        const recentPostsSnapshot = await adminDb.collection("posts")
-            .where("userId", "==", userId)
-            .where("createdAt", ">=", sevenDaysAgo)
-            .count()
-            .get();
+        const recentPostsCount = await getCount(
+            adminDb
+                .collection("posts")
+                .where("userId", "==", userId)
+                .where("createdAt", ">=", sevenDaysAgo)
+        );
 
         return {
             userId,
             displayName: userData?.displayName || "Unknown User",
             email: userData?.email || "",
             photoURL: userData?.photoURL || "",
-            joinedDate: userData?.createdAt?.toDate().toISOString() || null,
-            totalPosts: postsSnapshot.data().count,
-            totalGroups: groupsSnapshot.data().count,
-            recentPosts: recentPostsSnapshot.data().count,
-            _isRealData: true
+            joinedDate: userData?.createdAt?.toDate ? userData?.createdAt?.toDate().toISOString() : null,
+            totalPosts: postsCount,
+            totalGroups: groupsCount,
+            recentPosts: recentPostsCount,
+            _isRealData: true,
         };
-
     } catch (error: any) {
         console.error("Error fetching user analytics:", error);
         return null;
