@@ -298,7 +298,30 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={handleTranslate}>{translatedContent ? t("post.translate.original") : t("post.translate")}</DropdownMenuItem>
+                                            <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger>
+                                                    <Globe className="w-4 h-4 mr-2" />
+                                                    <span>{t("post.translate")}</span>
+                                                </DropdownMenuSubTrigger>
+                                                <DropdownMenuPortal>
+                                                    <DropdownMenuSubContent>
+                                                        <DropdownMenuItem onClick={() => handleTranslate('en')}>English</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleTranslate('zh')}>中文 (Mandarin)</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleTranslate('hi')}>हिन्दी (Hindi)</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleTranslate('es')}>Español</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleTranslate('fr')}>Français</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleTranslate('ar')}>العربية (Arabic)</DropdownMenuItem>
+                                                        {translatedContent && (
+                                                            <>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem onClick={() => setTranslatedContent(null)}>
+                                                                    {t("post.translate.original")}
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
+                                                    </DropdownMenuSubContent>
+                                                </DropdownMenuPortal>
+                                            </DropdownMenuSub>
                                             {isAuthor && <DropdownMenuItem onClick={() => setIsEditing(true)}>{t("post.edit")}</DropdownMenuItem>}
                                             {isAuthor && <DropdownMenuItem onClick={handleDeletePost} className="text-red-500">{t("post.delete")}</DropdownMenuItem>}
                                             {!isAuthor && <DropdownMenuItem className="text-red-500">{t("post.report")}</DropdownMenuItem>}
