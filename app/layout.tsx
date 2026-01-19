@@ -41,14 +41,13 @@ export default function RootLayout({
           >
             <LanguageProvider>
               <MessageNotificationProvider>
-
                 {children}
                 <Toaster />
                 {/* <CallOverlay /> */}
+                <AIAssistant />
               </MessageNotificationProvider>
             </LanguageProvider>
           </ThemeProvider>
-          <AIAssistant />
         </body>
       </html>
     </AuthProvider>
