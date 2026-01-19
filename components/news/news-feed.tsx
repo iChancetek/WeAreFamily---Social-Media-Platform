@@ -3,25 +3,26 @@
 import { useState, useEffect, useCallback } from "react";
 import { getNews, NewsItem } from "@/app/actions/news";
 import { NewsCard } from "./news-card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Newspaper } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StockTicker } from "./stock-ticker";
 import { CryptoTicker } from "./crypto-ticker";
-
-const CATEGORIES = [
-    { id: 'general', label: 'Top Stories' },
-    { id: 'sports', label: 'Sports' },
-    { id: 'tech', label: 'Tech' },
-    { id: 'business', label: 'Business' },
-    { id: 'world', label: 'World' },
-];
+import { useLanguage } from "@/components/language-context";
 
 export function NewsFeed() {
+    const { t } = useLanguage();
     const [category, setCategory] = useState('general');
     const [news, setNews] = useState<NewsItem[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const CATEGORIES = [
+        { id: 'general', label: t('news.stories') },
+        { id: 'sports', label: t('news.sports') },
+        { id: 'tech', label: t('news.tech') },
+        { id: 'business', label: t('news.business') },
+        { id: 'world', label: t('news.world') },
+    ];
 
     const loadNews = useCallback(async () => {
         setLoading(true);
@@ -60,7 +61,7 @@ export function NewsFeed() {
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-2 text-sm font-semibold text-gray-500 uppercase tracking-wider">
                     <Newspaper className="w-4 h-4" />
-                    <span>News Feed</span>
+                    <span>{t('nav.news')}</span>
                 </div>
                 <Button
                     variant="ghost"
@@ -114,7 +115,7 @@ export function NewsFeed() {
 
                 {!loading && news.length === 0 && (
                     <div className="text-center py-8 text-xs text-muted-foreground">
-                        Unable to load news at the moment.
+                        {t('feed.error.load')}
                     </div>
                 )}
             </div>
