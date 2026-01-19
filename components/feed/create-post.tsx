@@ -204,6 +204,31 @@ export function CreatePost({ onClose }: CreatePostProps) {
                             onChange={(e) => setContent(e.target.value)}
                         />
 
+                        {!isVerified && (
+                            <div className="mt-2 ml-1 text-sm text-amber-600 dark:text-amber-500 flex flex-wrap items-center gap-2">
+                                <span>Verification required to post.</span>
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        try {
+                                            const { getAuth, sendEmailVerification } = await import("firebase/auth");
+                                            const auth = getAuth();
+                                            if (auth.currentUser) {
+                                                await sendEmailVerification(auth.currentUser);
+                                                toast.success("Verification email sent! Check your inbox.");
+                                            }
+                                        } catch (e: any) {
+                                            console.error("Verification send error:", e);
+                                            toast.error(e.code === 'auth/too-many-requests' ? "Please wait a moment before trying again." : "Failed to send email.");
+                                        }
+                                    }}
+                                    className="font-medium underline hover:text-amber-700 dark:hover:text-amber-400"
+                                >
+                                    Resend Verification Email
+                                </button>
+                            </div>
+                        )}
+
                         {isSpeechSupported && isVerified && (
                             <div className="absolute right-6 top-6">
                                 <Button
