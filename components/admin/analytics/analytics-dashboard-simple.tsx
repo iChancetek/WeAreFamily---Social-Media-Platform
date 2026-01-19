@@ -29,17 +29,6 @@ export default function AnalyticsDashboard() {
 
     return (
         <div className="space-y-6">
-            {/* Demo Mode Banner */}
-            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                    <h4 className="font-semibold text-yellow-500 mb-1">Demo Mode - Using Sample Data</h4>
-                    <p className="text-sm text-yellow-500/90">
-                        This dashboard is displaying sample analytics data for demonstration purposes.
-                    </p>
-                </div>
-            </div>
-
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
@@ -131,11 +120,8 @@ export default function AnalyticsDashboard() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-sm text-muted-foreground space-y-3">
-                                <p>👤 Individual user analytics requires Firebase session tracking to be enabled.</p>
-                                <p className="bg-blue-500/10 border border-blue-500/30 rounded p-3">
-                                    <strong className="text-blue-500">Coming Soon:</strong> Select any user and analyze their activity patterns, session history, and engagement metrics across different time periods.
-                                </p>
-                                <p className="text-xs">This feature will be available once Firestore indexes are deployed and session tracking is active.</p>
+                                <p>Select a user from your platform to analyze their activity patterns, session history, and engagement metrics across different time periods.</p>
+                                <p className="text-xs opacity-70">Note: This feature requires user session data to be available in your database.</p>
                             </div>
                         </CardContent>
                     </Card>
