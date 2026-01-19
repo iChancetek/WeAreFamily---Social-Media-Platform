@@ -7,11 +7,14 @@ import { ContactItem } from "./contact-item";
 import { NewsFeed } from "@/components/news/news-feed";
 import { useEffect, useState } from "react";
 
+import { useLanguage } from "@/components/language-context";
+
 interface RightSidebarProps {
     className?: string;
 }
 
 export function RightSidebar({ className }: RightSidebarProps) {
+    const { t } = useLanguage();
     const [activeUsers, setActiveUsers] = useState<any[]>([]);
 
     useEffect(() => {
@@ -34,13 +37,13 @@ export function RightSidebar({ className }: RightSidebarProps) {
         <aside className={cn("hidden lg:flex flex-col gap-4 p-4 w-80 overflow-y-auto border-l border-border/50", className)}>
             <div className="flex flex-col gap-2">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center justify-between">
-                    Members
+                    {t("sidebar.members")}
                     <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{activeUsers.length}</span>
                 </h3>
 
                 {activeUsers.length === 0 ? (
                     <div className="text-xs text-gray-400 p-2 text-center border border-dashed border-gray-700/50 rounded-lg">
-                        No recently active members found.
+                        {t("sidebar.members.empty")}
                     </div>
                 ) : (
                     activeUsers.map((user: any) => (

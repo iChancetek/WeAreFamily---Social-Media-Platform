@@ -45,7 +45,10 @@ interface PostCardProps {
     variant?: 'standard' | 'pinterest';
 }
 
+import { useLanguage } from "@/components/language-context";
+
 export function PostCard({ post, currentUserId, isEnlarged = false, variant = 'standard' }: PostCardProps) {
+    const { t } = useLanguage();
     const isPinterest = variant === 'pinterest' && !isEnlarged;
     // Hooks must be called unconditionally
     const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -170,13 +173,13 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
 
     const handleShare = async (mode: 'copy' | 'native' | 'repost') => {
         let url = `${window.location.origin}/post/${post.id}`;
-        if (mode === 'copy') { try { await navigator.clipboard.writeText(url); toast.success("Copied"); } catch { } }
+        if (mode === 'copy') { try { await navigator.clipboard.writeText(url); toast.success(t("feed.share.copy")); } catch { } }
         else if (mode === 'native' && navigator.share) navigator.share({ title: `Post by ${name}`, text: post.content, url }).catch(() => { });
         else if (mode === 'repost') {
             try {
                 const { createPost } = await import("@/app/actions/posts");
-                await createPost(`🔄 Repost: ${post.content.substring(0, 100)}...`, post.mediaUrls || []);
-                toast.success("Reposted!");
+                await createPost(`🔄 ${t("feed.repost")}: ${post.content.substring(0, 100)}...`, post.mediaUrls || []);
+                toast.success(t("feed.repost.success"));
             } catch { toast.error("Repost failed"); }
         }
     };
@@ -295,10 +298,10 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={handleTranslate}>{translatedContent ? "Show Original" : "Translate"}</DropdownMenuItem>
-                                            {isAuthor && <DropdownMenuItem onClick={() => setIsEditing(true)}>Edit</DropdownMenuItem>}
-                                            {isAuthor && <DropdownMenuItem onClick={handleDeletePost} className="text-red-500">Delete</DropdownMenuItem>}
-                                            {!isAuthor && <DropdownMenuItem className="text-red-500">Report</DropdownMenuItem>}
+                                            <DropdownMenuItem onClick={handleTranslate}>{translatedContent ? t("post.translate.original") : t("post.translate")}</DropdownMenuItem>
+                                            {isAuthor && <DropdownMenuItem onClick={() => setIsEditing(true)}>{t("post.edit")}</DropdownMenuItem>}
+                                            {isAuthor && <DropdownMenuItem onClick={handleDeletePost} className="text-red-500">{t("post.delete")}</DropdownMenuItem>}
+                                            {!isAuthor && <DropdownMenuItem className="text-red-500">{t("post.report")}</DropdownMenuItem>}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
@@ -327,7 +330,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                         {!isEnlarged && !isEmbeddable && !isVideoFile && (
                             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
                                 <span className="text-white text-xs font-medium flex items-center gap-1">
-                                    <Sparkles className="w-3 h-3" /> View Post
+                                    <Sparkles className="w-3 h-3" /> {t("post.view")}
                                 </span>
                             </div>
                         )}
@@ -352,7 +355,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                 <Link href={`/u/${post.authorId}`} className="text-xs font-semibold hover:underline line-clamp-1">{name}</Link>
                                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                                     <SafeDate date={post.createdAt} />
-                                    {post.context?.name && <span>in {post.context.name}</span>}
+                                    {post.context?.name && <span>{t("post.posted_in")} {post.context.name}</span>}
                                     <span className="opacity-50 flex items-center gap-1">
                                         {getPrivacyIcon()}
                                         {engagementSettings.privacy === 'specific' && post.allowedViewerIds?.length > 0 && (
@@ -371,14 +374,14 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                     <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"><MoreHorizontal className="w-4 h-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={handleTranslate}>{translatedContent ? "Show Original" : "Translate"}</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleTranslate}>{translatedContent ? t("post.translate.original") : t("post.translate")}</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => setAskAIDialogOpen(true)} className="text-purple-600 dark:text-purple-400 gap-2">
                                         <Sparkles className="w-4 h-4" />
-                                        Ask AI
+                                        {t("post.ask_ai")}
                                     </DropdownMenuItem>
-                                    {isAuthor && <DropdownMenuItem onClick={() => setIsEditing(true)}>Edit</DropdownMenuItem>}
-                                    {isAuthor && <DropdownMenuItem onClick={handleDeletePost} className="text-red-500">Delete</DropdownMenuItem>}
-                                    {!isAuthor && <DropdownMenuItem className="text-red-500">Report</DropdownMenuItem>}
+                                    {isAuthor && <DropdownMenuItem onClick={() => setIsEditing(true)}>{t("post.edit")}</DropdownMenuItem>}
+                                    {isAuthor && <DropdownMenuItem onClick={handleDeletePost} className="text-red-500">{t("post.delete")}</DropdownMenuItem>}
+                                    {!isAuthor && <DropdownMenuItem className="text-red-500">{t("post.report")}</DropdownMenuItem>}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>

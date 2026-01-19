@@ -198,7 +198,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
 
                         <Textarea
                             disabled={!isVerified}
-                            placeholder={!isVerified ? "Please verify your email to share a moment." : (isListening ? (t("feed.listening") || "Listening...") : (t("feed.placeholder") + " 🎙️"))}
+                            placeholder={!isVerified ? t("create.verify.required") : (isListening ? (t("feed.listening") || "Listening...") : (t("feed.placeholder") + " 🎙️"))}
                             className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500 pr-10 disabled:opacity-60 disabled:cursor-not-allowed"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
@@ -206,7 +206,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
 
                         {!isVerified && (
                             <div className="mt-2 ml-1 text-sm text-amber-600 dark:text-amber-500 flex flex-wrap items-center gap-2">
-                                <span>Verification required to post.</span>
+                                <span>{t("create.verify.required")}</span>
                                 <button
                                     type="button"
                                     onClick={async () => {
@@ -215,7 +215,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
                                             const auth = getAuth();
                                             if (auth.currentUser) {
                                                 await sendEmailVerification(auth.currentUser);
-                                                toast.success("Verification email sent! Check your inbox.");
+                                                toast.success(t("create.verify.sent"));
                                             }
                                         } catch (e: any) {
                                             console.error("Verification send error:", e);
@@ -224,7 +224,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
                                     }}
                                     className="font-medium underline hover:text-amber-700 dark:hover:text-amber-400"
                                 >
-                                    Resend Verification Email
+                                    {t("create.verify.resend")}
                                 </button>
                             </div>
                         )}
@@ -277,7 +277,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
                                     className="gap-2 flex-1 md:flex-none text-muted-foreground hover:text-foreground"
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-6 h-6 text-primary" />}
-                                    <span className="text-[15px] font-semibold text-foreground">Photo/Video</span>
+                                    <span className="text-[15px] font-semibold text-foreground">{t("create.photo_video")}</span>
                                 </Button>
                                 <MagicAIButton
                                     onClick={handleOpenMagicAI}

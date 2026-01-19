@@ -30,6 +30,8 @@ interface StoriesTrayClientProps {
     activeStories: UserStories[];
 }
 
+import { useLanguage } from "@/components/language-context";
+
 export function StoriesTrayClient({
     currentUserId,
     currentUserRole,
@@ -37,6 +39,7 @@ export function StoriesTrayClient({
     currentUserDisplayName,
     activeStories
 }: StoriesTrayClientProps) {
+    const { t } = useLanguage();
     const [viewerOpen, setViewerOpen] = useState(false);
     const [selectedUserIndex, setSelectedUserIndex] = useState(0);
 
@@ -70,7 +73,7 @@ export function StoriesTrayClient({
                                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
                                             <Plus className="w-6 h-6 text-primary" />
                                         </div>
-                                        <span className="text-xs font-semibold text-foreground">Add to My Life</span>
+                                        <span className="text-xs font-semibold text-foreground">{t("stories.add")}</span>
                                     </div>
                                 </div>
                             </div>

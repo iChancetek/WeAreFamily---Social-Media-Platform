@@ -34,31 +34,31 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
 
     const groups = [
         {
-            title: "Main",
+            title: t("nav.section.main"),
             items: [
-                { href: "/", label: "Home", icon: Home },
-                { href: "/chat", label: "AI Assistant", icon: Bot }, // Moved up for AI-first focus
-                { href: "/profile", label: profile?.displayName || "Profile", icon: User },
-                { href: "/messages", label: "Messages", icon: MessageSquare, hasNotification: true }, // Example notif
+                { href: "/", label: t("nav.home"), icon: Home },
+                { href: "/chat", label: t("nav.ai"), icon: Bot }, // Moved up for AI-first focus
+                { href: "/profile", label: profile?.displayName || t("nav.profile"), icon: User },
+                { href: "/messages", label: t("nav.messages"), icon: MessageSquare, hasNotification: true }, // Example notif
             ]
         },
         {
-            title: "Discover",
+            title: t("nav.section.discover"),
             items: [
-                { href: "/family", label: "Companions", icon: Users },
-                { href: "/groups", label: "Groups", icon: Tent },
-                { href: "/live", label: "Live", icon: Video },
-                { href: "/events", label: "Events", icon: Ticket },
-                { href: "/gallery", label: "Gallery", icon: ImageIcon },
+                { href: "/family", label: t("nav.family"), icon: Users },
+                { href: "/groups", label: t("nav.groups"), icon: Tent },
+                { href: "/live", label: t("nav.live"), icon: Video },
+                { href: "/events", label: t("nav.events"), icon: Ticket },
+                { href: "/gallery", label: t("nav.gallery"), icon: ImageIcon },
             ]
         },
         {
-            title: "System",
+            title: t("nav.section.system"),
             items: [
-                { href: "/branding", label: "Branding", icon: Briefcase },
-                { href: "/notifications", label: "Notifications", icon: Bell },
-                { href: "/privacy", label: "Privacy & Trust", icon: Shield },
-                { href: "/settings", label: "Settings", icon: Settings },
+                { href: "/branding", label: t("nav.branding"), icon: Briefcase },
+                { href: "/notifications", label: t("nav.notifications"), icon: Bell },
+                { href: "/privacy", label: t("nav.privacy"), icon: Shield },
+                { href: "/settings", label: t("nav.settings"), icon: Settings },
             ]
         }
     ];
@@ -67,7 +67,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
         groups.push({
             title: "Admin",
             items: [
-                { href: "/admin", label: "Admin", icon: Shield }
+                { href: "/admin", label: t("nav.admin"), icon: Shield }
             ]
         });
     }
