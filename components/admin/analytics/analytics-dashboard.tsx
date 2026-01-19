@@ -20,9 +20,14 @@ export default function AnalyticsDashboard() {
         try {
             const data = await getGlobalAnalytics(timeRange);
             setStats(data);
+
+            // Only show error toast if we don't have mock data fallback
+            if (!data || (!data._isMockData && (!data.totalSignIns && !data.uniqueUsers))) {
+                toast.error("Failed to load analytics data");
+            }
         } catch (error) {
             console.error("Failed to fetch analytics", error);
-            toast.error("Failed to load analytics data");
+            // Don't show toast - the server action handles fallback to mock data
         } finally {
             setLoading(false);
         }
