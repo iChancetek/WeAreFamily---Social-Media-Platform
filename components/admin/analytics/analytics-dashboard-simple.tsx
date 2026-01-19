@@ -351,10 +351,27 @@ function IndividualUserAnalysis({ timeRange }: { timeRange: string }) {
                 </>
             )}
 
-            {!loading && userStats === null && selectedUserId && (
+            {!loading && userStats && userStats._error && (
+                <Card className="border-red-500 bg-red-50 dark:bg-red-950/10">
+                    <CardContent className="py-10 text-center text-red-600 dark:text-red-400">
+                        <div className="font-bold">Analytics Load Error</div>
+                        <div className="text-lg mt-2">{userStats._error}</div>
+
+                        <div className="mt-4 p-4 bg-white/50 dark:bg-black/20 rounded text-left font-mono text-xs overflow-auto">
+                            <div>Searched ID: {userStats._searchedId || selectedUserId}</div>
+                            {userStats._collection && <div>Collection: {userStats._collection}</div>}
+                            {userStats._dbProjectId && <div>Project ID: {userStats._dbProjectId}</div>}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {!loading && (userStats === null || (userStats && !userStats._error && !userStats._isRealData && !userStats.totalPosts)) && selectedUserId && !userStats?._error && (
                 <Card>
                     <CardContent className="py-10 text-center text-muted-foreground">
-                        User not found or unable to load analytics
+                        <div>User not found or unable to load analytics</div>
+                        <div className="text-xs mt-2 font-mono">Debug ID: {selectedUserId}</div>
+                        <div className="text-xs">Response was null/empty without specific error.</div>
                     </CardContent>
                 </Card>
             )}
