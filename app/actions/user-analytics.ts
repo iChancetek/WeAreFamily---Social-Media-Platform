@@ -27,7 +27,7 @@ export async function getUserAnalyticsSimple(userId: string) {
                 _error: "User Document Not Found",
                 _searchedId: userId,
                 _collection: "users",
-                _dbProjectId: adminDb.app.options.projectId
+                _dbProjectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "unknown"
             };
         }
         const userData = userDoc.data();
