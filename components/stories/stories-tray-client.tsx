@@ -40,7 +40,8 @@ export function StoriesTrayClient({
     const [viewerOpen, setViewerOpen] = useState(false);
     const [selectedUserIndex, setSelectedUserIndex] = useState(0);
 
-    const canAddStory = currentUserRole === 'member' || currentUserRole === 'admin';
+    // Enable for all users
+    const canAddStory = true;
 
     const handleStoryClick = (index: number) => {
         setSelectedUserIndex(index);
