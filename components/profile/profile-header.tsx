@@ -83,16 +83,16 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                             const event = new CustomEvent('famio:open-ai', {
                                                 detail: {
                                                     mode: 'biographer',
-                                                    context: "I want to record a memory for my legacy.",
+                                                    context: t("profile.biographer.context"),
                                                     type: 'biographer_start'
                                                 }
                                             });
                                             window.dispatchEvent(event);
-                                            toast.success("Biographer initialized 🖋️");
+                                            toast.success(t("profile.biographer.init"));
                                         }}
                                     >
                                         <BookHeart className="h-4 w-4" />
-                                        Record Memory
+                                        {t("profile.memory")}
                                     </Button>
                                     <Dialog open={isEditing} onOpenChange={setIsEditing}>
                                         <DialogTrigger asChild>

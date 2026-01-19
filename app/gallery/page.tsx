@@ -1,11 +1,9 @@
-// This is fine, we will create the component in the next step.
-// For now, I'll just prep the page to use it.
 import { MainLayout } from "@/components/layout/main-layout";
 import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { sanitizeData } from "@/lib/serialization";
-import { GalleryGrid } from "@/components/gallery/gallery-grid";
+import { GalleryView } from "@/components/gallery/gallery-view";
 
 export const dynamic = 'force-dynamic';
 
@@ -21,15 +19,7 @@ export default async function GalleryPage() {
     const queryIds = allowedIds.slice(0, 30); // Limit to 30 for Firestore 'in' query
 
     if (queryIds.length === 0) {
-        return (
-            <MainLayout>
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-primary">Family Gallery</h1>
-                    <p className="text-gray-500">Shared memories from everyone</p>
-                </div>
-                <p className="text-center text-gray-500 py-10">No photos shared yet.</p>
-            </MainLayout>
-        );
+        return <GalleryView mediaItems={[]} currentUserId={user.id} />;
     }
 
     let postsSnapshot;
@@ -67,16 +57,9 @@ export default async function GalleryPage() {
     );
 
     return (
-        <MainLayout>
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-foreground">Family Gallery</h1>
-                <p className="text-muted-foreground">Shared memories from everyone. (Deleting a photo deletes the post)</p>
-            </div>
-
-            <GalleryGrid
-                items={mediaItems}
-                currentUserId={user.id}
-            />
-        </MainLayout>
+        <GalleryView
+            mediaItems={mediaItems}
+            currentUserId={user.id}
+        />
     )
 }

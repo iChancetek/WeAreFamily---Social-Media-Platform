@@ -57,7 +57,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
 
     const groups = [
         {
-            title: "Main",
+            title: t("nav.section.main"),
             items: [
                 { href: "/", label: t("nav.home"), icon: Home },
                 { href: "/profile", label: profile?.displayName || t("nav.profile"), icon: User },
@@ -67,7 +67,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
             ]
         },
         {
-            title: "Social",
+            title: t("nav.section.discover"),
             items: [
                 { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
                 { href: "/news", label: t("nav.news"), icon: Newspaper },
@@ -77,7 +77,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
             ]
         },
         {
-            title: "System",
+            title: t("nav.section.system"),
             items: [
                 { href: "/branding", label: t("nav.branding"), icon: Briefcase },
                 { href: "/notifications", label: t("nav.notifications"), icon: Bell },
@@ -94,6 +94,16 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
             ]
         });
     }
+
+    // Helper for theme labels
+    const getThemeLabel = (mode: string) => {
+        switch (mode) {
+            case 'light': return t('theme.light');
+            case 'dark': return t('theme.dark');
+            case 'system': return t('theme.system');
+            default: return mode;
+        }
+    };
 
     return (
         <div className={cn("flex flex-col h-full py-4 overflow-y-auto bg-transparent", className)}>
@@ -119,11 +129,9 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                 {groups.map((group) => (
                     <div key={group.title} className="space-y-2">
                         {/* Section Title */}
-                        {group.title !== "Main" && (
+                        {group.title !== t("nav.section.main") && (
                             <h4 className="px-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 opacity-80">
-                                {group.title === "System" ? t("nav.section.system")
-                                    : group.title === "Social" ? t("nav.section.discover")
-                                        : group.title}
+                                {group.title}
                             </h4>
                         )}
 
@@ -200,7 +208,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                             {tMode === 'light' && <Sun className="w-4 h-4" />}
                             {tMode === 'dark' && <Moon className="w-4 h-4" />}
                             {tMode === 'system' && <Laptop className="w-4 h-4" />}
-                            <span className="capitalize">{tMode}</span>
+                            <span className="capitalize">{getThemeLabel(tMode)}</span>
                         </button>
                     ))}
                 </div>

@@ -12,6 +12,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { startSession } from "@/app/actions/rtc";
 import { toast } from "sonner";
 
+import { useLanguage } from "@/components/language-context";
+
 interface ChatWindowProps {
     session: ChatSession;
     currentUserId: string;
@@ -19,6 +21,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ session, currentUserId, onStartCall }: ChatWindowProps) {
+    const { t } = useLanguage();
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState("");
     const [isSending, setIsSending] = useState(false);
@@ -82,9 +85,9 @@ export function ChatWindow({ session, currentUserId, onStartCall }: ChatWindowPr
         try {
             const result = await startSession(type, otherUser?.id);
             onStartCall?.(result.sessionId);
-            toast.success(`${type === "call_video" ? "Video" : "Voice"} call started`);
+            toast.success(type === "call_video" ? t('messages.call.video.started') : t('messages.call.voice.started'));
         } catch (error: any) {
-            toast.error(error.message || "Failed to start call");
+            toast.error(error.message || t('messages.call.error'));
         }
     };
 
@@ -98,9 +101,9 @@ export function ChatWindow({ session, currentUserId, onStartCall }: ChatWindowPr
                 </Avatar>
                 <div className="flex-1">
                     <h3 className="font-semibold text-sm md:text-base text-foreground">
-                        {otherUser?.displayName || "Unknown"}
+                        {otherUser?.displayName || t('messages.chat.unknown')}
                     </h3>
-                    <p className="text-xs text-green-500 font-medium">Online</p>
+                    <p className="text-xs text-green-500 font-medium">{t('messages.status.online')}</p>
                 </div>
                 <div className="flex gap-2">
                     <Button
@@ -131,7 +134,7 @@ export function ChatWindow({ session, currentUserId, onStartCall }: ChatWindowPr
                         </div>
                     ) : messages.length === 0 ? (
                         <div className="text-center text-muted-foreground py-10 text-sm">
-                            Say hello! 👋
+                            {t('messages.chat.say_hello')}
                         </div>
                     ) : (
                         messages.map((msg) => {
@@ -184,7 +187,7 @@ export function ChatWindow({ session, currentUserId, onStartCall }: ChatWindowPr
                     </Popover>
 
                     <Input
-                        placeholder="Type a message..."
+                        placeholder={t('messages.input.placeholder')}
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         className="flex-1 bg-gray-100 dark:bg-secondary border-none focus-visible:ring-1 focus-visible:ring-primary"

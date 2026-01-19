@@ -7,18 +7,21 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 
+import { useLanguage } from "@/components/language-context";
+
 interface ChatListProps {
     chats: ChatSession[];
 }
 
 export function ChatList({ chats }: ChatListProps) {
+    const { t } = useLanguage();
     const searchParams = useSearchParams();
     const activeChatId = searchParams.get("chatId");
 
     if (chats.length === 0) {
         return (
             <div className="p-4 text-center text-muted-foreground text-sm">
-                No conversations yet.
+                {t('messages.empty')}
             </div>
         );
     }
@@ -49,7 +52,7 @@ export function ChatList({ chats }: ChatListProps) {
                                     "font-semibold truncate text-sm",
                                     isActive ? "text-primary" : "text-foreground"
                                 )}>
-                                    {otherUser?.displayName || "Unknown"}
+                                    {otherUser?.displayName || t('messages.chat.unknown')}
                                 </span>
                                 {chat.lastMessageAt && (
                                     <span className="text-[10px] text-gray-400 shrink-0">

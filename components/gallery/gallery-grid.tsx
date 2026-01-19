@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLanguage } from "@/components/language-context";
 import { Trash2, AlertTriangle, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { deletePost } from "@/app/actions/posts";
@@ -29,6 +30,7 @@ interface GalleryGridProps {
 }
 
 export function GalleryGrid({ items, currentUserId }: GalleryGridProps) {
+    const { t } = useLanguage();
     const [itemList, setItemList] = useState(items);
     const [isDeleting, setIsDeleting] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export function GalleryGrid({ items, currentUserId }: GalleryGridProps) {
     };
 
     if (itemList.length === 0) {
-        return <p className="text-center text-gray-500 py-10">No photos shared yet.</p>;
+        return <p className="text-center text-gray-500 py-10">{t('gallery.empty')}</p>;
     }
 
     return (
@@ -98,23 +100,22 @@ export function GalleryGrid({ items, currentUserId }: GalleryGridProps) {
             <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete this photo?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('gallery.delete.title')}</AlertDialogTitle>
                         <AlertDialogDescription className="space-y-3">
                             <div className="flex items-center gap-2 p-3 bg-amber-50 text-amber-800 rounded-md border border-amber-200">
                                 <AlertTriangle className="w-5 h-5 shrink-0" />
-                                <span className="text-sm font-medium">Warning: This will delete the entire post associated with this photo.</span>
+                                <span className="text-sm font-medium">{t('gallery.delete.warning')}</span>
                             </div>
-                            <p>This action cannot be undone.</p>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel disabled={isDeleting}>{t('btn.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={(e) => { e.preventDefault(); handleDelete(); }}
                             className="bg-red-600 hover:bg-red-700 text-white"
                             disabled={isDeleting}
                         >
-                            {isDeleting ? "Deleting..." : "Delete Photo & Post"}
+                            {isDeleting ? "Deleting..." : t('gallery.delete.confirm')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

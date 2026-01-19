@@ -10,8 +10,10 @@ import { CheckCheck, Heart, MessageCircle, UserPlus, Users } from "lucide-react"
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useLanguage } from "@/components/language-context";
 
 export function NotificationsList() {
+    const { t } = useLanguage();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [isPending, startTransition] = useTransition();
@@ -67,7 +69,18 @@ export function NotificationsList() {
         }
     }
 
-    if (loading) return <div className="p-8 text-center text-muted-foreground">Loading updates...</div>;
+    function getNotificationText(n: Notification) {
+        switch (n.type) {
+            case 'like': return t('notification.action.liked');
+            case 'message': return n.meta?.message || t('notification.action.message_sent');
+            case 'comment': return t('notification.action.commented');
+            case 'follow': return `${t('notification.action.followed')} ${n.meta?.brandingName || t('notification.branding.yours')}.`;
+            case 'group_invite': return t('notification.action.group_invite');
+            default: return t('notification.action.default');
+        }
+    }
+
+    if (loading) return <div className="p-8 text-center text-muted-foreground">{t('notifications.loading')}</div>;
 
     if (notifications.length === 0) {
         return (
@@ -75,8 +88,8 @@ export function NotificationsList() {
                 <div className="bg-muted w-16 h-16 rounded-full flex items-center justify-center mb-4">
                     <CheckCheck className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-medium">All caught up!</h3>
-                <p className="text-muted-foreground">No new notifications to show.</p>
+                <h3 className="text-lg font-medium">{t('notifications.caught_up')}</h3>
+                <p className="text-muted-foreground">{t('notifications.no_new')}</p>
             </div>
         );
     }
@@ -84,9 +97,9 @@ export function NotificationsList() {
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Notifications</h2>
+                <h2 className="text-xl font-semibold">{t('notifications.title')}</h2>
                 <Button variant="ghost" size="sm" onClick={handleMarkAllRead} className="text-muted-foreground">
-                    Mark all as read
+                    {t('notifications.mark_read')}
                 </Button>
             </div>
 
@@ -121,10 +134,10 @@ export function NotificationsList() {
                                     onClick={(e) => e.stopPropagation()}
                                     className="font-semibold hover:underline"
                                 >
-                                    {notification.sender.displayName || "Someone"}
+                                    {notification.sender.displayName || t('notifications.someone')}
                                 </Link>
                             ) : (
-                                <span className="font-semibold">{notification.sender?.displayName || "Someone"}</span>
+                                <span className="font-semibold">{notification.sender?.displayName || t('notifications.someone')}</span>
                             )}
                             {" "}
                             {getNotificationText(notification)}
@@ -152,16 +165,7 @@ export function NotificationsList() {
     );
 }
 
-function getNotificationText(n: Notification) {
-    switch (n.type) {
-        case 'like': return "liked your post.";
-        case 'message': return n.meta?.message || "sent you a message.";
-        case 'comment': return "commented on your post.";
-        case 'follow': return `started following ${n.meta?.brandingName || "your branding"}.`;
-        case 'group_invite': return "invited you to a group.";
-        default: return "interacted with you.";
-    }
-}
+
 
 function getIcon(type: string) {
     switch (type) {

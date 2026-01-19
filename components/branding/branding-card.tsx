@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Briefcase, Users } from "lucide-react";
 import { Branding } from "@/app/actions/branding";
 import { useState, useRef, useEffect } from "react";
+import { useLanguage } from "@/components/language-context";
 
 export function BrandingCard({ branding }: { branding: Branding }) {
+    const { t } = useLanguage();
     const [imageError, setImageError] = useState(false);
     const imgRef = useRef<HTMLImageElement>(null);
 
@@ -91,7 +93,7 @@ export function BrandingCard({ branding }: { branding: Branding }) {
                 <div className="flex justify-between items-start">
                     <div>
                         <h3 className="font-bold text-lg leading-tight">{branding.name}</h3>
-                        <p className="text-sm text-muted-foreground capitalize">{branding.category.replace('_', ' ')}</p>
+                        <p className="text-sm text-muted-foreground capitalize">{t(`branding.category.${branding.category}` as any)}</p>
                     </div>
                 </div>
             </CardHeader>
@@ -101,13 +103,13 @@ export function BrandingCard({ branding }: { branding: Branding }) {
                 </p>
                 <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
                     <Users className="w-3 h-3" />
-                    <span>{branding.followerCount || 1} followers</span>
+                    <span>{branding.followerCount || 1} {t('branding.followers')}</span>
                 </div>
             </CardContent>
             <CardFooter>
                 <Button asChild variant="outline" className="w-full">
                     <Link href={`/branding/${branding.slug || branding.id}`}>
-                        View Branding
+                        {t('branding.view')}
                     </Link>
                 </Button>
             </CardFooter>

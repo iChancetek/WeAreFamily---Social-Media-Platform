@@ -46,26 +46,26 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                 <TabsList className="grid w-full grid-cols-4 mb-8">
                     <TabsTrigger value="timeline" className="gap-2">
                         <LayoutList className="w-4 h-4" />
-                        <span className="hidden sm:inline">Timeline</span>
+                        <span className="hidden sm:inline">{t('profile.tabs.timeline')}</span>
                     </TabsTrigger>
                     <TabsTrigger value="photos" className="gap-2">
                         <Image className="w-4 h-4" />
-                        <span className="hidden sm:inline">Photos</span>
+                        <span className="hidden sm:inline">{t('profile.tabs.photos')}</span>
                     </TabsTrigger>
                     <TabsTrigger value="videos" className="gap-2">
                         <Film className="w-4 h-4" />
-                        <span className="hidden sm:inline">Videos</span>
+                        <span className="hidden sm:inline">{t('profile.tabs.videos')}</span>
                     </TabsTrigger>
                     <TabsTrigger value="family" className="gap-2">
                         <Users className="w-4 h-4" />
-                        <span className="hidden sm:inline">Companions</span>
+                        <span className="hidden sm:inline">{t('profile.companions')}</span>
                     </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="timeline" className="space-y-4">
                     {posts.length === 0 ? (
                         <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900 text-gray-500">
-                            No posts yet.
+                            {t('profile.empty.posts')}
                         </div>
                     ) : (
                         <div
@@ -81,7 +81,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                 <TabsContent value="photos">
                     {photos.length === 0 ? (
                         <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900 text-gray-500">
-                            No photos shared yet.
+                            {t('profile.empty.photos')}
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -97,7 +97,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                 <TabsContent value="videos">
                     {videos.length === 0 ? (
                         <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900 text-gray-500">
-                            No videos shared yet.
+                            {t('profile.empty.videos')}
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -113,7 +113,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                 <TabsContent value="family">
                     {familyMembers.length === 0 ? (
                         <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900 text-gray-500">
-                            No companion connections yet.
+                            {t('profile.empty.family')}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -125,7 +125,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                                     </Avatar>
                                     <div>
                                         <p className="font-semibold">{member.displayName}</p>
-                                        <p className="text-sm text-gray-500">Companion</p>
+                                        <p className="text-sm text-gray-500">{t('profile.role.companion')}</p>
                                     </div>
                                 </div>
                             ))}

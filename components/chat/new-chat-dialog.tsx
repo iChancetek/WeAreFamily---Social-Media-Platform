@@ -16,6 +16,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { checkOrCreateChat } from "@/app/actions/chat";
 
+import { useLanguage } from "@/components/language-context";
+
 interface FamilyMember {
     id: string;
     displayName: string | null;
@@ -28,6 +30,7 @@ interface NewChatDialogProps {
 }
 
 export function NewChatDialog({ familyMembers }: NewChatDialogProps) {
+    const { t } = useLanguage();
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
     const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -47,7 +50,7 @@ export function NewChatDialog({ familyMembers }: NewChatDialogProps) {
             router.refresh();
         } catch (error) {
             console.error("Failed to start chat:", error);
-            toast.error("Failed to start conversation");
+            toast.error(t('messages.create.error'));
         } finally {
             setLoadingId(null);
         }
@@ -58,18 +61,18 @@ export function NewChatDialog({ familyMembers }: NewChatDialogProps) {
             <DialogTrigger asChild>
                 <Button size="sm" className="gap-2">
                     <Plus className="w-4 h-4" />
-                    New Message
+                    {t('messages.new')}
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>New Message</DialogTitle>
+                    <DialogTitle>{t('messages.new')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                     <div className="relative">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search family..."
+                            placeholder={t('messages.search_family')}
                             className="pl-8"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -78,7 +81,7 @@ export function NewChatDialog({ familyMembers }: NewChatDialogProps) {
                     <div className="max-h-[300px] overflow-y-auto space-y-1">
                         {filteredFamily.length === 0 ? (
                             <p className="text-center text-sm text-muted-foreground py-8">
-                                No members found.
+                                {t('messages.new_chat.empty')}
                             </p>
                         ) : (
                             filteredFamily.map((member) => (

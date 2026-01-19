@@ -10,8 +10,10 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState, useEffect } from "react";
 import { useScrollDirection } from "@/hooks/use-scroll-direction";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/language-context";
 
 export function BottomNav() {
+    const { t } = useLanguage();
     const pathname = usePathname();
     const router = useRouter();
     const { profile } = useAuth();
@@ -40,10 +42,10 @@ export function BottomNav() {
     }, [scrollDirection]);
 
     const links = [
-        { href: "/", label: "Home", icon: Home },
-        { href: "/family", label: "Family", icon: Users },
-        { href: "/notifications", label: "Alerts", icon: Bell },
-        { href: "/profile", label: "Profile", icon: User },
+        { href: "/", label: t('nav.home'), icon: Home },
+        { href: "/family", label: t('nav.family'), icon: Users },
+        { href: "/notifications", label: t("nav.notifications"), icon: Bell },
+        { href: "/profile", label: t("nav.profile"), icon: User },
     ];
 
     const handleNavigation = (href: string, label: string) => {

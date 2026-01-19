@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+import { useLanguage } from "@/components/language-context";
+
 interface VoiceStatusIndicatorProps {
     state: 'idle' | 'listening' | 'processing' | 'speaking';
     isBroadcasting?: boolean;
@@ -16,6 +18,7 @@ export function VoiceStatusIndicator({
     onClick,
     className
 }: VoiceStatusIndicatorProps) {
+    const { t } = useLanguage();
 
     // Status color mapping
     const getStatusColor = () => {
@@ -29,10 +32,10 @@ export function VoiceStatusIndicator({
 
     const getStatusText = () => {
         switch (state) {
-            case 'listening': return "Listening...";
-            case 'processing': return "Thinking...";
-            case 'speaking': return "Speaking...";
-            default: return "AI Ready";
+            case 'listening': return t('ai.status.listening');
+            case 'processing': return t('ai.status.processing');
+            case 'speaking': return t('ai.status.speaking');
+            default: return t('ai.status.ready');
         }
     };
 

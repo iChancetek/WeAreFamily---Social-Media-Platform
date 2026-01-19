@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect } from "react";
@@ -17,6 +16,7 @@ import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Linkify } from "@/components/shared/linkify";
 import { useChat } from "@/hooks/use-chat";
+import { useLanguage } from "@/components/language-context";
 
 type Message = {
     role: 'user' | 'assistant';
@@ -37,6 +37,7 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ isCompact = false, externalContext, initialMode, onContextHandled }: ChatInterfaceProps) {
     const { user } = useAuth();
+    const { t } = useLanguage();
 
     // Enhanced chat with memory support
     const [memoryEnabled, setMemoryEnabled] = useState(true);
@@ -127,12 +128,11 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
     // NOTE: The above onMessage has a limitation because useChat doesn't return the text.
     // We will fix useChat in the next step to return the response string.
 
-
     const modes = [
-        { id: 'general', label: 'General', icon: Sparkles, desc: 'Everyday assistance' },
-        { id: 'architect', label: 'Architect (Code)', icon: Terminal, desc: 'Software & Code generation' },
-        { id: 'tutor', label: 'Tutor', icon: BookOpen, desc: 'Explanations & learning' },
-        { id: 'executive', label: 'Executive', icon: Briefcase, desc: 'Concise summaries' },
+        { id: 'general', label: t('ai.mode.general'), icon: Sparkles, desc: t('ai.mode.general') },
+        { id: 'architect', label: t('ai.mode.architect'), icon: Terminal, desc: t('ai.mode.architect') },
+        { id: 'tutor', label: t('ai.mode.tutor'), icon: BookOpen, desc: t('ai.mode.tutor') },
+        { id: 'executive', label: t('ai.mode.executive'), icon: Briefcase, desc: t('ai.mode.executive') },
     ] as const;
 
     return (
@@ -142,7 +142,7 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
                     <div>
                         <h1 className="text-3xl font-bold flex items-center gap-3">
                             <Bot className="w-8 h-8 text-primary" />
-                            AI Research Assistant
+                            {t('ai.title')}
                         </h1>
                         <p className="text-muted-foreground mt-1">
                             Powered by OpenAI and Claude Models
@@ -274,14 +274,13 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
                                     handleSendMessage();
                                 }
                             }}
-                            placeholder={isListening ? "Listening..." : isProcessing ? "Processing with Whisper..." : `Ask the ${selectedMode} agent anything...`}
+                            placeholder={isListening ? t('feed.listening') : isProcessing ? "Processing..." : `${t('post.ask_ai')} ${selectedMode}...`}
                             className="flex-1 min-h-[50px] py-3 pr-12 text-base rounded-2xl bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm focus-visible:ring-primary resize-none"
                             disabled={chat.isLoading}
                             autoFocus
                         />
 
                         <div className="flex gap-2 pb-1">
-                            {/* Voice Input Trigger */}
                             {/* Voice Input Trigger */}
                             {isSpeechSupported && (
                                 <>
