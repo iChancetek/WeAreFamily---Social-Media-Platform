@@ -3,8 +3,11 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Users, Lock, Globe } from "lucide-react";
 import { Group } from "@/app/actions/groups";
+import { useLanguage } from "@/components/language-context";
 
 export function GroupCard({ group }: { group: Group }) {
+    const { t } = useLanguage();
+
     return (
         <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
             <div className="h-32 w-full bg-muted relative rounded-t-lg overflow-hidden">
@@ -51,7 +54,7 @@ export function GroupCard({ group }: { group: Group }) {
                 )}
                 <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
                     {group.privacy === 'private' ? <Lock className="w-3 h-3" /> : <Globe className="w-3 h-3" />}
-                    {group.privacy === 'private' ? 'Private' : 'Public'}
+                    {group.privacy === 'private' ? t("status.private") : t("status.public")}
                 </div>
             </div>
             <CardHeader className="pb-2">
@@ -68,13 +71,13 @@ export function GroupCard({ group }: { group: Group }) {
                 </p>
                 <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
                     <Users className="w-3 h-3" />
-                    <span>{group.memberCount || 1} members</span>
+                    <span>{group.memberCount || 1} {t("sidebar.members")}</span>
                 </div>
             </CardContent>
             <CardFooter>
                 <Button asChild className="w-full">
                     <Link href={`/groups/${group.slug || group.id}`}>
-                        View Group
+                        {t("groups.view")}
                     </Link>
                 </Button>
             </CardFooter>

@@ -59,38 +59,38 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
         {
             title: "Main",
             items: [
-                { href: "/", label: "Home", icon: Home },
-                { href: "/profile", label: profile?.displayName || "Profile", icon: User },
-                { href: "/family", label: "Companions", icon: Users },
-                { href: "/groups", label: "Groups", icon: Tent },
-                { href: "/chat", label: "AI Research Assistant", icon: Bot },
+                { href: "/", label: t("nav.home"), icon: Home },
+                { href: "/profile", label: profile?.displayName || t("nav.profile"), icon: User },
+                { href: "/family", label: t("nav.family"), icon: Users },
+                { href: "/groups", label: t("nav.groups"), icon: Tent },
+                { href: "/chat", label: t("nav.ai"), icon: Bot },
             ]
         },
         {
             title: "Social",
             items: [
-                { href: "/messages", label: "Messages", icon: MessageSquare },
-                { href: "/news", label: "News Feed", icon: Newspaper },
-                { href: "/live", label: "Live", icon: Video },
-                { href: "/events", label: "Events", icon: Ticket },
-                { href: "/gallery", label: "Gallery", icon: ImageIcon },
+                { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
+                { href: "/news", label: t("nav.news"), icon: Newspaper },
+                { href: "/live", label: t("nav.social.live"), icon: Video },
+                { href: "/events", label: t("nav.social.events"), icon: Ticket },
+                { href: "/gallery", label: t("nav.social.gallery"), icon: ImageIcon },
             ]
         },
         {
             title: "System",
             items: [
-                { href: "/branding", label: "Branding", icon: Briefcase },
-                { href: "/notifications", label: "Notifications", icon: Bell },
-                { href: "/settings", label: "Settings", icon: Settings },
+                { href: "/branding", label: t("nav.branding"), icon: Briefcase },
+                { href: "/notifications", label: t("nav.notifications"), icon: Bell },
+                { href: "/settings", label: t("nav.settings"), icon: Settings },
             ]
         }
     ];
 
     if (isAdmin) {
         groups.push({
-            title: "Admin",
+            title: t("nav.admin"),
             items: [
-                { href: "/admin", label: "Admin", icon: Shield }
+                { href: "/admin", label: t("nav.admin"), icon: Shield }
             ]
         });
     }
@@ -121,7 +121,9 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                         {/* Section Title */}
                         {group.title !== "Main" && (
                             <h4 className="px-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 opacity-80">
-                                {group.title}
+                                {group.title === "System" ? t("nav.section.system")
+                                    : group.title === "Social" ? t("nav.section.discover")
+                                        : group.title}
                             </h4>
                         )}
 

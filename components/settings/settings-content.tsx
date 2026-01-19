@@ -334,7 +334,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                         <CardContent className="space-y-6">
                             {/* 1. Block Search (Moved to Top) */}
                             <div className="space-y-4">
-                                <Label className="text-base">Block a Person</Label>
+                                <Label className="text-base">{t("settings.block.title")}</Label>
                                 <div className="flex gap-2">
                                     <Input
                                         placeholder="Search by name..."
@@ -373,7 +373,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                                         toast.error(`Blocked ${u.displayName}`);
                                                     }}
                                                 >
-                                                    Block
+                                                    {t("button.block")}
                                                 </Button>
                                             </div>
                                         ))}
@@ -384,9 +384,9 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                             {/* 2. Invisible Mode */}
                             <div className="flex items-center justify-between pt-4 border-t border-border">
                                 <div className="space-y-0.5">
-                                    <Label className="text-base">Invisible Mode</Label>
+                                    <Label className="text-base">{t("settings.invisible.title")}</Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Hide your online status from other members.
+                                        {t("settings.invisible.desc")}
                                     </p>
                                 </div>
                                 <Switch
@@ -398,9 +398,9 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                             {/* 3. Public Profile */}
                             <div className="flex items-center justify-between pt-4 border-t border-border">
                                 <div className="space-y-0.5">
-                                    <Label className="text-base text-blue-600">Public Profile</Label>
+                                    <Label className="text-base text-blue-600">{t("settings.public.title")}</Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Allow anyone to view your posts and photos.
+                                        {t("settings.public.desc")}
                                         <br />
                                         <span className="text-xs text-amber-600 font-medium">Note: Private messages and settings remain secure.</span>
                                     </p>
@@ -413,9 +413,9 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
 
                             {/* 3. Blocked List */}
                             <div className="space-y-4 pt-4 border-t border-border">
-                                <Label className="text-base">Blocked Members</Label>
+                                <Label className="text-base">{t("settings.block.list.title")}</Label>
                                 {blockedList.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground">You haven't blocked anyone.</p>
+                                    <p className="text-sm text-muted-foreground">{t("settings.block.empty")}</p>
                                 ) : (
                                     <div className="space-y-2">
                                         {blockedList.map((blockedUser) => {
@@ -431,7 +431,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                                         <span className="text-sm font-medium">{name}</span>
                                                     </div>
                                                     <Button variant="ghost" size="sm" onClick={() => handleUnblock(blockedUser.id)}>
-                                                        Unblock
+                                                        {t("button.unblock")}
                                                     </Button>
                                                 </div>
                                             );
@@ -511,8 +511,8 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                     {/* Feed Preferences Section */}
                                     <div className="space-y-6 pt-6 border-t">
                                         <div>
-                                            <h3 className="text-lg font-medium">Feed Preferences</h3>
-                                            <p className="text-sm text-muted-foreground">Configure your auto-scrolling experience</p>
+                                            <h3 className="text-lg font-medium">{t("settings.feed.title")}</h3>
+                                            <p className="text-sm text-muted-foreground">{t("settings.feed.desc")}</p>
                                         </div>
 
                                         <FormField
@@ -521,9 +521,9 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                             render={({ field }) => (
                                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                                                     <div className="space-y-0.5">
-                                                        <FormLabel className="text-base">Auto-Scroll Feeds</FormLabel>
+                                                        <FormLabel className="text-base">{t("settings.autoscroll.title")}</FormLabel>
                                                         <FormDescription>
-                                                            Automatically scroll through your feed and profiles
+                                                            {t("settings.autoscroll.desc")}
                                                         </FormDescription>
                                                     </div>
                                                     <FormControl>
@@ -542,7 +542,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <div className="flex items-center justify-between">
-                                                        <FormLabel>Scroll Speed</FormLabel>
+                                                        <FormLabel>{t("settings.speed.title")}</FormLabel>
                                                         <span className="text-sm text-muted-foreground">{field.value} px/s</span>
                                                     </div>
                                                     <FormControl>
@@ -556,7 +556,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                                         />
                                                     </FormControl>
                                                     <FormDescription>
-                                                        Adjust how fast the feed scrolls automatically (10-100 pixels per second)
+                                                        {t("settings.speed.desc")}
                                                     </FormDescription>
                                                     <FormMessage />
                                                 </FormItem>
@@ -565,9 +565,9 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                     </div>
 
                                     <div className="space-y-4 pt-4 border-t border-border">
-                                        <Label className="text-base">Security</Label>
+                                        <Label className="text-base">{t("settings.security.title")}</Label>
                                         <p className="text-sm text-muted-foreground">
-                                            Manage your password and security settings.
+                                            {t("settings.security.desc")}
                                         </p>
                                         <Button
                                             type="button"
@@ -575,7 +575,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                             className="w-full text-blue-600 border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                             onClick={handlePasswordReset}
                                         >
-                                            Change Password (Send Email)
+                                            {t("settings.password.button")}
                                         </Button>
                                     </div>
 

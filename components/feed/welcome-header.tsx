@@ -7,9 +7,9 @@ interface WelcomeHeaderProps {
 }
 
 export function WelcomeHeader({ displayName }: WelcomeHeaderProps) {
-    const { language } = useLanguage()
+    const { t } = useLanguage()
 
-    const welcomeText = language === 'es' ? 'Bienvenido a Casa' : 'Welcome Home';
+    const welcomeText = t("home.welcome");
     const name = displayName.split(' ')[0]
 
     return (
