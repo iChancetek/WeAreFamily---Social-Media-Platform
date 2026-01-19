@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Polished White Theme (Light Mode) - ULTRA VIBRANT, LINKEDIN BLUE */
+    /* Polished White Theme (Light Mode) - ULTRA VIBRANT, DEEP BLUE */
     --background: 210 20% 99%;
     --foreground: 240 10% 3.9%;
 
@@ -14,8 +14,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    /* LINKEDIN BLUE - Professional blue with maximum vibrancy */
-    --primary: 201 100% 35%;
+    /* DEEP LINKEDIN BLUE - Darker, richer professional blue */
+    --primary: 201 100% 30%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 4.8% 96%;
@@ -32,11 +32,11 @@
 
     --border: 220 13% 94%;
     --input: 220 13% 94%;
-    --ring: 201 100% 35%;
+    --ring: 201 100% 30%;
 
     --radius: 1rem;
 
-    --chart-1: 201 100% 35%;
+    --chart-1: 201 100% 30%;
     --chart-2: 190 90% 50%;
     --chart-3: 340 85% 65%;
     --chart-4: 45 95% 55%;
@@ -194,12 +194,12 @@
   .ticker-professional {
     background-color: rgb(255 255 255 / 0.85);
     backdrop-filter: blur(20px);
-    border-top: 2px solid rgb(10 102 194 / 0.3);
-    border-bottom: 2px solid rgb(10 102 194 / 0.3);
+    border-top: 2px solid rgb(0 87 153 / 0.3);
+    border-bottom: 2px solid rgb(0 87 153 / 0.3);
     box-shadow:
-      0 4px 30px -4px rgba(10, 102, 194, 0.4),
-      0 0px 20px -4px rgba(10, 102, 194, 0.3),
-      0 0 0 1px rgba(10, 102, 194, 0.1) inset;
+      0 4px 30px -4px rgba(0, 87, 153, 0.4),
+      0 0px 20px -4px rgba(0, 87, 153, 0.3),
+      0 0 0 1px rgba(0, 87, 153, 0.1) inset;
   }
 
   .dark .ticker-professional {
@@ -211,8 +211,8 @@
 
   .ticker-glow-price {
     text-shadow:
-      0 0 20px rgba(10, 102, 194, 0.6),
-      0 0 10px rgba(10, 102, 194, 0.4);
+      0 0 20px rgba(0, 87, 153, 0.6),
+      0 0 10px rgba(0, 87, 153, 0.4);
     font-weight: 600;
   }
 
@@ -240,25 +240,25 @@
   /* ULTRA-VIBRANT Button Elevation - LINKEDIN BLUE BURST */
   .btn-elevated {
     box-shadow:
-      0 4px 20px -2px rgba(10, 102, 194, 0.5),
-      0 2px 12px -2px rgba(10, 102, 194, 0.4),
-      0 0 0 2px rgba(10, 102, 194, 0.2);
+      0 4px 20px -2px rgba(0, 87, 153, 0.5),
+      0 2px 12px -2px rgba(0, 87, 153, 0.4),
+      0 0 0 2px rgba(0, 87, 153, 0.2);
     transition: all 0.2s ease;
   }
 
   .btn-elevated:hover {
     box-shadow:
-      0 8px 30px -3px rgba(10, 102, 194, 0.7),
-      0 4px 20px -2px rgba(10, 102, 194, 0.6),
-      0 0 0 2px rgba(10, 102, 194, 0.4);
+      0 8px 30px -3px rgba(0, 87, 153, 0.7),
+      0 4px 20px -2px rgba(0, 87, 153, 0.6),
+      0 0 0 2px rgba(0, 87, 153, 0.4);
     transform: translateY(-3px) scale(1.02);
   }
 
   .btn-elevated:active {
     transform: scale(0.97);
     box-shadow:
-      0 2px 12px -2px rgba(10, 102, 194, 0.5),
-      0 0 0 2px rgba(10, 102, 194, 0.3);
+      0 2px 12px -2px rgba(0, 87, 153, 0.5),
+      0 0 0 2px rgba(0, 87, 153, 0.3);
   }
 
   .dark .btn-elevated {
@@ -277,26 +277,26 @@
   /* ULTRA-INTENSE Radio/Checkbox/Switch Glow - BURST EFFECT */
   :is([role="checkbox"], [role="radio"], [role="switch"])[data-state="checked"] {
     box-shadow:
-      0 0 40px 2px rgba(10, 102, 194, 0.95),
-      0 0 25px 0px rgba(10, 102, 194, 0.8),
-      0 0 12px 0px rgba(10, 102, 194, 0.6) inset,
+      0 0 40px 2px rgba(0, 87, 153, 0.95),
+      0 0 25px 0px rgba(0, 87, 153, 0.8),
+      0 0 12px 0px rgba(0, 87, 153, 0.6) inset,
       0 0 6px 0px rgba(255, 255, 255, 1) inset !important;
-    background-color: hsl(201, 100%, 35%) !important;
-    border-color: hsl(201, 100%, 35%) !important;
+    background-color: hsl(201, 100%, 30%) !important;
+    border-color: hsl(201, 100%, 30%) !important;
     border-width: 2px !important;
   }
 
   :is([role="checkbox"], [role="radio"], [role="switch"]):hover {
     box-shadow:
-      0 0 30px 1px rgba(10, 102, 194, 0.7),
-      0 0 15px 0px rgba(10, 102, 194, 0.5);
+      0 0 30px 1px rgba(0, 87, 153, 0.7),
+      0 0 15px 0px rgba(0, 87, 153, 0.5);
   }
 
   /* ULTRA-INTENSE Icon Glow - ELECTRIC BURST */
   :is(button, a):hover>svg.lucide {
     filter:
-      drop-shadow(0 0 16px rgba(10, 102, 194, 1)) drop-shadow(0 0 8px rgba(10, 102, 194, 0.8)) drop-shadow(0 0 4px rgba(10, 102, 194, 0.6));
-    stroke: hsl(201, 100%, 35%);
+      drop-shadow(0 0 16px rgba(0, 87, 153, 1)) drop-shadow(0 0 8px rgba(0, 87, 153, 0.8)) drop-shadow(0 0 4px rgba(0, 87, 153, 0.6));
+    stroke: hsl(201, 100%, 30%);
     stroke-width: 2.5px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -304,8 +304,8 @@
   /* ULTRA-INTENSE Active Navigation - BLAZING GLOW */
   .nav-active svg {
     filter:
-      drop-shadow(0 0 20px rgba(10, 102, 194, 1)) drop-shadow(0 0 12px rgba(10, 102, 194, 0.9)) drop-shadow(0 0 6px rgba(10, 102, 194, 0.7));
-    stroke: hsl(201, 100%, 35%);
+      drop-shadow(0 0 20px rgba(0, 87, 153, 1)) drop-shadow(0 0 12px rgba(0, 87, 153, 0.9)) drop-shadow(0 0 6px rgba(0, 87, 153, 0.7));
+    stroke: hsl(201, 100%, 30%);
     stroke-width: 2.5px;
   }
 }
