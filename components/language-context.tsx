@@ -33,10 +33,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         // Sync language from profile on load
-        if (profile?.language && Object.keys(dictionaries).includes(profile.language)) {
+        if (profile?.language && Object.keys(dictionaries).includes(profile.language) && profile.language !== language) {
             setLanguageState(profile.language as Language);
         }
-    }, [profile]);
+    }, [profile, language]);
 
     useEffect(() => {
         // Apply direction to document root
