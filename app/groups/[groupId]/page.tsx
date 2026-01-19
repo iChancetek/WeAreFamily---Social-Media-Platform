@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Lock, Globe, Plus, Sparkles } from "lucide-react";
+import { Users, Lock, Globe, Plus, Sparkles, ArrowLeft } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { JoinGroupButton } from "@/components/groups/join-group-button";
@@ -15,6 +15,7 @@ import { GroupManagementDialog } from "@/components/groups/group-management-dial
 import { ShareButton } from "@/components/shared/share-button";
 import { Trash2 } from "lucide-react";
 import { GroupFeed } from "@/components/groups/group-feed";
+import Link from "next/link";
 
 export default async function GroupPage({ params }: { params: Promise<{ groupId: string }> }) {
     const { groupId } = await params;
@@ -33,6 +34,14 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
 
     return (
         <MainLayout>
+            {/* Back Button */}
+            <Link href="/">
+                <Button variant="ghost" size="sm" className="mb-4">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Home
+                </Button>
+            </Link>
+
             {/* Group Header */}
             <div className="relative h-64 w-full rounded-b-xl overflow-hidden mb-8">
                 {group.coverUrl ? (

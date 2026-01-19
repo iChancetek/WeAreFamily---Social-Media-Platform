@@ -2,12 +2,14 @@ import { getBranding, getBrandingFollowStatus } from "@/app/actions/branding";
 import { MainLayout } from "@/components/layout/main-layout";
 import { notFound } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
-import { Briefcase } from "lucide-react";
+import { Briefcase, ArrowLeft } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { BrandingFeed } from "@/components/branding/branding-feed";
 import { BrandingHeader } from "@/components/branding/branding-header";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +33,14 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
 
     return (
         <MainLayout>
+            {/* Back Button */}
+            <Link href="/">
+                <Button variant="ghost" size="sm" className="mb-4">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Home
+                </Button>
+            </Link>
+
             <BrandingHeader
                 branding={branding}
                 currentUser={user}
