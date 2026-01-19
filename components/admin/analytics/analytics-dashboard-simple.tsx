@@ -204,19 +204,157 @@ export default function AnalyticsDashboard() {
                 </TabsContent>
 
                 <TabsContent value="individual">
+                    <IndividualUserAnalysis timeRange={timeRange} />
+                </TabsContent>
+            </Tabs>
+        </div>
+    );
+}
+
+// Individual User Analysis Component
+function IndividualUserAnalysis({ timeRange }: { timeRange: string }) {
+    const [users, setUsers] = useState<any[]>([]);
+    const [selectedUserId, setSelectedUserId] = useState("");
+    const [userStats, setUserStats] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+
+    // Load users list on mount
+    useEffect(() => {
+        const loadUsers = async () => {
+            try {
+                const { getAllUsersList } = await import("@/app/actions/user-analytics");
+                const usersList = await getAllUsersList();
+                setUsers(usersList);
+            } catch (error) {
+                console.error("Failed to load users", error);
+            }
+        };
+        loadUsers();
+    }, []);
+
+    // Load user stats when user is selected
+    useEffect(() => {
+        if (!selectedUserId) {
+            setUserStats(null);
+            return;
+        }
+
+        const loadUserStats = async () => {
+            setLoading(true);
+            try {
+                const { getUserAnalyticsSimple } = await import("@/app/actions/user-analytics");
+                const stats = await getUserAnalyticsSimple(selectedUserId);
+                setUserStats(stats);
+            } catch (error) {
+                console.error("Failed to load user stats", error);
+                toast.error("Failed to load user analytics");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadUserStats();
+    }, [selectedUserId]);
+
+    return (
+        <div className="space-y-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Select User</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Choose a user to analyze..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {users.map(user => (
+                                <SelectItem key={user.id} value={user.id}>
+                                    {user.displayName} ({user.email})
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </CardContent>
+            </Card>
+
+            {loading && (
+                <Card>
+                    <CardContent className="py-10 text-center text-muted-foreground">
+                        Loading user analytics...
+                    </CardContent>
+                </Card>
+            )}
+
+            {!loading && userStats && (
+                <>
+                    {/* User Info Card */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Individual User Analysis</CardTitle>
+                            <CardTitle>User Profile</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-sm text-muted-foreground space-y-3">
-                                <p>Select a user from your platform to analyze their activity patterns, session history, and engagement metrics across different time periods.</p>
-                                <p className="text-xs opacity-70">Note: This feature requires user session data to be available in your database.</p>
+                            <div className="flex items-center gap-4">
+                                {userStats.photoURL && (
+                                    <img
+                                        src={userStats.photoURL}
+                                        alt={userStats.displayName}
+                                        className="w-16 h-16 rounded-full"
+                                    />
+                                )}
+                                <div>
+                                    <h3 className="font-semibold text-lg">{userStats.displayName}</h3>
+                                    <p className="text-sm text-muted-foreground">{userStats.email}</p>
+                                    {userStats.joinedDate && (
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Joined: {new Date(userStats.joinedDate).toLocaleDateString()}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
-                </TabsContent>
-            </Tabs>
+
+                    {/* Stats Cards */}
+                    <div className="grid gap-4 md:grid-cols-3">
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{userStats.totalPosts}</div>
+                                <p className="text-xs text-muted-foreground">All time</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">Groups Joined</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{userStats.totalGroups}</div>
+                                <p className="text-xs text-muted-foreground">Active memberships</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{userStats.recentPosts}</div>
+                                <p className="text-xs text-muted-foreground">Posts last 7 days</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </>
+            )}
+
+            {!loading && !userStats && selectedUserId && (
+                <Card>
+                    <CardContent className="py-10 text-center text-muted-foreground">
+                        User not found or unable to load analytics
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }
