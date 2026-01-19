@@ -249,12 +249,22 @@ export async function seedKnowledgeBase() {
     return { success: true, count: knowledgeData.length };
 }
 
-export async function translateText(text: string, targetLanguage: 'es' | 'en' = 'es') {
+export async function translateText(text: string, targetLanguage: 'es' | 'en' | 'fr' | 'zh' | 'hi' | 'ar' = 'es') {
     try {
         const openai = getClient();
-        const systemPrompt = targetLanguage === 'es'
-            ? "You are a professional translator. Translate the following text to Spanish. Maintain the tone and emojis."
-            : "You are a professional translator. Translate the following text to English. Maintain the tone and emojis.";
+
+        const langMap: Record<string, string> = {
+            'es': 'Spanish',
+            'en': 'English',
+            'fr': 'French',
+            'zh': 'Chinese (Mandarin)',
+            'hi': 'Hindi',
+            'ar': 'Arabic'
+        };
+
+        const targetLangName = langMap[targetLanguage] || 'English';
+
+        const systemPrompt = `You are a professional translator. Translate the following text to ${targetLangName}. Maintain the tone and emojis.`;
 
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
