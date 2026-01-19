@@ -57,6 +57,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const [commentText, setCommentText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
     const [editContent, setEditContent] = useState(post?.content || "");
     const [isSavingEdit, setIsSavingEdit] = useState(false);
     const [translatedContent, setTranslatedContent] = useState<string | null>(null);
@@ -228,8 +229,19 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                 />
                             </div>
                         ) : isVideoFile ? (
-                            <div className="w-full bg-black rounded-lg overflow-hidden relative">
+                            <div
+                                className="w-full bg-black rounded-lg overflow-hidden relative cursor-pointer"
+                                onMouseEnter={() => { if (!isEnlarged && videoRef.current) videoRef.current.play().catch(() => { }); }}
+                                onMouseLeave={() => { if (!isEnlarged && videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; } }}
+                                onClick={(e) => {
+                                    if (!isEnlarged) {
+                                        e.stopPropagation();
+                                        handleEnlarge();
+                                    }
+                                }}
+                            >
                                 <video
+                                    ref={videoRef}
                                     src={`${mainMedia}#t=0.001`}
                                     poster={post.thumbnailUrl || undefined}
                                     className="w-full h-auto object-cover max-h-[70vh]"
@@ -238,17 +250,9 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                     muted={!isEnlarged}
                                     preload="metadata"
                                     playsInline
-                                    onMouseEnter={(e) => { if (!isEnlarged) e.currentTarget.play().catch(() => { }); }}
-                                    onMouseLeave={(e) => { if (!isEnlarged) { e.currentTarget.pause(); e.currentTarget.currentTime = 0; } }}
-                                    onClick={(e) => {
-                                        if (!isEnlarged) {
-                                            e.stopPropagation();
-                                            handleEnlarge();
-                                        }
-                                    }}
                                 />
                                 {!isEnlarged && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors">
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors pointer-events-none">
                                         <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm shadow-lg">
                                             <Play className="w-6 h-6 text-white fill-current" />
                                         </div>
