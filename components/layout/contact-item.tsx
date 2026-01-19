@@ -15,6 +15,7 @@ interface ContactItemProps {
         displayName: string;
         imageUrl?: string | null;
         profileData?: any;
+        isOnline?: boolean;
     }
 }
 
@@ -78,7 +79,10 @@ export function ContactItem({ user }: ContactItemProps) {
                         <AvatarImage src={imageUrl || ""} alt={name} />
                         <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-background" />
+                    <span
+                        className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background ${user.isOnline ? "bg-green-500" : "bg-gray-500/50"
+                            }`}
+                    />
                 </div>
                 <div className="flex-1 min-w-0">
                     <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors truncate block">

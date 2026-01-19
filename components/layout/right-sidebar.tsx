@@ -40,7 +40,7 @@ export function RightSidebar({ className }: RightSidebarProps) {
 
                 {activeUsers.length === 0 ? (
                     <div className="text-xs text-gray-400 p-2 text-center border border-dashed border-gray-700/50 rounded-lg">
-                        No other members are online right now.
+                        No recently active members found.
                     </div>
                 ) : (
                     activeUsers.map((user: any) => (

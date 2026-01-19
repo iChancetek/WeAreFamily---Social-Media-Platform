@@ -20,13 +20,13 @@ export async function updateLastActive() {
 
 export async function getActiveUsers() {
     try {
-        // Active in the last 15 minutes
-        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
         const currentUser = await getUserProfile();
 
-        // Query users active recently
+        // Query most recent 50 users (online or offline)
+        // This ensures the "Members" list is populated so you can DM/Call them anytime.
         const usersSnapshot = await adminDb.collection("users")
-            .where("lastActiveAt", ">", fifteenMinutesAgo)
+            .orderBy("lastActiveAt", "desc")
+            .limit(50)
             .get();
 
         // Filter out current user and blocked users
@@ -50,24 +50,29 @@ export async function getActiveUsers() {
             activeUsers = activeUsers.filter((u: any) => !excludedIds.has(u.id));
         }
 
+        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+
         return activeUsers.map((u: any) => {
             const displayName = u.displayName ||
                 (u.profileData?.firstName ? `${u.profileData.firstName} ${u.profileData.lastName || ''}`.trim() : null) ||
                 u.email?.split('@')[0] ||
                 "Unknown";
 
-            // Manually sanitize to avoid import complexity or use JSON hack for now which is safe enough for profileData
-            // But prefer sanitizeData if possible. 
-            // Let's use the JSON parse/stringify hack for robust "remove non-serializables"
+            // Calculate Online Status
+            // Check if lastActiveAt is a Firestore Timestamp or Date
+            let lastActiveDate = u.lastActiveAt instanceof Date ? u.lastActiveAt : u.lastActiveAt?.toDate?.();
+            const isOnline = lastActiveDate ? lastActiveDate > fifteenMinutesAgo : false;
+
             return JSON.parse(JSON.stringify({
                 id: u.id,
                 displayName: displayName,
                 imageUrl: u.imageUrl || null,
-                profileData: u.profileData
+                profileData: u.profileData,
+                isOnline: isOnline
             }));
         });
     } catch (error) {
-        console.error("Error fetching active users:", error);
+        console.error("Error fetching users:", error);
         return [];
     }
 }
