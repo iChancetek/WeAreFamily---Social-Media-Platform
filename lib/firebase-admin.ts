@@ -23,11 +23,16 @@ if (process.env.NODE_ENV === 'development') {
 
 // 2. Try Environment Variables (Manual CI/Vercel)
 if (!credential && process.env.FIREBASE_PRIVATE_KEY) {
-    credential = cert({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "we-are-family-221",
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    });
+    try {
+        const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/"/g, '');
+        credential = cert({
+            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "we-are-family-221",
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            privateKey: privateKey,
+        });
+    } catch (e) {
+        console.warn("Failed to parse FIREBASE_PRIVATE_KEY from env. Falling back to default credentials.", e);
+    }
 }
 
 // 3. Fallback to Default Credentials (Google Cloud / App Hosting)
