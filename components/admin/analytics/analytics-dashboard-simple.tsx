@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Clock, LogIn, Activity, AlertCircle, FileText, Briefcase } from "lucide-react";
 import { getSimpleAnalytics } from "@/app/actions/simple-analytics";
 import { toast } from "sonner";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
 
 export default function AnalyticsDashboard() {
     const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('week');
@@ -106,22 +107,100 @@ export default function AnalyticsDashboard() {
                         </Card>
                     </div>
 
-                    {/* Activity Overview */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Platform Overview</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-sm text-muted-foreground space-y-2">
-                                <p>📊 Displaying real-time platform statistics from your Firebase database.</p>
-                                {stats?._isRealData === false && (
-                                    <p className="text-xs bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
-                                        ⚠️ Unable to fetch complete data. Showing available metrics.
-                                    </p>
+                    {/* Charts */}
+                    <div className="grid gap-4 md:grid-cols-2">
+                        {/* Platform Stats Bar Chart */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Platform Statistics</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {loading ? (
+                                    <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                                        Loading...
+                                    </div>
+                                ) : (
+                                    <div className="h-[300px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={[
+                                                { name: 'Users', value: stats?.totalUsers || 0, fill: '#8b5cf6' },
+                                                { name: 'Posts', value: stats?.totalPosts || 0, fill: '#0ea5e9' },
+                                                { name: 'Groups', value: stats?.totalGroups || 0, fill: '#10b981' },
+                                                { name: 'Recent', value: stats?.recentActivity || 0, fill: '#f59e0b' }
+                                            ]}>
+                                                <XAxis dataKey="name" stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} />
+                                                <YAxis stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                                                <Tooltip
+                                                    contentStyle={{
+                                                        backgroundColor: 'hsl(var(--card))',
+                                                        border: '1px solid hsl(var(--border))',
+                                                        borderRadius: '8px'
+                                                    }}
+                                                />
+                                                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                                                    {[
+                                                        { name: 'Users', value: stats?.totalUsers || 0, fill: '#8b5cf6' },
+                                                        { name: 'Posts', value: stats?.totalPosts || 0, fill: '#0ea5e9' },
+                                                        { name: 'Groups', value: stats?.totalGroups || 0, fill: '#10b981' },
+                                                        { name: 'Recent', value: stats?.recentActivity || 0, fill: '#f59e0b' }
+                                                    ].map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+
+                        {/* Content Distribution Pie Chart */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Content Distribution</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {loading ? (
+                                    <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                                        Loading...
+                                    </div>
+                                ) : (
+                                    <div className="h-[300px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={[
+                                                        { name: 'User Posts', value: stats?.totalPosts || 1 },
+                                                        { name: 'Groups', value: stats?.totalGroups || 1 },
+                                                        { name: 'Branding', value: stats?.totalBranding || 1 }
+                                                    ]}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={60}
+                                                    outerRadius={80}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                    stroke="none"
+                                                >
+                                                    <Cell fill="#8b5cf6" />
+                                                    <Cell fill="#0ea5e9" />
+                                                    <Cell fill="#10b981" />
+                                                </Pie>
+                                                <Tooltip
+                                                    contentStyle={{
+                                                        backgroundColor: 'hsl(var(--card))',
+                                                        border: '1px solid hsl(var(--border))',
+                                                        borderRadius: '8px'
+                                                    }}
+                                                />
+                                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
                 </TabsContent>
 
                 <TabsContent value="individual">
