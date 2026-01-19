@@ -61,15 +61,15 @@ export function StockTicker() {
                         key={`${stock.symbol}-${index}`}
                         className="inline-flex items-center gap-3 mx-8 text-xs"
                     >
-                        <span className="font-bold tracking-tight text-foreground/90">{stock.symbol}</span>
-                        <span className="font-mono font-medium text-foreground/80 tracking-tighter ticker-glow-price">${stock.price.toFixed(2)}</span>
+                        <span className="font-bold tracking-tight text-foreground/90 dark:text-white">{stock.symbol}</span>
+                        <span className="font-mono font-medium text-foreground/80 dark:text-white/95 tracking-tighter ticker-glow-price">${stock.price.toFixed(2)}</span>
                         <div className={cn(
                             "flex items-center gap-0.5 font-medium px-1.5 py-0.5 rounded-full bg-white/50 dark:bg-white/5 transition-colors",
                             stock.change > 0
-                                ? "text-emerald-600 dark:text-emerald-400 ticker-glow-change-positive"
+                                ? "text-emerald-600 dark:text-emerald-300 ticker-glow-change-positive"
                                 : stock.change < 0
-                                    ? "text-rose-600 dark:text-rose-400 ticker-glow-change-negative"
-                                    : "text-gray-500"
+                                    ? "text-rose-600 dark:text-rose-300 ticker-glow-change-negative"
+                                    : "text-gray-500 dark:text-gray-300"
                         )}>
                             {stock.change > 0 ? <TrendingUp className="w-3 h-3 stroke-[3px]" /> : stock.change < 0 ? <TrendingDown className="w-3 h-3 stroke-[3px]" /> : <Minus className="w-3 h-3" />}
                             <span className="tracking-tight">{stock.change > 0 ? '+' : ''}{stock.changesPercentage.toFixed(2)}%</span>
