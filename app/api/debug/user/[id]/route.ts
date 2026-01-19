@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getUserAnalyticsSimple } from '@/app/actions/user-analytics';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
-        const data = await getUserAnalyticsSimple(params.id);
+        const { id } = await context.params;
+        const data = await getUserAnalyticsSimple(id);
         return NextResponse.json({ success: true, data });
     } catch (error) {
         console.error('Debug API error:', error);
