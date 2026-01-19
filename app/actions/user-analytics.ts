@@ -52,13 +52,14 @@ export async function getUserAnalyticsSimple(userId: string) {
 
         // Count user's posts
         const postsCount = await getCount(
-            adminDb.collection("posts").where("userId", "==", userId),
+            adminDb.collection("posts").where("authorId", "==", userId),
             'Posts'
         );
 
         // Count user's groups (as member)
+        // Groups use a subcollection 'members', so we must query that via collectionGroup
         const groupsCount = await getCount(
-            adminDb.collection("groups").where("members", "array-contains", userId),
+            adminDb.collectionGroup("members").where("userId", "==", userId),
             'Groups'
         );
 
@@ -68,7 +69,7 @@ export async function getUserAnalyticsSimple(userId: string) {
         const recentPostsCount = await getCount(
             adminDb
                 .collection("posts")
-                .where("userId", "==", userId)
+                .where("authorId", "==", userId)
                 .where("createdAt", ">=", sevenDaysAgo),
             'Recent Posts'
         );
