@@ -232,11 +232,14 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                 <video
                                     src={`${mainMedia}#t=0.001`}
                                     poster={post.thumbnailUrl || undefined}
-                                    className="w-full h-auto object-cover max-h-[500px]"
+                                    className="w-full h-auto object-cover max-h-[70vh]"
                                     controls={isEnlarged} // Only controls if enlarged
                                     autoPlay={isEnlarged}
+                                    muted={!isEnlarged}
                                     preload="metadata"
                                     playsInline
+                                    onMouseEnter={(e) => { if (!isEnlarged) e.currentTarget.play().catch(() => { }); }}
+                                    onMouseLeave={(e) => { if (!isEnlarged) { e.currentTarget.pause(); e.currentTarget.currentTime = 0; } }}
                                     onClick={(e) => {
                                         if (!isEnlarged) {
                                             e.stopPropagation();
@@ -257,7 +260,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                 <img
                                     src={mainMedia}
                                     alt=""
-                                    className="w-full h-auto object-cover hover:scale-105 transition-transform duration-500"
+                                    className="w-full h-auto object-cover max-h-[70vh] hover:scale-105 transition-transform duration-500"
                                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                 />
                             </div>
