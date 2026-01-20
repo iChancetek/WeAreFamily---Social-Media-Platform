@@ -13,7 +13,7 @@ import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
     DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import { Heart, MessageCircle, Share2, Sparkles, MoreHorizontal, Send, Loader2, Lock, Globe, Users, Image as ImageIcon, Video, X, Play } from "lucide-react";
+import { Heart, MessageCircle, Share2, Sparkles, MoreHorizontal, Send, Loader2, Lock, Globe, Users, X, Play } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -265,6 +265,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                             </div>
                         ) : (
                             <div className="w-full relative overflow-hidden bg-muted">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={mainMedia}
                                     alt=""

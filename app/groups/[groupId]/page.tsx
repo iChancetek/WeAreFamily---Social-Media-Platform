@@ -1,19 +1,15 @@
-import { getGroup, joinGroup, leaveGroup, getGroupMemberStatus } from "@/app/actions/groups";
+import { getGroup, getGroupMemberStatus } from "@/app/actions/groups";
 import { MainLayout } from "@/components/layout/main-layout";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Lock, Globe, Plus, Sparkles, ArrowLeft } from "lucide-react";
+import { Users, Lock, Globe, ArrowLeft, Trash2 } from "lucide-react";
 import { getUserProfile } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { JoinGroupButton } from "@/components/groups/join-group-button";
 import { GroupAITutorBanner } from "@/components/groups/group-ai-tutor-banner";
-import { GroupCoverButton } from "@/components/groups/group-cover-button";
 import { GroupManagementDialog } from "@/components/groups/group-management-dialog";
 import { ShareButton } from "@/components/shared/share-button";
-import { Trash2 } from "lucide-react";
+
 import { GroupFeed } from "@/components/groups/group-feed";
 import Link from "next/link";
 

@@ -2,7 +2,8 @@
 // critical-build-trigger: force redeploy of fixed syntax
 
 import { adminDb } from "@/lib/firebase-admin";
-import { FieldValue } from "firebase-admin/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { FieldValue, Query, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { getUserProfile, requireVerifiedAction } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { sanitizeData } from "@/lib/serialization";
@@ -79,9 +80,10 @@ export async function createPost(
             allowedViewerIds: allowedViewerIds || [], // Store specific viewers if any
             createdAt: FieldValue.serverTimestamp(),
         });
-    } catch (e: any) {
-        console.error("Create Post Failed:", e);
-        throw new Error(e.message || "Database write failed");
+    } catch (e) {
+        const err = e as Error;
+        console.error("Create Post Failed:", err);
+        throw new Error(err.message || "Database write failed");
     }
 
     const { logAuditEvent } = await import("./audit");
@@ -107,8 +109,8 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
     const user = await getUserProfile();
 
     try {
-        let validPosts: any[] = [];
-        let lastDoc: any = null;
+        let validPosts: any[] = []; // Leaving as any[] for now as Post structure is complex, or use AuditLogEntry equivalent? Let's generic object.
+        let lastDoc: QueryDocumentSnapshot | null = null;
         let safetyCounter = 0;
         const MAX_LOOPS = 10; // Allow enough text-to-public filtering
 
@@ -120,7 +122,7 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
         }
 
         while (validPosts.length < limit && safetyCounter < MAX_LOOPS) {
-            let query = adminDb.collection("posts").orderBy("createdAt", "desc");
+            let query: Query = adminDb.collection("posts").orderBy("createdAt", "desc");
 
             if (lastDoc) {
                 query = query.startAfter(lastDoc);
@@ -743,8 +745,8 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
 
         const snapshot = await postsRef.get();
         allDocs = snapshot.docs
-            .filter(d => !d.data().isDeleted)
-            .sort((a, b) => {
+            .filter((d: QueryDocumentSnapshot) => !d.data().isDeleted)
+            .sort((a: QueryDocumentSnapshot, b: QueryDocumentSnapshot) => {
                 const timeA = a.data().createdAt?.toMillis() || 0;
                 const timeB = b.data().createdAt?.toMillis() || 0;
                 return timeB - timeA; // Descending

@@ -1,7 +1,7 @@
 "use server";
 
 import { adminDb } from "@/lib/firebase-admin";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Query, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { resolveDisplayName } from "@/lib/user-utils";
 
@@ -67,7 +67,7 @@ export interface AuditLogEntry {
     targetType?: string; // e.g., "post", "user", "group"
     targetId?: string;
     targetName?: string;
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
     ipAddress?: string;
     userAgent?: string;
     timestamp: Date;
@@ -82,7 +82,7 @@ export async function logAuditEvent(
         targetType?: string;
         targetId?: string;
         targetName?: string;
-        details?: Record<string, any>;
+        details?: Record<string, unknown>;
     }
 ) {
     try {
@@ -138,26 +138,26 @@ export async function getAuditLogs(options?: {
         throw new Error("Unauthorized: Admin access required");
     }
 
-    let query = adminDb.collection("auditLogs").orderBy("timestamp", "desc");
+    let query: Query = adminDb.collection("auditLogs").orderBy("timestamp", "desc");
 
     if (options?.userId) {
-        query = query.where("userId", "==", options.userId) as any;
+        query = query.where("userId", "==", options.userId);
     }
 
     if (options?.action) {
-        query = query.where("action", "==", options.action) as any;
+        query = query.where("action", "==", options.action);
     }
 
     if (options?.startDate) {
-        query = query.where("timestamp", ">=", options.startDate) as any;
+        query = query.where("timestamp", ">=", options.startDate);
     }
 
     if (options?.endDate) {
-        query = query.where("timestamp", "<=", options.endDate) as any;
+        query = query.where("timestamp", "<=", options.endDate);
     }
 
     const limit = options?.limit || 100;
-    query = query.limit(limit) as any;
+    query = query.limit(limit);
 
     let snapshot;
     try {
@@ -178,20 +178,20 @@ export async function getAuditLogs(options?: {
     // Import sanitizeData to ensure clean serialization for Client Components
     const { sanitizeData } = await import("@/lib/serialization");
 
-    const logs = snapshot.docs.map((doc: any) => {
+    const logs = snapshot.docs.map((doc: QueryDocumentSnapshot) => {
         const data = doc.data();
         return {
             id: doc.id,
-            ...data,
+            ...(data as object),
             timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : new Date(data.timestamp || Date.now()),
-        };
+        } as AuditLogEntry;
     });
 
     // Sort in memory to cover the fallback case
-    logs.sort((a: any, b: any) => b.timestamp.getTime() - a.timestamp.getTime());
+    logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
     // Apply strict filtering in memory for the fallback results (to mimic the failed query)
-    const filteredLogs = logs.filter((log: any) => {
+    const filteredLogs = logs.filter((log) => {
         if (options?.userId && log.userId !== options.userId) return false;
         if (options?.action && log.action !== options.action) return false;
         if (options?.startDate && log.timestamp < options.startDate) return false;

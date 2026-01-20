@@ -9,9 +9,39 @@ import { getSimpleAnalytics } from "@/app/actions/simple-analytics";
 import { toast } from "sonner";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
 
+interface AnalyticsStats {
+    totalUsers: number;
+    totalPosts: number;
+    totalGroups: number;
+    totalBranding?: number;
+    recentActivity: number;
+    _error?: string;
+}
+
+interface UserSummary {
+    id: string;
+    displayName: string;
+    email: string;
+}
+
+interface UserAnalyticsStats {
+    displayName?: string;
+    email?: string;
+    photoURL?: string;
+    joinedDate?: string | Date;
+    totalPosts?: number;
+    totalGroups?: number;
+    recentPosts?: number;
+    _error?: string;
+    _searchedId?: string;
+    _collection?: string;
+    _dbProjectId?: string;
+    _isRealData?: boolean;
+}
+
 export default function AnalyticsDashboard() {
     const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('week');
-    const [stats, setStats] = useState<any>(null);
+    const [stats, setStats] = useState<AnalyticsStats | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -42,7 +72,7 @@ export default function AnalyticsDashboard() {
                     <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
                     <p className="text-muted-foreground">Monitor platform growth and user engagement trends.</p>
                 </div>
-                <Select value={timeRange} onValueChange={(val: any) => setTimeRange(val)}>
+                <Select value={timeRange} onValueChange={(val) => setTimeRange(val as 'day' | 'week' | 'month' | 'year')}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select period" />
                     </SelectTrigger>
@@ -213,9 +243,9 @@ export default function AnalyticsDashboard() {
 
 // Individual User Analysis Component
 function IndividualUserAnalysis({ timeRange }: { timeRange: string }) {
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<UserSummary[]>([]);
     const [selectedUserId, setSelectedUserId] = useState("");
-    const [userStats, setUserStats] = useState<any>(null);
+    const [userStats, setUserStats] = useState<UserAnalyticsStats | null>(null);
     const [loading, setLoading] = useState(false);
 
     // Load users list on mount

@@ -28,12 +28,12 @@ import {
     editReply
 } from '@/app/actions/posts';
 import { Linkify } from '@/components/shared/linkify';
-import { Reply } from '@/types/engagement';
+import { Reply, EnhancedComment } from '@/types/engagement';
 import { REACTIONS, getReactionIcon } from './reaction-selector';
 import { ReactionType } from '@/types/posts';
 
 interface CommentItemProps {
-    comment: any;
+    comment: EnhancedComment;
     postId: string;
     currentUserId?: string;
     contextType?: string;
@@ -149,7 +149,7 @@ export function CommentItem({
                 const url = await getDownloadURL(snapshot.ref);
                 setReplyMediaUrl(url);
                 toast.success('File uploaded');
-            } catch (error: any) {
+            } catch (error) {
                 console.error('Error uploading:', error);
                 toast.error('Upload failed');
             } finally {
@@ -191,12 +191,13 @@ export function CommentItem({
                 toast.success('Reply added');
                 onUpdate?.();
             }
-        } catch (error: any) {
-            console.error('❌ Reply submission failed:', error);
+        } catch (error: any) { // Keep explicit any here if we need access to .message, or cast it.
+            // Actually, best to cast: (error as Error).message
+            const err = error as Error;
+            console.error('❌ Reply submission failed:', err);
 
             // Check for Server Action version mismatch
-            // "Server Action ... was not found on the server"
-            if (error?.message?.includes('not found on the server')) {
+            if (err.message?.includes('not found on the server')) {
                 toast.error('New update available. Refreshing...');
                 setTimeout(() => {
                     window.location.reload();
@@ -205,11 +206,11 @@ export function CommentItem({
             }
 
             console.error('Error details:', {
-                message: error?.message,
-                code: error?.code,
-                stack: error?.stack
+                message: err.message,
+                // code: (err as any).code, // Optional
+                stack: err.stack
             });
-            toast.error(`Failed to add reply: ${error?.message || 'Unknown error'}`);
+            toast.error(`Failed to add reply: ${err.message || 'Unknown error'}`);
         } finally {
             setIsSubmittingReply(false);
         }
@@ -382,7 +383,8 @@ export function CommentItem({
                                         <Video className="w-6 h-6 text-white/70" />
                                     </div>
                                 ) : (
-                                    <img src={replyMediaUrl} alt="Upload" className="w-full h-full object-cover" />
+                                    {/* eslint-disable-next-line @next/next/no-img-element */ }
+                                    < img src={replyMediaUrl} alt="Upload" className="w-full h-full object-cover" />
                                 )}
                                 <button
                                     onClick={() => setReplyMediaUrl(null)}

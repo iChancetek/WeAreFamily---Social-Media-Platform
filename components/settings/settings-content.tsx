@@ -40,7 +40,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ArrowLeft, Shield } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useAuth } from "@/components/auth-provider"
 // import { useClerk } from "@clerk/nextjs" // Removed
@@ -100,7 +100,7 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
     const router = useRouter()
     const { t, setLanguage } = useLanguage()
     const { setTheme } = useTheme()
-    const { signOut } = useAuth()
+    // const { signOut } = useAuth() // Unused
     // const { openUserProfile } = useClerk() // Removed Clerk
     const [showExitDialog, setShowExitDialog] = useState(false)
 

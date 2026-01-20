@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { sanitizeData } from "@/lib/serialization";
+import { QueryDocumentSnapshot } from "firebase-admin/firestore";
 
 export type FamilyStatus = {
     status: 'none' | 'pending' | 'accepted' | 'rejected' | 'pending_sent' | 'pending_received';
@@ -219,7 +220,7 @@ export async function getFamilyRequests() {
         .where("status", "==", 'pending')
         .get();
 
-    const incomingRequests = await Promise.all(incomingSnapshot.docs.map(async (doc: any) => {
+    const incomingRequests = await Promise.all(incomingSnapshot.docs.map(async (doc: QueryDocumentSnapshot) => {
         const data = doc.data();
         const senderDoc = await adminDb.collection("users").doc(data.senderId).get();
 
@@ -246,7 +247,7 @@ export async function getFamilyRequests() {
         };
     }));
 
-    const sentRequests = await Promise.all(sentSnapshot.docs.map(async (doc: any) => {
+    const sentRequests = await Promise.all(sentSnapshot.docs.map(async (doc: QueryDocumentSnapshot) => {
         const data = doc.data();
         const receiverDoc = await adminDb.collection("users").doc(data.receiverId).get();
 
@@ -296,7 +297,7 @@ export async function searchFamilyMembers(searchTerm: string) {
     const blockedIds = new Set<string>();
     if (currentUser) {
         const blockedSnapshot = await adminDb.collection("blockedUsers").get();
-        blockedSnapshot.docs.forEach((doc: any) => {
+        blockedSnapshot.docs.forEach((doc: QueryDocumentSnapshot) => {
             const data = doc.data();
             if (data.blockerId === currentUser.id || data.blockedId === currentUser.id) {
                 blockedIds.add(data.blockerId === currentUser.id ? data.blockedId : data.blockerId);
@@ -304,7 +305,7 @@ export async function searchFamilyMembers(searchTerm: string) {
         });
     }
 
-    const allUsers = usersSnapshot.docs.map((doc: any) => {
+    const allUsers = usersSnapshot.docs.map((doc: QueryDocumentSnapshot) => {
         return {
             id: doc.id,
             ...doc.data()
@@ -426,8 +427,8 @@ export async function getFamilyMemberIds(userId: string) {
                 .get()
         ]);
 
-        sentSnapshot.forEach((doc: any) => familyIds.add(doc.data().receiverId));
-        receivedSnapshot.forEach((doc: any) => familyIds.add(doc.data().senderId));
+        sentSnapshot.forEach((doc: QueryDocumentSnapshot) => familyIds.add(doc.data().receiverId));
+        receivedSnapshot.forEach((doc: QueryDocumentSnapshot) => familyIds.add(doc.data().senderId));
     } catch (e) {
         console.error("Error fetching familyRequests:", e);
     }
@@ -440,8 +441,8 @@ export async function getFamilyMemberIds(userId: string) {
         ]);
 
         const blockedIds = new Set<string>();
-        blockedBySnapshot.forEach((doc: any) => blockedIds.add(doc.data().blockedId));
-        blockingSnapshot.forEach((doc: any) => blockedIds.add(doc.data().blockerId));
+        blockedBySnapshot.forEach((doc: QueryDocumentSnapshot) => blockedIds.add(doc.data().blockedId));
+        blockingSnapshot.forEach((doc: QueryDocumentSnapshot) => blockedIds.add(doc.data().blockerId));
 
         blockedIds.forEach(blockedId => familyIds.delete(blockedId));
     } catch (e) {

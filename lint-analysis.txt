@@ -1,0 +1,13 @@
+--- Top 5 Files by Warning Count ---
+\components\settings\settings-content.tsx: 12 warnings
+\app\actions\audit.ts: 11 warnings
+\components\feed\post-card.tsx: 11 warnings
+\app\actions\posts.ts: 10 warnings
+\components\admin\analytics\analytics-dashboard-simple.tsx: 10 warnings
+
+--- Top 5 Rules ---
+@typescript-eslint/no-explicit-any: 265
+@typescript-eslint/no-unused-vars: 196
+@next/next/no-img-element: 35
+react-hooks/exhaustive-deps: 10
+jsx-a11y/alt-text: 4
