@@ -135,10 +135,15 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
             lastDoc = snapshot.docs[snapshot.docs.length - 1];
             let rawDocs = snapshot.docs;
 
+            // ALWAYS Filter Soft Deleted
+            rawDocs = rawDocs.filter(doc => !doc.data().isDeleted);
+
             // Content Type Filter
             if (filters.contentType !== 'all') {
                 rawDocs = rawDocs.filter(doc => {
                     const data = doc.data();
+                    // if (data.isDeleted) return false; // Already filtered above
+
                     const hasMedia = data.mediaUrls && data.mediaUrls.length > 0;
                     const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
                     const hasVideoLink = videoUrlRegex.test(data.content || "");
@@ -448,9 +453,14 @@ export async function deletePostWithContext(postId: string, contextType?: string
     if (!isAuthor) throw new Error("Unauthorized");
 
     // Soft Delete
+    // Soft Delete with 10-day recovery
+    const now = new Date();
+    const tenDaysLater = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
+
     await postRef.update({
         isDeleted: true,
-        deletedAt: FieldValue.serverTimestamp()
+        deletedAt: FieldValue.serverTimestamp(),
+        permanentDeleteAt: tenDaysLater
     });
 
     revalidatePath('/');
@@ -458,13 +468,27 @@ export async function deletePostWithContext(postId: string, contextType?: string
     if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
 }
 
-export async function restorePost(postId: string) {
-    // Similar issue with context. 
-    // Leaving as legacy for now.
+export async function restorePost(postId: string, contextType?: string, contextId?: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");
-    const postRef = adminDb.collection("posts").doc(postId); // Legacy
-    // ...
+
+    const postRef = getPostRef(postId, contextType, contextId);
+    const doc = await postRef.get();
+
+    if (!doc.exists) throw new Error("Post not found");
+    // Only author can restore for now
+    if (doc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+
+    await postRef.update({
+        isDeleted: false,
+        deletedAt: FieldValue.delete(),
+        permanentDeleteAt: FieldValue.delete()
+    });
+
+    revalidatePath('/');
+    revalidatePath('/profile');
+    if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
+    if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
 }
 
 export async function toggleCommentLike(postId: string, commentId: string, reactionType: ReactionType = 'like', contextType?: string, contextId?: string) {
@@ -718,11 +742,13 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
             .where("authorId", "==", userId);
 
         const snapshot = await postsRef.get();
-        allDocs = snapshot.docs.sort((a, b) => {
-            const timeA = a.data().createdAt?.toMillis() || 0;
-            const timeB = b.data().createdAt?.toMillis() || 0;
-            return timeB - timeA; // Descending
-        });
+        allDocs = snapshot.docs
+            .filter(d => !d.data().isDeleted)
+            .sort((a, b) => {
+                const timeA = a.data().createdAt?.toMillis() || 0;
+                const timeB = b.data().createdAt?.toMillis() || 0;
+                return timeB - timeA; // Descending
+            });
 
         // 2. Fallback: If no posts found, try legacy email match (slow path)
         if (snapshot.empty) {
@@ -1022,4 +1048,43 @@ export async function updatePostEngagementSettings(
     revalidatePath('/');
     if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
     if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
+}
+
+export async function getDeletedPosts(userId: string) {
+    const user = await getUserProfile();
+    if (!user || user.id !== userId) throw new Error("Unauthorized");
+
+    const postsRef = adminDb.collection("posts")
+        .where("authorId", "==", userId)
+        .where("isDeleted", "==", true)
+        .orderBy("createdAt", "desc");
+
+    const snapshot = await postsRef.get();
+
+    // Manual mapping to avoid circular dependency or sanitization limit issues
+    return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+            deletedAt: data.deletedAt?.toDate ? data.deletedAt.toDate() : new Date(),
+            permanentDeleteAt: data.permanentDeleteAt?.toDate ? data.permanentDeleteAt.toDate() : undefined,
+            type: 'post' // Helper for UI
+        };
+    });
+}
+
+export async function permanentDeletePost(postId: string) {
+    const user = await getUserProfile();
+    if (!user) throw new Error("Unauthorized");
+
+    const postRef = adminDb.collection("posts").doc(postId);
+    const doc = await postRef.get();
+
+    if (!doc.exists) return;
+    if (doc.data()?.authorId !== user.id) throw new Error("Unauthorized");
+
+    await postRef.delete();
+    revalidatePath('/profile');
 }

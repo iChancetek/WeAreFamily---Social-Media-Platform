@@ -253,6 +253,9 @@ export async function getGroupPosts(groupId: string, limit = 50, filters: PostFi
 
     let allDocs = postsSnapshot.docs;
 
+    // Filter Soft Deleted
+    allDocs = allDocs.filter(doc => !doc.data().isDeleted);
+
     // Apply Memory Filters
     if (filters.contentType !== 'all') {
         allDocs = allDocs.filter(doc => {

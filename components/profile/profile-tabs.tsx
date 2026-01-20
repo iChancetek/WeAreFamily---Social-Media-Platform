@@ -5,10 +5,11 @@ import { PostCard } from "@/components/feed/post-card";
 import { MasonryFeed } from "@/components/feed/masonry-feed";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { Grid, Image, Film, Users, LayoutList } from "lucide-react";
+import { Grid, Image, Film, Users, LayoutList, Trash2 } from "lucide-react";
 import { useLanguage } from "@/components/language-context";
 import { useState } from "react";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
+import { DeletedFeed } from "./deleted-feed";
 
 interface ProfileTabsProps {
     posts: any[];
@@ -43,7 +44,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
     return (
         <>
             <Tabs defaultValue="timeline" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-4 mb-8">
+                <TabsList className={`grid w-full mb-8 ${isOwnProfile ? 'grid-cols-5' : 'grid-cols-4'}`}>
                     <TabsTrigger value="timeline" className="gap-2">
                         <LayoutList className="w-4 h-4" />
                         <span className="hidden sm:inline">{t('profile.tabs.timeline')}</span>
@@ -60,6 +61,12 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                         <Users className="w-4 h-4" />
                         <span className="hidden sm:inline">{t('profile.companions')}</span>
                     </TabsTrigger>
+                    {isOwnProfile && (
+                        <TabsTrigger value="trash" className="gap-2 text-red-500 data-[state=active]:text-red-600">
+                            <Trash2 className="w-4 h-4" />
+                            <span className="hidden sm:inline">Trash</span>
+                        </TabsTrigger>
+                    )}
                 </TabsList>
 
                 <TabsContent value="timeline" className="space-y-4">
@@ -132,6 +139,12 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                         </div>
                     )}
                 </TabsContent>
+
+                {isOwnProfile && (
+                    <TabsContent value="trash">
+                        <DeletedFeed userId={currentUserId || ""} />
+                    </TabsContent>
+                )}
             </Tabs>
         </>
     );
