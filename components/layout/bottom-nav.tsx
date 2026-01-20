@@ -36,7 +36,7 @@ export function BottomNav() {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsVisible((prev) => (prev ? false : prev));
         } else if (scrollDirection === 'up') {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+             
             setIsVisible((prev) => (!prev ? true : prev));
         }
     }, [scrollDirection]);

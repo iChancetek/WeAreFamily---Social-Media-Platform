@@ -35,6 +35,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         // Sync language from profile on load
         const profileLang = profile?.language;
         if (profileLang && Object.keys(dictionaries).includes(profileLang)) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLanguageState((prev) => {
                 if (prev !== profileLang) {
                     return profileLang as Language;
