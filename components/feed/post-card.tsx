@@ -44,11 +44,13 @@ interface PostCardProps {
     currentUserId?: string;
     isEnlarged?: boolean;
     variant?: 'standard' | 'pinterest';
+    initialTranslatedContent?: string | null;
+    initialLanguage?: 'es' | 'en' | 'fr' | 'zh' | 'hi' | 'ar';
 }
 
 import { useLanguage } from "@/components/language-context";
 
-export function PostCard({ post, currentUserId, isEnlarged = false, variant = 'standard' }: PostCardProps) {
+export function PostCard({ post, currentUserId, isEnlarged = false, variant = 'standard', initialTranslatedContent = null, initialLanguage }: PostCardProps) {
     const { t } = useLanguage();
     const isPinterest = variant === 'pinterest' && !isEnlarged;
     // Hooks must be called unconditionally
@@ -60,7 +62,8 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const videoRef = useRef<HTMLVideoElement>(null);
     const [editContent, setEditContent] = useState(post?.content || "");
     const [isSavingEdit, setIsSavingEdit] = useState(false);
-    const [translatedContent, setTranslatedContent] = useState<string | null>(null);
+    const [translatedContent, setTranslatedContent] = useState<string | null>(initialTranslatedContent);
+    const [targetLanguage, setTargetLanguage] = useState<typeof initialLanguage | undefined>(initialLanguage);
     const [isTranslating, setIsTranslating] = useState(false);
     const [currentReaction, setCurrentReaction] = useState<ReactionType | undefined>(
         currentUserId && post?.reactions ? post.reactions[currentUserId] : undefined
@@ -166,6 +169,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
 
     const handleTranslate = async (targetLang: 'es' | 'en' | 'fr' | 'zh' | 'hi' | 'ar' = 'en') => {
         setIsTranslating(true);
+        setTargetLanguage(targetLang);
         try {
             const { translateText } = await import("@/app/actions/ai");
             setTranslatedContent(await translateText(post.content, targetLang));
@@ -532,7 +536,13 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                     <div className="w-full max-w-3xl max-h-[95vh] flex flex-col items-center justify-center pointer-events-none">
                         {/* Prevent clicks on the card itself from closing the modal */}
                         <div className="w-full pointer-events-auto" onClick={e => e.stopPropagation()}>
-                            <PostCard post={post} currentUserId={currentUserId} isEnlarged={true} />
+                            <PostCard
+                                post={post}
+                                currentUserId={currentUserId}
+                                isEnlarged={true}
+                                initialTranslatedContent={translatedContent}
+                                initialLanguage={targetLanguage}
+                            />
                         </div>
                     </div>
                 </div>
