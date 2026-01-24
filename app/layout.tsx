@@ -11,6 +11,8 @@ import { MessageNotificationProvider } from "@/components/messages/message-notif
 import { ServiceWorkerRegister } from "@/components/pwa/sw-register";
 import { OfflineIndicator } from "@/components/pwa/offline-indicator";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { PushNotificationManager } from "@/components/notifications/push-notification-manager";
+import { NotificationPermissionPrompt } from "@/components/notifications/notification-permission-prompt";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -80,6 +82,8 @@ export default function RootLayout({
                 <ServiceWorkerRegister />
                 <OfflineIndicator />
                 <InstallPrompt />
+                <PushNotificationManager />
+                <NotificationPermissionPrompt />
                 {children}
                 <Toaster />
                 {/* <CallOverlay /> */}
