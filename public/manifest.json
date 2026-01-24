@@ -100,6 +100,42 @@
                     "sizes": "96x96"
                 }
             ]
+        },
+        {
+            "name": "Create Post",
+            "short_name": "Post",
+            "description": "Create a new post",
+            "url": "/?action=create-post",
+            "icons": [
+                {
+                    "src": "/icons/icon-192x192.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "AI Chat",
+            "short_name": "AI",
+            "description": "Chat with AI assistant",
+            "url": "/chat",
+            "icons": [
+                {
+                    "src": "/icons/icon-192x192.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Events",
+            "short_name": "Events",
+            "description": "View upcoming events",
+            "url": "/events",
+            "icons": [
+                {
+                    "src": "/icons/icon-192x192.png",
+                    "sizes": "96x96"
+                }
+            ]
         }
     ],
     "share_target": {
