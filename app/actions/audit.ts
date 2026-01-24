@@ -180,11 +180,12 @@ export async function getAuditLogs(options?: {
 
     const logs = snapshot.docs.map((doc: QueryDocumentSnapshot) => {
         const data = doc.data();
-        return {
+        const entry: AuditLogEntry = {
+            ...(data as Omit<AuditLogEntry, 'timestamp'>),
             id: doc.id,
-            ...(data as object),
             timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : new Date(data.timestamp || Date.now()),
         } as AuditLogEntry;
+        return entry;
     });
 
     // Sort in memory to cover the fallback case

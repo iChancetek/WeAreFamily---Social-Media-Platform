@@ -2,7 +2,6 @@
 // critical-build-trigger: force redeploy of fixed syntax
 
 import { adminDb } from "@/lib/firebase-admin";
-import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue, Query, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { getUserProfile, requireVerifiedAction } from "@/lib/auth";
 import { revalidatePath } from "next/cache";

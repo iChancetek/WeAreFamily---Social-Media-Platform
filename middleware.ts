@@ -41,9 +41,14 @@ export const config = {
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
+         * - icons (PWA icons)
+         * - manifest.json (PWA manifest)
+         * - sw.js (service worker)
+         * - workbox (workbox files)
+         * - offline (offline page)
          * - login
          * - signup
          */
-        "/((?!api|_next/static|_next/image|favicon.ico|login|signup).*)",
+        "/((?!api|_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|workbox-.*|offline|login|signup).*)",
     ],
 };

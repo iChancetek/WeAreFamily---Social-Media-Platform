@@ -8,6 +8,9 @@ import { LanguageProvider } from "@/components/language-context";
 import { AIAssistant } from "@/components/ai/ai-assistant";
 import { CallOverlay } from "@/components/rtc/call-overlay";
 import { MessageNotificationProvider } from "@/components/messages/message-notification-provider";
+import { ServiceWorkerRegister } from "@/components/pwa/sw-register";
+import { OfflineIndicator } from "@/components/pwa/offline-indicator";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,6 +20,39 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Famio - Connect with Your Family and Friends",
   description: "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
+
+  // PWA Configuration
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Famio",
+  },
+  applicationName: "Famio",
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover", // iOS safe area support
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
 };
 
 
@@ -41,6 +77,9 @@ export default function RootLayout({
           >
             <LanguageProvider>
               <MessageNotificationProvider>
+                <ServiceWorkerRegister />
+                <OfflineIndicator />
+                <InstallPrompt />
                 {children}
                 <Toaster />
                 {/* <CallOverlay /> */}

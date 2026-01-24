@@ -89,7 +89,7 @@ export function CommentItem({
         displayName: (comment.author.displayName && comment.author.displayName !== "Family Member")
             ? comment.author.displayName
             : "Unknown"
-    } : { displayName: 'Unknown' };
+    } : { displayName: 'Unknown', imageUrl: undefined };
 
     // Handle comment like
     const handleLike = async (reactionType: ReactionType) => {
@@ -383,8 +383,8 @@ export function CommentItem({
                                         <Video className="w-6 h-6 text-white/70" />
                                     </div>
                                 ) : (
-                                    {/* eslint-disable-next-line @next/next/no-img-element */ }
-                                    < img src={replyMediaUrl} alt="Upload" className="w-full h-full object-cover" />
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={replyMediaUrl} alt="Upload" className="w-full h-full object-cover" />
                                 )}
                                 <button
                                     onClick={() => setReplyMediaUrl(null)}
