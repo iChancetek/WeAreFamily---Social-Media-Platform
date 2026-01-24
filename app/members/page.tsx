@@ -17,8 +17,7 @@ export default async function MembersDirectoryPage() {
 
     // Fetch ONLY online members
     // Users are considered online if lastActiveAt is within the last 15 minutes
-    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-
+    // The isOnline field is already calculated server-side
     const membersSnapshot = await adminDb.collection("users")
         .where("isActive", "==", true)
         .where("isOnline", "==", true) // Only fetch online users
