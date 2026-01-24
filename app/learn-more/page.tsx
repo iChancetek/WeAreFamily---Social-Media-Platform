@@ -10,7 +10,7 @@ export default function LearnMorePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <Link href="/" className="flex items-center gap-3">
-                            <Heart className="w-7 h-7 text-blue-600" fill="currentColor" />
+                            <img src="/icons/icon-72x72.png" alt="Famio" className="w-7 h-7" />
                             <div>
                                 <div className="font-bold text-2xl text-gray-900 tracking-tight">Famio</div>
                                 <div className="text-xs text-gray-600 font-medium -mt-1">by ChanceTEK</div>
@@ -230,7 +230,7 @@ export default function LearnMorePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center space-y-4">
                         <div className="flex items-center gap-2">
-                            <Heart className="w-6 h-6 text-blue-600" fill="currentColor" />
+                            <img src="/icons/icon-72x72.png" alt="Famio" className="w-6 h-6" />
                             <div>
                                 <span className="font-bold text-gray-900 text-lg">Famio</span>
                                 <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>

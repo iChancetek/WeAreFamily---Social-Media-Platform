@@ -18,8 +18,7 @@ export function TopNav({ className }: { className?: string }) {
             {/* Logo Area */}
             <div className="flex items-center gap-3">
                 <div className="relative flex items-center justify-center w-8 h-8">
-                    <Heart className="w-6 h-6 text-primary fill-primary/20" />
-                    <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-50" />
+                    <img src="/icons/icon-72x72.png" alt="Famio" className="w-6 h-6" />
                 </div>
                 <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
                     Famio

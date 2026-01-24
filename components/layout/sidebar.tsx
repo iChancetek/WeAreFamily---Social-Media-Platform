@@ -96,11 +96,14 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                     >
                         <div className="relative flex items-center justify-center w-10 h-10">
                             {/* Animated Logo Mark */}
-                            <Heart className={cn(
-                                "w-6 h-6 text-primary fill-primary/20",
-                                isHovered ? "scale-100" : "scale-90"
-                            )} />
-                            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+                            <img
+                                src="/icons/icon-72x72.png"
+                                alt="Famio"
+                                className={cn(
+                                    "w-6 h-6",
+                                    isHovered ? "scale-100" : "scale-90"
+                                )}
+                            />
                         </div>
 
                         {/* Title text fades in */}

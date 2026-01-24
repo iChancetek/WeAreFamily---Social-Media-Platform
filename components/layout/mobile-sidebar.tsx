@@ -115,8 +115,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                     type="button"
                 >
                     <div className="relative flex items-center justify-center w-10 h-10">
-                        <Heart className="w-6 h-6 text-primary fill-primary/20" />
-                        <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
+                        <img src="/icons/icon-72x72.png" alt="Famio" className="w-6 h-6" />
                     </div>
                     <span className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">
                         Famio
