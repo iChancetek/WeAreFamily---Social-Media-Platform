@@ -100,7 +100,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                                 src="/icons/icon-72x72.png"
                                 alt="Famio"
                                 className={cn(
-                                    "w-6 h-6",
+                                    "w-6 h-6 rounded-lg transition-transform duration-200",
                                     isHovered ? "scale-100" : "scale-90"
                                 )}
                             />

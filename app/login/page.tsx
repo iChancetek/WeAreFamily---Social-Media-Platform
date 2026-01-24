@@ -147,7 +147,7 @@ export default function LoginPage() {
                 <Card className="w-full max-w-md shadow-lg border-blue-100">
                     <CardHeader className="text-center space-y-2">
                         <div className="flex items-center justify-center gap-2 mb-2">
-                            <img src="/icons/icon-96x96.png" alt="Famio" className="w-8 h-8" />
+                            <img src="/icons/icon-96x96.png" alt="Famio" className="w-8 h-8 rounded-xl" />
                             <span className="text-2xl font-bold text-blue-600">Famio</span>
                         </div>
                         <CardTitle className="text-2xl font-bold text-gray-900">Verify Your Email</CardTitle>
@@ -195,7 +195,7 @@ export default function LoginPage() {
             <Card className="w-full max-w-md shadow-lg border-blue-100 relative z-[50]">
                 <CardHeader className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                        <img src="/icons/icon-96x96.png" alt="Famio" className="w-8 h-8" />
+                        <img src="/icons/icon-96x96.png" alt="Famio" className="w-8 h-8 rounded-xl" />
                         <span className="text-2xl font-bold text-blue-600">Famio</span>
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
