@@ -212,7 +212,8 @@ export default function LoginPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                className="bg-gray-50 border-gray-200 focus:bg-white transition-colors text-gray-900"
+                                autoComplete="email"
                             />
                         </div>
                         <div className="space-y-2">
@@ -223,7 +224,8 @@ export default function LoginPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                                className="bg-gray-50 border-gray-200 focus:bg-white transition-colors text-gray-900"
+                                autoComplete="current-password"
                             />
                         </div>
                         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 font-semibold" disabled={isLoading}>
