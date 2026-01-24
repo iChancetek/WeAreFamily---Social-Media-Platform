@@ -248,7 +248,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                     ref={videoRef}
                                     src={`${mainMedia}#t=0.001`}
                                     poster={post.thumbnailUrl || undefined}
-                                    className="w-full h-auto object-cover max-h-[70vh]"
+                                    className="w-full h-auto object-contain max-h-[60vh] md:max-h-[70vh]"
                                     controls={isEnlarged} // Only controls if enlarged
                                     autoPlay={isEnlarged}
                                     muted={!isEnlarged}
@@ -269,7 +269,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                 <img
                                     src={mainMedia}
                                     alt=""
-                                    className="w-full h-auto object-cover max-h-[70vh] hover:scale-105 transition-transform duration-500"
+                                    className="w-full h-auto object-contain max-h-[60vh] md:max-h-[70vh] hover:scale-105 transition-transform duration-500"
                                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                 />
                             </div>
