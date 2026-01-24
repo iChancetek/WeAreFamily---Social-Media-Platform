@@ -43,6 +43,67 @@ export default function HelpPage() {
                     </div>
                 </div>
 
+                {/* New PWA Features */}
+                <Card className="border-purple-200 dark:border-purple-800">
+                    <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+                        <CardTitle className="flex items-center gap-2">
+                            ✨ New PWA Features
+                        </CardTitle>
+                        <CardDescription>Even more powerful app-like capabilities</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-4">
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div className="p-4 border rounded-lg">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-full">
+                                        🔔
+                                    </div>
+                                    <h4 className="font-semibold">Push Notifications</h4>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    Get real-time alerts for messages, mentions, and events—even when the app is closed!
+                                </p>
+                            </div>
+
+                            <div className="p-4 border rounded-lg">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="bg-green-100 dark:bg-green-900 p-2 rounded-full">
+                                        📤
+                                    </div>
+                                    <h4 className="font-semibold">Share to Famio</h4>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    Share photos, links, and text directly to Famio from any app on your device.
+                                </p>
+                            </div>
+
+                            <div className="p-4 border rounded-lg">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="bg-orange-100 dark:bg-orange-900 p-2 rounded-full">
+                                        📶
+                                    </div>
+                                    <h4 className="font-semibold">Offline Sync</h4>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    Send messages and create posts offline—they'll sync automatically when you're back online.
+                                </p>
+                            </div>
+
+                            <div className="p-4 border rounded-lg">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded-full">
+                                        ⚡
+                                    </div>
+                                    <h4 className="font-semibold">Quick Shortcuts</h4>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    Right-click the app icon for instant access to Messages, AI Chat, Events, and more!
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
                 {/* Benefits */}
                 <Card>
                     <CardHeader>
