@@ -15,11 +15,13 @@ export default async function MembersDirectoryPage() {
         redirect("/");
     }
 
-    // Fetch members (limit 50 for now)
-    // We only want 'members' or 'admins', not pending? Or everyone?
-    // Users said "view a directory of all members".
+    // Fetch ONLY online members
+    // Users are considered online if lastActiveAt is within the last 15 minutes
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+
     const membersSnapshot = await adminDb.collection("users")
-        .where("isActive", "==", true) // Assuming we use this flag? If not, just remove.
+        .where("isActive", "==", true)
+        .where("isOnline", "==", true) // Only fetch online users
         .limit(50)
         .get();
 
@@ -31,35 +33,41 @@ export default async function MembersDirectoryPage() {
             email: data.email,
             imageUrl: data.imageUrl,
             role: data.role,
-            // Only expose public fields
+            isOnline: data.isOnline,
         });
     });
 
-    // Filter out current user from display? Or keep them? Usually keep.
-    // Filter out pending?
+    // Filter to only show members and admins
     members = members.filter((m: any) => m.role === 'member' || m.role === 'admin');
 
     return (
         <MainLayout>
             <div className="mb-6">
-                <h1 className="text-2xl font-bold tracking-tight">Members Directory</h1>
-                <p className="text-muted-foreground">Discover and connect with the Famio community.</p>
+                <h1 className="text-2xl font-bold tracking-tight">Online Members</h1>
+                <p className="text-muted-foreground">Members currently signed in and active.</p>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>All Members ({members.length})</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                        Online Now ({members.length})
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                         {members.map((member: any) => (
                             <Link key={member.id} href={`/u/${member.id}`} className="block group">
-                                <div className="flex flex-col items-center p-6 border rounded-xl bg-card hover:border-blue-200 hover:bg-blue-50/50 dark:hover:bg-muted/50 transition-all duration-200 shadow-sm hover:shadow-md">
-                                    <Avatar className="w-20 h-20 mb-4 border-2 border-background shadow-sm group-hover:scale-105 transition-transform">
-                                        <AvatarImage src={member.imageUrl} />
-                                        <AvatarFallback>{member.email?.slice(0, 2).toUpperCase()}</AvatarFallback>
-                                    </Avatar>
-                                    <h3 className="font-semibold text-center text-foreground group-hover:text-blue-600 transition-colors w-full truncate px-2">
+                                <div className="flex flex-col items-center p-6 border rounded-xl bg-card hover:border-green-200 hover:bg-green-50/50 dark:hover:bg-muted/50 transition-all duration-200 shadow-sm hover:shadow-md">
+                                    <div className="relative">
+                                        <Avatar className="w-20 h-20 mb-4 border-2 border-background shadow-sm group-hover:scale-105 transition-transform">
+                                            <AvatarImage src={member.imageUrl} />
+                                            <AvatarFallback>{member.email?.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                        </Avatar>
+                                        {/* Online status indicator */}
+                                        <div className="absolute bottom-3 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-card animate-pulse" />
+                                    </div>
+                                    <h3 className="font-semibold text-center text-foreground group-hover:text-green-600 transition-colors w-full truncate px-2">
                                         {member.displayName}
                                     </h3>
                                     <p className="text-xs text-muted-foreground capitalize mt-1">
@@ -72,7 +80,8 @@ export default async function MembersDirectoryPage() {
 
                     {members.length === 0 && (
                         <div className="text-center py-10 text-muted-foreground">
-                            No members found.
+                            <p className="text-lg mb-2">No members online right now</p>
+                            <p className="text-sm">Check back later to see who's active!</p>
                         </div>
                     )}
                 </CardContent>
