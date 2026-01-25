@@ -12,6 +12,8 @@ export function SyncStatusIndicator() {
     const [showQueue, setShowQueue] = useState(false);
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const checkQueue = async () => {
             const items = await syncManager.getQueue();
             setQueueItems(items);
@@ -26,6 +28,7 @@ export function SyncStatusIndicator() {
             setIsOnline(false);
         };
 
+        // Initial sync
         setIsOnline(navigator.onLine);
         checkQueue();
 
