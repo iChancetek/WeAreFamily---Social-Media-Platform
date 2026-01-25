@@ -24,6 +24,33 @@ export const metadata: Metadata = {
   title: "Famio - Connect with Your Family and Friends",
   description: "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
 
+  // Open Graph for Social Sharing
+  openGraph: {
+    title: "Famio - Connect with Your Family and Friends",
+    description: "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
+    url: "https://famio.us",
+    siteName: "Famio",
+    locale: "en_US",
+    type: "website",
+    images: [
+      {
+        url: "https://famio.us/icons/icon-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "Famio Logo",
+      }
+    ],
+  },
+
+  // Twitter Card
+  twitter: {
+    card: "summary_large_image",
+    title: "Famio - Connect with Your Family and Friends",
+    description: "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
+    images: ["https://famio.us/icons/icon-512x512.png"],
+    site: "@Famio",
+  },
+
   // PWA Configuration
   manifest: "/manifest.json",
   appleWebApp: {
