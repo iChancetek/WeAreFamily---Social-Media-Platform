@@ -85,6 +85,8 @@ interface SettingsContentProps {
         birthday?: string | null;
         isInvisible?: boolean;
         isPublicProfile?: boolean;
+        isPublicProfile?: boolean;
+        allowLocationSharing?: boolean;
         email?: string | null;
     },
     blockedUsers: {
@@ -408,6 +410,28 @@ export function SettingsContent({ user, blockedUsers }: SettingsContentProps) {
                                 <Switch
                                     checked={isPublicProfile}
                                     onCheckedChange={handleTogglePublicProfile}
+                                />
+                            </div>
+
+                            {/* 4. Location Privacy */}
+                            <div className="flex items-center justify-between pt-4 border-t border-border">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base text-indigo-600">{t("settings.location.title") || "Location & Privacy"}</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        {t("settings.location.desc") || "Enable the ability to share your location on-demand. Location is never tracked in the background."}
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={user.allowLocationSharing || false}
+                                    onCheckedChange={async (val) => {
+                                        try {
+                                            await updateAccountSettings({ allowLocationSharing: val })
+                                            toast.success(val ? "Location features enabled" : "Location features disabled")
+                                            router.refresh()
+                                        } catch {
+                                            toast.error("Failed to update location settings")
+                                        }
+                                    }}
                                 />
                             </div>
 

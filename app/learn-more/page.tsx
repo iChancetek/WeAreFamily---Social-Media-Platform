@@ -328,45 +328,142 @@ export default function LearnMorePage() {
                 </div>
             </section>
 
-            {/* CTA Section */}
-            <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                        Ready to Bring Your Family Together?
-                    </h2>
-                    <p className="text-xl mb-8 text-blue-100">
-                        Join thousands of families already connected on Famio.
-                    </p>
-                    <Link href="/signup">
-                        <Button size="lg" className="h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-xl">
-                            Get Started Free
-                        </Button>
-                    </Link>
+            {/* Relationships Section */}
+            <section className="py-20 bg-gradient-to-br from-indigo-900 to-blue-900 text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="text-center mb-16">
+                        <Globe className="w-16 h-16 text-blue-300 mx-auto mb-6" />
+                        <h2 className="text-4xl md:text-5xl font-extrabold mb-6">We Are One.</h2>
+                        <p className="text-xl text-indigo-100 max-w-3xl mx-auto leading-relaxed">
+                            Famio is built on the belief that family extends beyond bloodlines.
+                            It's a sanctuary to grow meaningful connections with your chosen family—friends, companions, colleagues, and partners.
+                        </p>
+                    </div>
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="bg-white border-t border-gray-200 py-12">
+            {/* Location & Privacy Education */}
+            <section className="py-20 bg-white border-y border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col items-center justify-center space-y-4">
-                        <div className="flex items-center gap-2">
-                            <img src="/icons/icon-72x72.png" alt="Famio" className="w-6 h-6 rounded-lg" />
+                    <div className="flex flex-col lg:flex-row gap-16 items-center">
+                        <div className="flex-1 space-y-8">
                             <div>
-                                <span className="font-bold text-gray-900 text-lg">Famio</span>
-                                <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>
+                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 rounded-full mb-4">
+                                    <Lock className="w-5 h-5 text-green-600" />
+                                    <span className="text-sm font-semibold text-green-700">Privacy First Design</span>
+                                </div>
+                                <h2 className="text-4xl font-bold text-gray-900 mb-4">Location Sharing on Your Terms</h2>
+                                <p className="text-lg text-gray-600 leading-relaxed">
+                                    We believe location data is sensitive. That's why on Famio, <strong>Location Sharing is OFF by default.</strong>
+                                </p>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="flex gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                        <Zap className="w-6 h-6 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-lg font-bold text-gray-900">Snapshot Only</h4>
+                                        <p className="text-gray-600">
+                                            "Drop My Location" captures a single snapshot only when you click the button. We never track you in the background.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                                        <CheckCircle2 className="w-6 h-6 text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-lg font-bold text-gray-900">Total Control</h4>
+                                        <p className="text-gray-600">
+                                            You must explicitly enable location features in your Settings. You can disable them at any time.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="text-center space-y-2">
-                            <p className="text-gray-600 text-sm">
-                                © 2026 Famio by ChanceTEK. All Rights Reserved.
-                            </p>
-                            <p className="text-gray-500 text-xs">
-                                Developed by Chancellor Minus | ChanceTEK LLC | iChanceTEK
-                            </p>
+
+                        <div className="flex-1 bg-gray-50 rounded-3xl p-8 border border-gray-100">
+                            <h3 className="text-2xl font-bold mb-6">Your Privacy Settings</h3>
+                            <div className="space-y-4">
+                                <div className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between opacity-75">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                            <Globe className="w-5 h-5 text-gray-500" />
+                                        </div>
+                                        <div>
+                                            <div className="font-semibold text-gray-900">Public Profile</div>
+                                            <div className="text-xs text-gray-500">Visible to everyone</div>
+                                        </div>
+                                    </div>
+                                    <div className="w-10 h-6 bg-gray-200 rounded-full relative"><div className="w-4 h-4 bg-white rounded-full absolute left-1 top-1"></div></div>
+                                </div>
+
+                                <div className="bg-white p-4 rounded-xl border-blue-200 border-2 shadow-lg relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-bl-lg font-bold">NEW</div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                                                <Zap className="w-5 h-5 text-blue-600" />
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-gray-900">Location Features</div>
+                                                <div className="text-xs text-gray-500">Enable "Drop My Location"</div>
+                                            </div>
+                                        </div>
+                                        <div className="w-10 h-6 bg-blue-600 rounded-full relative"><div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div></div>
+                                    </div>
+                                    <p className="text-xs text-blue-700 bg-blue-50 p-2 rounded-lg">
+                                        <strong>Status:</strong> Enabled. You can now attach location snapshots to your posts.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </footer>
+
+                {/* CTA Section */}
+                <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                        <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                            Ready to Bring Your Family Together?
+                        </h2>
+                        <p className="text-xl mb-8 text-blue-100">
+                            Join thousands of families already connected on Famio.
+                        </p>
+                        <Link href="/signup">
+                            <Button size="lg" className="h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-xl">
+                                Get Started Free
+                            </Button>
+                        </Link>
+                    </div>
+                </section>
+
+                {/* Footer */}
+                <footer className="bg-white border-t border-gray-200 py-12">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex flex-col items-center justify-center space-y-4">
+                            <div className="flex items-center gap-2">
+                                <img src="/icons/icon-72x72.png" alt="Famio" className="w-6 h-6 rounded-lg" />
+                                <div>
+                                    <span className="font-bold text-gray-900 text-lg">Famio</span>
+                                    <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>
+                                </div>
+                            </div>
+                            <div className="text-center space-y-2">
+                                <p className="text-gray-600 text-sm">
+                                    © 2026 Famio by ChanceTEK. All Rights Reserved.
+                                </p>
+                                <p className="text-gray-500 text-xs">
+                                    Developed by Chancellor Minus | ChanceTEK LLC | iChanceTEK
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
         </div>
     )
 }

@@ -9,7 +9,7 @@ import { createPost } from "@/app/actions/posts";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
-import { ImageIcon, Loader2, Send, X, Mic, MicOff } from "lucide-react";
+import { ImageIcon, Loader2, Send, X, Mic, MicOff, MapPin } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useLanguage } from "@/components/language-context";
@@ -39,6 +39,45 @@ export function CreatePost({ onClose }: CreatePostProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [lastUploadError, setLastUploadError] = useState<string | null>(null);
 
+    // Location State
+    const [location, setLocation] = useState<{ lat: number; lng: number; name?: string } | null>(null);
+
+    const handleLocationClick = () => {
+        // Check if allowed
+        if (!user || !(user as any).allowLocationSharing) {
+            toast.error("Location sharing is disabled. Enable it in Settings > Location & Privacy.");
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser.");
+            return;
+        }
+
+        toast.info("Getting location...");
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                const { latitude, longitude } = pos.coords;
+                // Reverse geocode optionally here, or just store coords
+                // Simple reverse geocode mock or just generic name
+                setLocation({
+                    lat: latitude,
+                    lng: longitude,
+                    name: "Current Location"
+                });
+                toast.success("Location attached! 📍");
+            },
+            (err) => {
+                console.error(err);
+                if (err.code === 1) { // PERMISSION_DENIED
+                    toast.error("Location permission denied.");
+                } else {
+                    toast.error("Failed to get location.");
+                }
+            }
+        );
+    };
+
     // Magic AI Integration
     const magicAI = useMagicAI({ context: { type: 'timeline' } });
 
@@ -63,11 +102,13 @@ export function CreatePost({ onClose }: CreatePostProps) {
                 mediaUrls,
                 { privacy },
                 thumbnailUrl,
-                allowedViewers.length > 0 ? allowedViewers : undefined
+                allowedViewers.length > 0 ? allowedViewers : undefined,
+                location
             );
             setContent("");
             setMediaUrls([]);
             setThumbnailUrl(null);
+            setLocation(null);
             setPrivacy('public');
             setAllowedViewers([]);
             toast.success("Moment shared successfully! ❤️");
@@ -279,6 +320,24 @@ export function CreatePost({ onClose }: CreatePostProps) {
                                     {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-6 h-6 text-primary" />}
                                     <span className="text-[15px] font-semibold text-foreground">{t("create.photo_video")}</span>
                                 </Button>
+                                {/* Location Button */}
+                                <Button
+                                    variant={location ? "secondary" : "ghost"}
+                                    size="icon"
+                                    className={location ? "text-blue-500 bg-blue-50" : ""}
+                                    onClick={handleLocationClick}
+                                    title={location ? "Location attached" : "Drop location"}
+                                    type="button"
+                                >
+                                    <MapPin className="w-5 h-5" />
+                                </Button>
+                                {location && (
+                                    <span className="hidden md:inline-block text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full truncate max-w-[150px]">
+                                        📍 {location.name || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
+                                        <button onClick={() => setLocation(null)} className="ml-2 hover:text-red-500">×</button>
+                                    </span>
+                                )}
+
                                 <MagicAIButton
                                     onClick={handleOpenMagicAI}
                                     disabled={!content.trim() || !isVerified}

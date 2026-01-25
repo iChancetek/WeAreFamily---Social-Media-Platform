@@ -22,7 +22,7 @@ export async function updateProfile(data: { displayName?: string, bio?: string, 
     revalidatePath('/')
 }
 
-export async function updateAccountSettings(data: { language?: string, theme?: string, isPublicProfile?: boolean }) {
+export async function updateAccountSettings(data: { language?: string, theme?: string, isPublicProfile?: boolean, allowLocationSharing?: boolean }) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
 
@@ -30,6 +30,7 @@ export async function updateAccountSettings(data: { language?: string, theme?: s
         ...(data.language !== undefined && { language: data.language }),
         ...(data.theme !== undefined && { theme: data.theme }),
         ...(data.isPublicProfile !== undefined && { isPublicProfile: data.isPublicProfile }),
+        ...(data.allowLocationSharing !== undefined && { allowLocationSharing: data.allowLocationSharing }),
     });
 
     revalidatePath('/settings')
