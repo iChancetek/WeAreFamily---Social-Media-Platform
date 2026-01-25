@@ -38,12 +38,17 @@ export function NotificationPermissionPrompt() {
                 setShow(false);
                 localStorage.setItem("notification-prompt-dismissed", "granted");
             } else {
+                // User denied or error occurred
+                setShow(false);
                 localStorage.setItem("notification-prompt-dismissed", "denied");
             }
         } catch (error) {
             console.error("Error enabling notifications:", error);
+            setShow(false);
+            localStorage.setItem("notification-prompt-dismissed", "error");
+        } finally {
+            setIsRequesting(false);
         }
-        setIsRequesting(false);
     };
 
     const handleDismiss = () => {
