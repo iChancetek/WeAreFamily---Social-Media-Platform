@@ -95,21 +95,47 @@ export async function generateContentMetadata(
             type: type as any,
             url: canonicalUrl,
             siteName: 'Famio',
+            locale: 'en_US',
             images: [
                 {
                     url: imageUrl,
                     width: 1200,
                     height: 630,
-                    alt: 'Content Preview'
+                    alt: title,
+                    type: 'image/jpeg'
                 }
             ],
-            videos: videoUrlForOg ? [{ url: videoUrlForOg }] : undefined
+            videos: videoUrlForOg ? [{ url: videoUrlForOg }] : undefined,
+            // Additional metadata for better SEO
+            ...(post.author?.displayName && {
+                article: {
+                    authors: [post.author.displayName],
+                    publishedTime: new Date().toISOString(),
+                }
+            })
         },
         twitter: {
             card: 'summary_large_image',
             title,
             description,
             images: [imageUrl],
+            site: '@Famio',
+            creator: post.author?.displayName ? `@${post.author.displayName.replace(/\s+/g, '')}` : '@Famio'
+        },
+        // Additional tags for rich previews
+        metadataBase: new URL(canonicalUrl.split('/post/')[0]),
+        alternates: {
+            canonical: canonicalUrl
+        },
+        robots: {
+            index: true,
+            follow: true,
+            googleBot: {
+                index: true,
+                follow: true,
+                'max-image-preview': 'large',
+                'max-snippet': -1
+            }
         }
     };
 }
