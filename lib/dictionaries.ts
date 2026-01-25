@@ -4,6 +4,7 @@ export type DictionaryKey =
     | "settings.speed.title" | "settings.speed.desc" | "settings.security.title" | "settings.security.desc"
     | "settings.password.button" | "settings.privacy.title" | "settings.privacy.desc" | "settings.block.title"
     | "settings.invisible.title" | "settings.invisible.desc" | "settings.public.title" | "settings.public.desc"
+    | "settings.location.title" | "settings.location.desc"
     | "settings.block.list.title" | "settings.block.empty" | "button.unblock" | "button.block"
     | "home.welcome"
     | "groups.title" | "groups.desc" | "groups.create" | "groups.empty.title" | "groups.empty.desc" | "groups.view"
@@ -155,6 +156,8 @@ export const dictionaries = {
         "settings.invisible.desc": "Hide your online status from other members.",
         "settings.public.title": "Public Profile",
         "settings.public.desc": "Allow anyone to view your posts and photos.",
+        "settings.location.title": "Location & Privacy",
+        "settings.location.desc": "Enable the ability to share your location on-demand. Location is never tracked in the background.",
         "settings.block.list.title": "Blocked Members",
         "settings.block.empty": "You haven't blocked anyone.",
         "button.unblock": "Unblock",
@@ -375,6 +378,8 @@ export const dictionaries = {
         "settings.invisible.desc": "向其他成员隐藏您的在线状态。",
         "settings.public.title": "公开资料",
         "settings.public.desc": "允许任何人查看您的帖子和照片。",
+        "settings.location.title": "位置与隐私",
+        "settings.location.desc": "启用按需分享位置的功能。位置信息绝不会在后台被追踪。",
         "settings.block.list.title": "已屏蔽成员",
         "settings.block.empty": "您尚未屏蔽任何人。",
         "button.unblock": "解除屏蔽",
@@ -596,6 +601,8 @@ export const dictionaries = {
         "settings.invisible.desc": "अन्य सदस्यों से अपनी ऑनलाइन स्थिति छुपाएं।",
         "settings.public.title": "सार्वजनिक प्रोफ़ाइल",
         "settings.public.desc": "किसी को भी आपकी पोस्ट और तस्वीरें देखने की अनुमति दें।",
+        "settings.location.title": "स्थान और गोपनीयता",
+        "settings.location.desc": "अपनी लोकेशन ऑन-डिमांड साझा करने की क्षमता सक्षम करें। पृष्ठभूमि में स्थान कभी ट्रैक नहीं किया जाता है।",
         "settings.block.list.title": "ब्लॉक किए गए सदस्य",
         "settings.block.empty": "आपने किसी को ब्लॉक नहीं किया है।",
         "button.unblock": "अनब्लॉक करें",
@@ -793,6 +800,8 @@ export const dictionaries = {
         "settings.invisible.desc": "Ocultar tu estado en línea a otros miembros.",
         "settings.public.title": "Perfil Público",
         "settings.public.desc": "Permitir que cualquiera vea tus publicaciones y fotos.",
+        "settings.location.title": "Ubicación y Privacidad",
+        "settings.location.desc": "Habilita la capacidad de compartir tu ubicación a pedido. La ubicación nunca se rastrea en segundo plano.",
         "settings.block.list.title": "Miembros Bloqueados",
         "settings.block.empty": "No has bloqueado a nadie.",
         "button.unblock": "Desbloquear",
