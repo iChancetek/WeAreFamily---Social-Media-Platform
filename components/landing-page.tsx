@@ -75,7 +75,6 @@ export function LandingPage() {
                             Famio
                         </h1>
                         <p className="text-2xl md:text-3xl font-semibold text-blue-100 mb-6 drop-shadow-md">
-                            Connect with Family, Friends, Companions, Colleagues, and Business Partners.<br />
                             We Are One — Grow Your Relationships Through Real Connection and Companionship.
                         </p>
 
