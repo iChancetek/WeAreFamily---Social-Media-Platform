@@ -1,6 +1,6 @@
 "use server";
 
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, adminMessaging } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -122,24 +122,58 @@ export async function sendPushNotification(
             return { success: false, reason: "Push disabled" };
         }
 
-        // TODO: Implement actual FCM sending using Firebase Admin SDK
-        // const messaging = admin.messaging();
-        // await messaging.sendMulticast({
-        //     tokens: fcmTokens,
-        //     notification: {
-        //         title: notification.title,
-        //         body: notification.body,
-        //     },
-        //     data: {
-        //         url: notification.url || "/",
-        //         tag: notification.tag || "default",
-        //     },
-        //     webpush: {
-        //         notification: {
-        //             icon: notification.icon || "/icons/icon-192x192.png",
-        //         }
-        //     }
-        // });
+        // Send multicast message to all user devices
+        // We use sendEachForMulticast as it's the recommended modern API
+        const response = await adminMessaging.sendEachForMulticast({
+            tokens: fcmTokens,
+            notification: {
+                title: notification.title,
+                body: notification.body,
+                // imageUrl is supported in some SDKs, but often passed in data or webpush config
+            },
+            data: {
+                url: notification.url || "/",
+                tag: notification.tag || "default",
+                // Pass extra data if needed, like postId if it was passed in notification object
+                // For now, we rely on the caller to put deep link in 'url'
+                click_action: notification.url || "/", // For legacy support
+            },
+            webpush: {
+                notification: {
+                    icon: notification.icon || "/icons/icon-192x192.png",
+                    badge: "/icons/notification-badge.png",
+                    // Action buttons can be added here
+                },
+                fcmOptions: {
+                    link: notification.url || "/"
+                }
+            }
+        });
+
+        if (response.failureCount > 0) {
+            console.log(`Failed to send to ${response.failureCount} tokens`);
+            const tokensToRemove: string[] = [];
+            response.responses.forEach((resp, idx) => {
+                if (!resp.success) {
+                    // Check error code to see if token is invalid
+                    const error = resp.error;
+                    if (error?.code === 'messaging/invalid-registration-token' ||
+                        error?.code === 'messaging/registration-token-not-registered') {
+                        tokensToRemove.push(fcmTokens[idx]);
+                    }
+                }
+            });
+
+            // Cleanup invalid tokens
+            if (tokensToRemove.length > 0) {
+                await adminDb.collection("users").doc(userId).update({
+                    fcmTokens: FieldValue.arrayRemove(...tokensToRemove)
+                });
+            }
+        }
+
+        console.log("Sent notification to:", userId, "Success count:", response.successCount);
+        return { success: true, tokenCount: fcmTokens.length, successCount: response.successCount };
 
         console.log("Would send notification to:", userId, notification);
         return { success: true, tokenCount: fcmTokens.length };

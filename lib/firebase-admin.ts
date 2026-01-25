@@ -5,6 +5,7 @@ import { initializeApp, getApps, getApp, cert, applicationDefault } from 'fireba
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { getStorage } from 'firebase-admin/storage';
+import { getMessaging } from 'firebase-admin/messaging';
 
 // Initialize Firebase Admin
 let credential;
@@ -64,3 +65,4 @@ try {
 export const adminAuth = getAuth(app);
 export const adminDb = getFirestore(app);
 export const adminStorage = getStorage(app);
+export const adminMessaging = getMessaging(app);

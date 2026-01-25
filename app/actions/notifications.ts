@@ -6,6 +6,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
 import { resolveDisplayName } from "@/lib/user-utils";
 import { sanitizeData } from "@/lib/serialization";
+import { sendPushNotification } from "./push-notifications";
 
 
 export type NotificationType = 'like' | 'comment' | 'group_invite' | 'follow' | 'mention' | 'admin_action' | 'family_request' | 'message';
@@ -50,6 +51,59 @@ export async function createNotification(
         createdAt: FieldValue.serverTimestamp(),
         meta: meta || {}
     });
+
+    // Send Push Notification
+    try {
+        let url = '/';
+        let body = 'You have a new notification';
+        const title = 'Famio';
+
+        // Construct URL and Body based on type
+        switch (type) {
+            case 'like':
+                url = `/post/${referenceId}`;
+                body = `${sender.displayName} liked your post`;
+                break;
+            case 'comment':
+                url = `/post/${referenceId}`;
+                body = `${sender.displayName} commented on your post`;
+                break;
+            case 'follow':
+                url = `/u/${sender.id}`;
+                body = `${sender.displayName} started following you`;
+                break;
+            case 'group_invite':
+                url = `/groups/${referenceId}`; // Assuming referenceId is groupId
+                body = `${sender.displayName} invited you to a group`;
+                break;
+            case 'mention':
+                // Check if mention is in post or comment? Usually points to post.
+                url = `/post/${referenceId}`;
+                body = `${sender.displayName} mentioned you`;
+                break;
+            case 'family_request':
+                url = `/members`;
+                body = `${sender.displayName} sent you a family request`;
+                break;
+            case 'message':
+                url = `/messages`;
+                body = `${sender.displayName} sent you a message`;
+                break;
+            default:
+                url = '/notifications';
+                body = `New notification from ${sender.displayName}`;
+        }
+
+        await sendPushNotification(recipientId, {
+            title,
+            body,
+            url,
+            icon: sender.imageUrl,
+            tag: type // Group notifications by type
+        });
+    } catch (pushError) {
+        console.error("Failed to trigger push notification (non-blocking):", pushError);
+    }
 
     // We don't revalidate immediately usually for notifications as they are polled or fetched on page load.
     // But specific paths might care.
