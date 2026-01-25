@@ -22,13 +22,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Famio - Connect with Your Family and Friends",
-  description: "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
+  title: "Famio - We Are One",
+  description: "A private, AI-powered social platform. We Are One.",
 
   // Open Graph for Social Sharing
   openGraph: {
-    title: "Famio - Connect with Your Family and Friends",
-    description: "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
+    title: "Famio - We Are One",
+    description: "A private, AI-powered social platform. We Are One.",
     url: "https://famio.us",
     siteName: "Famio",
     locale: "en_US",
@@ -46,8 +46,8 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: "Famio - Connect with Your Family and Friends",
-    description: "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
+    title: "Famio - We Are One",
+    description: "A private, AI-powered social platform. We Are One.",
     images: ["https://famio.us/icons/icon-512x512.png"],
     site: "@Famio",
   },

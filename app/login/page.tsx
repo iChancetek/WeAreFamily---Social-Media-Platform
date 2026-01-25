@@ -275,6 +275,9 @@ export default function LoginPage() {
             </Card>
 
             <div className="absolute bottom-4 left-0 right-0 text-center space-y-2 z-[50]">
+                <Link href="/landing" className="block text-sm text-blue-600 hover:underline font-medium mb-2">
+                    Return to Landing Page
+                </Link>
                 <Link href="/privacy" className="text-xs text-muted-foreground hover:text-blue-600 font-medium transition-colors">
                     Privacy Policy
                 </Link>

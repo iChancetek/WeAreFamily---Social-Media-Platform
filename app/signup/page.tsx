@@ -235,7 +235,11 @@ export default function SignupPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            <div className="absolute bottom-4 left-0 right-0 text-center space-y-2 z-[50]">
+                <Link href="/landing" className="block text-sm text-blue-600 hover:underline font-medium">
+                    Return to Landing Page
+                </Link>
+            </div>
         </div>
     )
-}
-

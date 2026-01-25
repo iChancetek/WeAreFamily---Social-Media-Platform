@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Heart, Shield, Users, Globe, MessageCircle, Calendar, Image as ImageIcon, Sparkles, Mail, Lock, Eye, Zap, Award, CheckCircle2 } from "lucide-react"
+import { Heart, Shield, Users, Globe, MessageCircle, Calendar, Image as ImageIcon, Sparkles, Mail, Lock, Eye, Zap, Award, CheckCircle2, Monitor } from "lucide-react"
 
 export default function LearnMorePage() {
     return (
@@ -45,6 +45,126 @@ export default function LearnMorePage() {
                     <p className="text-xl text-gray-600 mb-8 leading-relaxed">
                         Famio is a private, secure social platform built exclusively for families. Share moments, plan events, and stay connected with the people who matter most.
                     </p>
+                </div>
+            </section>
+
+            {/* PWA Announcement Section */}
+            <section className="py-20 bg-indigo-600 text-white overflow-hidden relative">
+                <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] opacity-10"></div>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="text-center mb-16">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full mb-6">
+                            <span className="animate-pulse w-2 h-2 bg-green-400 rounded-full"></span>
+                            <span className="text-sm font-semibold text-white">New Update</span>
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
+                            🚀 Famio is Now a Progressive Web App (PWA)!
+                        </h2>
+                        <p className="text-xl text-indigo-100 max-w-3xl mx-auto leading-relaxed">
+                            We’re excited to share that Famio has officially been converted into a PWA 🎉
+                            <br />
+                            Enjoy a faster, smoother, and app-like experience on your mobile device or desktop—without downloading anything from an app store.
+                        </p>
+                    </div>
+
+                    {/* What does this mean? */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+                        <BenefitCard
+                            icon={<Zap className="w-6 h-6 text-yellow-400" />}
+                            title="Faster Performance"
+                            desc="Instant load times & smoother interactions"
+                        />
+                        <BenefitCard
+                            icon={<Globe className="w-6 h-6 text-blue-400" />}
+                            title="App-Like Experience"
+                            desc="Full-screen experience directly from browser"
+                        />
+                        <BenefitCard
+                            icon={<Monitor className="w-6 h-6 text-purple-400" />}
+                            title="Cross-Platform"
+                            desc="Works seamlessly on iPhone, Android & Desktop"
+                        />
+                        <BenefitCard
+                            icon={<CheckCircle2 className="w-6 h-6 text-green-400" />}
+                            title="Always Updated"
+                            desc="No manual updates needed—always fresh"
+                        />
+                    </div>
+
+                    {/* How to Install */}
+                    <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 md:p-12 border border-white/10">
+                        <h3 className="text-3xl font-bold text-center mb-12">📱 How to Add Famio to Your Device</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+                            {/* iPhone */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold text-xl">
+                                        🍎
+                                    </div>
+                                    <h4 className="text-xl font-bold">iPhone (Safari)</h4>
+                                </div>
+                                <ol className="space-y-3 text-indigo-100 list-decimal pl-5">
+                                    <li>Open Safari and go to <span className="text-white font-mono bg-white/20 px-1 rounded">https://famio.us</span></li>
+                                    <li>Tap the <strong className="text-white">Share icon</strong> (square with an arrow ↑)</li>
+                                    <li>Scroll down and tap <strong className="text-white">“Add to Home Screen”</strong></li>
+                                    <li>Name it <strong>Famio</strong> and tap Add</li>
+                                </ol>
+                                <p className="text-sm text-green-300 flex items-center gap-2 mt-4">
+                                    <CheckCircle2 className="w-4 h-4" /> Appears on home screen
+                                </p>
+                            </div>
+
+                            {/* Android */}
+                            <div className="space-y-4 relative">
+                                <div className="hidden md:block absolute left-0 top-10 bottom-10 w-px bg-white/10 -ml-6"></div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold text-xl">
+                                        🤖
+                                    </div>
+                                    <h4 className="text-xl font-bold">Android (Chrome)</h4>
+                                </div>
+                                <ol className="space-y-3 text-indigo-100 list-decimal pl-5">
+                                    <li>Open Chrome and visit <span className="text-white font-mono bg-white/20 px-1 rounded">https://famio.us</span></li>
+                                    <li>Tap the <strong className="text-white">three-dot menu (⋮)</strong> in top-right</li>
+                                    <li>Tap <strong className="text-white">“Add to Home screen”</strong> or “Install app”</li>
+                                    <li>Confirm by tapping Install</li>
+                                </ol>
+                                <p className="text-sm text-green-300 flex items-center gap-2 mt-4">
+                                    <CheckCircle2 className="w-4 h-4" /> Installed as mobile app
+                                </p>
+                            </div>
+
+                            {/* Desktop */}
+                            <div className="space-y-4 relative">
+                                <div className="hidden md:block absolute left-0 top-10 bottom-10 w-px bg-white/10 -ml-6"></div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold text-xl">
+                                        💻
+                                    </div>
+                                    <h4 className="text-xl font-bold">Desktop</h4>
+                                </div>
+                                <div className="space-y-4">
+                                    <div>
+                                        <p className="font-semibold text-white mb-1">Chrome / Edge:</p>
+                                        <ul className="text-indigo-100 list-disc pl-5 space-y-1">
+                                            <li>Click the <strong className="text-white">Install (➕)</strong> icon in address bar</li>
+                                            <li>OR: Menu (⋮) → Install Famio</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-white mb-1">Safari (Mac):</p>
+                                        <ul className="text-indigo-100 list-disc pl-5 space-y-1">
+                                            <li>Drag site to Dock</li>
+                                            <li>OR: File → Add to Dock</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-green-300 flex items-center gap-2 mt-4">
+                                    <CheckCircle2 className="w-4 h-4" /> Launches in own window
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -257,6 +377,18 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode; titl
             <div className="mb-4">{icon}</div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
             <p className="text-gray-600">{description}</p>
+        </div>
+    )
+}
+
+function BenefitCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+    return (
+        <div className="bg-white/10 backdrop-blur-sm border border-white/10 p-6 rounded-xl text-center hover:bg-white/20 transition-colors">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 mb-4">
+                {icon}
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
+            <p className="text-sm text-indigo-100">{desc}</p>
         </div>
     )
 }

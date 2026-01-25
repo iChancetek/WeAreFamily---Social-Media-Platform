@@ -34,10 +34,10 @@ export default async function BrandingDetail({ params }: { params: Promise<{ bra
     return (
         <MainLayout>
             {/* Back Button */}
-            <Link href="/">
+            <Link href="/branding">
                 <Button variant="ghost" size="sm" className="mb-4">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Home
+                    Back to Branding
                 </Button>
             </Link>
 

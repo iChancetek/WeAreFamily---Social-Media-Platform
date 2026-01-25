@@ -1,7 +1,7 @@
 {
-    "name": "Famio - Family Social Network",
+    "name": "Famio - We Are One",
     "short_name": "Famio",
-    "description": "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
+    "description": "A private, AI-powered social platform. We Are One.",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
@@ -90,10 +90,10 @@
             ]
         },
         {
-            "name": "Family Feed",
+            "name": "Companions Feed",
             "short_name": "Feed",
-            "description": "View family updates",
-            "url": "/family",
+            "description": "View companion updates",
+            "url": "/companions",
             "icons": [
                 {
                     "src": "/icons/shortcut-feed.png",
