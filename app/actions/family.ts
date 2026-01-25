@@ -110,7 +110,7 @@ export async function acceptFamilyRequest(requestId: string) {
         targetId: requestId
     });
 
-    revalidatePath('/family');
+    revalidatePath('/companions');
     revalidatePath('/'); // Refresh home feed to show new posts
 }
 
@@ -145,7 +145,7 @@ export async function rejectFamilyRequest(requestId: string) {
         targetId: requestId
     });
 
-    revalidatePath('/family');
+    revalidatePath('/companions');
     revalidatePath('/');
 }
 
@@ -180,7 +180,7 @@ export async function cancelFamilyRequest(requestId: string) {
         targetId: requestId
     });
 
-    revalidatePath('/family');
+    revalidatePath('/companions');
     revalidatePath('/');
 }
 

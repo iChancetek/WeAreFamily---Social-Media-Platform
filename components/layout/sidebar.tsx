@@ -45,7 +45,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
         {
             title: t("nav.section.discover"),
             items: [
-                { href: "/family", label: t("nav.family"), icon: Users },
+                { href: "/companions", label: t("nav.family"), icon: Users },
                 { href: "/groups", label: t("nav.groups"), icon: Tent },
                 { href: "/live", label: t("nav.live"), icon: Video },
                 { href: "/events", label: t("nav.events"), icon: Ticket },

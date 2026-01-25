@@ -23,7 +23,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setStatus(initialStatus)
-         
+
         setRequestId(initialRequestId)
     }, [initialStatus, initialRequestId])
 
@@ -71,7 +71,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
         return (
             <Button variant="outline" className={cn("gap-2 text-green-600 border-green-200 cursor-default hover:text-green-600 hover:bg-green-50", className)}>
                 <UserCheck className="w-4 h-4" />
-                Family
+                Companion
             </Button>
         )
     }
@@ -139,7 +139,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
             disabled={isPending}
         >
             {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-            Add Family
+            Add Companion
         </Button>
     )
 }

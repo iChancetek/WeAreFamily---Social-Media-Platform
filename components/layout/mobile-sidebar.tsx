@@ -61,7 +61,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
             items: [
                 { href: "/", label: t("nav.home"), icon: Home },
                 { href: "/profile", label: profile?.displayName || t("nav.profile"), icon: User },
-                { href: "/family", label: t("nav.family"), icon: Users },
+                { href: "/companions", label: t("nav.family"), icon: Users },
                 { href: "/groups", label: t("nav.groups"), icon: Tent },
                 { href: "/chat", label: t("nav.ai"), icon: Bot },
             ]

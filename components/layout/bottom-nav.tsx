@@ -36,14 +36,14 @@ export function BottomNav() {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsVisible((prev) => (prev ? false : prev));
         } else if (scrollDirection === 'up') {
-             
+
             setIsVisible((prev) => (!prev ? true : prev));
         }
     }, [scrollDirection]);
 
     const links = [
         { href: "/", label: t('nav.home'), icon: Home },
-        { href: "/family", label: t('nav.family'), icon: Users },
+        { href: "/companions", label: t('nav.family'), icon: Users },
         { href: "/notifications", label: t("nav.notifications"), icon: Bell },
         { href: "/profile", label: t("nav.profile"), icon: User },
     ];

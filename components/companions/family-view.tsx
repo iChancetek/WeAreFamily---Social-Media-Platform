@@ -1,11 +1,11 @@
 'use client';
 
 import { MainLayout } from "@/components/layout/main-layout";
-import { SearchUsers } from "@/components/family/search-users";
+import { SearchUsers } from "@/components/companions/search-users";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { FamilyRequestButton } from "@/components/family/family-request-button";
+import { FamilyRequestButton } from "@/components/companions/family-request-button";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/components/language-context";
 
