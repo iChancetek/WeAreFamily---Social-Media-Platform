@@ -425,45 +425,47 @@ export default function LearnMorePage() {
                     </div>
                 </div>
 
-                {/* CTA Section */}
-                <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                            Ready to Bring Your Family Together?
-                        </h2>
-                        <p className="text-xl mb-8 text-blue-100">
-                            Join thousands of families already connected on Famio.
-                        </p>
-                        <Link href="/signup">
-                            <Button size="lg" className="h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-xl">
-                                Get Started Free
-                            </Button>
-                        </Link>
-                    </div>
-                </section>
+            </section>
 
-                {/* Footer */}
-                <footer className="bg-white border-t border-gray-200 py-12">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex flex-col items-center justify-center space-y-4">
-                            <div className="flex items-center gap-2">
-                                <img src="/icons/icon-72x72.png" alt="Famio" className="w-6 h-6 rounded-lg" />
-                                <div>
-                                    <span className="font-bold text-gray-900 text-lg">Famio</span>
-                                    <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>
-                                </div>
-                            </div>
-                            <div className="text-center space-y-2">
-                                <p className="text-gray-600 text-sm">
-                                    © 2026 Famio by ChanceTEK. All Rights Reserved.
-                                </p>
-                                <p className="text-gray-500 text-xs">
-                                    Developed by Chancellor Minus | ChanceTEK LLC | iChanceTEK
-                                </p>
+            {/* CTA Section */}
+            <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                        Ready to Bring Your Family Together?
+                    </h2>
+                    <p className="text-xl mb-8 text-blue-100">
+                        Join thousands of families already connected on Famio.
+                    </p>
+                    <Link href="/signup">
+                        <Button size="lg" className="h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-xl">
+                            Get Started Free
+                        </Button>
+                    </Link>
+                </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="bg-white border-t border-gray-200 py-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col items-center justify-center space-y-4">
+                        <div className="flex items-center gap-2">
+                            <img src="/icons/icon-72x72.png" alt="Famio" className="w-6 h-6 rounded-lg" />
+                            <div>
+                                <span className="font-bold text-gray-900 text-lg">Famio</span>
+                                <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>
                             </div>
                         </div>
+                        <div className="text-center space-y-2">
+                            <p className="text-gray-600 text-sm">
+                                © 2026 Famio by ChanceTEK. All Rights Reserved.
+                            </p>
+                            <p className="text-gray-500 text-xs">
+                                Developed by Chancellor Minus | ChanceTEK LLC | iChanceTEK
+                            </p>
+                        </div>
                     </div>
-                </footer>
+                </div>
+            </footer>
         </div>
     )
 }
