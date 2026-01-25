@@ -1,13 +1,25 @@
-# WeAreFamily - Social Media Platform
+# Famio - Family Social Network
 
-## Latest Build Trigger
-- **Timestamp**: 2026-01-06 T02:27 EST (PROFILE POSTING FIX)
-- **Goal**: Fix profile timeline posting by adding profile path revalidation after post creation.
-- **Verification**: Users should be able to create posts from their profile page and see them appear.
+Version: 2.0.0 - Progressive Web App Edition
 
+## Features
+- Progressive Web App (PWA) with offline support
+- Push Notifications via Firebase Cloud Messaging
+- Share Target - receive content from other apps
+- Background Sync for offline actions
+- App Shortcuts for quick access
+- Real-time messaging and AI chat
+- Family connections and events
+- Live streaming and gallery
 
-## Overview
-A comprehensive social media platform for families, featuring groups, branding pages, stories, events, and AI-powered assistance.
+## Tech Stack
+- Next.js 14 (App Router)
+- Firebase (Auth, Firestore, Storage, Messaging)
+- TypeScript
+- Tailwind CSS
+- Workbox (PWA)
 
-## Build Status
-[![CI/CD Pipeline](https://github.com/iChancetek/WeAreFamily---Social-Media-Platform/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/iChancetek/WeAreFamily---Social-Media-Platform/actions/workflows/ci-cd.yml)
+## Deployment
+Hosted on Firebase App Hosting
+
+Last updated: January 24, 2026
