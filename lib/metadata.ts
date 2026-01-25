@@ -104,7 +104,18 @@ export async function generateContentMetadata(
                     type: 'image/jpeg'
                 }
             ],
-            videos: videoUrlForOg ? [{ url: videoUrlForOg }] : undefined,
+            // Enhanced video metadata for player embeds
+            ...(videoUrlForOg && {
+                videos: [
+                    {
+                        url: videoUrlForOg,
+                        secureUrl: videoUrlForOg.startsWith('https') ? videoUrlForOg : undefined,
+                        type: 'video/mp4',
+                        width: 1280,
+                        height: 720,
+                    }
+                ]
+            }),
             // Additional metadata for better SEO
             ...(post.author?.displayName && {
                 article: {
@@ -114,12 +125,21 @@ export async function generateContentMetadata(
             })
         },
         twitter: {
-            card: 'summary_large_image',
+            card: videoUrlForOg ? 'player' : 'summary_large_image',
             title,
             description,
             images: [imageUrl],
             site: '@Famio',
-            creator: post.author?.displayName ? `@${post.author.displayName.replace(/\s+/g, '')}` : '@Famio'
+            creator: post.author?.displayName ? `@${post.author.displayName.replace(/\s+/g, '')}` : '@Famio',
+            // Twitter player for videos
+            ...(videoUrlForOg && {
+                players: [{
+                    playerUrl: embedUrl || canonicalUrl,
+                    streamUrl: videoUrlForOg,
+                    width: 1280,
+                    height: 720,
+                }]
+            })
         },
         // Additional tags for rich previews
         metadataBase: new URL(canonicalUrl.split('/post/')[0]),
@@ -133,7 +153,8 @@ export async function generateContentMetadata(
                 index: true,
                 follow: true,
                 'max-image-preview': 'large',
-                'max-snippet': -1
+                'max-snippet': -1,
+                'max-video-preview': -1
             }
         }
     };
