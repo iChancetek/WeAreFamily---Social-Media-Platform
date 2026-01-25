@@ -85,7 +85,7 @@ interface SettingsContentProps {
         birthday?: string | null;
         isInvisible?: boolean;
         isPublicProfile?: boolean;
-        isPublicProfile?: boolean;
+
         allowLocationSharing?: boolean;
         email?: string | null;
     },
