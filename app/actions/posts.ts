@@ -46,7 +46,8 @@ export async function createPost(
     mediaUrls: string[] = [],
     engagementSettings?: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' | 'companions' | 'specific' },
     thumbnailUrl?: string | null,
-    allowedViewerIds?: string[]
+    allowedViewerIds?: string[],
+    location?: { lat: number, lng: number, name?: string } | null
 ) {
     const user = await requireVerifiedAction();
 
