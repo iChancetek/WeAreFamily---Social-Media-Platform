@@ -1,38 +1,43 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Download, Share } from "lucide-react";
+import { Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface BeforeInstallPromptEvent extends Event {
-    prompt: () => Promise<void>;
-    userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function InstallPrompt() {
-    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showPrompt, setShowPrompt] = useState(false);
-    // Initialize with correct values to avoid setState in useEffect
-    const [isIOS] = useState(() => typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent));
-    const [isStandalone] = useState(() => typeof window !== 'undefined' && window.matchMedia("(display-mode: standalone)").matches);
 
     useEffect(() => {
-        // Listen for install prompt (Android/Desktop)
-        const handleBeforeInstallPrompt = (e: Event) => {
-            e.preventDefault();
-            setDeferredPrompt(e as BeforeInstallPromptEvent);
+        // Don't show if already running as installed PWA
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            return;
+        }
 
-            // Show prompt after 30 seconds if user hasn't dismissed before
-            const dismissed = localStorage.getItem("pwa-install-dismissed");
-            if (!dismissed) {
-                setTimeout(() => setShowPrompt(true), 30000);
+        // Check if user has permanently dismissed
+        const dismissedUntil = localStorage.getItem("pwa-install-dismissed-until");
+        if (dismissedUntil) {
+            const dismissedDate = new Date(dismissedUntil);
+            if (dismissedDate > new Date()) {
+                return; // Still within dismiss period
             }
+        }
+
+        const handler = (e: any) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+
+            // Show prompt after 10 seconds
+            setTimeout(() => {
+                setShowPrompt(true);
+            }, 10000);
         };
 
-        window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+        window.addEventListener("beforeinstallprompt", handler);
 
         return () => {
-            window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+            window.removeEventListener("beforeinstallprompt", handler);
         };
     }, []);
 
@@ -43,71 +48,85 @@ export function InstallPrompt() {
         const { outcome } = await deferredPrompt.userChoice;
 
         if (outcome === "accepted") {
-            setDeferredPrompt(null);
-            setShowPrompt(false);
+            console.log("PWA install accepted");
+        }
+
+        setDeferredPrompt(null);
+        setShowPrompt(false);
+    };
+
+    const handleDismiss = (permanent = false) => {
+        setShowPrompt(false);
+
+        if (permanent) {
+            // Dismiss for 30 days
+            const dismissUntil = new Date();
+            dismissUntil.setDate(dismissUntil.getDate() + 30);
+            localStorage.setItem("pwa-install-dismissed-until", dismissUntil.toISOString());
         }
     };
 
-    const handleDismiss = () => {
-        setShowPrompt(false);
-        localStorage.setItem("pwa-install-dismissed", "true");
-    };
+    if (!showPrompt || !deferredPrompt) return null;
 
-    // Don't show if already installed or user dismissed
-    if (isStandalone || (!showPrompt && !isIOS)) return null;
-
-    // iOS-specific install instructions
-    if (isIOS && showPrompt) {
-        return (
-            <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background border-t shadow-lg">
-                <div className="max-w-2xl mx-auto">
-                    <div className="flex items-start gap-4">
-                        <Share className="w-6 h-6 text-blue-500 flex-shrink-0 mt-1" />
-                        <div className="flex-1">
-                            <h3 className="font-semibold mb-2">Install Famio on iOS</h3>
-                            <ol className="text-sm text-muted-foreground space-y-1">
-                                <li>1. Tap the <Share className="inline w-4 h-4" /> Share button in Safari</li>
-                                <li>2. Scroll down and tap "Add to Home Screen"</li>
-                                <li>3. Tap "Add" in the top-right corner</li>
-                            </ol>
+    return (
+        <div className="fixed top-4 right-4 z-50 max-w-sm animate-in slide-in-from-top">
+            <Card className="shadow-xl border-2">
+                <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
+                                <Download className="w-5 h-5 text-blue-600 dark:text-blue-300" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-lg">Install Famio</CardTitle>
+                                <CardDescription className="text-sm mt-1">
+                                    Get the app experience
+                                </CardDescription>
+                            </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={handleDismiss}>
-                            <X className="w-4 h-4" />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDismiss(false)}
+                            className="h-8 w-8"
+                        >
+                            <X className="h-4 w-4" />
                         </Button>
                     </div>
-                </div>
-            </div>
-        );
-    }
-
-    // Android/Desktop install prompt
-    if (deferredPrompt && showPrompt) {
-        return (
-            <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 
-                      bg-card border rounded-lg shadow-xl p-4">
-                <div className="flex items-start gap-4">
-                    <Download className="w-6 h-6 text-blue-500 flex-shrink-0" />
-                    <div className="flex-1">
-                        <h3 className="font-semibold mb-1">Install Famio</h3>
-                        <p className="text-sm text-muted-foreground mb-3">
-                            Get quick access and a better experience with our app
-                        </p>
-                        <div className="flex gap-2">
-                            <Button onClick={handleInstall} size="sm">
-                                Install
-                            </Button>
-                            <Button onClick={handleDismiss} variant="ghost" size="sm">
-                                Not Now
-                            </Button>
-                        </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li className="flex items-start gap-2">
+                            <span className="text-green-600 mt-0.5">✓</span>
+                            <span>Faster access from your desktop</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-green-600 mt-0.5">✓</span>
+                            <span>Works offline</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-green-600 mt-0.5">✓</span>
+                            <span>Native app experience</span>
+                        </li>
+                    </ul>
+                    <div className="flex flex-col gap-2 pt-2">
+                        <Button
+                            onClick={handleInstall}
+                            className="w-full"
+                        >
+                            Install Now
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDismiss(true)}
+                            className="text-xs"
+                        >
+                            Don't show again for 30 days
+                        </Button>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={handleDismiss}>
-                        <X className="w-4 h-4" />
-                    </Button>
-                </div>
-            </div>
-        );
-    }
-
-    return null;
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
