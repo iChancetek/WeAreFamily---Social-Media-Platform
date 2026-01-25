@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { getFamilyStatus, sendFamilyRequest } from "@/app/actions/family";
+import { getCompanionStatus, sendCompanionRequest } from "@/app/actions/companions";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -33,12 +33,11 @@ export function ContactItem({ user }: ContactItemProps) {
         setLoading(true);
 
         try {
-            const status = await getFamilyStatus(user.id);
-
+            const status = await getCompanionStatus(user.id);
             if (status.status === 'accepted') {
                 router.push(`/u/${user.id}`);
             } else if (status.status === 'pending') {
-                toast.info("Family request pending", {
+                toast.info("Companion request pending", {
                     description: "You have already sent or received a request from this person."
                 });
             } else {
@@ -55,9 +54,9 @@ export function ContactItem({ user }: ContactItemProps) {
     async function handleSendRequest() {
         try {
             setLoading(true);
-            await sendFamilyRequest(user.id);
+            await sendCompanionRequest(user.id);
             toast.success("Request sent!", {
-                description: `Family request sent to ${name}`
+                description: `Companion request sent to ${name}`
             });
             setShowRequestDialog(false);
         } catch (error) {
@@ -95,7 +94,7 @@ export function ContactItem({ user }: ContactItemProps) {
             <Dialog open={showRequestDialog} onOpenChange={setShowRequestDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Send Family Request?</DialogTitle>
+                        <DialogTitle>Send Companion Request?</DialogTitle>
                         <DialogDescription>
                             Connect with {name} to share posts, photos, and see their updates on your timeline.
                         </DialogDescription>

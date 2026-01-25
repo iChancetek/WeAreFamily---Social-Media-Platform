@@ -6,12 +6,12 @@ import { revalidatePath } from "next/cache";
 import { sanitizeData } from "@/lib/serialization";
 import { QueryDocumentSnapshot } from "firebase-admin/firestore";
 
-export type FamilyStatus = {
+export type CompanionStatus = {
     status: 'none' | 'pending' | 'accepted' | 'rejected' | 'pending_sent' | 'pending_received';
     requestId?: string;
 };
 
-export async function sendFamilyRequest(receiverId: string) {
+export async function sendCompanionRequest(receiverId: string) {
     const user = await getUserProfile()
     if (!user) throw new Error("Unauthorized")
     if (user.id === receiverId) throw new Error("Cannot add yourself")
@@ -19,11 +19,11 @@ export async function sendFamilyRequest(receiverId: string) {
     // Check if request already exists
     // Check if request already exists (in either direction)
     const [existingSent, existingReceived] = await Promise.all([
-        adminDb.collection("familyRequests")
+        adminDb.collection("companionRequests")
             .where("senderId", "==", user.id)
             .where("receiverId", "==", receiverId)
             .get(),
-        adminDb.collection("familyRequests")
+        adminDb.collection("companionRequests")
             .where("senderId", "==", receiverId)
             .where("receiverId", "==", user.id)
             .get()
@@ -31,7 +31,7 @@ export async function sendFamilyRequest(receiverId: string) {
 
     if (!existingSent.empty || !existingReceived.empty) {
         const status = !existingSent.empty ? existingSent.docs[0].data().status : existingReceived.docs[0].data().status;
-        if (status === 'accepted') throw new Error("You are already family");
+        if (status === 'accepted') throw new Error("You are already companions");
         if (status === 'pending') throw new Error("A request is already pending between you");
         if (!existingSent.empty && status === 'rejected') {
             // Allow resending if previously rejected? Maybe. But for now let's block to avoid spam.
@@ -47,7 +47,7 @@ export async function sendFamilyRequest(receiverId: string) {
         }
     }
 
-    const docRef = await adminDb.collection("familyRequests").add({
+    const docRef = await adminDb.collection("companionRequests").add({
         senderId: user.id,
         receiverId: receiverId,
         status: 'pending',
@@ -57,7 +57,7 @@ export async function sendFamilyRequest(receiverId: string) {
     revalidatePath(`/u/${receiverId}`)
 
     const { logAuditEvent } = await import("./audit");
-    await logAuditEvent("family.request_sent", {
+    await logAuditEvent("companion.request_sent", {
         targetType: "user",
         targetId: receiverId,
         details: { requestId: docRef.id }
@@ -66,24 +66,24 @@ export async function sendFamilyRequest(receiverId: string) {
     return docRef.id;
 }
 
-export async function acceptFamilyRequest(requestId: string) {
-    const requestDoc = await adminDb.collection("familyRequests").doc(requestId).get();
+export async function acceptCompanionRequest(requestId: string) {
+    const requestDoc = await adminDb.collection("companionRequests").doc(requestId).get();
     const requestData = requestDoc.data();
 
     if (!requestData) throw new Error("Request not found");
 
     // Update request status
-    await adminDb.collection("familyRequests").doc(requestId).update({
+    await adminDb.collection("companionRequests").doc(requestId).update({
         status: 'accepted'
     });
 
-    // Create denormalized bidirectional family connections for efficient security rules
+    // Create denormalized bidirectional companion connections for efficient security rules
     const batch = adminDb.batch();
 
     // Connection from sender to receiver
     const senderConnectionRef = adminDb.collection("users")
         .doc(requestData.senderId)
-        .collection("familyConnections")
+        .collection("companionConnections")
         .doc(requestData.receiverId);
     batch.set(senderConnectionRef, {
         connectedUserId: requestData.receiverId,
@@ -94,7 +94,7 @@ export async function acceptFamilyRequest(requestId: string) {
     // Connection from receiver to sender
     const receiverConnectionRef = adminDb.collection("users")
         .doc(requestData.receiverId)
-        .collection("familyConnections")
+        .collection("companionConnections")
         .doc(requestData.senderId);
     batch.set(receiverConnectionRef, {
         connectedUserId: requestData.senderId,
@@ -105,8 +105,8 @@ export async function acceptFamilyRequest(requestId: string) {
     await batch.commit();
 
     const { logAuditEvent } = await import("./audit");
-    await logAuditEvent("family.request_accepted", {
-        targetType: "family_request",
+    await logAuditEvent("companion.request_accepted", {
+        targetType: "companion_request",
         targetId: requestId
     });
 
@@ -114,25 +114,25 @@ export async function acceptFamilyRequest(requestId: string) {
     revalidatePath('/'); // Refresh home feed to show new posts
 }
 
-export async function rejectFamilyRequest(requestId: string) {
-    const requestDoc = await adminDb.collection("familyRequests").doc(requestId).get();
+export async function rejectCompanionRequest(requestId: string) {
+    const requestDoc = await adminDb.collection("companionRequests").doc(requestId).get();
     const requestData = requestDoc.data();
 
-    await adminDb.collection("familyRequests").doc(requestId).delete();
+    await adminDb.collection("companionRequests").doc(requestId).delete();
 
-    // Clean up any family connections if they exist
+    // Clean up any companion connections if they exist
     if (requestData) {
         const batch = adminDb.batch();
 
         const senderConnectionRef = adminDb.collection("users")
             .doc(requestData.senderId)
-            .collection("familyConnections")
+            .collection("companionConnections")
             .doc(requestData.receiverId);
         batch.delete(senderConnectionRef);
 
         const receiverConnectionRef = adminDb.collection("users")
             .doc(requestData.receiverId)
-            .collection("familyConnections")
+            .collection("companionConnections")
             .doc(requestData.senderId);
         batch.delete(receiverConnectionRef);
 
@@ -140,8 +140,8 @@ export async function rejectFamilyRequest(requestId: string) {
     }
 
     const { logAuditEvent } = await import("./audit");
-    await logAuditEvent("family.request_rejected", {
-        targetType: "family_request",
+    await logAuditEvent("companion.request_rejected", {
+        targetType: "companion_request",
         targetId: requestId
     });
 
@@ -149,25 +149,25 @@ export async function rejectFamilyRequest(requestId: string) {
     revalidatePath('/');
 }
 
-export async function cancelFamilyRequest(requestId: string) {
-    const requestDoc = await adminDb.collection("familyRequests").doc(requestId).get();
+export async function cancelCompanionRequest(requestId: string) {
+    const requestDoc = await adminDb.collection("companionRequests").doc(requestId).get();
     const requestData = requestDoc.data();
 
-    await adminDb.collection("familyRequests").doc(requestId).delete();
+    await adminDb.collection("companionRequests").doc(requestId).delete();
 
-    // Clean up any family connections if they exist
+    // Clean up any companion connections if they exist
     if (requestData) {
         const batch = adminDb.batch();
 
         const senderConnectionRef = adminDb.collection("users")
             .doc(requestData.senderId)
-            .collection("familyConnections")
+            .collection("companionConnections")
             .doc(requestData.receiverId);
         batch.delete(senderConnectionRef);
 
         const receiverConnectionRef = adminDb.collection("users")
             .doc(requestData.receiverId)
-            .collection("familyConnections")
+            .collection("companionConnections")
             .doc(requestData.senderId);
         batch.delete(receiverConnectionRef);
 
@@ -175,8 +175,8 @@ export async function cancelFamilyRequest(requestId: string) {
     }
 
     const { logAuditEvent } = await import("./audit");
-    await logAuditEvent("family.request_cancelled", {
-        targetType: "family_request",
+    await logAuditEvent("companion.request_cancelled", {
+        targetType: "companion_request",
         targetId: requestId
     });
 
@@ -184,19 +184,19 @@ export async function cancelFamilyRequest(requestId: string) {
     revalidatePath('/');
 }
 
-export async function denyFamilyRequest(requestId: string) {
-    await adminDb.collection("familyRequests").doc(requestId).update({
+export async function denyCompanionRequest(requestId: string) {
+    await adminDb.collection("companionRequests").doc(requestId).update({
         status: 'rejected'
     });
 
     const { logAuditEvent } = await import("./audit");
-    await logAuditEvent("family.request_rejected", { // Reuse rejected for denied
-        targetType: "family_request",
+    await logAuditEvent("companion.request_rejected", { // Reuse rejected for denied
+        targetType: "companion_request",
         targetId: requestId,
         details: { action: 'deny' }
     });
 
-    revalidatePath('/family')
+    revalidatePath('/companions')
     revalidatePath('/')
 }
 
@@ -206,16 +206,16 @@ export async function denyFamilyRequest(requestId: string) {
 
 // ... send, accept, reject, cancel, deny ...
 
-export async function getFamilyRequests() {
+export async function getCompanionRequests() {
     const user = await getUserProfile();
     if (!user) return { incoming: [], sent: [] };
 
-    const incomingSnapshot = await adminDb.collection("familyRequests")
+    const incomingSnapshot = await adminDb.collection("companionRequests")
         .where("receiverId", "==", user.id)
         .where("status", "==", 'pending')
         .get();
 
-    const sentSnapshot = await adminDb.collection("familyRequests")
+    const sentSnapshot = await adminDb.collection("companionRequests")
         .where("senderId", "==", user.id)
         .where("status", "==", 'pending')
         .get();
@@ -235,7 +235,7 @@ export async function getFamilyRequests() {
                 id: senderDoc.id,
                 email: u?.email,
                 imageUrl: u?.imageUrl,
-                displayName: (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Unknown")
+                displayName: (rawName && rawName !== "Companion") ? rawName : (profileName || emailName || "Unknown")
             } as any;
         }
 
@@ -262,7 +262,7 @@ export async function getFamilyRequests() {
                 id: receiverDoc.id,
                 email: u?.email,
                 imageUrl: u?.imageUrl,
-                displayName: (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Unknown")
+                displayName: (rawName && rawName !== "Companion") ? rawName : (profileName || emailName || "Unknown")
             } as any;
         }
 
@@ -280,14 +280,14 @@ export async function getFamilyRequests() {
     };
 }
 
-// Alias for family page
-export const getPendingRequests = getFamilyRequests;
+// Alias for companion page
+export const getPendingRequests = getCompanionRequests;
 
 // Filter out invisible users and blocked users
 // Note: This is an unoptimized in-memory filter. For production, we'd need a dedicated search index (Algolia/Typesense)
 // or denormalized privacy flags.
 // or denormalized privacy flags.
-export async function searchFamilyMembers(searchTerm: string) {
+export async function searchCompanions(searchTerm: string) {
     const currentUser = await getUserProfile();
 
     // Filter out invisible users and blocked users
@@ -337,9 +337,9 @@ export async function searchFamilyMembers(searchTerm: string) {
         );
     });
 
-    // Enhance with family status & Return Strict POJOs
+    // Enhance with companion status & Return Strict POJOs
     const usersWithStatus = await Promise.all(filteredUsers.map(async (u: any) => {
-        const status = await getFamilyStatus(u.id);
+        const status = await getCompanionStatus(u.id);
 
         // Return ONLY what the UI needs, ensuring simple types
         return {
@@ -348,7 +348,7 @@ export async function searchFamilyMembers(searchTerm: string) {
             email: u.email || null,
             imageUrl: u.imageUrl || null,
             isInvisible: !!u.isInvisible,
-            familyStatus: {
+            companionStatus: {
                 status: status.status,
                 requestId: status.requestId || null
             }
@@ -360,14 +360,14 @@ export async function searchFamilyMembers(searchTerm: string) {
 }
 
 // Alias for backward compatibility
-export const searchUsers = searchFamilyMembers;
+export const searchUsers = searchCompanions;
 
-export async function getFamilyMembers() {
+export async function getCompanions() {
     const user = await getUserProfile();
     if (!user) return [];
 
-    // Use getFamilyMemberIds to get the IDs first (which handles blocking logic)
-    const familyIds = await getFamilyMemberIds(user.id);
+    // Use getCompanionIds to get the IDs first (which handles blocking logic)
+    const familyIds = await getCompanionIds(user.id);
 
     // Fetch family member details
     const familyMembers = await Promise.all(
@@ -378,7 +378,7 @@ export async function getFamilyMembers() {
                 const rawName = data.displayName;
                 const profileName = data.profileData?.firstName ? `${data.profileData.firstName} ${data.profileData.lastName || ''}`.trim() : null;
                 const emailName = data.email?.split('@')[0];
-                const cleanName = (rawName && rawName !== "Family Member") ? rawName : (profileName || emailName || "Unknown");
+                const cleanName = (rawName && rawName !== "Companion") ? rawName : (profileName || emailName || "Unknown");
 
                 return {
                     id: userDoc.id,
@@ -394,43 +394,43 @@ export async function getFamilyMembers() {
     return sanitizeData(familyMembers.filter(Boolean));
 }
 
-export async function getFamilyMemberIds(userId: string) {
-    const familyIds = new Set<string>();
+export async function getCompanionIds(userId: string) {
+    const companionIds = new Set<string>();
 
-    // 1. Efficient Family Connections (Subcollection)
+    // 1. Efficient Companion Connections (Subcollection)
     try {
         const connectionsSnap = await adminDb.collection("users")
             .doc(userId)
-            .collection("familyConnections")
+            .collection("companionConnections")
             .where("status", "==", "accepted")
             .get();
 
         connectionsSnap.forEach(doc => {
             if (doc.data().connectedUserId) {
-                familyIds.add(doc.data().connectedUserId);
+                companionIds.add(doc.data().connectedUserId);
             }
         });
     } catch (e) {
-        console.error("Error fetching familyConnections:", e);
+        console.error("Error fetching companionConnections:", e);
     }
 
-    // 2. Legacy/Fallback: Family Requests (Bidirectional)
+    // 2. Legacy/Fallback: Companion Requests (Bidirectional)
     try {
         const [sentSnapshot, receivedSnapshot] = await Promise.all([
-            adminDb.collection("familyRequests")
+            adminDb.collection("companionRequests")
                 .where("senderId", "==", userId)
                 .where("status", "==", 'accepted')
                 .get(),
-            adminDb.collection("familyRequests")
+            adminDb.collection("companionRequests")
                 .where("receiverId", "==", userId)
                 .where("status", "==", 'accepted')
                 .get()
         ]);
 
-        sentSnapshot.forEach((doc: QueryDocumentSnapshot) => familyIds.add(doc.data().receiverId));
-        receivedSnapshot.forEach((doc: QueryDocumentSnapshot) => familyIds.add(doc.data().senderId));
+        sentSnapshot.forEach((doc: QueryDocumentSnapshot) => companionIds.add(doc.data().receiverId));
+        receivedSnapshot.forEach((doc: QueryDocumentSnapshot) => companionIds.add(doc.data().senderId));
     } catch (e) {
-        console.error("Error fetching familyRequests:", e);
+        console.error("Error fetching companionRequests:", e);
     }
 
     // 3. Filter out blocked users (Optimized)
@@ -444,26 +444,26 @@ export async function getFamilyMemberIds(userId: string) {
         blockedBySnapshot.forEach((doc: QueryDocumentSnapshot) => blockedIds.add(doc.data().blockedId));
         blockingSnapshot.forEach((doc: QueryDocumentSnapshot) => blockedIds.add(doc.data().blockerId));
 
-        blockedIds.forEach(blockedId => familyIds.delete(blockedId));
+        blockedIds.forEach(blockedId => companionIds.delete(blockedId));
     } catch (e) {
         console.error("Error fetching blockedUsers:", e);
     }
 
-    return Array.from(familyIds);
+    return Array.from(companionIds);
 }
 
 // ... family members ...
 
-export async function getFamilyStatus(targetUserId: string): Promise<FamilyStatus> {
+export async function getCompanionStatus(targetUserId: string): Promise<CompanionStatus> {
     const user = await getUserProfile();
-    if (!user) return { status: 'none' } as FamilyStatus;
+    if (!user) return { status: 'none' } as CompanionStatus;
 
     const [sentSnapshot, receivedSnapshot] = await Promise.all([
-        adminDb.collection("familyRequests")
+        adminDb.collection("companionRequests")
             .where("senderId", "==", user.id)
             .where("receiverId", "==", targetUserId)
             .get(),
-        adminDb.collection("familyRequests")
+        adminDb.collection("companionRequests")
             .where("senderId", "==", targetUserId)
             .where("receiverId", "==", user.id)
             .get()
@@ -482,7 +482,7 @@ export async function getFamilyStatus(targetUserId: string): Promise<FamilyStatu
 
     // If I received a request, I see 'pending_received' (or just 'pending' which UI interprets)
     // The UI likely expects 'pending' or 'pending_received'. 
-    // Looking at family-request-button.tsx might help, but let's stick to standard 'pending' or differentiate.
+    // Looking at companion-request-button.tsx might help, but let's stick to standard 'pending' or differentiate.
     // Existing code returned raw status. 'pending' usually implies "I can accept it" or "Waiting".
     // If received, I CAN accept it.
     if (receivedData?.status === 'pending') return { status: 'pending_received', requestId: receivedSnapshot.docs[0].id };
@@ -494,19 +494,19 @@ export async function getFamilyStatus(targetUserId: string): Promise<FamilyStatu
     return { status: 'none' };
 }
 
-export async function getUserFamilyMembers(targetUserId: string) {
+export async function getUserCompanions(targetUserId: string) {
     const currentUser = await getUserProfile();
     if (!currentUser) return [];
 
     // 1. Check permissions
-    // Allow if: Own Profile OR Admin OR Accepted Family
+    // Allow if: Own Profile OR Admin OR Accepted Companion
     const isOwnProfile = currentUser.id === targetUserId;
     const isAdmin = currentUser.role === 'admin';
     let hasAccess = isOwnProfile || isAdmin;
 
     if (!hasAccess) {
-        const familyStatus = await getFamilyStatus(targetUserId);
-        if (familyStatus.status === 'accepted') {
+        const companionStatus = await getCompanionStatus(targetUserId);
+        if (companionStatus.status === 'accepted') {
             hasAccess = true;
         }
     }
@@ -516,11 +516,11 @@ export async function getUserFamilyMembers(targetUserId: string) {
         return [];
     }
 
-    // 2. Fetch Family Members of the TARGET user
-    const familyIds = await getFamilyMemberIds(targetUserId);
+    // 2. Fetch Companions of the TARGET user
+    const familyIds = await getCompanionIds(targetUserId);
 
     // 3. Hydrate details
-    const familyMembers = await Promise.all(
+    const companions = await Promise.all(
         familyIds.map(async id => {
             const userDoc = await adminDb.collection("users").doc(id).get();
             if (userDoc.exists) {
@@ -529,7 +529,7 @@ export async function getUserFamilyMembers(targetUserId: string) {
                     id: userDoc.id,
                     ...data,
                     // Sanitize sensitive fields? 
-                    // Family members can generally see other family members' basic info.
+                    // Companions can generally see other companions' basic info.
                     // Let's stick to standard public profile fields.
                     displayName: data.displayName,
                     imageUrl: data.imageUrl,
@@ -541,5 +541,5 @@ export async function getUserFamilyMembers(targetUserId: string) {
         })
     );
 
-    return sanitizeData(familyMembers.filter(Boolean));
+    return sanitizeData(companions.filter(Boolean));
 }

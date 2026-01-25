@@ -2,9 +2,9 @@
 
 import { Input } from "@/components/ui/input"
 import { useState, useTransition } from "react"
-import { searchUsers } from "@/app/actions/family"
+import { searchCompanions } from "@/app/actions/companions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { FamilyRequestButton } from "./family-request-button"
+import { CompanionRequestButton } from "./companion-request-button"
 import { Loader2, Search } from "lucide-react"
 import { useDebouncedCallback } from "use-debounce"
 import Link from "next/link"
@@ -20,7 +20,7 @@ export function SearchUsers() {
             return
         }
         startTransition(async () => {
-            const users = await searchUsers(term)
+            const users = await searchCompanions(term)
             setResults(users)
         })
     }, 500)
@@ -64,10 +64,10 @@ export function SearchUsers() {
                                 {user.displayName && <span className="text-xs text-muted-foreground truncate">{user.email}</span>}
                             </div>
                         </Link>
-                        <FamilyRequestButton
+                        <CompanionRequestButton
                             targetUserId={user.id}
-                            initialStatus={user.familyStatus.status}
-                            initialRequestId={user.familyStatus.requestId}
+                            initialStatus={user.companionStatus.status}
+                            initialRequestId={user.companionStatus.requestId}
                             className="h-8 text-xs"
                         />
                     </div>

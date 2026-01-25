@@ -3,7 +3,7 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { sanitizeData } from "@/lib/serialization";
-import { getFamilyMemberIds } from "./family";
+import { getCompanionIds } from "./companions";
 import { EngagementPermissions, PostActivity } from "@/types/engagement";
 
 /**
@@ -59,9 +59,9 @@ export async function checkEngagementPermissions(
         };
     }
 
-    // Check friend status
-    const familyIds = await getFamilyMemberIds(postAuthorId);
-    const isFriend = familyIds.includes(currentUser.id);
+    // Check companion status
+    const companionIds = await getCompanionIds(postAuthorId);
+    const isCompanion = companionIds.includes(currentUser.id);
 
     // Handle privacy levels
     if (postPrivacy === 'private') {
@@ -74,7 +74,7 @@ export async function checkEngagementPermissions(
         };
     }
 
-    if (postPrivacy === 'friends' && !isFriend) {
+    if (postPrivacy === 'friends' && !isCompanion) {
         return {
             canView: false,
             canLike: false,
@@ -84,8 +84,8 @@ export async function checkEngagementPermissions(
         };
     }
 
-    // Public post visible to non-friends but engagement requires friendship
-    if (postPrivacy === 'public' && !isFriend) {
+    // Public post visible to non-companions but engagement requires companionship
+    if (postPrivacy === 'public' && !isCompanion) {
         return {
             canView: true,
             canLike: false,
@@ -98,9 +98,9 @@ export async function checkEngagementPermissions(
     // Friends can engage based on post settings
     return {
         canView: true,
-        canLike: isFriend && allowLikes,
-        canComment: isFriend && allowComments,
-        canReply: isFriend && allowComments,
+        canLike: isCompanion && allowLikes,
+        canComment: isCompanion && allowComments,
+        canReply: isCompanion && allowComments,
     };
 }
 
@@ -193,6 +193,6 @@ export async function getPostActivity(postId: string, contextType?: string, cont
  * Check if two users are friends
  */
 export async function checkFriendStatus(userId: string, targetId: string): Promise<boolean> {
-    const familyIds = await getFamilyMemberIds(userId);
-    return familyIds.includes(targetId);
+    const companionIds = await getCompanionIds(userId);
+    return companionIds.includes(targetId);
 }

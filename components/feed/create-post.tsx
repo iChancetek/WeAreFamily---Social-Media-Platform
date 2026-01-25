@@ -17,6 +17,7 @@ import { VisibilitySelector, PrivacyType } from "./visibility-selector";
 import { useMagicAI } from "@/hooks/use-magic-ai";
 import { MagicAIButton } from "@/components/magic-ai/magic-ai-button";
 import { AIPreviewPanel } from "@/components/magic-ai/ai-preview-panel";
+import { generateVideoThumbnail } from "@/lib/video-utils";
 
 
 
@@ -285,18 +286,25 @@ export function CreatePost({ onClose }: CreatePostProps) {
                         )}
 
                         {mediaUrls.length > 0 && (
-                            <div className="flex gap-2 mb-2 overflow-x-auto">
+                            <div className="grid grid-cols-3 gap-2 mb-3">
                                 {mediaUrls.map((url, idx) => (
-                                    <div key={idx} className="relative w-20 h-20 rounded-md overflow-hidden group">
-                                        <img src={url} alt="Preview" className="w-full h-full object-cover" />
+                                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group border border-border/50 shadow-sm">
+                                        <img src={url} alt="Preview" className="w-full h-full object-cover transition-transform hover:scale-105" />
+                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         <button
                                             onClick={() => setMediaUrls(urls => urls.filter((_, i) => i !== idx))}
-                                            className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500"
                                         >
                                             <X className="w-3 h-3" />
                                         </button>
                                     </div>
                                 ))}
+                                {isUploading && (
+                                    <div className="flex flex-col items-center justify-center p-4 aspect-square rounded-xl border-2 border-dashed border-primary/20 bg-primary/5">
+                                        <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
+                                        <span className="text-xs text-primary font-medium">Uploading...</span>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -391,40 +399,4 @@ export function CreatePost({ onClose }: CreatePostProps) {
     );
 }
 
-// Helper: Generate video thumbnail from file
-const generateVideoThumbnail = (file: File): Promise<Blob | null> => {
-    return new Promise((resolve) => {
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-        video.src = URL.createObjectURL(file);
-        video.muted = true;
-        video.playsInline = true;
-        video.currentTime = 1; // Capture at 1s
 
-        video.onloadeddata = () => {
-            // 
-        };
-
-        video.onseeked = () => {
-            try {
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx?.drawImage(video, 0, 0);
-                canvas.toBlob((blob) => {
-                    URL.revokeObjectURL(video.src);
-                    resolve(blob);
-                }, 'image/jpeg', 0.8);
-            } catch (e) {
-                console.error("Canvas draw failed", e);
-                resolve(null);
-            }
-        };
-
-        video.onerror = () => {
-            URL.revokeObjectURL(video.src);
-            resolve(null);
-        };
-    });
-}

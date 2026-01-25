@@ -2,8 +2,8 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { ProfileHeader } from "@/components/profile/profile-header";
-import { FamilyMembersCard } from "@/components/profile/family-members-card";
-import { getFamilyMembers } from "@/app/actions/family";
+import { CompanionsCard } from "@/components/profile/companions-card";
+import { getCompanions } from "@/app/actions/companions";
 import { ProfileFeed } from "@/components/profile/profile-feed";
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +15,7 @@ export default async function ProfilePage() {
         redirect("/");
     }
 
-    const familyMembers = await getFamilyMembers();
+    const companions = await getCompanions();
 
     // DEBUG: Log to server console
     console.log("Profile Debug:", {
@@ -32,7 +32,7 @@ export default async function ProfilePage() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
                     {/* Left Column: Sidebar Info */}
                     <div className="lg:col-span-4 space-y-6">
-                        <FamilyMembersCard members={familyMembers as any} />
+                        <CompanionsCard members={companions as any} />
                     </div>
 
                     {/* Right Column: Timeline Feed */}

@@ -2,8 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { getPendingRequests, getFamilyMembers } from "@/app/actions/family";
-import { FamilyView } from "@/components/companions/family-view";
+import { getPendingRequests, getCompanions } from "@/app/actions/companions";
+import { CompanionsView } from "@/components/companions/companions-view";
 
 export default async function CompanionsPage() {
     const user = await getUserProfile();
@@ -13,13 +13,13 @@ export default async function CompanionsPage() {
     }
 
     const { incoming, sent } = await getPendingRequests();
-    const familyMembers = await getFamilyMembers();
+    const companions = await getCompanions();
 
     return (
-        <FamilyView
+        <CompanionsView
             incoming={incoming}
             sent={sent}
-            familyMembers={familyMembers}
+            companions={companions}
         />
     );
 }

@@ -49,11 +49,11 @@ export async function getActiveStories() {
         const user = await getUserProfile();
         if (!user) return [];
 
-        const { getFamilyMemberIds } = await import("./family");
-        const familyIds = await getFamilyMemberIds(user.id).catch(e => { console.error("Story family fetch error:", e); return []; });
+        const { getCompanionIds } = await import("./companions");
+        const companionIds = await getCompanionIds(user.id).catch(e => { console.error("Story companion fetch error:", e); return []; });
 
-        // Allowed authors: Myself + Family
-        const allowedAuthorIds = [user.id, ...familyIds];
+        // Allowed authors: Myself + Companions
+        const allowedAuthorIds = [user.id, ...companionIds];
         const queries: Promise<any>[] = [];
 
         if (allowedAuthorIds.length > 0) {

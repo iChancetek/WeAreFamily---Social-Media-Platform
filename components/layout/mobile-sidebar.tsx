@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Newspaper, Sun, Moon, Laptop, HelpCircle } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Newspaper, Sun, Moon, Laptop, HelpCircle, ShoppingBag } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -73,6 +73,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                 { href: "/news", label: t("nav.news"), icon: Newspaper },
                 { href: "/live", label: t("nav.social.live"), icon: Video },
                 { href: "/events", label: t("nav.social.events"), icon: Ticket },
+                { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
                 { href: "/gallery", label: t("nav.social.gallery"), icon: ImageIcon },
             ]
         },

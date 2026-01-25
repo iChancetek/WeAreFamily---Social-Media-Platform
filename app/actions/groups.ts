@@ -484,3 +484,30 @@ export async function restoreGroup(groupId: string) {
     revalidatePath(`/groups/${groupId}`);
     revalidatePath('/groups');
 }
+
+export async function inviteMember(groupId: string, userId: string) {
+    const currentUser = await getUserProfile();
+    if (!currentUser) throw new Error("Unauthorized");
+
+    // Check if inviter is a member
+    const memberDoc = await adminDb.collection("groups").doc(groupId).collection("members").doc(currentUser.id).get();
+    if (!memberDoc.exists) throw new Error("You must be a member to invite others");
+
+    // Check if target is already a member
+    const targetMemberDoc = await adminDb.collection("groups").doc(groupId).collection("members").doc(userId).get();
+    if (targetMemberDoc.exists) return { success: false, message: "User is already a member" };
+
+    // Create Notification
+    const group = await getGroup(groupId);
+    if (!group) throw new Error("Group not found");
+
+    // Lazy import notifications
+    const { createNotification } = await import("./notifications");
+
+    await createNotification(userId, 'group_invite', groupId, {
+        groupName: group.name,
+        inviterName: currentUser.displayName
+    }).catch(console.error);
+
+    return { success: true, message: "Invitation sent" };
+}

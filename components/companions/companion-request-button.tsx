@@ -1,21 +1,21 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { sendFamilyRequest, cancelFamilyRequest, acceptFamilyRequest, denyFamilyRequest, FamilyStatus } from "@/app/actions/family"
+import { sendCompanionRequest, cancelCompanionRequest, acceptCompanionRequest, denyCompanionRequest, CompanionStatus } from "@/app/actions/companions"
 import { toast } from "sonner"
 import { UserPlus, UserCheck, UserX, Loader2 } from "lucide-react"
 import { useState, useTransition, useEffect } from "react"
 import { cn } from "@/lib/utils"
 
-interface FamilyRequestButtonProps {
+interface CompanionRequestButtonProps {
     targetUserId: string
-    initialStatus: FamilyStatus
+    initialStatus: CompanionStatus
     initialRequestId?: string
     className?: string
 }
 
-export function FamilyRequestButton({ targetUserId, initialStatus, initialRequestId, className }: FamilyRequestButtonProps) {
-    const [status, setStatus] = useState<FamilyStatus>(initialStatus)
+export function CompanionRequestButton({ targetUserId, initialStatus, initialRequestId, className }: CompanionRequestButtonProps) {
+    const [status, setStatus] = useState<CompanionStatus>(initialStatus)
     const [requestId, setRequestId] = useState<string | undefined>(initialRequestId)
     const [isPending, startTransition] = useTransition()
 
@@ -30,7 +30,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
     const handleSend = () => {
         startTransition(async () => {
             try {
-                const newId = await sendFamilyRequest(targetUserId)
+                const newId = await sendCompanionRequest(targetUserId)
                 setStatus({ status: 'pending_sent', requestId: newId })
                 setRequestId(newId)
                 toast.success("Request sent")
@@ -44,7 +44,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
         if (!requestId) return
         startTransition(async () => {
             try {
-                await cancelFamilyRequest(requestId)
+                await cancelCompanionRequest(requestId)
                 setStatus({ status: 'none' })
                 setRequestId(undefined)
                 toast.success("Request canceled")
@@ -58,7 +58,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
         if (!requestId) return
         startTransition(async () => {
             try {
-                await acceptFamilyRequest(requestId)
+                await acceptCompanionRequest(requestId)
                 setStatus({ status: 'accepted', requestId })
                 toast.success("Request accepted")
             } catch (err: any) {
@@ -95,7 +95,7 @@ export function FamilyRequestButton({ targetUserId, initialStatus, initialReques
             if (!requestId) return
             startTransition(async () => {
                 try {
-                    await denyFamilyRequest(requestId)
+                    await denyCompanionRequest(requestId)
                     setStatus({ status: 'none' })
                     setRequestId(undefined)
                     toast.success("Request denied")

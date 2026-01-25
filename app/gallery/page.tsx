@@ -13,9 +13,9 @@ export default async function GalleryPage() {
         redirect("/");
     }
 
-    const { getFamilyMemberIds } = await import("@/app/actions/family");
-    const familyIds = await getFamilyMemberIds(user.id);
-    const allowedIds = [user.id, ...familyIds];
+    const { getCompanionIds } = await import("@/app/actions/companions");
+    const companionIds = await getCompanionIds(user.id);
+    const allowedIds = [user.id, ...companionIds];
     const queryIds = allowedIds.slice(0, 30); // Limit to 30 for Firestore 'in' query
 
     if (queryIds.length === 0) {

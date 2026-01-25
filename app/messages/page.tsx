@@ -16,15 +16,15 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
     const activeSession = activeChatId ? chats.find(c => c.id === activeChatId) : null;
 
     // Fetch members for the new chat dialog
-    const { getFamilyMembers } = await import("@/app/actions/family");
-    const familyMembers = await getFamilyMembers();
+    const { getCompanions } = await import("@/app/actions/companions");
+    const companions = await getCompanions();
 
     return (
         <MessagesView
             chats={chats}
             activeSession={activeSession}
             user={user}
-            familyMembers={familyMembers}
+            familyMembers={companions}
             activeChatId={activeChatId}
         />
     );

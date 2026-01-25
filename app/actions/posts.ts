@@ -117,8 +117,8 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
         // Fetch family IDs once
         let userFamilyIds: string[] = [];
         if (user) {
-            const { getFamilyMemberIds } = await import("./family");
-            userFamilyIds = await getFamilyMemberIds(user.id);
+            const { getCompanionIds } = await import("./companions");
+            userFamilyIds = await getCompanionIds(user.id);
         }
 
         while (validPosts.length < limit && safetyCounter < MAX_LOOPS) {
@@ -828,12 +828,12 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
                 if (!currentUser) return null;
                 if (privacy === 'private') return null;
 
-                // Family check
-                const { getFamilyStatus } = await import("./family");
-                const status = await getFamilyStatus(userId);
-                const isFamily = status.status === 'accepted';
+                // Companion check
+                const { getCompanionStatus } = await import("./companions");
+                const status = await getCompanionStatus(userId);
+                const isCompanion = status.status === 'accepted';
 
-                if ((privacy === 'friends' || privacy === 'companions') && !isFamily) return null;
+                if ((privacy === 'friends' || privacy === 'companions') && !isCompanion) return null;
 
                 if (privacy === 'specific') {
                     const allowed = post.allowedViewerIds || [];
@@ -918,11 +918,11 @@ export async function getPostGlobal(postId: string) {
             if (!user) return null; // prompt login or 404 in UI
             if (privacy === 'private') return null;
 
-            const { getFamilyStatus } = await import("./family");
-            const status = await getFamilyStatus(post.authorId);
-            const isFamily = status.status === 'accepted';
+            const { getCompanionStatus } = await import("./companions");
+            const status = await getCompanionStatus(post.authorId);
+            const isCompanion = status.status === 'accepted';
 
-            if ((privacy === 'friends' || privacy === 'companions') && !isFamily) return null;
+            if ((privacy === 'friends' || privacy === 'companions') && !isCompanion) return null;
 
             if (privacy === 'specific') {
                 const allowed = post.allowedViewerIds || [];

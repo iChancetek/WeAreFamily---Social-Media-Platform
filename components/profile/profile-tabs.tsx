@@ -13,12 +13,12 @@ import { DeletedFeed } from "./deleted-feed";
 
 interface ProfileTabsProps {
     posts: any[];
-    familyMembers: any[];
+    companions: any[];
     isOwnProfile: boolean;
     currentUserId?: string;
 }
 
-export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId }: ProfileTabsProps) {
+export function ProfileTabs({ posts, companions, isOwnProfile, currentUserId }: ProfileTabsProps) {
     const { t } = useLanguage();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState("timeline");
@@ -57,7 +57,7 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                         <Film className="w-4 h-4" />
                         <span className="hidden sm:inline">{t('profile.tabs.videos')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="family" className="gap-2">
+                    <TabsTrigger value="companions" className="gap-2">
                         <Users className="w-4 h-4" />
                         <span className="hidden sm:inline">{t('profile.companions')}</span>
                     </TabsTrigger>
@@ -117,14 +117,14 @@ export function ProfileTabs({ posts, familyMembers, isOwnProfile, currentUserId 
                     )}
                 </TabsContent>
 
-                <TabsContent value="family">
-                    {familyMembers.length === 0 ? (
+                <TabsContent value="companions">
+                    {companions.length === 0 ? (
                         <div className="p-8 text-center border rounded-xl bg-slate-50 dark:bg-slate-900 text-gray-500">
-                            {t('profile.empty.family')}
+                            {t('profile.empty.companions')}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {familyMembers.map((member) => (
+                            {companions.map((member) => (
                                 <div key={member.id} className="flex items-center gap-3 p-4 bg-white dark:bg-card border rounded-lg hover:border-primary transition-colors cursor-pointer" onClick={() => router.push(`/u/${member.id}`)}>
                                     <Avatar className="h-12 w-12 shrink-0">
                                         <AvatarImage src={member.imageUrl || undefined} className="object-cover" />

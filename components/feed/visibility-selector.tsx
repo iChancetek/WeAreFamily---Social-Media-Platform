@@ -14,7 +14,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Globe, Users, Lock, ChevronDown, Check } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getFamilyMembers } from "@/app/actions/family";
+import { getCompanions } from "@/app/actions/companions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -52,7 +52,7 @@ export function VisibilitySelector({ value, onChange, onAllowedViewersChange, al
         if (companions.length > 0) return;
         setIsLoading(true);
         try {
-            const data = await getFamilyMembers();
+            const data = await getCompanions();
             setCompanions(data);
         } catch (e) {
             toast.error("Failed to load companions");

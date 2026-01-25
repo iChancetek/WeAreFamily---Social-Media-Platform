@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Sun, Moon, HelpCircle, Music } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Sun, Moon, HelpCircle, Music, ShoppingBag } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -49,6 +49,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                 { href: "/groups", label: t("nav.groups"), icon: Tent },
                 { href: "/live", label: t("nav.live"), icon: Video },
                 { href: "/events", label: t("nav.events"), icon: Ticket },
+                { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
                 { href: "/gallery", label: t("nav.gallery"), icon: ImageIcon },
                 { href: "/music", label: "Music", icon: Music },
             ]

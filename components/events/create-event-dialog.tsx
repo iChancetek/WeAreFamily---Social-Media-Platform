@@ -1,102 +1,110 @@
-"use client";
+'use client';
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
 import { createEvent } from "@/app/actions/events";
 import { toast } from "sonner";
-import { Loader2, Plus, Calendar } from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
 
-export function CreateEventDialog() {
+export function CreateEventDialog({ children, onEventCreated }: { children: React.ReactNode, onEventCreated?: () => void }) {
     const [open, setOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    // Default start time: tomorrow at 9am
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0);
+
     const [formData, setFormData] = useState({
         title: "",
-        location: "",
         description: "",
-        date: "" // YYYY-MM-DDTHH:mm
+        locationName: "",
+        startTime: tomorrow.toISOString().slice(0, 16) // Format for datetime-local
     });
 
-    const handleSubmit = async () => {
-        if (!formData.title || !formData.date) {
-            toast.error("Title and Date are required");
-            return;
-        }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
 
-        setIsSubmitting(true);
         try {
             await createEvent({
-                ...formData,
-                date: new Date(formData.date)
+                title: formData.title,
+                description: formData.description,
+                location: { name: formData.locationName },
+                startTime: new Date(formData.startTime).toISOString(),
             });
-            toast.success("Event created! 🎉");
+            toast.success("Event created!");
             setOpen(false);
-            setFormData({ title: "", location: "", description: "", date: "" });
-        } catch {
+            setFormData({ ...formData, title: "", description: "" }); // Reset some fields
+            if (onEventCreated) onEventCreated();
+        } catch (error) {
             toast.error("Failed to create event");
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button className="gap-2 bg-primary hover:bg-primary/90 text-white border-0 shadow-lg shadow-primary/20">
-                    <Plus className="w-4 h-4" />
-                    New Event
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                    <DialogTitle>Plan a Gathering</DialogTitle>
+                    <DialogTitle>Create New Event</DialogTitle>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="title">Event Title</Label>
+                <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                        <Label>Event Name</Label>
                         <Input
-                            id="title"
-                            placeholder="e.g. Grandma's 80th Birthday"
+                            required
+                            placeholder="Birthday Party, Meetup..."
                             value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                            onChange={e => setFormData({ ...formData, title: e.target.value })}
                         />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="date">Date & Time</Label>
+
+                    <div className="space-y-2">
+                        <Label>Date & Time</Label>
                         <Input
-                            id="date"
                             type="datetime-local"
-                            value={formData.date}
-                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                            required
+                            value={formData.startTime}
+                            onChange={e => setFormData({ ...formData, startTime: e.target.value })}
                         />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="location">Location</Label>
+
+                    <div className="space-y-2">
+                        <Label>Location</Label>
                         <Input
-                            id="location"
-                            placeholder="e.g. The Old Family House"
-                            value={formData.location}
-                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                            required
+                            placeholder="123 Main St OR 'Online'"
+                            value={formData.locationName}
+                            onChange={e => setFormData({ ...formData, locationName: e.target.value })}
                         />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="description">Details</Label>
+
+                    <div className="space-y-2">
+                        <Label>Description</Label>
                         <Textarea
-                            id="description"
-                            placeholder="Add details about food, dress code, etc."
+                            required
+                            placeholder="What's happening?"
                             value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            onChange={e => setFormData({ ...formData, description: e.target.value })}
                         />
                     </div>
-                </div>
-                <DialogFooter>
-                    <Button onClick={handleSubmit} disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Event"}
-                    </Button>
-                </DialogFooter>
+
+                    <div className="flex justify-end gap-2 pt-2">
+                        <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+                        <Button type="submit" disabled={loading}>
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                            Create Event
+                        </Button>
+                    </div>
+                </form>
             </DialogContent>
         </Dialog>
     );

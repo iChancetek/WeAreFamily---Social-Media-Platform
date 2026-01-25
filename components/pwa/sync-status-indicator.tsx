@@ -12,21 +12,8 @@ export function SyncStatusIndicator() {
     const [showQueue, setShowQueue] = useState(false);
 
     useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        // Correctly set initial state only if different, though usually state should be init via function to match server/client
-        // But for this fix, we just remove the direct call that causes the warning
-        // and rely on the event listener, or wrap in a timeout if we must force update.
-        // Better: Use a dedicated hook or just let the event listeners notify us.
-
-        // Initial check without triggering instant re-render warning:
-        // setIsOnline(navigator.onLine); // <--- This was the culprit.
-
-        // Instead, we can just rely on the events, or if we really need initial state sync:
-        if (isOnline !== navigator.onLine) {
-            // Defer the update to avoid "Synchronous" warning during mount
-            setTimeout(() => setIsOnline(navigator.onLine), 0);
-        }
+        // Set actual state on mount
+        setIsOnline(navigator.onLine);
 
         const checkQueue = async () => {
             const items = await syncManager.getQueue();

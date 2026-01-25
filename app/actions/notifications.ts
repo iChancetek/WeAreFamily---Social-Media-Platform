@@ -9,7 +9,8 @@ import { sanitizeData } from "@/lib/serialization";
 import { sendPushNotification } from "./push-notifications";
 
 
-export type NotificationType = 'like' | 'comment' | 'group_invite' | 'follow' | 'mention' | 'admin_action' | 'family_request' | 'message';
+export type NotificationType = 'like' | 'comment' | 'group_invite' | 'follow' | 'mention' | 'admin_action' | 'companion_request' | 'message';
+
 
 
 export type Notification = {
@@ -81,9 +82,9 @@ export async function createNotification(
                 url = `/post/${referenceId}`;
                 body = `${sender.displayName} mentioned you`;
                 break;
-            case 'family_request':
+            case 'companion_request':
                 url = `/members`;
-                body = `${sender.displayName} sent you a family request`;
+                body = `${sender.displayName} sent you a companion request`;
                 break;
             case 'message':
                 url = `/messages`;

@@ -9,6 +9,7 @@ import { JoinGroupButton } from "@/components/groups/join-group-button";
 import { GroupAITutorBanner } from "@/components/groups/group-ai-tutor-banner";
 import { GroupManagementDialog } from "@/components/groups/group-management-dialog";
 import { ShareButton } from "@/components/shared/share-button";
+import { InviteCompanionsDialog } from "@/components/groups/invite-companions-dialog";
 
 import { GroupFeed } from "@/components/groups/group-feed";
 import Link from "next/link";
@@ -95,6 +96,9 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
                                 isMember={isMember}
                                 memberCount={group.memberCount}
                             />
+                            {isMember && (
+                                <InviteCompanionsDialog groupId={group.id} />
+                            )}
                             <ShareButton
                                 title={group.name}
                                 text={`Check out this group: ${group.name}`}

@@ -5,17 +5,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useLanguage } from "@/components/language-context"
 import Link from "next/link"
 
-interface FamilyMember {
+interface Companion {
     id: string;
     displayName?: string | null;
     imageUrl?: string | null;
 }
 
-interface FamilyMembersCardProps {
-    members: FamilyMember[];
+interface CompanionsCardProps {
+    members: Companion[];
 }
 
-export function FamilyMembersCard({ members }: FamilyMembersCardProps) {
+export function CompanionsCard({ members }: CompanionsCardProps) {
     const { t } = useLanguage()
 
     if (members.length === 0) return null;
@@ -24,7 +24,7 @@ export function FamilyMembersCard({ members }: FamilyMembersCardProps) {
         <Card className="glass-card border-none rounded-lg h-fit">
             <CardHeader className="p-4">
                 <CardTitle className="text-lg font-bold flex items-center justify-between">
-                    {t("profile.family")}
+                    {t("profile.companions")}
                     <span className="text-sm font-normal text-muted-foreground">{members.length}</span>
                 </CardTitle>
             </CardHeader>

@@ -17,7 +17,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { searchUsers } from "@/app/actions/family";
+import { searchCompanions } from "@/app/actions/companions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // Simple debounce hook logic implemented inline below
 // Let's implement a self-contained one to avoid dependency issues.
@@ -43,7 +43,7 @@ export function UserSearch({ onSelect }: { onSelect: (userId: string) => void })
     const handleSearch = async (term: string) => {
         setLoading(true);
         try {
-            const results = await searchUsers(term);
+            const results = await searchCompanions(term);
             setUsers(results);
         } catch (error) {
             console.error("Search failed", error);

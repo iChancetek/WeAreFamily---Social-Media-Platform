@@ -6,7 +6,7 @@ import { PostCard } from "@/components/feed/post-card";
 import { getUserProfile } from "@/lib/auth";
 import { sanitizeData } from "@/lib/serialization";
 
-import { getFamilyStatus } from "@/app/actions/family";
+import { getCompanionStatus } from "@/app/actions/companions";
 import { getUserPosts } from "@/app/actions/posts";
 import { Lock } from "lucide-react";
 
@@ -122,20 +122,20 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
     }
 
     const isOwnProfile = currentUser.id === userId;
-    // Fetch family status
-    const familyStatus = await getFamilyStatus(userId);
+    // Fetch companion status
+    const companionStatus = await getCompanionStatus(userId);
 
     // Privacy Logic: Owner OR Family OR Public Profile
     const userData = userDoc.data()!;
     const isPublicProfile = userData.isPublicProfile === true;
 
     // STRICT ACCESS CHECK
-    const hasAccess = isOwnProfile || familyStatus.status === 'accepted' || currentUser.role === 'admin' || isPublicProfile;
+    const hasAccess = isOwnProfile || companionStatus.status === 'accepted' || currentUser.role === 'admin' || isPublicProfile;
 
     // Sanitize user data based on access
-    // If public but NOT family/owner, we show LIMITED data.
-    const isFamilyOrOwner = isOwnProfile || familyStatus.status === 'accepted' || currentUser.role === 'admin';
-    const showFullProfile = isFamilyOrOwner;
+    // If public but NOT companion/owner, we show LIMITED data.
+    const isCompanionOrOwner = isOwnProfile || companionStatus.status === 'accepted' || currentUser.role === 'admin';
+    const showFullProfile = isCompanionOrOwner;
 
     const user = sanitizeData({
         id: userDoc.id,
@@ -156,14 +156,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
 
     // Fetch user posts
     console.log(`Checking profile access for viewer ${currentUser.id} to target ${userId}`);
-    console.log(`Access status: isOwn=${isOwnProfile}, family=${familyStatus.status}, pub=${isPublicProfile}`);
+    console.log(`Access status: isOwn=${isOwnProfile}, companion=${companionStatus.status}, pub=${isPublicProfile}`);
     console.log(`Has Access: ${hasAccess}`);
 
     const userPosts = hasAccess ? await getUserPosts(userId) : [];
     console.log(`Fetched ${userPosts.length} posts for profile ${userId}`);
 
-    const { getUserFamilyMembers } = await import("@/app/actions/family");
-    const userFamily = hasAccess ? await getUserFamilyMembers(userId) : [];
+    const { getUserCompanions } = await import("@/app/actions/companions");
+    const userCompanions = hasAccess ? await getUserCompanions(userId) : [];
 
     // Check if user is blocked by current user
     const { getBlockedUsers } = await import("@/app/actions/security");
@@ -191,7 +191,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
                 ) : (
                     <ProfileTabs
                         posts={userPosts}
-                        familyMembers={userFamily}
+                        companions={userCompanions}
                         isOwnProfile={isOwnProfile}
                         currentUserId={currentUser.id}
                     />
