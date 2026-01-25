@@ -23,3 +23,17 @@ env:
     value: we-are-family-221
   - variable: GOOGLE_RUNTIME_VERSION
     value: "22"
+  # Firebase Client SDK Configuration
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyAiiv-8GQY2hxrPRl5n4DShc2nFTlZypm0
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: we-are-family-221.firebaseapp.com
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: we-are-family-221.firebasestorage.app
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "523253200654"
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:523253200654:web:eb6020b449a91ab141495f"
+  # Firebase Cloud Messaging VAPID Key for Push Notifications
+  - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+    value: BKOhVxyDQAWod-Qj-r7266byoF4uXREVSh6g7yXWmPWP87MxPgMCol1-Y1ZnKRA0QP1GhhPB8eq_WBLjYHI7uh
