@@ -70,7 +70,7 @@ export async function getActiveUsers() {
                 profileData: u.profileData,
                 isOnline: isOnline
             }));
-        });
+        }).filter(u => u.isOnline);
     } catch (error) {
         console.error("Error fetching users:", error);
         return [];
