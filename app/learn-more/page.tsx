@@ -1,4 +1,5 @@
 import Link from "next/link"
+import React from "react"
 import { Button } from "@/components/ui/button"
 import { Heart, Shield, Users, Globe, MessageCircle, Calendar, Image as ImageIcon, Sparkles, Mail, Lock, Eye, Zap, Award, CheckCircle2, Monitor } from "lucide-react"
 
@@ -337,7 +338,7 @@ export default function LearnMorePage() {
                         <h2 className="text-4xl md:text-5xl font-extrabold mb-6">We Are One.</h2>
                         <p className="text-xl text-indigo-100 max-w-3xl mx-auto leading-relaxed">
                             Famio is built on the belief that family extends beyond bloodlines.
-                            It's a sanctuary to grow meaningful connections with your chosen family—friends, companions, colleagues, and partners.
+                            It&apos;s a sanctuary to grow meaningful connections with your chosen family—friends, companions, colleagues, and partners.
                         </p>
                     </div>
                 </div>
@@ -355,7 +356,7 @@ export default function LearnMorePage() {
                                 </div>
                                 <h2 className="text-4xl font-bold text-gray-900 mb-4">Location Sharing on Your Terms</h2>
                                 <p className="text-lg text-gray-600 leading-relaxed">
-                                    We believe location data is sensitive. That's why on Famio, <strong>Location Sharing is OFF by default.</strong>
+                                    We believe location data is sensitive. That&apos;s why on Famio, <strong>Location Sharing is OFF by default.</strong>
                                 </p>
                             </div>
 
@@ -367,7 +368,7 @@ export default function LearnMorePage() {
                                     <div>
                                         <h4 className="text-lg font-bold text-gray-900">Snapshot Only</h4>
                                         <p className="text-gray-600">
-                                            "Drop My Location" captures a single snapshot only when you click the button. We never track you in the background.
+                                            &quot;Drop My Location&quot; captures a single snapshot only when you click the button. We never track you in the background.
                                         </p>
                                     </div>
                                 </div>
@@ -411,7 +412,7 @@ export default function LearnMorePage() {
                                             </div>
                                             <div>
                                                 <div className="font-bold text-gray-900">Location Features</div>
-                                                <div className="text-xs text-gray-500">Enable "Drop My Location"</div>
+                                                <div className="text-xs text-gray-500">Enable &quot;Drop My Location&quot;</div>
                                             </div>
                                         </div>
                                         <div className="w-10 h-6 bg-blue-600 rounded-full relative"><div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div></div>
@@ -424,7 +425,6 @@ export default function LearnMorePage() {
                         </div>
                     </div>
                 </div>
-
             </section>
 
             {/* CTA Section */}
