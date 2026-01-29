@@ -244,7 +244,6 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
             <LiveSetupDialog open={showLiveSetup} onOpenChange={setShowLiveSetup} />
         </SheetContent >
         </Sheet >
-        <LiveSetupDialog open={showLiveSetup} onOpenChange={setShowLiveSetup} />
         </>
     );
 }
