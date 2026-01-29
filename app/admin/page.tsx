@@ -21,11 +21,15 @@ export default function AdminDashboardPage() {
     });
     const [isLoadingData, setIsLoadingData] = useState(true);
 
+    const [error, setError] = useState<string | null>(null);
+
     useEffect(() => {
         if (!loading && profile?.role === 'admin') {
             const fetchData = async () => {
                 try {
+                    console.log("Fetching all users...");
                     const allUsers = await getAllUsers();
+                    console.log("Users fetched:", allUsers.length);
                     setUsers(allUsers);
 
                     // Calculate stats
@@ -41,8 +45,9 @@ export default function AdminDashboardPage() {
                         activeToday: activeUsers,
                         newThisMonth: newUsers
                     });
-                } catch (error) {
+                } catch (error: any) {
                     console.error("Failed to fetch admin data", error);
+                    setError(error.message || "Failed to fetch data");
                 } finally {
                     setIsLoadingData(false);
                 }
@@ -50,6 +55,7 @@ export default function AdminDashboardPage() {
             fetchData();
         }
     }, [loading, profile]);
+
 
     if (loading) return null;
     if (profile?.role !== 'admin') {
@@ -67,6 +73,12 @@ export default function AdminDashboardPage() {
                     <h1 className="text-3xl font-bold">Admin Dashboard</h1>
                     <p className="text-muted-foreground">Platform overview and management.</p>
                 </div>
+
+                {error && (
+                    <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded mb-4">
+                        <strong>Error:</strong> {error}
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatsCard title="Total Users" value={stats.totalUsers.toLocaleString()} icon={<Users className="w-4 h-4" />} trend={`+${stats.newThisMonth} this month`} />
