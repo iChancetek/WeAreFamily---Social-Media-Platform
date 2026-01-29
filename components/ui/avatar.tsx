@@ -7,17 +7,25 @@ import { cn } from "@/lib/utils"
 
 function Avatar({
   className,
+  isLive,
+  children,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
+}: React.ComponentProps<typeof AvatarPrimitive.Root> & { isLive?: boolean }) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       className={cn(
         "relative flex size-8 shrink-0 overflow-hidden rounded-full",
+        isLive && "ring-2 ring-red-500 ring-offset-2 ring-offset-background", // Static ring
         className
       )}
       {...props}
-    />
+    >
+      {isLive && (
+        <span className="absolute inset-0 rounded-full animate-ping bg-red-500/50" />
+      )}
+      {children}
+    </AvatarPrimitive.Root>
   )
 }
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useLivePresence } from "@/components/live/live-presence-context";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { getCompanionStatus, sendCompanionRequest } from "@/app/actions/companions";
@@ -23,6 +24,8 @@ export function ContactItem({ user }: ContactItemProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [showRequestDialog, setShowRequestDialog] = useState(false);
+    const { checkIsLive, getBroadcastId } = useLivePresence();
+    const isLive = checkIsLive(user.id);
 
     const profile = user.profileData as { firstName: string, lastName: string, imageUrl: string } | null;
     const name = user.displayName || (profile?.firstName ? `${profile.firstName} ${profile.lastName}` : "Unknown");
@@ -41,6 +44,13 @@ export function ContactItem({ user }: ContactItemProps) {
                     description: "You have already sent or received a request from this person."
                 });
             } else {
+                if (isLive) {
+                    const broadcastId = getBroadcastId(user.id);
+                    if (broadcastId) {
+                        router.push(`/live/${broadcastId}`);
+                        return;
+                    }
+                }
                 setShowRequestDialog(true);
             }
         } catch (error) {
@@ -74,7 +84,7 @@ export function ContactItem({ user }: ContactItemProps) {
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group"
             >
                 <div className="relative">
-                    <Avatar className="h-10 w-10 border border-white/10">
+                    <Avatar className="h-10 w-10 border border-white/10" isLive={isLive}>
                         <AvatarImage src={imageUrl || ""} alt={name} />
                         <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                     </Avatar>

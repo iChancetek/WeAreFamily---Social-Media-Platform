@@ -11,6 +11,8 @@ import { BlockButton } from "@/components/profile/block-button"
 import { toast } from "sonner"
 import { ProfileShareButton } from "@/components/profile/profile-share-button"
 import { MessageButton } from "@/components/chat/message-button"
+import { Video } from "lucide-react"
+import { LiveSetupDialog } from "@/components/live/live-setup-dialog"
 
 interface ProfileHeaderProps {
     user: {
@@ -29,6 +31,7 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderProps) {
     const { t } = useLanguage()
     const [isEditing, setIsEditing] = useState(false)
+    const [showLiveSetup, setShowLiveSetup] = useState(false)
 
     const initials = user.displayName?.slice(0, 2).toUpperCase() || "U"
 
@@ -116,44 +119,53 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                             isPublic={user.isPublicProfile || false}
                                         />
                                     </div>
+                                    </div>
+                                    <Button 
+                                        onClick={() => setShowLiveSetup(true)}
+                                        className="w-full sm:w-auto gap-2 bg-red-600 hover:bg-red-700 text-white border-none"
+                                    >
+                                        <Video className="h-4 w-4" />
+                                        Go Live
+                                    </Button>
+                                    <LiveSetupDialog open={showLiveSetup} onOpenChange={setShowLiveSetup} />
                                 </div>
-                            ) : (
-                                <div className="flex flex-col w-full gap-3 sm:flex-row sm:w-auto sm:gap-2">
-                                    <div className="w-full sm:w-auto">
-                                        <MessageButton userId={user.id} className="w-full sm:w-auto" variant="outline">
-                                            {t("profile.message")}
-                                        </MessageButton>
-                                    </div>
-                                    <div className="w-full sm:w-auto">
-                                        <BlockButton
-                                            targetUserId={user.id}
-                                            isBlocked={isBlocked}
-                                        />
-                                    </div>
-                                    <div className="w-full sm:w-auto">
-                                        <ProfileShareButton
-                                            userId={user.id}
-                                            displayName={user.displayName || "Famio Member"}
-                                            isPublic={user.isPublicProfile || false}
-                                        />
-                                    </div>
-                                </div>
-                            )}
+                        ) : (
+                        <div className="flex flex-col w-full gap-3 sm:flex-row sm:w-auto sm:gap-2">
+                            <div className="w-full sm:w-auto">
+                                <MessageButton userId={user.id} className="w-full sm:w-auto" variant="outline">
+                                    {t("profile.message")}
+                                </MessageButton>
+                            </div>
+                            <div className="w-full sm:w-auto">
+                                <BlockButton
+                                    targetUserId={user.id}
+                                    isBlocked={isBlocked}
+                                />
+                            </div>
+                            <div className="w-full sm:w-auto">
+                                <ProfileShareButton
+                                    userId={user.id}
+                                    displayName={user.displayName || "Famio Member"}
+                                    isPublic={user.isPublicProfile || false}
+                                />
+                            </div>
                         </div>
+                            )}
                     </div>
                 </div>
-                <div className="hidden sm:block 2xl:hidden mt-6 min-w-0 flex-1">
-                    <h1 className="text-2xl font-bold text-foreground truncate">
-                        {user.displayName}
-                    </h1>
-                </div>
-
-                {user.bio && (
-                    <p className="mt-4 text-muted-foreground max-w-2xl">
-                        {user.bio}
-                    </p>
-                )}
             </div>
+            <div className="hidden sm:block 2xl:hidden mt-6 min-w-0 flex-1">
+                <h1 className="text-2xl font-bold text-foreground truncate">
+                    {user.displayName}
+                </h1>
+            </div>
+
+            {user.bio && (
+                <p className="mt-4 text-muted-foreground max-w-2xl">
+                    {user.bio}
+                </p>
+            )}
         </div>
+        </div >
     )
 }

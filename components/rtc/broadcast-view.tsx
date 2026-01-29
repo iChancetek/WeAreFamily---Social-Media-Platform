@@ -12,6 +12,7 @@ import { collection, query, where, onSnapshot, orderBy } from "firebase/firestor
 import { ViewerListPanel } from "./viewer-list-panel"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { LiveChatOverlay } from "@/components/live/live-chat-overlay"
 
 interface BroadcastViewProps {
     sessionId: string;
@@ -299,6 +300,9 @@ export function BroadcastView({ sessionId, onEnd }: BroadcastViewProps) {
                         <PhoneOff className="h-6 w-6" />
                     </Button>
                 </div>
+
+                {/* Chat Overlay */}
+                <LiveChatOverlay sessionId={sessionId} />
             </div>
 
             {/* Viewer List Panel */}

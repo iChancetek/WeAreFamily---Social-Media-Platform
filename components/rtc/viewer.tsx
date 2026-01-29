@@ -8,7 +8,9 @@ import { Loader2, PhoneOff } from "lucide-react"
 import { toast } from "sonner"
 import { db } from "@/lib/firebase"
 import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore"
+import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore"
 import { useRouter } from "next/navigation"
+import { LiveChatOverlay } from "@/components/live/live-chat-overlay"
 
 interface ViewerProps {
     sessionId: string;
@@ -179,6 +181,9 @@ export function Viewer({ sessionId }: ViewerProps) {
                     <PhoneOff className="h-6 w-6" />
                 </Button>
             </div>
+
+            {/* Chat Overlay */}
+            <LiveChatOverlay sessionId={sessionId} />
         </div>
     )
 }

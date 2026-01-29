@@ -14,7 +14,9 @@ import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { PushNotificationManager } from "@/components/notifications/push-notification-manager";
 import { NotificationPermissionPrompt } from "@/components/notifications/notification-permission-prompt";
 import { SyncStatusIndicator } from "@/components/pwa/sync-status-indicator";
+import { SyncStatusIndicator } from "@/components/pwa/sync-status-indicator";
 import { ActivityTracker } from "@/components/layout/activity-tracker";
+import { LivePresenceProvider } from "@/components/live/live-presence-context";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -107,20 +109,22 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <LanguageProvider>
-              <MessageNotificationProvider>
-                <ServiceWorkerRegister />
-                <OfflineIndicator />
-                <InstallPrompt />
-                <PushNotificationManager />
-                <NotificationPermissionPrompt />
+              <LivePresenceProvider>
+                <MessageNotificationProvider>
+                  <ServiceWorkerRegister />
+                  <OfflineIndicator />
+                  <InstallPrompt />
+                  <PushNotificationManager />
+                  <NotificationPermissionPrompt />
 
-                <SyncStatusIndicator />
-                <ActivityTracker />
-                {children}
-                <Toaster />
-                {/* <CallOverlay /> */}
-                <AIAssistant />
-              </MessageNotificationProvider>
+                  <SyncStatusIndicator />
+                  <ActivityTracker />
+                  {children}
+                  <Toaster />
+                  {/* <CallOverlay /> */}
+                  <AIAssistant />
+                </MessageNotificationProvider>
+              </LivePresenceProvider>
             </LanguageProvider>
           </ThemeProvider>
         </body>

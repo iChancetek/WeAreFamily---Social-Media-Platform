@@ -13,6 +13,7 @@ import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { SidebarItem } from "./sidebar-item";
 import { VoiceStatusIndicator } from "@/components/ai/voice-status-indicator";
+import { LiveSetupDialog } from "@/components/live/live-setup-dialog";
 
 import { useVoice } from "@/components/ai/voice-provider";
 
@@ -27,7 +28,9 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
     const { theme, setTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
     const [isHovered, setIsHovered] = useState(false);
+    const [showLiveSetup, setShowLiveSetup] = useState(false);
 
     // Global Voice State
     const { state: aiState, toggleContinuous } = useVoice();
@@ -47,7 +50,8 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
             items: [
                 { href: "/companions", label: t("nav.family"), icon: Users },
                 { href: "/groups", label: t("nav.groups"), icon: Tent },
-                { href: "/live", label: t("nav.live"), icon: Video },
+                { href: "/groups", label: t("nav.groups"), icon: Tent },
+                { href: "#", label: t("nav.social.live"), icon: Video, onClick: () => setShowLiveSetup(true) }, // Trigger dialog
                 { href: "/events", label: t("nav.events"), icon: Ticket },
                 { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
                 { href: "/gallery", label: t("nav.gallery"), icon: ImageIcon },
@@ -213,6 +217,8 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
 
             {/* Drag Handle Indicator (Optional visual cue) */}
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-zinc-200/50 dark:bg-white/5 rounded-l-full" />
+
+            <LiveSetupDialog open={showLiveSetup} onOpenChange={setShowLiveSetup} />
         </motion.div>
     );
 }

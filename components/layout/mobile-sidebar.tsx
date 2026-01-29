@@ -2,6 +2,8 @@
 
 import { useAuth } from "@/components/auth-provider";
 import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Newspaper, Sun, Moon, Laptop, HelpCircle, ShoppingBag } from "lucide-react";
+import { LiveSetupDialog } from "@/components/live/live-setup-dialog";
+import { useState } from "react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -20,7 +22,9 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
     const router = useRouter();
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
+    const { t } = useLanguage();
     const { theme, setTheme } = useTheme();
+    const [showLiveSetup, setShowLiveSetup] = useState(false);
 
     const handleNavigation = (href: string, label: string) => {
         console.log('🔵 MOBILE NAV CLICK:', label, href);
@@ -71,7 +75,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
             items: [
                 { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
                 { href: "/news", label: t("nav.news"), icon: Newspaper },
-                { href: "/live", label: t("nav.social.live"), icon: Video },
+                { href: "#", label: t("nav.social.live"), icon: Video, onClick: () => setShowLiveSetup(true) },
                 { href: "/events", label: t("nav.social.events"), icon: Ticket },
                 { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
                 { href: "/gallery", label: t("nav.social.gallery"), icon: ImageIcon },
@@ -144,6 +148,13 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
+                                        
+                                        if (link.href === "#" && link.onClick) {
+                                            link.onClick();
+                                            if (onLinkClick) onLinkClick();
+                                            return;
+                                        }
+
                                         handleNavigation(link.href, link.label);
                                     }}
                                     className={cn(
@@ -229,5 +240,6 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                 </Button>
             </div>
         </div>
+        <LiveSetupDialog open={showLiveSetup} onOpenChange={setShowLiveSetup} />
     );
 }

@@ -4,6 +4,8 @@ import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { logAuditEvent } from "./audit";
+import { checkOrCreateChat, sendMessage } from "./chat";
+import { checkOrCreateChat, sendMessage } from "./chat";
 
 export type SessionType = "broadcast" | "call_video" | "call_audio";
 
@@ -25,7 +27,7 @@ export interface SignalPayload {
     to: string;
 }
 
-export async function startSession(type: SessionType, targetUserId?: string, isPublic: boolean = false) {
+export async function startSession(type: SessionType, targetUserId?: string, isPublic: boolean = false, metadata?: { title?: string; description?: string }) {
     try {
         const user = await getUserProfile();
         if (!user) {
@@ -55,6 +57,8 @@ export async function startSession(type: SessionType, targetUserId?: string, isP
             status: "active",
             isPublic: type === "broadcast" ? isPublic : true, // Calls are always "public" to participants
             viewers: type === "broadcast" ? [] : undefined, // Track active viewers for broadcasts
+            title: metadata?.title || null,
+            description: metadata?.description || null,
             startedAt: FieldValue.serverTimestamp(),
             lastActiveAt: FieldValue.serverTimestamp(), // Initialize heartbeat
         };
@@ -75,6 +79,29 @@ export async function startSession(type: SessionType, targetUserId?: string, isP
             );
         } catch (auditErr) {
             console.error("[startSession] Audit log failed (non-critical):", auditErr);
+        }
+
+        // Log to Chat for Direct Calls
+        if ((type === "call_audio" || type === "call_video") && targetUserId) {
+            try {
+                // We need to act as the user, but we are in a server action so we have the user context.
+                // checkOrCreateChat checks auth, so it should work.
+                // However, checkOrCreateChat might run on the server context freely.
+
+                // Since this is a server action called by the client, the headers/cookies are present.
+                // We can't easily call "checkOrCreateChat" if it expects to read cookies again unless we are sure.
+                // But we already got 'user' from 'getUserProfile()'.
+
+                // Just use adminDb to find the chat manually to avoid re-auth overhead/issues if any.
+                // Actually, reusing checkOrCreateChat is safer for logic consistency.
+                const chatId = await checkOrCreateChat(targetUserId);
+
+                const messageContent = type === "call_audio" ? "Started a voice call" : "Started a video call";
+                await sendMessage(chatId, messageContent, "text"); // Or "system" if we supported it
+
+            } catch (chatError) {
+                console.error("[startSession] Failed to log call to chat:", chatError);
+            }
         }
 
         return {
