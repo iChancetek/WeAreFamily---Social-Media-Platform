@@ -69,7 +69,7 @@ export async function getConversations(): Promise<AIConversation[]> {
             .get();
     }
 
-    const conversations = snapshot.docs.map(doc => ({
+    const conversations = snapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate() || new Date(),
