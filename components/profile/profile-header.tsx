@@ -10,6 +10,7 @@ import { ProfileContent } from "./profile-content"
 import { BlockButton } from "@/components/profile/block-button"
 import { toast } from "sonner"
 import { ProfileShareButton } from "@/components/profile/profile-share-button"
+import { MessageButton } from "@/components/chat/message-button"
 
 interface ProfileHeaderProps {
     user: {
@@ -118,6 +119,11 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                 </div>
                             ) : (
                                 <div className="flex flex-col w-full gap-3 sm:flex-row sm:w-auto sm:gap-2">
+                                    <div className="w-full sm:w-auto">
+                                        <MessageButton userId={user.id} className="w-full sm:w-auto" variant="outline">
+                                            {t("profile.message", "Message")}
+                                        </MessageButton>
+                                    </div>
                                     <div className="w-full sm:w-auto">
                                         <BlockButton
                                             targetUserId={user.id}

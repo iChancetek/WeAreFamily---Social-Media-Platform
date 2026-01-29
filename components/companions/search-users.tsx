@@ -8,6 +8,7 @@ import { CompanionRequestButton } from "./companion-request-button"
 import { Loader2, Search } from "lucide-react"
 import { useDebouncedCallback } from "use-debounce"
 import Link from "next/link"
+import { MessageButton } from "@/components/chat/message-button"
 
 export function SearchUsers() {
     const [query, setQuery] = useState("")
@@ -64,12 +65,15 @@ export function SearchUsers() {
                                 {user.displayName && <span className="text-xs text-muted-foreground truncate">{user.email}</span>}
                             </div>
                         </Link>
-                        <CompanionRequestButton
-                            targetUserId={user.id}
-                            initialStatus={user.companionStatus.status}
-                            initialRequestId={user.companionStatus.requestId}
-                            className="h-8 text-xs"
-                        />
+                        <div className="flex items-center gap-2">
+                            <MessageButton userId={user.id} size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" />
+                            <CompanionRequestButton
+                                targetUserId={user.id}
+                                initialStatus={user.companionStatus.status}
+                                initialRequestId={user.companionStatus.requestId}
+                                className="h-8 text-xs"
+                            />
+                        </div>
                     </div>
                 ))}
             </div>

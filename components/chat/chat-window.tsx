@@ -1,201 +1,121 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useRealtimeMessages } from "@/hooks/use-realtime-messages";
+import { sendMessage } from "@/app/actions/chat";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/components/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { getMessages, sendMessage, Message, ChatSession } from "@/app/actions/chat";
-import { Send, Loader2, Smile, Phone, Video } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { startSession } from "@/app/actions/rtc";
-import { toast } from "sonner";
+import { Send, Image as ImageIcon, Video, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
-import { useLanguage } from "@/components/language-context";
-
-interface ChatWindowProps {
-    session: ChatSession;
-    currentUserId: string;
-    onStartCall?: (sessionId: string) => void;
-}
-
-export function ChatWindow({ session, currentUserId, onStartCall }: ChatWindowProps) {
-    const { t } = useLanguage();
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [inputText, setInputText] = useState("");
+export function ChatWindow({ chatId, otherUser }: { chatId: string, otherUser?: any }) {
+    const { messages, loading } = useRealtimeMessages(chatId);
+    const { user } = useAuth();
+    const [inputValue, setInputValue] = useState("");
     const [isSending, setIsSending] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    const otherUser = session.otherUser;
-
-    const fetchMessages = async () => {
-        try {
-            const data = await getMessages(session.id);
-            setMessages(data);
-            setIsLoading(false);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    // Initial fetch and Polling
-    useEffect(() => {
-        fetchMessages();
-        const interval = setInterval(fetchMessages, 3000); // Poll every 3s
-        return () => clearInterval(interval);
-    }, [session.id]);
 
     // Auto-scroll to bottom on new messages
     useEffect(() => {
         if (scrollRef.current) {
-            scrollRef.current.scrollIntoView({ behavior: "smooth" });
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages]);
 
     const handleSend = async () => {
-        if (!inputText.trim()) return;
-
-        const content = inputText;
-        setInputText(""); // Optimistic clear
-
-        // Optimistic append
-        const tempMsg: Message = {
-            id: Date.now().toString(), // Temp ID as string
-            senderId: currentUserId,
-            content: content,
-            createdAt: new Date(),
-        };
-        setMessages(prev => [...prev, tempMsg]);
+        if (!inputValue.trim()) return;
 
         setIsSending(true);
         try {
-            await sendMessage(session.id, content);
-            await fetchMessages(); // Sync real ID
-        } catch {
-            // Revert or show error (simplified)
-            console.error("Failed to send");
+            await sendMessage(chatId, inputValue);
+            setInputValue("");
+        } catch (error) {
+            console.error("Failed to send", error);
         } finally {
             setIsSending(false);
         }
     };
 
-    const handleStartCall = async (type: "call_video" | "call_audio") => {
-        try {
-            const result = await startSession(type, otherUser?.id);
-            onStartCall?.(result.sessionId);
-            toast.success(type === "call_video" ? t('messages.call.video.started') : t('messages.call.voice.started'));
-        } catch (error: any) {
-            toast.error(error.message || t('messages.call.error'));
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
         }
     };
 
+    if (loading) {
+        return <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin" /></div>;
+    }
+
+    // Group messages by date? Optional enhancement.
+
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-card rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm">
+        <div className="flex flex-col h-full bg-background">
             {/* Header */}
-            <div className="p-4 border-b border-gray-100 dark:border-white/5 flex items-center gap-3 bg-white/50 backdrop-blur-md">
-                <Avatar className="h-10 w-10">
-                    <AvatarImage src={otherUser?.imageUrl || undefined} />
-                    <AvatarFallback>{otherUser?.displayName?.charAt(0) || "?"}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                    <h3 className="font-semibold text-sm md:text-base text-foreground">
-                        {otherUser?.displayName || t('messages.chat.unknown')}
-                    </h3>
-                    <p className="text-xs text-green-500 font-medium">{t('messages.status.online')}</p>
-                </div>
-                <div className="flex gap-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleStartCall("call_audio")}
-                        className="text-muted-foreground hover:text-foreground"
-                    >
-                        <Phone className="h-5 w-5" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleStartCall("call_video")}
-                        className="text-muted-foreground hover:text-foreground"
-                    >
-                        <Video className="h-5 w-5" />
-                    </Button>
-                </div>
+            <div className="flex items-center p-4 border-b shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+                {otherUser && (
+                    <>
+                        <Avatar className="h-10 w-10 mr-3">
+                            <AvatarImage src={otherUser.imageUrl} />
+                            <AvatarFallback>{otherUser.displayName?.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <h2 className="font-bold">{otherUser.displayName}</h2>
+                            <p className="text-xs text-green-500">Online now</p> {/* TODO: Real presence */}
+                        </div>
+                    </>
+                )}
             </div>
 
-            {/* Messages Area */}
-            <ScrollArea className="flex-1 p-4 bg-gray-50/50 dark:bg-background/50">
-                <div className="flex flex-col gap-3 min-h-full justify-end">
-                    {isLoading ? (
-                        <div className="flex justify-center py-10">
-                            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            {/* Messages */}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.map((msg) => {
+                    const isMe = msg.senderId === user?.uid;
+                    return (
+                        <div key={msg.id} className={cn("flex w-full", isMe ? "justify-end" : "justify-start")}>
+                            <div className={cn(
+                                "max-w-[70%] rounded-2xl px-4 py-2",
+                                isMe ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-muted rounded-tl-none"
+                            )}>
+                                <p className="whitespace-pre-wrap break-words text-sm">{msg.content}</p>
+                                <span className="text-[10px] opacity-70 block mt-1 text-right">
+                                    {format(msg.createdAt, "h:mm a")}
+                                </span>
+                            </div>
                         </div>
-                    ) : messages.length === 0 ? (
-                        <div className="text-center text-muted-foreground py-10 text-sm">
-                            {t('messages.chat.say_hello')}
-                        </div>
-                    ) : (
-                        messages.map((msg) => {
-                            const isMe = msg.senderId === currentUserId;
-                            return (
-                                <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${isMe
-                                        ? 'bg-primary text-primary-foreground rounded-br-none'
-                                        : 'bg-white dark:bg-card text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/5 rounded-bl-none shadow-sm'
-                                        }`}>
-                                        {msg.content}
-                                        <div className={`text-[10px] mt-1 opacity-70 ${isMe ? 'text-primary-foreground/80' : 'text-gray-500'}`}>
-                                            {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    )}
-                    <div ref={scrollRef} />
-                </div>
-            </ScrollArea>
+                    );
+                })}
+            </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-white dark:bg-card border-t border-gray-100 dark:border-white/5">
-                <form
-                    onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-                    className="flex gap-2 items-center"
-                >
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-foreground">
-                                <Smile className="w-5 h-5" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-2" align="start">
-                            <div className="grid grid-cols-8 gap-2">
-                                {["👍", "❤️", "😂", "😮", "😢", "😡", "🎉", "🔥", "😎", "✨", "👋", "🙏", "🤝", "👀", "💯", "🤔"].map(emoji => (
-                                    <button
-                                        key={emoji}
-                                        onClick={() => setInputText(prev => prev + emoji)}
-                                        className="text-xl hover:bg-muted p-1 rounded transition-colors"
-                                        type="button"
-                                    >
-                                        {emoji}
-                                    </button>
-                                ))}
-                            </div>
-                        </PopoverContent>
-                    </Popover>
+            <div className="p-4 border-t sticky bottom-0 bg-background">
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="shrink-0">
+                        <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                    </Button>
+                    {/* Phase 2: Media Upload */}
 
                     <Input
-                        placeholder={t('messages.input.placeholder')}
-                        value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
-                        className="flex-1 bg-gray-100 dark:bg-secondary border-none focus-visible:ring-1 focus-visible:ring-primary"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Message..."
+                        className="flex-1 rounded-full bg-muted/50 border-0 focus-visible:ring-1"
                     />
-                    <Button type="submit" size="icon" disabled={!inputText.trim() || isSending} className="shrink-0">
-                        <Send className="w-4 h-4" />
+
+                    <Button
+                        onClick={handleSend}
+                        disabled={!inputValue.trim() || isSending}
+                        size="icon"
+                        variant={inputValue.trim() ? "default" : "ghost"}
+                        className={cn("shrink-0 rounded-full transition-all", inputValue.trim() ? "scale-100 opacity-100" : "scale-90 opacity-0 w-0 p-0 overflow-hidden")}
+                    >
+                        {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     </Button>
-                </form>
+                </div>
             </div>
         </div>
     );
