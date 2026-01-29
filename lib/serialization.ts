@@ -3,7 +3,7 @@ export function sanitizeData(data: any): any {
 
     // Handle Dates (already sanitized or native)
     if (data instanceof Date) {
-        return data; // Dates are serializable in Next.js
+        return data; // Keep Dates as objects for Server Logic (Admin/Firestore compatibility)
     }
 
     // Handle Firestore Timestamp
@@ -17,12 +17,7 @@ export function sanitizeData(data: any): any {
     }
 
     // Handle Object (plain objects)
-    // We check if it's a plain object or at least not something we should let through
     if (typeof data === 'object') {
-        // If it's a Firestore-like object that isn't a plain object (e.g. GeoPoint, DocumentReference)
-        // we might want to convert them to strings or plain objects if needed.
-        // For now, let's just make sure we don't crash on recursion.
-
         try {
             const sanitized: any = {};
             for (const key in data) {
@@ -38,4 +33,12 @@ export function sanitizeData(data: any): any {
     }
 
     return data;
+}
+
+/**
+ * Ensures data is safe for Client Components (no Date objects).
+ * Uses JSON cycle to convert Dates to ISO strings automatically.
+ */
+export function sanitizeForClient(data: any): any {
+    return JSON.parse(JSON.stringify(sanitizeData(data)));
 }

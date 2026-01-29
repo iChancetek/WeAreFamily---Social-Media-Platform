@@ -3,7 +3,7 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { sanitizeData } from "@/lib/serialization";
+import { sanitizeForClient } from "@/lib/serialization";
 import { QueryDocumentSnapshot } from "firebase-admin/firestore";
 
 export type CompanionStatus = {
@@ -275,8 +275,8 @@ export async function getCompanionRequests() {
     }));
 
     return {
-        incoming: sanitizeData(incomingRequests),
-        sent: sanitizeData(sentRequests)
+        incoming: sanitizeForClient(incomingRequests),
+        sent: sanitizeForClient(sentRequests)
     };
 }
 
@@ -391,7 +391,7 @@ export async function getCompanions() {
         })
     );
 
-    return sanitizeData(familyMembers.filter(Boolean));
+    return sanitizeForClient(familyMembers.filter(Boolean));
 }
 
 export async function getCompanionIds(userId: string) {
@@ -541,5 +541,5 @@ export async function getUserCompanions(targetUserId: string) {
         })
     );
 
-    return sanitizeData(companions.filter(Boolean));
+    return sanitizeForClient(companions.filter(Boolean));
 }
