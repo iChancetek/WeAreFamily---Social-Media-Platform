@@ -1,7 +1,7 @@
 "use client"
 
 import { useLivePresence } from "@/components/live/live-presence-context"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
@@ -50,7 +50,6 @@ export function LiveNowSection() {
                         </button>
                     ))}
                 </div>
-                <ScrollBar orientation="horizontal" className="hidden" />
             </ScrollArea>
         </div>
     )
