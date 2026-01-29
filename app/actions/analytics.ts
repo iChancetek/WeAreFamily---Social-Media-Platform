@@ -176,7 +176,7 @@ export async function getUserAnalytics(targetUserId: string, range: 'day' | 'wee
             .orderBy('startedAt', 'desc')
             .get();
 
-        const history = sessionsSnapshot.docs.map(doc => {
+        const history = sessionsSnapshot.docs.map((doc: any) => {
             const data = doc.data();
             return {
                 id: doc.id,
@@ -189,12 +189,12 @@ export async function getUserAnalytics(targetUserId: string, range: 'day' | 'wee
         });
 
         const totalSignIns = history.length;
-        const totalDuration = history.reduce((acc, curr) => acc + curr.duration, 0);
+        const totalDuration = history.reduce((acc: number, curr: any) => acc + curr.duration, 0);
 
         // Chart: Duration per day? Or Sessions per day?
         const chartMap = new Map<string, { sessions: number, duration: number }>();
 
-        history.forEach(session => {
+        history.forEach((session: any) => {
             if (!session.startedAt) return;
             const key = format(session.startedAt, range === 'day' ? 'HH:00' : (range === 'year' ? 'MMM yyyy' : 'MMM dd'));
 
