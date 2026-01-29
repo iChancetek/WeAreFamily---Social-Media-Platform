@@ -11,6 +11,8 @@ export async function approveUser(userId: string) {
         throw new Error("Unauthorized")
     }
 
+    if (!adminDb) throw new Error("Database Unavailable");
+
     const userDoc = await adminDb.collection("users").doc(userId).get();
     if (!userDoc.exists) throw new Error("User not found");
     const userData = userDoc.data();
@@ -34,6 +36,7 @@ export async function rejectUser(userId: string) {
     if (admin?.role !== 'admin') {
         throw new Error("Unauthorized")
     }
+    if (!adminDb) throw new Error("Database Unavailable");
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
     if (!userDoc.exists) throw new Error("User not found");
@@ -58,6 +61,7 @@ export async function makeAdmin(userId: string) {
     if (admin?.role !== 'admin') {
         throw new Error("Unauthorized")
     }
+    if (!adminDb) throw new Error("Database Unavailable");
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
     if (!userDoc.exists) throw new Error("User not found");
@@ -82,6 +86,7 @@ export async function toggleUserStatus(userId: string, isActive: boolean) {
     if (admin?.role !== 'admin') {
         throw new Error("Unauthorized")
     }
+    if (!adminDb) throw new Error("Database Unavailable");
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
     if (!userDoc.exists) throw new Error("User not found");
@@ -106,6 +111,7 @@ export async function updateUserProfile(userId: string, data: { firstName?: stri
     if (admin?.role !== 'admin') {
         throw new Error("Unauthorized")
     }
+    if (!adminDb) throw new Error("Database Unavailable");
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
     if (!userDoc.exists) throw new Error("User not found");
@@ -122,17 +128,12 @@ export async function updateUserProfile(userId: string, data: { firstName?: stri
     if (data.displayName) {
         updates.displayName = data.displayName;
     } else if (data.firstName || data.lastName) {
-        // If changing real name but not explicit display name, ensure display name is updated to match new real name
-        // (Enforcing strictly First + Last)
         const f = data.firstName || currentUserData?.profileData?.firstName || "";
         const l = data.lastName || currentUserData?.profileData?.lastName || "";
         updates.displayName = `${f} ${l}`.trim();
     }
 
     if (data.email && data.email !== currentUserData?.email) {
-        // Changing email requires updating Auth user too - complex, might need Admin SDK auth.updateUser
-        // For now, let's stick to Firestore updates and warn/handle Auth separately if needed.
-        // Actually, let's try to update Auth if possible.
         try {
             const { getAuth } = await import('firebase-admin/auth');
             await getAuth().updateUser(userId, { email: data.email });
@@ -170,6 +171,7 @@ export async function updateUserRole(userId: string, newRole: 'admin' | 'member'
     if (userId === admin.uid) {
         throw new Error("Cannot change your own role");
     }
+    if (!adminDb) throw new Error("Database Unavailable");
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
     if (!userDoc.exists) throw new Error("User not found");
@@ -199,18 +201,18 @@ export async function softDeleteUser(userId: string) {
     if (userId === admin.uid) {
         throw new Error("Cannot delete yourself");
     }
+    if (!adminDb) throw new Error("Database Unavailable");
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
     if (!userDoc.exists) throw new Error("User not found");
     const userData = userDoc.data();
 
-    // Soft delete: set deletedAt and disable account
+    // Soft delete
     await adminDb.collection("users").doc(userId).update({
         deletedAt: new Date().toISOString(),
-        isActive: false // Automatically disable on delete
+        isActive: false
     });
 
-    // Also disable in Auth to prevent login immediately
     try {
         const { getAuth } = await import('firebase-admin/auth');
         await getAuth().updateUser(userId, { disabled: true });
@@ -235,18 +237,17 @@ export async function restoreUser(userId: string) {
     if (admin?.role !== 'admin') {
         throw new Error("Unauthorized")
     }
+    if (!adminDb) throw new Error("Database Unavailable");
 
     const userDoc = await adminDb.collection("users").doc(userId).get();
     if (!userDoc.exists) throw new Error("User not found");
     const userData = userDoc.data();
 
-    // Restore: clear deletedAt and re-enable account
     await adminDb.collection("users").doc(userId).update({
-        deletedAt: null, // removing field or setting to null
+        deletedAt: null,
         isActive: true
     });
 
-    // Re-enable in Auth
     try {
         const { getAuth } = await import('firebase-admin/auth');
         await getAuth().updateUser(userId, { disabled: false });
@@ -267,22 +268,39 @@ export async function restoreUser(userId: string) {
 }
 
 export async function getAllUsers() {
-    const admin = await getUserProfile();
-    if (admin?.role !== 'admin') {
-        return [];
+    try {
+        const adminUser = await getUserProfile();
+        if (!adminUser || adminUser.role !== 'admin') {
+            const error = new Error("Unauthorized");
+            (error as any).digest = "UNAUTHORIZED_ADMIN_ACCESS"; // Hint to client
+            throw error;
+        }
+
+        // Verify adminDb is ready (basic check)
+        if (!adminDb) {
+            console.error("getAllUsers: adminDb is undefined");
+            throw new Error("Database connection not initialized. Please check server logs.");
+        }
+
+        const snapshot = await adminDb.collection("users").get();
+
+        const users = snapshot.docs.map((doc: any) => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || 0),
+                lastSignInAt: data.lastSignInAt?.toDate ? data.lastSignInAt.toDate() : (data.lastSignInAt ? new Date(data.lastSignInAt) : null),
+                lastActiveAt: data.lastActiveAt?.toDate ? data.lastActiveAt.toDate() : (data.lastActiveAt ? new Date(data.lastActiveAt) : null),
+            };
+        });
+
+        // Sort by createdAt desc
+        return users.sort((a: any, b: any) => b.createdAt - a.createdAt);
+    } catch (error: any) {
+        console.error("Critical Error in getAllUsers:", error);
+        // Throw a simple error that won't be masked by Next.js as "Server Components render"
+        // We prefix it so we know it's ours.
+        throw new Error(`[AdminFetchError] ${error.message}`);
     }
-
-    const snapshot = await adminDb.collection("users").orderBy("createdAt", "desc").get();
-
-    return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            ...data,
-            // Ensure Dates are Dates (Firestore Timestamps -> Date)
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now()),
-            lastSignInAt: data.lastSignInAt?.toDate ? data.lastSignInAt.toDate() : (data.lastSignInAt ? new Date(data.lastSignInAt) : null),
-            lastActiveAt: data.lastActiveAt?.toDate ? data.lastActiveAt.toDate() : (data.lastActiveAt ? new Date(data.lastActiveAt) : null),
-        };
-    });
 }

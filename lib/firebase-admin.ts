@@ -1,5 +1,5 @@
 import 'server-only';
-export const dynamic = 'force-dynamic'; // Force dynamic (server-rendered) to ensure env vars are read at runtime
+export const dynamic = 'force-dynamic';
 
 import { initializeApp, getApps, getApp, cert, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -48,20 +48,30 @@ const firebaseAdminConfig = {
 };
 
 let app;
+let adminAuth: any;
+let adminDb: any;
+let adminStorage: any;
+let adminMessaging: any;
+
 try {
     if (!getApps().length) {
         app = initializeApp(firebaseAdminConfig);
     } else {
         app = getApp();
     }
+
+    // Initialize services ONLY if app exists
+    if (app) {
+        adminAuth = getAuth(app);
+        adminDb = getFirestore(app);
+        adminStorage = getStorage(app);
+        adminMessaging = getMessaging(app);
+    }
 } catch (error) {
     console.error("Firebase Admin Initialization Check Failed.");
     console.error("Critical Error: Firebase Admin could not be initialized.", error);
-    // Do NOT throw here, as it crashes the entire app startup/module load.
-    // Downstream usage (adminDb, adminAuth) will likely fail, but we can catch that in the specific server actions.
+    // Do not throw, but exports will be undefined/null.
+    // Downstream code MUST check if adminDb is defined.
 }
 
-export const adminAuth = getAuth(app);
-export const adminDb = getFirestore(app);
-export const adminStorage = getStorage(app);
-export const adminMessaging = getMessaging(app);
+export { adminAuth, adminDb, adminStorage, adminMessaging };
