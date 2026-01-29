@@ -103,8 +103,8 @@ export function ConversationStarterDialog({ open, onOpenChange, userId, userName
                         onClick={() => handleStartCall('call_video')}
                         disabled={!!loading}
                     >
-                        {loading === 'video' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Video className="h-5 w-5 text-red-500" />}
-                        Live Video
+                        {loading === 'video' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Video className="h-5 w-5 text-purple-500" />}
+                        Video Call
                     </Button>
                 </div>
 
