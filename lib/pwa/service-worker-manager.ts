@@ -17,8 +17,10 @@ export function registerServiceWorker() {
                 console.log("[PWA] New version available");
                 // Show update notification
                 if (confirm("A new version of Famio is available. Reload to update?")) {
+                    wb?.addEventListener("controlling", () => {
+                        window.location.reload();
+                    });
                     wb?.messageSkipWaiting();
-                    window.location.reload();
                 }
             }
         });
