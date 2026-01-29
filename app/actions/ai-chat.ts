@@ -225,7 +225,7 @@ export async function permanentlyDeleteConversation(conversationId: string) {
     const messages = await convRef.collection("messages").get();
     const batch = adminDb.batch();
 
-    messages.docs.forEach(doc => {
+    messages.docs.forEach((doc: any) => {
         batch.delete(doc.ref);
     });
 
