@@ -5,17 +5,60 @@ import { useAuth } from "@/components/auth-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, FileText, AlertTriangle, Activity } from "lucide-react";
 import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getAllUsers } from "@/app/actions/admin";
+import { AdminCharts } from "@/components/admin/admin-charts";
+import { UserList } from "@/components/admin/user-list";
+import { sanitizeForClient } from "@/lib/serialization";
 
 export default function AdminDashboardPage() {
     const { profile, loading } = useAuth();
+    const [users, setUsers] = useState<any[]>([]);
+    const [stats, setStats] = useState({
+        totalUsers: 0,
+        activeToday: 0,
+        newThisMonth: 0
+    });
+    const [isLoadingData, setIsLoadingData] = useState(true);
+
+    useEffect(() => {
+        if (!loading && profile?.role === 'admin') {
+            const fetchData = async () => {
+                try {
+                    const allUsers = await getAllUsers();
+                    setUsers(allUsers);
+
+                    // Calculate stats
+                    const now = new Date();
+                    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                    const newUsers = allUsers.filter((u: any) => new Date(u.createdAt) >= startOfMonth).length;
+                    const activeUsers = allUsers.filter((u: any) => u.lastActiveAt && new Date(u.lastActiveAt) >= startOfDay).length;
+
+                    setStats({
+                        totalUsers: allUsers.length,
+                        activeToday: activeUsers,
+                        newThisMonth: newUsers
+                    });
+                } catch (error) {
+                    console.error("Failed to fetch admin data", error);
+                } finally {
+                    setIsLoadingData(false);
+                }
+            };
+            fetchData();
+        }
+    }, [loading, profile]);
 
     if (loading) return null;
     if (profile?.role !== 'admin') {
-        // Simple client-side protect for now
-        // redirect("/"); 
-        // For demo/scaffold purposes, let's just show text
-        // return <MainLayout><div>Access Denied</div></MainLayout>
+        // Simple client-side protect
+        return <MainLayout><div>Access Denied</div></MainLayout>
     }
+
+    const registrationData = processRegistrationData(users);
+    const roleData = processRoleData(users);
 
     return (
         <MainLayout>
@@ -26,22 +69,28 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatsCard title="Total Users" value="1,234" icon={<Users className="w-4 h-4" />} trend="+12%" />
-                    <StatsCard title="Active Posts" value="5,678" icon={<FileText className="w-4 h-4" />} trend="+5%" />
-                    <StatsCard title="Reports" value="23" icon={<AlertTriangle className="w-4 h-4 text-red-500" />} trend="-2%" />
-                    <StatsCard title="Server Health" value="99.9%" icon={<Activity className="w-4 h-4 text-green-500" />} trend="Stable" />
+                    <StatsCard title="Total Users" value={stats.totalUsers.toLocaleString()} icon={<Users className="w-4 h-4" />} trend={`+${stats.newThisMonth} this month`} />
+                    <StatsCard title="Active Today" value={stats.activeToday.toLocaleString()} icon={<Activity className="w-4 h-4 text-green-500" />} trend="Daily Active" />
+                    {/* Placeholders for now */}
+                    <StatsCard title="Reports" value="0" icon={<AlertTriangle className="w-4 h-4 text-red-500" />} trend="No pending" />
+                    <StatsCard title="Server Health" value="100%" icon={<Activity className="w-4 h-4 text-green-500" />} trend="Stable" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
-                        <CardHeader><CardTitle>Recent Reports</CardTitle></CardHeader>
-                        <CardContent><div className="text-sm text-muted-foreground">No pending reports.</div></CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader><CardTitle>User Growth</CardTitle></CardHeader>
-                        <CardContent><div className="h-[200px] flex items-center justify-center bg-muted/20 rounded">Chart Placeholder</div></CardContent>
-                    </Card>
-                </div>
+                <AdminCharts
+                    registrationData={registrationData}
+                    roleData={roleData}
+                />
+
+                <Card>
+                    <CardHeader><CardTitle>User Management</CardTitle></CardHeader>
+                    <CardContent>
+                        {isLoadingData ? (
+                            <div>Loading users...</div>
+                        ) : (
+                            <UserList users={sanitizeForClient(users)} />
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </MainLayout>
     );
@@ -60,4 +109,39 @@ function StatsCard({ title, value, icon, trend }: any) {
             </CardContent>
         </Card>
     );
+}
+
+function processRegistrationData(users: any[]) {
+    // Group by month (last 6 months)
+    const months: Record<string, number> = {};
+    const now = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = d.toLocaleString('default', { month: 'short' });
+        months[key] = 0;
+    }
+
+    users.forEach(user => {
+        const d = new Date(user.createdAt);
+        // Only count if within last 6 months (roughly)
+        if (now.getTime() - d.getTime() < 180 * 24 * 60 * 60 * 1000) {
+            const key = d.toLocaleString('default', { month: 'short' });
+            if (months[key] !== undefined) {
+                months[key]++;
+            }
+        }
+    });
+
+    return Object.entries(months).map(([name, value]) => ({ name, value }));
+}
+
+function processRoleData(users: any[]) {
+    const roles: Record<string, number> = { admin: 0, member: 0 };
+    users.forEach(user => {
+        const role = user.role || 'member';
+        roles[role] = (roles[role] || 0) + 1;
+    });
+
+    return Object.entries(roles).map(([name, value]) => ({ name, value }));
 }
