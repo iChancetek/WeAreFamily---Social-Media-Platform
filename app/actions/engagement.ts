@@ -150,7 +150,7 @@ export async function getPostActivity(postId: string, contextType?: string, cont
         .get();
 
     const recentComments = await Promise.all(
-        commentsSnapshot.docs.map(async (doc) => {
+        commentsSnapshot.docs.map(async (doc: any) => {
             const commentData = doc.data();
             const authorDoc = await adminDb.collection("users").doc(commentData.authorId).get();
             const authorData = authorDoc.data();

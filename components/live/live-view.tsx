@@ -7,13 +7,35 @@ import { Video, Users, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/components/language-context";
 
+import { getActiveBroadcasts } from "@/app/actions/rtc";
+import { useEffect, useState } from "react";
+
 interface LiveViewProps {
     broadcasts: any[];
     error: string | null;
 }
 
-export function LiveView({ broadcasts, error }: LiveViewProps) {
+export function LiveView({ broadcasts: initialBroadcasts, error: initialError }: LiveViewProps) {
     const { t } = useLanguage();
+    const [broadcasts, setBroadcasts] = useState(initialBroadcasts);
+    const [error, setError] = useState(initialError);
+
+    useEffect(() => {
+        const fetchBroadcasts = async () => {
+            try {
+                const data = await getActiveBroadcasts();
+                setBroadcasts(data);
+                setError(null);
+            } catch (err: any) {
+                console.error("Failed to poll broadcasts:", err);
+                // Don't overwrite existing data on poll error, just log
+            }
+        };
+
+        // Poll every 5 seconds for "instant" updates
+        const interval = setInterval(fetchBroadcasts, 5000);
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <div className="container mx-auto p-6 max-w-6xl">

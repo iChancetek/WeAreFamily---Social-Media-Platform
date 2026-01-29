@@ -45,7 +45,7 @@ export type DictionaryKey =
     | "settings.security.password.btn" | "settings.security.password.success"
     | "btn.save" | "btn.cancel" | "btn.post" | "btn.share" | "btn.comment"
     | "branding.title" | "branding.desc" | "branding.create" | "branding.view" | "branding.followers" | "branding.category.brand" | "branding.category.business" | "branding.category.public_figure"
-    | "profile.memory" | "profile.share" | "profile.companions"
+    | "profile.memory" | "profile.share" | "profile.companions" | "profile.message"
     | "messages.new" | "messages.select" | "messages.empty" | "messages.search"
     | "messages.placeholder.desc" | "messages.chat.unknown" | "messages.status.online" | "messages.chat.say_hello"
     | "messages.input.placeholder" | "messages.call.video.started" | "messages.call.voice.started" | "messages.call.error"

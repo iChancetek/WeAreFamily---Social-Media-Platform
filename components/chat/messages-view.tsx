@@ -35,7 +35,7 @@ export function MessagesView({ chats, activeSession, user, familyMembers, active
                 {/* Main Chat Area */}
                 <div className={`flex-1 ${!activeChatId ? 'hidden md:flex' : 'flex'} flex-col h-full`}>
                     {activeSession ? (
-                        <ChatWindow session={activeSession} currentUserId={user.id} />
+                        <ChatWindow chatId={activeSession.id} otherUser={activeSession.otherUser} />
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center bg-white/50 dark:bg-card/50 rounded-xl border border-dashed border-gray-200 dark:border-white/10 p-8 text-center text-muted-foreground animate-in fade-in zoom-in-95 duration-500 h-full">
                             <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">

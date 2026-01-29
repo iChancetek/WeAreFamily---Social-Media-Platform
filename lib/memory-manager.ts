@@ -222,7 +222,7 @@ export async function resetUserMemory(userId: string): Promise<void> {
             .get();
 
         const batch = adminDb.batch();
-        snapshot.docs.forEach(doc => {
+        snapshot.docs.forEach((doc: any) => {
             batch.delete(doc.ref);
         });
         await batch.commit();
@@ -310,7 +310,7 @@ export async function cleanupOldConversations(
         const batch = adminDb.batch();
         const conversationIds: string[] = [];
 
-        snapshot.docs.forEach(doc => {
+        snapshot.docs.forEach((doc: any) => {
             batch.delete(doc.ref);
             conversationIds.push(doc.data().conversationId);
         });

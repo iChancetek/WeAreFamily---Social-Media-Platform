@@ -148,7 +148,7 @@ async function retrieveRelevantContext(query: string, limit: number = 3): Promis
 
     const docs: ScoredDoc[] = [];
 
-    snapshot.forEach(doc => {
+    snapshot.forEach((doc: any) => {
         const data = doc.data();
         if (data.embedding) {
             const score = cosineSimilarity(queryEmbedding, data.embedding);

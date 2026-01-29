@@ -46,7 +46,7 @@ export async function deleteSession() {
                 .get();
 
             const batch = adminDb.batch();
-            sessionsSnapshot.docs.forEach(doc => {
+            sessionsSnapshot.docs.forEach((doc: any) => {
                 batch.update(doc.ref, {
                     status: 'completed',
                     endedAt: FieldValue.serverTimestamp()

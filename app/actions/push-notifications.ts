@@ -153,7 +153,7 @@ export async function sendPushNotification(
         if (response.failureCount > 0) {
             console.log(`Failed to send to ${response.failureCount} tokens`);
             const tokensToRemove: string[] = [];
-            response.responses.forEach((resp, idx) => {
+            response.responses.forEach((resp: any, idx: number) => {
                 if (!resp.success) {
                     // Check error code to see if token is invalid
                     const error = resp.error;

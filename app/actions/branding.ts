@@ -85,7 +85,7 @@ export async function getBrandings() {
                 ...doc.data()
             }) as Branding;
         })
-        .filter(b => !b.deletedAt);
+        .filter((b: any) => !b.deletedAt);
 }
 
 export async function getBranding(identifier: string) {
@@ -229,11 +229,11 @@ export async function getBrandingPosts(brandingId: string, limit = 50, filters: 
     let allDocs = postsSnapshot.docs;
 
     // Filter Soft Deleted
-    allDocs = allDocs.filter(doc => !doc.data().isDeleted);
+    allDocs = allDocs.filter((doc: any) => !doc.data().isDeleted);
 
     // Apply Memory Filters
     if (filters.contentType !== 'all') {
-        allDocs = allDocs.filter(doc => {
+        allDocs = allDocs.filter((doc: any) => {
             const data = doc.data();
             const hasMedia = data.mediaUrls && data.mediaUrls.length > 0;
             const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
@@ -252,7 +252,7 @@ export async function getBrandingPosts(brandingId: string, limit = 50, filters: 
     if (filters.timeRange !== 'all') {
         const now = new Date();
         const msPerDay = 24 * 60 * 60 * 1000;
-        allDocs = allDocs.filter(doc => {
+        allDocs = allDocs.filter((doc: any) => {
             const data = doc.data();
             const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
             const diff = now.getTime() - createdAt.getTime();

@@ -11,6 +11,11 @@ export function sanitizeData(data: any): any {
         return data.toDate();
     }
 
+    // Handle Firestore DocumentReference (convert to path string)
+    if (typeof data === 'object' && data && typeof data.path === 'string' && (data.firestore || data.parent)) {
+        return data.path;
+    }
+
     // Handle array
     if (Array.isArray(data)) {
         return data.map(item => sanitizeData(item));

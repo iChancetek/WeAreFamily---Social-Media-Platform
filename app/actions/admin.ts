@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { revalidatePath } from "next/cache";
 import { getUserProfile } from "@/lib/auth";
 import { logAuditEvent } from "@/app/actions/audit";
+import { sanitizeData } from "@/lib/serialization";
 
 export async function approveUser(userId: string) {
     const admin = await getUserProfile()
@@ -286,12 +287,13 @@ export async function getAllUsers() {
 
         const users = snapshot.docs.map((doc: any) => {
             const data = doc.data();
+            const sanitized = sanitizeData(data);
             return {
                 id: doc.id,
-                ...data,
-                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || 0),
-                lastSignInAt: data.lastSignInAt?.toDate ? data.lastSignInAt.toDate() : (data.lastSignInAt ? new Date(data.lastSignInAt) : null),
-                lastActiveAt: data.lastActiveAt?.toDate ? data.lastActiveAt.toDate() : (data.lastActiveAt ? new Date(data.lastActiveAt) : null),
+                ...sanitized,
+                createdAt: sanitized.createdAt instanceof Date ? sanitized.createdAt : new Date(sanitized.createdAt || 0),
+                lastSignInAt: sanitized.lastSignInAt instanceof Date ? sanitized.lastSignInAt : (sanitized.lastSignInAt ? new Date(sanitized.lastSignInAt) : null),
+                lastActiveAt: sanitized.lastActiveAt instanceof Date ? sanitized.lastActiveAt : (sanitized.lastActiveAt ? new Date(sanitized.lastActiveAt) : null),
             };
         });
 

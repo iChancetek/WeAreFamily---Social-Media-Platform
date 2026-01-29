@@ -405,7 +405,7 @@ export async function getCompanionIds(userId: string) {
             .where("status", "==", "accepted")
             .get();
 
-        connectionsSnap.forEach(doc => {
+        connectionsSnap.forEach((doc: any) => {
             if (doc.data().connectedUserId) {
                 companionIds.add(doc.data().connectedUserId);
             }

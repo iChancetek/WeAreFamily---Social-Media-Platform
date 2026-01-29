@@ -37,7 +37,7 @@ export function ConversationList({ className }: { className?: string }) {
 
     return (
         <div className={cn("flex flex-col overflow-y-auto", className)}>
-            {chats.map((chat) => (
+            {chats.map((chat: any) => (
                 <Link
                     key={chat.id}
                     href={`/messages/${chat.id}`}

@@ -816,7 +816,7 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
         const slicedDocs = filteredDocs.slice(0, limit);
 
         // 5. Hydrate & Sanitize
-        const finalPosts = await Promise.all(slicedDocs.map(async (doc) => {
+        const finalPosts = await Promise.all(slicedDocs.map(async (doc: any) => {
             const post = doc.data();
             const currentUser = await getUserProfile();
 
@@ -853,7 +853,7 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
             // Fetch comments
             const commentsRef = adminDb.collection("posts").doc(doc.id).collection("comments");
             const commentsSnap = await commentsRef.orderBy("createdAt", "asc").get();
-            const comments = await Promise.all(commentsSnap.docs.map(async (c) => {
+            const comments = await Promise.all(commentsSnap.docs.map(async (c: any) => {
                 const cData = c.data();
                 let cAuthor = cData.author;
                 if (!cAuthor && cData.authorId) {
@@ -865,7 +865,7 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
                     } : null;
                 }
                 const repliesSnap = await commentsRef.doc(c.id).collection("replies").orderBy("createdAt", "asc").get();
-                const replies = await Promise.all(repliesSnap.docs.map(async (r) => {
+                const replies = await Promise.all(repliesSnap.docs.map(async (r: any) => {
                     const rData = r.data();
                     let rAuthor = null;
                     if (rData.authorId) {
@@ -951,7 +951,7 @@ export async function getPostGlobal(postId: string) {
 
             // Fetch comments
             const commentsSnap = await mainRef.collection("comments").orderBy("createdAt", "asc").get();
-            const comments = await Promise.all(commentsSnap.docs.map(async c => {
+            const comments = await Promise.all(commentsSnap.docs.map(async (c: any) => {
                 const cData = c.data();
                 let cAuthor = null;
                 if (cData.authorId) {
@@ -969,7 +969,7 @@ export async function getPostGlobal(postId: string) {
 
                 // Fetch replies for this comment
                 const repliesSnap = await mainRef.collection("comments").doc(c.id).collection("replies").orderBy("createdAt", "asc").get();
-                const replies = await Promise.all(repliesSnap.docs.map(async (r) => {
+                const replies = await Promise.all(repliesSnap.docs.map(async (r: any) => {
                     const rData = r.data();
                     let rAuthor = null;
                     if (rData.authorId) {
@@ -1064,7 +1064,7 @@ export async function getDeletedPosts(userId: string) {
     const snapshot = await postsRef.get();
 
     // Manual mapping to avoid circular dependency or sanitization limit issues
-    return snapshot.docs.map(doc => {
+    return snapshot.docs.map((doc: any) => {
         const data = doc.data();
         return {
             id: doc.id,

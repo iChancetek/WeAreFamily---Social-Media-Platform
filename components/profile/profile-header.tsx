@@ -121,7 +121,7 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                 <div className="flex flex-col w-full gap-3 sm:flex-row sm:w-auto sm:gap-2">
                                     <div className="w-full sm:w-auto">
                                         <MessageButton userId={user.id} className="w-full sm:w-auto" variant="outline">
-                                            {t("profile.message", "Message")}
+                                            {t("profile.message")}
                                         </MessageButton>
                                     </div>
                                     <div className="w-full sm:w-auto">

@@ -25,7 +25,7 @@ export async function GET() {
 
         debugData.checks.subcollection = {
             count: connectionsSnap.size,
-            docs: connectionsSnap.docs.map(d => ({ id: d.id, data: d.data() }))
+            docs: connectionsSnap.docs.map((d: any) => ({ id: d.id, data: d.data() }))
         };
 
         // 2. Check Legacy Requests (Sent)
@@ -35,7 +35,7 @@ export async function GET() {
 
         debugData.checks.legacySent = {
             count: sentSnap.size,
-            docs: sentSnap.docs.map(d => ({ id: d.id, data: d.data() }))
+            docs: sentSnap.docs.map((d: any) => ({ id: d.id, data: d.data() }))
         };
 
         // 3. Check Legacy Requests (Received)
@@ -45,7 +45,7 @@ export async function GET() {
 
         debugData.checks.legacyReceived = {
             count: receivedSnap.size,
-            docs: receivedSnap.docs.map(d => ({ id: d.id, data: d.data() }))
+            docs: receivedSnap.docs.map((d: any) => ({ id: d.id, data: d.data() }))
         };
 
         return NextResponse.json(debugData);

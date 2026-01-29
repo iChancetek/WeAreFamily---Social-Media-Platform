@@ -112,7 +112,7 @@ export async function getAllUsersList() {
             .limit(100)
             .get();
 
-        const users = usersSnapshot.docs.map(doc => ({
+        const users = usersSnapshot.docs.map((doc: any) => ({
             id: doc.id,
             displayName: doc.data().displayName || "Unknown User",
             email: doc.data().email || ""
