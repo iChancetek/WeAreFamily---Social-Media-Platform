@@ -133,7 +133,7 @@ function processRegistrationData(users: any[]) {
         }
     });
 
-    return Object.entries(months).map(([name, value]) => ({ name, value }));
+    return Object.entries(months).map(([name, total]) => ({ name, total }));
 }
 
 function processRoleData(users: any[]) {
