@@ -59,7 +59,7 @@ export async function getGlobalAnalytics(range: 'day' | 'week' | 'month' | 'year
 
         const chartMap = new Map<string, number>();
 
-        sessionsSnapshot.docs.forEach(doc => {
+        sessionsSnapshot.docs.forEach((doc: any) => {
             const data = doc.data();
             uniqueUserIds.add(doc.ref.parent.parent!.id); // users/{userId}/sessions/{sessionId} -> parent is sessions, parent.parent is userDoc
 
