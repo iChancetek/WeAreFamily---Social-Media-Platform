@@ -8,7 +8,6 @@ import { Loader2, PhoneOff } from "lucide-react"
 import { toast } from "sonner"
 import { db } from "@/lib/firebase"
 import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore"
-import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore"
 import { useRouter } from "next/navigation"
 import { LiveChatOverlay } from "@/components/live/live-chat-overlay"
 

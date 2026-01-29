@@ -28,7 +28,6 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
     const { theme, setTheme } = useTheme();
-    const { theme, setTheme } = useTheme();
     const [isHovered, setIsHovered] = useState(false);
     const [showLiveSetup, setShowLiveSetup] = useState(false);
 

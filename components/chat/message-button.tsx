@@ -28,20 +28,22 @@ export function MessageButton({ userId, className, children, variant = "secondar
     };
 
     return (
-        <Button
-            onClick={handleClick}
-            disabled={loading}
-            variant={variant}
-            size={size}
-            className={className}
-        >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className={children ? "mr-2 h-4 w-4" : "h-4 w-4"} />}
-            {children || (size !== "icon" && "Message")}
-        </Button>
-        <ConversationStarterDialog 
-            open={showDialog} 
-            onOpenChange={setShowDialog} 
-            userId={userId} 
-        />
+        <>
+            <Button
+                onClick={handleClick}
+                disabled={loading}
+                variant={variant}
+                size={size}
+                className={className}
+            >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className={children ? "mr-2 h-4 w-4" : "h-4 w-4"} />}
+                {children || (size !== "icon" && "Message")}
+            </Button>
+            <ConversationStarterDialog
+                open={showDialog}
+                onOpenChange={setShowDialog}
+                userId={userId}
+            />
+        </>
     );
 }

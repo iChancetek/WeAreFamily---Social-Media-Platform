@@ -5,7 +5,6 @@ import { FieldValue } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { logAuditEvent } from "./audit";
 import { checkOrCreateChat, sendMessage } from "./chat";
-import { checkOrCreateChat, sendMessage } from "./chat";
 
 export type SessionType = "broadcast" | "call_video" | "call_audio";
 

@@ -128,6 +128,7 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                         Go Live
                                     </Button>
                                     <LiveSetupDialog open={showLiveSetup} onOpenChange={setShowLiveSetup} />
+                                    </div>
                                 </div>
                         ) : (
                         <div className="flex flex-col w-full gap-3 sm:flex-row sm:w-auto sm:gap-2">
@@ -160,12 +161,14 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                 </h1>
             </div>
 
-            {user.bio && (
-                <p className="mt-4 text-muted-foreground max-w-2xl">
-                    {user.bio}
-                </p>
-            )}
-        </div>
+            {
+        user.bio && (
+            <p className="mt-4 text-muted-foreground max-w-2xl">
+                {user.bio}
+            </p>
+        )
+    }
+        </div >
         </div >
     )
 }
