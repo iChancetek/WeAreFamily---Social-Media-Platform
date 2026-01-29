@@ -1,5 +1,6 @@
 'use client';
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ConversationList } from "@/components/chat/conversation-list";
@@ -17,6 +18,10 @@ export function MessagesSidebar() {
         )}>
             <div className="p-4 border-b font-semibold text-lg flex justify-between items-center bg-card/50 backdrop-blur-sm">
                 Messages
+                {/* Add a button or link to start new chat if desired, e.g. to contacts */}
+                <Link href="/companions" className="text-primary text-sm font-normal">
+                    + New
+                </Link>
             </div>
             <ConversationList className="flex-1" />
         </div>

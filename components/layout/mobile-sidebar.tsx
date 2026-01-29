@@ -157,7 +157,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                             e.preventDefault();
                                             e.stopPropagation();
 
-                                            if (link.href === "#" && link.onClick) {
+                                            if (link.onClick) {
                                                 link.onClick();
                                                 if (onLinkClick) onLinkClick();
                                                 return;

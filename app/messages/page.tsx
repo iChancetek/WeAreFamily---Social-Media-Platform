@@ -1,6 +1,6 @@
 export default function MessagesPage() {
     return (
-        <div className="flex flex-col items-center justify-center h-full text-center p-8 text-muted-foreground">
+        <div className="hidden md:flex flex-col items-center justify-center h-full text-center p-8 text-muted-foreground">
             <div className="bg-muted/50 p-6 rounded-full mb-4">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
