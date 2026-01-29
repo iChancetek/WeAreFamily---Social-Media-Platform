@@ -57,9 +57,8 @@ try {
 } catch (error) {
     console.error("Firebase Admin Initialization Check Failed.");
     console.error("Critical Error: Firebase Admin could not be initialized.", error);
-    // Re-throw the error to prevent the app from starting in a broken state
-    // preventing silent failures in server actions
-    throw new Error(`Firebase Admin Initialization Failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+    // Do NOT throw here, as it crashes the entire app startup/module load.
+    // Downstream usage (adminDb, adminAuth) will likely fail, but we can catch that in the specific server actions.
 }
 
 export const adminAuth = getAuth(app);
