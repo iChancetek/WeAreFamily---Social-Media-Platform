@@ -59,7 +59,14 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
         }
     };
 
-    const groups = [
+    interface NavItem {
+        href: string;
+        label: string;
+        icon: any;
+        onClick?: () => void;
+    }
+
+    const groups: { title: string; items: NavItem[] }[] = [
         {
             title: t("nav.section.main"),
             items: [
