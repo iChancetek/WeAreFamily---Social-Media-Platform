@@ -102,7 +102,7 @@ export async function getTrash(): Promise<AIConversation[]> {
             .get();
     }
 
-    const trash = snapshot.docs.map(doc => ({
+    const trash = snapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate() || new Date(),
@@ -159,7 +159,7 @@ export async function getMessages(conversationId: string): Promise<AIMessage[]> 
         .orderBy("createdAt", "asc")
         .get();
 
-    return snapshot.docs.map(doc => ({
+    return snapshot.docs.map((doc: any) => ({
         id: doc.id,
         role: doc.data().role,
         content: doc.data().content,
