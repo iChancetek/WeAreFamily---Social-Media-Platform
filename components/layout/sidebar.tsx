@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Sun, Moon, HelpCircle, Music, ShoppingBag } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Sun, Moon, HelpCircle, Music, ShoppingBag, type LucideIcon } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -23,6 +23,19 @@ interface SidebarProps {
     onLinkClick?: () => void;
 }
 
+interface SidebarLink {
+    href: string;
+    label: string;
+    icon: LucideIcon;
+    hasNotification?: boolean;
+    onClick?: () => void;
+}
+
+interface SidebarGroup {
+    title: string;
+    items: SidebarLink[];
+}
+
 export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     const pathname = usePathname();
     const { user, signOut, profile } = useAuth();
@@ -34,7 +47,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     // Global Voice State
     const { state: aiState, toggleContinuous } = useVoice();
 
-    const groups = [
+    const groups: SidebarGroup[] = [
         {
             title: t("nav.section.main"),
             items: [
