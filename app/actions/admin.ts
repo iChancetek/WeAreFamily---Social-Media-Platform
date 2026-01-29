@@ -265,3 +265,24 @@ export async function restoreUser(userId: string) {
 
     revalidatePath('/admin');
 }
+
+export async function getAllUsers() {
+    const admin = await getUserProfile();
+    if (admin?.role !== 'admin') {
+        return [];
+    }
+
+    const snapshot = await adminDb.collection("users").orderBy("createdAt", "desc").get();
+
+    return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            // Ensure Dates are Dates (Firestore Timestamps -> Date)
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now()),
+            lastSignInAt: data.lastSignInAt?.toDate ? data.lastSignInAt.toDate() : (data.lastSignInAt ? new Date(data.lastSignInAt) : null),
+            lastActiveAt: data.lastActiveAt?.toDate ? data.lastActiveAt.toDate() : (data.lastActiveAt ? new Date(data.lastActiveAt) : null),
+        };
+    });
+}
