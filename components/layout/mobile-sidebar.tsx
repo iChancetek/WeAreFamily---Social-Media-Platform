@@ -22,7 +22,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
     const router = useRouter();
     const { user, signOut, profile } = useAuth();
     const { t } = useLanguage();
-    const { t } = useLanguage();
+
     const { theme, setTheme } = useTheme();
     const [showLiveSetup, setShowLiveSetup] = useState(false);
 
