@@ -159,7 +159,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                                 isActive={pathname === link.href}
                                 isExpanded={isHovered}
                                 hasNotification={link.href === '/notifications' || link.href === '/messages'} // Logic for demo
-                                onClick={onLinkClick}
+                                onClick={link.onClick || onLinkClick}
                             />
                         ))}
                     </div>
