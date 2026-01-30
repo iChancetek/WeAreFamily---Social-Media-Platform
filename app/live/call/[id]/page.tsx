@@ -1,7 +1,7 @@
 "use client"
 
 import { BroadcastView } from "@/components/rtc/broadcast-view"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 
 export default function VideoCallPage() {
     const params = useParams()
