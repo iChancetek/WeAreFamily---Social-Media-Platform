@@ -10,9 +10,10 @@ import { Video, Loader2, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 
+import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 
-export default function BroadcastPage() {
+function BroadcastContent() {
     const searchParams = useSearchParams()
     const initialSessionId = searchParams.get("sessionId")
     const router = useRouter()
@@ -93,5 +94,13 @@ export default function BroadcastPage() {
                 </CardContent>
             </Card>
         </div>
+    )
+}
+
+export default function BroadcastPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+            <BroadcastContent />
+        </Suspense>
     )
 }

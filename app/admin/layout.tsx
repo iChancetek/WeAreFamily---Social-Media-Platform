@@ -2,6 +2,8 @@ import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLayout({ children }: { children: ReactNode }) {
     try {
         const user = await getUserProfile();
