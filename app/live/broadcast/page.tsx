@@ -10,9 +10,13 @@ import { Video, Loader2, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 
-export default function BroadcastPage({ searchParams }: { searchParams: { sessionId?: string } }) {
+import { useSearchParams } from "next/navigation"
+
+export default function BroadcastPage() {
+    const searchParams = useSearchParams()
+    const initialSessionId = searchParams.get("sessionId")
     const router = useRouter()
-    const [sessionId, setSessionId] = useState<string | null>(searchParams.sessionId || null)
+    const [sessionId, setSessionId] = useState<string | null>(initialSessionId)
     const [isStarting, setIsStarting] = useState(false)
 
     const handleStartBroadcast = async () => {

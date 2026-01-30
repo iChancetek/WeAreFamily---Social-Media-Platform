@@ -1,9 +1,11 @@
 "use client"
 
 import { BroadcastView } from "@/components/rtc/broadcast-view"
-import { useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 
-export default function VideoCallPage({ params }: { params: { id: string } }) {
+export default function VideoCallPage() {
+    const params = useParams()
+    const id = params?.id as string
     const router = useRouter()
 
     const handleEndCall = () => {
@@ -18,7 +20,7 @@ export default function VideoCallPage({ params }: { params: { id: string } }) {
 
     return (
         <div className="container mx-auto p-0 h-[100dvh] bg-black">
-            <BroadcastView sessionId={params.id} onEnd={handleEndCall} />
+            <BroadcastView sessionId={id} onEnd={handleEndCall} />
         </div>
     )
 }

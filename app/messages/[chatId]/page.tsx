@@ -3,11 +3,11 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
-export default async function ChatPage({ params }: { params: { chatId: string } }) {
+export default async function ChatPage({ params }: { params: Promise<{ chatId: string }> }) {
     const user = await getUserProfile();
     if (!user) redirect("/login");
 
-    const { chatId } = params;
+    const { chatId } = await params;
 
     // Fetch chat metadata to get other user details initially
     const chatDoc = await adminDb.collection("chats").doc(chatId).get();
