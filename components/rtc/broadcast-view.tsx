@@ -13,6 +13,7 @@ import { ViewerListPanel } from "./viewer-list-panel"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { LiveChatOverlay } from "@/components/live/live-chat-overlay"
+import { LiveReactions } from "@/components/live/live-reactions"
 
 interface BroadcastViewProps {
     sessionId: string;
@@ -303,6 +304,9 @@ export function BroadcastView({ sessionId, onEnd }: BroadcastViewProps) {
 
                 {/* Chat Overlay */}
                 <LiveChatOverlay sessionId={sessionId} />
+
+                {/* Reactions Overlay (View Only) */}
+                <LiveReactions sessionId={sessionId} showControls={false} />
             </div>
 
             {/* Viewer List Panel */}

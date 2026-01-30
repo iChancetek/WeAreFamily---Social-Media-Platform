@@ -5,6 +5,8 @@ import { FieldValue } from "firebase-admin/firestore";
 import { getUserProfile } from "@/lib/auth";
 import { logAuditEvent } from "./audit";
 import { checkOrCreateChat, sendMessage } from "./chat";
+import { getCompanionIds } from "./companions";
+import { sendPushNotification } from "./push-notifications";
 
 export type SessionType = "broadcast" | "call_video" | "call_audio";
 
@@ -83,16 +85,7 @@ export async function startSession(type: SessionType, targetUserId?: string, isP
         // Log to Chat for Direct Calls
         if ((type === "call_audio" || type === "call_video") && targetUserId) {
             try {
-                // We need to act as the user, but we are in a server action so we have the user context.
-                // checkOrCreateChat checks auth, so it should work.
-                // However, checkOrCreateChat might run on the server context freely.
-
-                // Since this is a server action called by the client, the headers/cookies are present.
-                // We can't easily call "checkOrCreateChat" if it expects to read cookies again unless we are sure.
-                // But we already got 'user' from 'getUserProfile()'.
-
-                // Just use adminDb to find the chat manually to avoid re-auth overhead/issues if any.
-                // Actually, reusing checkOrCreateChat is safer for logic consistency.
+                // ... (existing chat logic) ...
                 const chatId = await checkOrCreateChat(targetUserId);
 
                 const messageContent = type === "call_audio" ? "Started a voice call" : "Started a video call";
@@ -101,6 +94,40 @@ export async function startSession(type: SessionType, targetUserId?: string, isP
             } catch (chatError) {
                 console.error("[startSession] Failed to log call to chat:", chatError);
             }
+        }
+
+        // Fan-out Notifications for Broadcasts
+        if (type === "broadcast") {
+            // Run this asynchronously to not block the session start response
+            (async () => {
+                try {
+                    const companionIds = await getCompanionIds(user.id);
+                    if (companionIds.length > 0) {
+                        const notification = {
+                            title: `${user.displayName || "Someone"} is Live! 🔴`,
+                            body: "Watch their broadcast now.",
+                            url: `/live/broadcast/${sessionRef.id}`, // Or viewer link? /live/call/ID? No, broadcasts usually have a viewer route.
+                            // Assuming viewer route is /live/[id] or /live/call/[id] based on recent files
+                        };
+
+                        // We need the viewer URL. 
+                        // In viewer.tsx: router.push("/live") if fail. 
+                        // Implementation plan said: app/live/call/[id]/page.tsx used BroadcastView.
+                        // So url should be /live/call/${sessionRef.id}
+
+                        notification.url = `/live/call/${sessionRef.id}`;
+
+                        // Batch send or loop
+                        // Push notifications action sends one by one (internally calls sendEachForMulticast for user tokens)
+                        // So we loop users.
+                        await Promise.all(companionIds.map(companionId =>
+                            sendPushNotification(companionId, notification)
+                        ));
+                    }
+                } catch (notifErr) {
+                    console.error("[startSession] Failed to send broadcast notifications:", notifErr);
+                }
+            })();
         }
 
         return {

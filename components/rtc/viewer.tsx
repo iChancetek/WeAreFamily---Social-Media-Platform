@@ -10,6 +10,7 @@ import { db } from "@/lib/firebase"
 import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore"
 import { useRouter } from "next/navigation"
 import { LiveChatOverlay } from "@/components/live/live-chat-overlay"
+import { LiveReactions } from "@/components/live/live-reactions"
 
 interface ViewerProps {
     sessionId: string;
@@ -183,6 +184,9 @@ export function Viewer({ sessionId }: ViewerProps) {
 
             {/* Chat Overlay */}
             <LiveChatOverlay sessionId={sessionId} />
+
+            {/* Reactions Overlay */}
+            <LiveReactions sessionId={sessionId} />
         </div>
     )
 }
