@@ -250,13 +250,13 @@ async function sendWelcomeMessageInternal(targetUserId: string, targetUserDispla
     }
 
     // 3. Send Message
-    const welcomeText = `Welcome to the Famio Family!
+    const welcomeText = `Welcome to Famio \u2014 We Are One!
 
 Thank you for joining us — we’re excited to have you here. We hope you enjoy a wonderful experience on the Famio platform as you connect, share, and grow with the community.
 
 These are exciting times at Famio! We’re rolling out new enhancements and updates every week to make your experience even better.
 
-We truly appreciate you being part of the Famio Family.
+We truly appreciate you being part of Famio \u2014 We Are One.
 
 Best regards,
 Chancellor Minus

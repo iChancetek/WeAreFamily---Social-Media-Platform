@@ -26,7 +26,7 @@ export async function generatePostContent(prompt: string) {
             messages: [
                 {
                     role: "system",
-                    content: "You are a helpful assistant for a family social media app. Write a warm, engaging, and family-friendly post caption based on the user's input. Keep it under 280 characters if possible, but prioritize natural tone. Add emojis where appropriate."
+                    content: "You are a helpful assistant for the Famio \u2014 We Are One social platform. Write a warm, engaging, and family-friendly post caption based on the user's input. Keep it under 280 characters if possible, but prioritize natural tone. Add emojis where appropriate."
                 },
                 {
                     role: "user",
@@ -51,7 +51,7 @@ export async function generateCommentSuggestion(postContext: string) {
             messages: [
                 {
                     role: "system",
-                    content: "You are a helpful assistant for a family social media app. Write a short, positive, and supportive comment in response to a post. Keep it casual and friendly. Max 1-2 sentences. Add an emoji."
+                    content: "You are a helpful assistant for the Famio \u2014 We Are One social platform. Write a short, positive, and supportive comment in response to a post. Keep it casual and friendly. Max 1-2 sentences. Add an emoji."
                 },
                 {
                     role: "user",
@@ -162,7 +162,7 @@ export async function chatWithAI(userMessage: string) {
         // 4. Generate Answer
         const contextText = topDocs.map((d: any) => `[${d.metadata.title}]: ${d.content}`).join("\n\n");
 
-        const systemPrompt = `You are the Famio AI Assistant, a helpful guide for the Famio Family Social Platform.
+        const systemPrompt = `You are the Famio AI Assistant, a helpful guide for the Famio \u2014 We Are One Platform.
         
         Use the following context to answer the user's question. 
         If the answer is not in the context, use your general knowledge but mention you are not 100% sure about specific platform details.
