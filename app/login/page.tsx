@@ -57,7 +57,7 @@ export default function LoginPage() {
             await createSession(user.uid)
 
             toast.success("Welcome back!")
-            router.push("/")
+            router.push(redirectTo)
             router.refresh()
         } catch (error: any) {
             console.error("Login Critical Failure:", error);
