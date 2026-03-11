@@ -43,7 +43,7 @@ async function fetchLinkPreview(url: string) {
 
 export async function createPost(
     content: string,
-    mediaUrls: string[] = [],
+    media: { type: 'photo' | 'video', url: string }[] = [],
     engagementSettings?: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' | 'companions' | 'specific' },
     thumbnailUrl?: string | null,
     allowedViewerIds?: string[],
@@ -52,7 +52,7 @@ export async function createPost(
     const user = await requireVerifiedAction();
 
     // Safe sanitization
-    const safeMediaUrls = Array.isArray(mediaUrls) ? mediaUrls : [];
+    const safeMedia = Array.isArray(media) ? media : [];
 
     // Default engagement settings
     const settings = {
@@ -72,7 +72,7 @@ export async function createPost(
         await adminDb.collection("posts").add({
             authorId: user.id,
             content,
-            mediaUrls: safeMediaUrls,
+            media: safeMedia,
             thumbnailUrl: thumbnailUrl || null,
             linkPreview,
             reactions: {}, // Map of userId -> reactionType
@@ -146,12 +146,25 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
                     const data = doc.data();
                     // if (data.isDeleted) return false; // Already filtered above
 
-                    const hasMedia = data.mediaUrls && data.mediaUrls.length > 0;
                     const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
                     const hasVideoLink = videoUrlRegex.test(data.content || "");
-                    const isVideo = (hasMedia && data.mediaUrls.some((u: string) => u.match(/\.(mp4|mov|webm)$/i))) || hasVideoLink;
-                    const isPhoto = hasMedia && !isVideo;
-                    const isText = !hasMedia && !hasVideoLink;
+
+                    let isVideo = false;
+                    let isPhoto = false;
+
+                    if (data.media && data.media.length > 0) {
+                        isVideo = data.media.some((m: any) => m.type === 'video') || hasVideoLink;
+                        isPhoto = data.media.some((m: any) => m.type === 'photo');
+                    } else if (data.mediaUrls && data.mediaUrls.length > 0) {
+                        isVideo = data.mediaUrls.some((u: string) => u.match(/\.(mp4|mov|webm)$/i)) || hasVideoLink;
+                        isPhoto = data.mediaUrls.some((u: string) => !u.match(/\.(mp4|mov|webm)$/i));
+                    } else {
+                        isVideo = hasVideoLink;
+                    }
+
+                    const hasAnyMedia = (data.media && data.media.length > 0) || (data.mediaUrls && data.mediaUrls.length > 0);
+                    const isText = !hasAnyMedia && !hasVideoLink;
+
                     if (filters.contentType === 'video') return isVideo;
                     if (filters.contentType === 'photo') return isPhoto;
                     if (filters.contentType === 'text') return isText;
@@ -215,9 +228,18 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
                     return sanitizeData({ id: cDoc.id, ...cData, author: cAuthor, replies, createdAt: cData.createdAt?.toDate ? cData.createdAt.toDate() : new Date() });
                 }));
 
+                let normalizedMedia = data.media || [];
+                if (!normalizedMedia.length && data.mediaUrls && data.mediaUrls.length > 0) {
+                    normalizedMedia = data.mediaUrls.map((url: string) => ({
+                        type: url.match(/\.(mp4|mov|webm)$/i) ? 'video' : 'photo',
+                        url
+                    }));
+                }
+
                 return sanitizeData({
                     id: doc.id,
                     ...data,
+                    media: normalizedMedia,
                     author,
                     comments: comments || [],
                     createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date()
@@ -781,12 +803,24 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
         if (filters.contentType !== 'all') {
             filteredDocs = filteredDocs.filter(doc => {
                 const data = doc.data();
-                const hasMedia = data.mediaUrls && data.mediaUrls.length > 0;
                 const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
                 const hasVideoLink = videoUrlRegex.test(data.content || "");
-                const isVideo = (hasMedia && data.mediaUrls.some((u: string) => u.match(/\.(mp4|mov|webm)$/i))) || hasVideoLink;
-                const isPhoto = hasMedia && !isVideo;
-                const isText = !hasMedia && !hasVideoLink;
+
+                let isVideo = false;
+                let isPhoto = false;
+
+                if (data.media && data.media.length > 0) {
+                    isVideo = data.media.some((m: any) => m.type === 'video') || hasVideoLink;
+                    isPhoto = data.media.some((m: any) => m.type === 'photo');
+                } else if (data.mediaUrls && data.mediaUrls.length > 0) {
+                    isVideo = data.mediaUrls.some((u: string) => u.match(/\.(mp4|mov|webm)$/i)) || hasVideoLink;
+                    isPhoto = data.mediaUrls.some((u: string) => !u.match(/\.(mp4|mov|webm)$/i));
+                } else {
+                    isVideo = hasVideoLink;
+                }
+
+                const hasAnyMedia = (data.media && data.media.length > 0) || (data.mediaUrls && data.mediaUrls.length > 0);
+                const isText = !hasAnyMedia && !hasVideoLink;
 
                 if (filters.contentType === 'video') return isVideo;
                 if (filters.contentType === 'photo') return isPhoto;
@@ -881,9 +915,18 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
                 return sanitizeData({ id: c.id, ...cData, author: cAuthor, replies, createdAt: cData.createdAt?.toDate ? cData.createdAt.toDate() : new Date() });
             }));
 
+            let normalizedMedia = post.media || [];
+            if (!normalizedMedia.length && post.mediaUrls && post.mediaUrls.length > 0) {
+                normalizedMedia = post.mediaUrls.map((url: string) => ({
+                    type: url.match(/\.(mp4|mov|webm)$/i) ? 'video' : 'photo',
+                    url
+                }));
+            }
+
             return sanitizeData({
                 id: doc.id,
                 ...post,
+                media: normalizedMedia,
                 author,
                 comments: comments || [],
                 createdAt: post.createdAt?.toDate ? post.createdAt.toDate() : new Date()

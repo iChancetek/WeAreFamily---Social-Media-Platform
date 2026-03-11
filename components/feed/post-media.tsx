@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSubContent, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Heart, Share2, MoreHorizontal, Globe, Sparkles, Play } from "lucide-react";
+import { Heart, Share2, MoreHorizontal, Globe, Sparkles, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MediaEmbed } from "./media-embed";
 import { ReactionType } from "@/types/posts";
@@ -60,20 +61,139 @@ export function PostMedia({
     onDelete,
     onReport
 }: PostMediaProps) {
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
     if (!hasMedia) return null;
+
+    const mediaList = post.media && post.media.length > 0 ? post.media : (
+        mainMedia ? [{ type: isVideoFile ? 'video' : 'photo', url: mainMedia }] : []
+    );
+
+    const isCarousel = mediaList.length > 1;
+
+    const scrollTo = (index: number) => {
+        if (!scrollContainerRef.current) return;
+        const container = scrollContainerRef.current;
+        const width = container.clientWidth;
+        container.scrollTo({ left: width * index, behavior: 'smooth' });
+        setCurrentMediaIndex(index);
+    };
+
+    const handleScroll = () => {
+        if (!scrollContainerRef.current) return;
+        const container = scrollContainerRef.current;
+        const scrollPosition = container.scrollLeft;
+        const width = container.clientWidth;
+        const newIndex = Math.round(scrollPosition / width);
+        if (newIndex !== currentMediaIndex) {
+            setCurrentMediaIndex(newIndex);
+        }
+    };
 
     return (
         <div className="w-full relative">
             {isEmbeddable && mediaUrl ? (
-                // Embeddable (YouTube etc)
-                // In Feed: playInline=false (Show Preview). onClick -> Enlarge
-                // In Modal: playInline=true (Playable).
                 <div className="w-full">
                     <MediaEmbed
                         url={mediaUrl}
                         playInline={isEnlarged}
                         onPlayRequest={onEnlarge}
                     />
+                </div>
+            ) : isCarousel ? (
+                <div className="relative w-full group/carousel flex items-center bg-black/5 dark:bg-black/20">
+                    <div
+                        ref={scrollContainerRef}
+                        onScroll={handleScroll}
+                        className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar w-full relative h-[60vh] md:h-[70vh] bg-black/5 dark:bg-black/20"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                        {mediaList.map((mediaItem: any, idx: number) => (
+                            <div key={idx} className="w-full flex-none snap-center flex items-center justify-center relative h-full">
+                                {mediaItem.type === 'video' ? (
+                                    <div
+                                        className="w-full h-full relative cursor-pointer flex items-center justify-center bg-black"
+                                        onMouseEnter={(e) => {
+                                            if (!isEnlarged) {
+                                                const vid = e.currentTarget.querySelector('video');
+                                                if (vid) vid.play().catch(() => { });
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!isEnlarged) {
+                                                const vid = e.currentTarget.querySelector('video');
+                                                if (vid) { vid.pause(); vid.currentTime = 0; }
+                                            }
+                                        }}
+                                        onClick={(e) => {
+                                            if (!isEnlarged) { e.stopPropagation(); onEnlarge(); }
+                                        }}
+                                    >
+                                        <video
+                                            // ref={idx === 0 ? videoRef : undefined} // Not mapping refs perfectly, maybe just rely on standard video HTML tag
+                                            src={`${mediaItem.url}#t=0.001`}
+                                            className="w-full h-auto object-contain max-h-[60vh] md:max-h-[70vh]"
+                                            controls={isEnlarged}
+                                            autoPlay={isEnlarged}
+                                            muted={!isEnlarged}
+                                            preload="metadata"
+                                            playsInline
+                                        />
+                                        {!isEnlarged && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors pointer-events-none">
+                                                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm shadow-lg">
+                                                    <Play className="w-6 h-6 text-white fill-current" />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <img
+                                        src={mediaItem.url}
+                                        alt=""
+                                        className="w-full h-auto object-contain max-h-[60vh] md:max-h-[70vh]"
+                                        onClick={(e) => {
+                                            if (!isEnlarged) { e.stopPropagation(); onEnlarge(); }
+                                        }}
+                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Navigation Arrows */}
+                    {isCarousel && currentMediaIndex > 0 && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white hover:bg-black/60 rounded-full h-8 w-8 opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
+                            onClick={(e) => { e.stopPropagation(); scrollTo(currentMediaIndex - 1); }}
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </Button>
+                    )}
+                    {isCarousel && currentMediaIndex < mediaList.length - 1 && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white hover:bg-black/60 rounded-full h-8 w-8 opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
+                            onClick={(e) => { e.stopPropagation(); scrollTo(currentMediaIndex + 1); }}
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </Button>
+                    )}
+
+                    {/* Dots indicator */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-10 bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
+                        {mediaList.map((_: any, idx: number) => (
+                            <div
+                                key={idx}
+                                className={cn("h-1.5 rounded-full transition-all", idx === currentMediaIndex ? "w-3 bg-white" : "w-1.5 bg-white/50")}
+                            />
+                        ))}
+                    </div>
                 </div>
             ) : isVideoFile ? (
                 <div
@@ -113,6 +233,9 @@ export function PostMedia({
                         src={mainMedia!}
                         alt=""
                         className="w-full h-auto object-contain max-h-[60vh] md:max-h-[70vh] hover:scale-105 transition-transform duration-500"
+                        onClick={(e) => {
+                            if (!isEnlarged) { e.stopPropagation(); onEnlarge(); }
+                        }}
                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
                 </div>
@@ -201,12 +324,7 @@ export function PostMedia({
                 </div>
             )}
 
-            {/* Additional media indicator */}
-            {post.mediaUrls?.length > 1 && (
-                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-medium pointer-events-none">
-                    +{post.mediaUrls.length - 1} more
-                </div>
-            )}
+            {/* Removed redundant indicator thanks to carousel dots */}
 
             {/* Enlarge Hint Overlay (Only in Feed) */}
             {!isEnlarged && !isEmbeddable && !isVideoFile && (

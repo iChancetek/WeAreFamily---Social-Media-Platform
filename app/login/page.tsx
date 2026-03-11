@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -16,7 +16,7 @@ import "@/lib/firebase"
 import { createSession, syncUserToDb } from "@/app/actions/auth";
 
 
-export default function LoginPage() {
+function LoginContent() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [isLoading, setIsLoading] = useState(false)
@@ -289,5 +289,17 @@ export default function LoginPage() {
                 </p>
             </div>
         </div >
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     )
 }

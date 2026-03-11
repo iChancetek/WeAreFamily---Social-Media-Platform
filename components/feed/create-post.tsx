@@ -33,7 +33,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
 
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+    const [mediaData, setMediaData] = useState<{ type: 'photo' | 'video', url: string }[]>([]);
     const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
     const [privacy, setPrivacy] = useState<PrivacyType>('public');
     const [allowedViewers, setAllowedViewers] = useState<string[]>([]);
@@ -92,22 +92,21 @@ export function CreatePost({ onClose }: CreatePostProps) {
     });
 
     const handleSubmit = async () => {
-        if (!content.trim() && mediaUrls.length === 0) return;
+        if (!content.trim() && mediaData.length === 0) return;
 
         setIsSubmitting(true);
         try {
             // Pass thumbnailUrl (undefined for engagement settings to use default)
-            // Pass thumbnailUrl and engagement settings
             await createPost(
                 content,
-                mediaUrls,
+                mediaData,
                 { privacy },
                 thumbnailUrl,
                 allowedViewers.length > 0 ? allowedViewers : undefined,
                 location
             );
             setContent("");
-            setMediaUrls([]);
+            setMediaData([]);
             setThumbnailUrl(null);
             setLocation(null);
             setPrivacy('public');
@@ -150,11 +149,9 @@ export function CreatePost({ onClose }: CreatePostProps) {
             return;
         }
 
-        if (e.target.files && e.target.files[0]) {
+        if (e.target.files && e.target.files.length > 0) {
             setIsUploading(true);
             try {
-                const file = e.target.files[0];
-
                 const { getAuth } = await import("firebase/auth");
                 const auth = getAuth();
                 if (!auth.currentUser) {
@@ -168,41 +165,49 @@ export function CreatePost({ onClose }: CreatePostProps) {
                 const userId = user.uid || (user as any).id;
                 if (!userId) throw new Error("User ID is missing.");
 
-                // --- THUMBNAIL GENERATION FOR VIDEOS ---
-                if (file.type.startsWith('video/')) {
-                    try {
-                        console.log("Generating video thumbnail...");
-                        const thumbBlob = await generateVideoThumbnail(file);
-                        if (thumbBlob) {
-                            const thumbRef = ref(storage, `users/${userId}/thumbnails/${Date.now()}_thumb.jpg`);
-                            await uploadBytes(thumbRef, thumbBlob);
-                            const tUrl = await getDownloadURL(thumbRef);
-                            setThumbnailUrl(tUrl);
-                            console.log("Thumbnail generated & uploaded:", tUrl);
+                const newMedia: { type: 'photo' | 'video', url: string }[] = [];
+
+                for (let i = 0; i < e.target.files.length; i++) {
+                    const file = e.target.files[i];
+                    const isVideo = file.type.startsWith('video/');
+
+                    // --- THUMBNAIL GENERATION FOR VIDEOS ---
+                    if (isVideo && !thumbnailUrl && i === 0) { // Only generate for first video arbitrarily to save time
+                        try {
+                            console.log("Generating video thumbnail...");
+                            const thumbBlob = await generateVideoThumbnail(file);
+                            if (thumbBlob) {
+                                const thumbRef = ref(storage, `users/${userId}/thumbnails/${Date.now()}_thumb.jpg`);
+                                await uploadBytes(thumbRef, thumbBlob);
+                                const tUrl = await getDownloadURL(thumbRef);
+                                setThumbnailUrl(tUrl);
+                                console.log("Thumbnail generated & uploaded:", tUrl);
+                            }
+                        } catch (err) {
+                            console.error("Thumbnail generation failed (non-blocking):", err);
                         }
-                    } catch (err) {
-                        console.error("Thumbnail generation failed (non-blocking):", err);
                     }
+                    // ---------------------------------------
+
+                    const storageRef = ref(storage, `users/${userId}/posts/${Date.now()}-${file.name}`);
+                    const metadata = {
+                        contentType: file.type || 'application/octet-stream',
+                        customMetadata: {
+                            originalName: file.name,
+                            uploadedBy: userId
+                        }
+                    };
+
+                    const snapshot = await uploadBytes(storageRef, file, metadata);
+                    const url = await getDownloadURL(snapshot.ref);
+
+                    newMedia.push({ type: isVideo ? 'video' : 'photo', url });
                 }
-                // ---------------------------------------
 
-                const storageRef = ref(storage, `users/${userId}/posts/${Date.now()}-${file.name}`);
-                const metadata = {
-                    contentType: file.type || 'application/octet-stream',
-                    customMetadata: {
-                        originalName: file.name,
-                        uploadedBy: userId
-                    }
-                };
-
-                const snapshot = await uploadBytes(storageRef, file, metadata);
-                const url = await getDownloadURL(snapshot.ref);
-
-                setMediaUrls(prev => [...prev, url]);
-                toast.success("Photo uploaded! 📸");
+                setMediaData(prev => [...prev, ...newMedia]);
+                toast.success(newMedia.length > 1 ? "Media uploaded successfully! 📸🎥" : (newMedia[0].type === 'video' ? "Video uploaded! 🎥" : "Photo uploaded! 📸"));
             } catch (error: any) {
                 console.error("Upload failed", error);
-                // ... error handling ...
                 const debugObj = {
                     message: error.message || "Unknown error",
                     code: error.code || "No code",
@@ -212,10 +217,12 @@ export function CreatePost({ onClose }: CreatePostProps) {
                 const fullError = JSON.stringify(debugObj, null, 2);
                 window.alert("UPLOAD ERROR:\n" + fullError);
                 setLastUploadError(fullError);
-                setLastUploadError(fullError);
                 toast.error(`Upload failed: ${error.message}`);
             } finally {
                 setIsUploading(false);
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
             }
         }
     }
@@ -285,14 +292,25 @@ export function CreatePost({ onClose }: CreatePostProps) {
                             </div>
                         )}
 
-                        {mediaUrls.length > 0 && (
+                        {mediaData.length > 0 && (
                             <div className="grid grid-cols-3 gap-2 mb-3">
-                                {mediaUrls.map((url, idx) => (
+                                {mediaData.map((media, idx) => (
                                     <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group border border-border/50 shadow-sm">
-                                        <img src={url} alt="Preview" className="w-full h-full object-cover transition-transform hover:scale-105" />
+                                        {media.type === 'video' ? (
+                                            <div className="w-full h-full bg-black flex items-center justify-center relative">
+                                                <video src={`${media.url}#t=0.001`} className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/20">
+                                                    <div className="w-8 h-8 rounded-full bg-white/30 flex items-center justify-center">
+                                                        <div className="w-0 h-0 border-t-4 border-t-transparent border-l-6 border-l-white border-b-4 border-b-transparent ml-1" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <img src={media.url} alt="Preview" className="w-full h-full object-cover transition-transform hover:scale-105" />
+                                        )}
                                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         <button
-                                            onClick={() => setMediaUrls(urls => urls.filter((_, i) => i !== idx))}
+                                            onClick={() => setMediaData(items => items.filter((_, i) => i !== idx))}
                                             className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500"
                                         >
                                             <X className="w-3 h-3" />
@@ -313,6 +331,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
                                 <input
                                     type="file"
                                     hidden
+                                    multiple
                                     ref={fileInputRef}
                                     accept="image/*,video/*"
                                     onChange={handleFileSelect}
@@ -372,7 +391,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
 
                             <Button
                                 onClick={handleSubmit}
-                                disabled={(!content.trim() && mediaUrls.length === 0) || isSubmitting || isUploading || !isVerified}
+                                disabled={(!content.trim() && mediaData.length === 0) || isSubmitting || isUploading || !isVerified}
                                 className="bg-primary hover:bg-primary/90 text-white font-semibold w-full md:w-auto px-8"
                             >
                                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}

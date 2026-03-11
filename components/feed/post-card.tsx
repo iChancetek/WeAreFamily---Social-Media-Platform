@@ -172,7 +172,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
         else if (mode === 'repost') {
             try {
                 const { createPost } = await import("@/app/actions/posts");
-                await createPost(`🔄 ${t("feed.repost")}: ${post.content.substring(0, 100)}...`, post.mediaUrls || []);
+                await createPost(`🔄 ${t("feed.repost")}: ${post.content.substring(0, 100)}...`, post.media || []);
                 toast.success(t("feed.repost.success"));
             } catch { toast.error("Repost failed"); }
         }
@@ -180,12 +180,12 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
 
     // --- RENDER ---
     const pinterestPreview = (post as any).linkPreview;
-    const hasUploadedMedia = post.mediaUrls && post.mediaUrls.length > 0;
+    const hasUploadedMedia = post.media && post.media.length > 0;
     const hasLinkPreview = !!pinterestPreview?.image;
-    let mainMedia = hasUploadedMedia ? post.mediaUrls[0] : (hasLinkPreview ? pinterestPreview.image : mediaUrl);
+    let mainMedia = hasUploadedMedia ? post.media[0].url : (hasLinkPreview ? pinterestPreview.image : mediaUrl);
     const hasMedia = !!mainMedia;
     const isEmbeddable = !hasUploadedMedia && !hasLinkPreview && (mainMedia === mediaUrl);
-    const isVideoFile = isUrlVideo(mainMedia);
+    const isVideoFile = hasUploadedMedia ? post.media[0].type === 'video' : isUrlVideo(mainMedia);
     const isPinterestLinkPreview = hasLinkPreview && !hasUploadedMedia;
 
     const cardClasses = isEnlarged
