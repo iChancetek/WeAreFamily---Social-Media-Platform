@@ -1,0 +1,82 @@
+name: Firebase Deployment Gate
+
+# This workflow watches for Firebase App Hosting to complete its deployment.
+# When Firebase succeeds, it fires a repository_dispatch event to trigger
+# the Docker build pipeline in ci-cd.yml.
+# If Firebase fails, the Docker pipeline is never started.
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  wait-and-gate:
+    name: Wait for Firebase & Trigger Docker Build
+    runs-on: ubuntu-latest
+    permissions:
+      # Required to fire repository_dispatch and read deployment statuses
+      contents: write
+      deployments: read
+
+    steps:
+      - name: Wait for Firebase App Hosting Deployment
+        id: firebase-check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          echo "==> Waiting for Firebase App Hosting to deploy commit $COMMIT_SHA..."
+          echo "    Firebase Cloud Build typically takes 3–8 minutes."
+
+          # Give Firebase Cloud Build time to register a deployment entry on GitHub
+          sleep 60
+
+          MAX_RETRIES=60   # 60 x 10s = up to 10 minutes
+          RETRY_COUNT=0
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            RETRY_COUNT=$((RETRY_COUNT+1))
+
+            # Firebase App Hosting registers deployments under the GitHub Deployments API.
+            # We look for a deployment on this commit whose latest status is 'success' or 'failure'.
+            DEPLOY_STATUS=$(gh api \
+              "repos/${REPO}/deployments?sha=${COMMIT_SHA}&per_page=10" \
+              --jq '.[].id' | head -20 | while read DEP_ID; do
+                gh api "repos/${REPO}/deployments/${DEP_ID}/statuses?per_page=1" \
+                  --jq '.[0].state // "pending"'
+              done | grep -E 'success|failure|error' | head -1)
+
+            echo "  Deployment status: '${DEPLOY_STATUS}' (attempt ${RETRY_COUNT}/${MAX_RETRIES})"
+
+            if [ "$DEPLOY_STATUS" = "success" ]; then
+              echo "==> Firebase deployment succeeded on attempt ${RETRY_COUNT}!"
+              echo "firebase_status=success" >> "$GITHUB_OUTPUT"
+              exit 0
+            elif [ "$DEPLOY_STATUS" = "failure" ] || [ "$DEPLOY_STATUS" = "error" ]; then
+              echo "==> Firebase deployment FAILED. Docker pipeline will NOT start."
+              echo "firebase_status=failure" >> "$GITHUB_OUTPUT"
+              exit 1
+            fi
+
+            echo "  Firebase still deploying... waiting 10 seconds."
+            sleep 10
+          done
+
+          echo "==> Timed out after $((MAX_RETRIES * 10 / 60)) minutes. Docker pipeline will NOT start."
+          exit 1
+
+      - name: Trigger Docker Build Pipeline
+        if: steps.firebase-check.outputs.firebase_status == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "==> Firebase succeeded! Triggering Docker build pipeline..."
+          gh api \
+            --method POST \
+            "repos/${REPO}/dispatches" \
+            --field event_type="firebase-deployment-succeeded" \
+            --field client_payload[sha]="${{ github.sha }}" \
+            --field client_payload[ref]="${{ github.ref }}"
+          echo "==> Docker build pipeline triggered successfully."
