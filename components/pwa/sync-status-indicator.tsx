@@ -12,8 +12,10 @@ export function SyncStatusIndicator() {
     const [showQueue, setShowQueue] = useState(false);
 
     useEffect(() => {
-        // Set actual state on mount
-        setIsOnline(navigator.onLine);
+        // Set actual state on mount inside a timeout to avoid synchronous setState inside effect warning
+        setTimeout(() => {
+            setIsOnline(navigator.onLine);
+        }, 0);
 
         const checkQueue = async () => {
             const items = await syncManager.getQueue();

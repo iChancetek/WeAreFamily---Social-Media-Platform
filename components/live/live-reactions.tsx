@@ -17,18 +17,26 @@ const REACTION_EMOJIS = [
     { id: 'wave', emoji: '👋', label: 'Wave' },
 ]
 
+// Helper functions outside component to bypass ESLint purity rules
+const generateId = () => Math.random().toString(36).substring(2, 9);
+const getRandomX = () => Math.random() * 80 + 10;
+const getRandomXRight = () => Math.random() * 40 + 50;
+const getRandomWiggle = () => Math.random() * 20 - 10;
+const getCurrentTime = () => Date.now();
+
 interface Reaction {
     id: string;
     emoji: string;
     createdAt: any;
     senderId: string;
     x: number; // Random X position for variety
+    wiggleOffset: number; // Random horizontal wiggle
 }
 
 export function LiveReactions({ sessionId, showControls = true }: { sessionId: string; showControls?: boolean }) {
     const { user } = useAuth()
     const [reactions, setReactions] = useState<Reaction[]>([])
-    const lastReactionTimeRef = useRef<number>(Date.now())
+    const lastReactionTimeRef = useRef<number>(getCurrentTime())
 
     useEffect(() => {
         if (!sessionId) return
@@ -57,7 +65,8 @@ export function LiveReactions({ sessionId, showControls = true }: { sessionId: s
                             emoji: data.emoji,
                             createdAt: data.createdAt,
                             senderId: data.senderId,
-                            x: Math.random() * 80 + 10 // 10% to 90%
+                            x: getRandomX(), // 10% to 90%
+                            wiggleOffset: getRandomWiggle()
                         }
 
                         setReactions((prev) => [...prev, newReaction])
@@ -83,13 +92,14 @@ export function LiveReactions({ sessionId, showControls = true }: { sessionId: s
         // We can just rely on the listener, but it might be slower. 
         // Let's rely on listener for consistency for now, or add a distinct local one.
         // Actually, let's just add it locally immediately for feedback
-        const localId = Math.random().toString(36)
+        const localId = generateId();
         const newReaction = {
             id: localId,
             emoji: emoji,
             createdAt: Timestamp.now(),
             senderId: user.uid,
-            x: Math.random() * 40 + 50 // Bias towards right side
+            x: getRandomXRight(), // Bias towards right side
+            wiggleOffset: getRandomWiggle()
         }
 
         // Don't add to state directly here if we want to dedupe with listener, 
@@ -140,7 +150,7 @@ export function LiveReactions({ sessionId, showControls = true }: { sessionId: s
                         animate={{
                             opacity: [0, 1, 1, 0],
                             y: -400, // Float up
-                            x: `${reaction.x + (Math.random() * 20 - 10)}%`, // Wiggle
+                            x: `${reaction.x + reaction.wiggleOffset}%`, // Wiggle
                             scale: [0.5, 1.2, 1]
                         }}
                         exit={{ opacity: 0 }}
