@@ -1,26 +1,27 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches: [ "main" ]
+  # For PRs: run quality checks (no Firebase gate needed, no Docker build)
   pull_request:
     branches: [ "main" ]
-  # This event is fired by the firebase-gate.yml workflow after Firebase succeeds
+  # For pushes to main: only triggered by firebase-gate.yml AFTER Firebase succeeds
+  # DO NOT add 'push' here — that would run this in parallel with Firebase
   repository_dispatch:
     types: [ firebase-deployment-succeeded ]
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────
-  # QUALITY CHECK: Runs on push/PR to give fast feedback on code quality
+  # QUALITY CHECK
+  # Runs on PRs for fast feedback, and also on repository_dispatch (after Firebase).
   # ─────────────────────────────────────────────────────────────────────────────
   quality-check:
     name: Quality Check (Lint & Test)
     runs-on: ubuntu-latest
-    # Skip this on repository_dispatch since it already passed on the original push
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -38,17 +39,17 @@ jobs:
         run: npm test
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # DOCKER BUILD: Only runs when triggered by firebase-gate.yml after Firebase
-  # App Hosting has confirmed a successful deployment.
+  # DOCKER BUILD & PUSH
+  # Only runs after Firebase gate dispatches the event (push to main).
+  # Never runs on PRs.
   # ─────────────────────────────────────────────────────────────────────────────
   build-and-publish:
     name: Build, Scan & Push Docker Image
     runs-on: ubuntu-latest
-    # Only run when explicitly triggered by the firebase gate workflow
-    if: github.event_name == 'repository_dispatch' && github.event.action == 'firebase-deployment-succeeded'
+    needs: quality-check
+    if: github.event_name == 'repository_dispatch'
     steps:
       - name: Checkout code
-        # Use the SHA from the dispatch payload so we build the correct commit
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.client_payload.sha }}
