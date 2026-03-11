@@ -7,9 +7,71 @@ on:
     branches: [ "main" ]
 
 jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STAGE 1: Wait for Firebase App Hosting to finish deploying
+  # This is the first gate. Nothing else runs until Firebase succeeds.
+  # ─────────────────────────────────────────────────────────────────────────────
+  wait-for-firebase:
+    name: Wait for Firebase App Hosting
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: '>= 363.0.0'
+
+      - name: Wait for Firebase App Hosting Rollout to Succeed
+        run: |
+          echo "==> Firebase App Hosting build triggered by this push. Waiting for it to complete..."
+          # Give Firebase Cloud Build ~60 seconds to register the new rollout before we start polling
+          sleep 60
+
+          MAX_RETRIES=60  # 60 retries x 10s = up to 10 minutes
+          RETRY_COUNT=0
+          ROLLOUT_SUCCESS=false
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            STATE=$(gcloud firebase apphosting rollouts list \
+              --backend=wearefamily \
+              --location=us-east4 \
+              --limit=1 \
+              --format="value(state)")
+
+            echo "  Firebase rollout state: ${STATE} (attempt $((RETRY_COUNT+1))/$MAX_RETRIES)"
+
+            if [ "$STATE" = "SUCCEEDED" ] || [ "$STATE" = "COMPLETED" ]; then
+              echo "==> Firebase App Hosting deployed successfully! Proceeding."
+              ROLLOUT_SUCCESS=true
+              break
+            elif [ "$STATE" = "FAILED" ] || [ "$STATE" = "CANCELLED" ]; then
+              echo "==> Firebase App Hosting deployment FAILED or was CANCELLED. Aborting pipeline."
+              exit 1
+            fi
+
+            echo "  Still deploying... retrying in 10 seconds."
+            sleep 10
+            RETRY_COUNT=$((RETRY_COUNT+1))
+          done
+
+          if [ "$ROLLOUT_SUCCESS" = false ]; then
+            echo "==> Timed out waiting for Firebase App Hosting deployment. Aborting pipeline."
+            exit 1
+          fi
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STAGE 2: Run code quality checks
+  # Only starts after Firebase successfully deploys.
+  # ─────────────────────────────────────────────────────────────────────────────
   quality-check:
     name: Quality Check
     runs-on: ubuntu-latest
+    needs: wait-for-firebase
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,61 +91,17 @@ jobs:
       - name: Run Tests
         run: npm test
 
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STAGE 3: Build and publish Docker image
+  # Only starts after quality-check passes (which requires Firebase to succeed).
+  # ─────────────────────────────────────────────────────────────────────────────
   build-and-publish:
-    name: Build, Scan & Push
-    needs: quality-check
+    name: Build, Scan & Push Docker Image
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: quality-check
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # Wait for Google Cloud Firebase App Hosting to deploy successfully first
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          version: '>= 363.0.0'
-
-      - name: Wait for Firebase App Hosting Rollout
-        run: |
-          echo "Waiting for Firebase App Hosting rollout to complete..."
-          # The rollout might take a few seconds to start after the GitHub push
-          sleep 30
-          
-          MAX_RETRIES=60 # 60 * 10s = 10 minutes max wait
-          RETRY_COUNT=0
-          ROLLOUT_SUCCESS=false
-          
-          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            # Get the latest rollout state using gcloud firebase
-            # App Hosting uses the standard format locations/[region]/backends/[backend]/rollouts
-            STATE=$(gcloud firebase apphosting rollouts list --backend=wearefamily --location=us-east4 --limit=1 --format="value(state)")
-            
-            echo "Current rollout state: $STATE"
-            
-            if [ "$STATE" = "SUCCEEDED" ] || [ "$STATE" = "COMPLETED" ]; then
-              echo "Firebase App Hosting deployment completed successfully!"
-              ROLLOUT_SUCCESS=true
-              break
-            elif [ "$STATE" = "FAILED" ] || [ "$STATE" = "CANCELLED" ]; then
-              echo "Firebase App Hosting deployment failed or was cancelled."
-              exit 1
-            fi
-            
-            echo "Deployment still in progress... waiting 10 seconds."
-            sleep 10
-            RETRY_COUNT=$((RETRY_COUNT+1))
-          done
-          
-          if [ "$ROLLOUT_SUCCESS" = false ]; then
-            echo "Timed out waiting for Firebase App Hosting deployment."
-            exit 1
-          fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
