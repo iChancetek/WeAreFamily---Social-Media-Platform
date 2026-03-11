@@ -1,9 +1,23 @@
 name: Firebase Deployment Gate
 
-# This workflow watches for Firebase App Hosting to complete its deployment.
-# When Firebase succeeds, it fires a repository_dispatch event to trigger
-# the Docker build pipeline in ci-cd.yml.
-# If Firebase fails, the Docker pipeline is never started.
+# This workflow polls Firebase App Hosting via gcloud CLI to detect when
+# the deployment for this commit finishes. On success, it fires a
+# repository_dispatch to trigger the Docker build in ci-cd.yml.
+# Firebase App Hosting does NOT post back to GitHub's APIs (no commit
+# statuses, check-runs, or deployments), so gcloud is the only reliable
+# way to check its status.
+#
+# REQUIRED SECRET:
+#   GCP_SA_KEY — A Google Cloud Service Account JSON key with these roles:
+#     - Firebase App Hosting Viewer  (or Firebase Admin)
+#   Steps to create:
+#     1. Go to: https://console.cloud.google.com/iam-admin/serviceaccounts
+#        Project: we-are-family-221
+#     2. Create a Service Account (or use existing)
+#     3. Grant role: "Firebase App Hosting Admin" or "Firebase Admin"
+#     4. Click the account → Keys → Add Key → JSON → Download
+#     5. In GitHub repo → Settings → Secrets → Actions → New secret
+#        Name: GCP_SA_KEY  |  Value: (paste entire JSON file contents)
 
 on:
   push:
@@ -11,91 +25,66 @@ on:
 
 jobs:
   wait-and-gate:
-    name: Wait for Firebase & Trigger Docker Build
+    name: Wait for Firebase App Hosting
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      statuses: read
-      checks: read
 
     steps:
-      - name: Debug - Show what GitHub knows about this commit
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          COMMIT_SHA: ${{ github.sha }}
-        run: |
-          echo "==> Commit: $COMMIT_SHA"
-          echo "==> Waiting 90 seconds for Firebase to register its status..."
-          sleep 90
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-          echo ""
-          echo "--- Commit Statuses ---"
-          gh api "repos/${REPO}/commits/${COMMIT_SHA}/statuses" \
-            --jq '.[] | "\(.context): \(.state)"' || echo "(none)"
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: '>= 363.0.0'
 
-          echo ""
-          echo "--- Check Runs ---"
-          gh api "repos/${REPO}/commits/${COMMIT_SHA}/check-runs" \
-            --jq '.check_runs[] | "\(.name): \(.status) / \(.conclusion)"' || echo "(none)"
-
-          echo ""
-          echo "--- Deployments for this SHA ---"
-          gh api "repos/${REPO}/deployments?sha=${COMMIT_SHA}" \
-            --jq '.[].id' | while read ID; do
-              STATE=$(gh api "repos/${REPO}/deployments/${ID}/statuses?per_page=1" \
-                --jq '.[0].state // "pending"')
-              echo "  deployment $ID: $STATE"
-            done || echo "(none)"
-
-      - name: Wait for Firebase App Hosting Deployment
+      - name: Poll Firebase App Hosting Rollout
         id: firebase-check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          COMMIT_SHA: ${{ github.sha }}
         run: |
-          echo "==> Polling for Firebase App Hosting status on commit $COMMIT_SHA..."
+          echo "==> Waiting for Firebase App Hosting rollout to register..."
+          echo "    Backend: wearefamily | Region: us-east4 | Project: we-are-family-221"
+          sleep 60
 
-          MAX_RETRIES=60  # 60 x 10s = 10 minutes
+          MAX_RETRIES=60  # 60 x 10s = up to 10 minutes
           RETRY_COUNT=0
 
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             RETRY_COUNT=$((RETRY_COUNT+1))
 
-            # Check 1: Commit statuses (Firebase posts "firebase-hosting/..." or similar)
-            STATUS=$(gh api "repos/${REPO}/commits/${COMMIT_SHA}/statuses" \
-              --jq '[.[] | select(.context | ascii_downcase | test("firebase|hosting|apphosting|cloud.build"))] | .[0].state // ""')
+            # Get state of the most recent rollout for this backend
+            STATE=$(gcloud firebase apphosting rollouts list \
+              --project=we-are-family-221 \
+              --backend=wearefamily \
+              --location=us-east4 \
+              --limit=1 \
+              --format="value(state)" 2>/dev/null || echo "ERROR")
 
-            # Check 2: Check runs (Firebase may use GitHub Checks API)
-            if [ -z "$STATUS" ] || [ "$STATUS" = "pending" ]; then
-              CHECK=$(gh api "repos/${REPO}/commits/${COMMIT_SHA}/check-runs" \
-                --jq '[.check_runs[] | select(.name | ascii_downcase | test("firebase|hosting|apphosting|cloud.build"))] | .[0] | "\(.status)/\(.conclusion // "")"' 2>/dev/null || echo "")
+            echo "  Rollout state: '${STATE}' (attempt ${RETRY_COUNT}/${MAX_RETRIES})"
 
-              if echo "$CHECK" | grep -q "completed/success"; then
-                STATUS="success"
-              elif echo "$CHECK" | grep -q "completed/failure\|completed/cancelled"; then
-                STATUS="failure"
-              fi
-            fi
-
-            echo "  Firebase status: '${STATUS}' (attempt ${RETRY_COUNT}/${MAX_RETRIES})"
-
-            if [ "$STATUS" = "success" ]; then
-              echo "==> Firebase deployment succeeded!"
-              echo "firebase_status=success" >> "$GITHUB_OUTPUT"
-              exit 0
-            elif [ "$STATUS" = "failure" ] || [ "$STATUS" = "error" ]; then
-              echo "==> Firebase deployment FAILED. Docker pipeline will NOT start."
-              echo "firebase_status=failure" >> "$GITHUB_OUTPUT"
-              exit 1
-            fi
+            case "$STATE" in
+              SUCCEEDED|COMPLETED)
+                echo "==> Firebase App Hosting deployed successfully!"
+                echo "firebase_status=success" >> "$GITHUB_OUTPUT"
+                exit 0
+                ;;
+              FAILED|CANCELLED)
+                echo "==> Firebase deployment FAILED or was CANCELLED. Docker pipeline will NOT start."
+                echo "firebase_status=failure" >> "$GITHUB_OUTPUT"
+                exit 1
+                ;;
+              ERROR)
+                echo "  Warning: gcloud command failed (check GCP_SA_KEY). Retrying..."
+                ;;
+            esac
 
             echo "  Still deploying... waiting 10 seconds."
             sleep 10
           done
 
-          echo "==> Timed out. Docker pipeline will NOT start."
+          echo "==> Timed out after 10 minutes. Docker pipeline will NOT start."
           exit 1
 
       - name: Trigger Docker Build Pipeline
