@@ -45,12 +45,38 @@ export function VerificationBlock({ email }: { email: string }) {
     const handleCheck = async () => {
         setVerifying(true);
         try {
+            // Reload the Firebase user to get fresh emailVerified status
             await refreshUser();
-            // If verified, refreshUser triggers router.refresh which might redirect if the page logic re-runs 
-            // OR we can manually check and push.
-            // But layout/page logic handles redirect if verified.
-            // Let's force a hard reload or router replace to home to trigger server check.
-            router.push('/');
+
+            // Import auth to check current state after reload
+            const { getAuth } = await import("firebase/auth");
+            const { createSession, syncUserToDb } = await import("@/app/actions/auth");
+            const auth = getAuth();
+            const currentUser = auth.currentUser;
+
+            if (currentUser && currentUser.emailVerified) {
+                // Re-establish the server session now that user is verified
+                const nameParts = (currentUser.displayName || "").split(' ');
+                const firstName = nameParts[0] || "Famio";
+                const lastName = nameParts.slice(1).join(' ') || "Member";
+                try {
+                    await syncUserToDb(
+                        currentUser.uid,
+                        currentUser.email || "",
+                        currentUser.displayName || currentUser.email?.split('@')[0] || "User",
+                        firstName,
+                        lastName,
+                        true
+                    );
+                } catch { /* non-fatal */ }
+                await createSession(currentUser.uid);
+                router.push('/');
+            } else {
+                toast.error("Email not yet verified. Please click the link in your inbox and try again.");
+            }
+        } catch (error) {
+            console.error("Verification check failed:", error);
+            toast.error("Could not confirm verification. Please try again.");
         } finally {
             setVerifying(false);
         }

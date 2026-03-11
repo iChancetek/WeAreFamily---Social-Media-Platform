@@ -37,47 +37,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
-                setUser(firebaseUser)
-                try {
-                    // Sync user to DB first
-                    console.log("[AuthProvider] Syncing user to DB:", firebaseUser.uid);
+                // Always reload to fetch the latest emailVerified status from Firebase
+                try { await firebaseUser.reload(); } catch { /* ignore */ }
+                // Re-read the user after reload
+                const freshUser = auth.currentUser || firebaseUser;
+                setUser(freshUser);
 
-                    const nameParts = (firebaseUser.displayName || "").split(' ');
+                // Don't create a session for unverified users
+                if (!freshUser.emailVerified) {
+                    console.log("[AuthProvider] User is not email-verified, skipping session creation.");
+                    setLoading(false);
+                    return;
+                }
+
+                try {
+                    const nameParts = (freshUser.displayName || "").split(' ');
                     const firstName = nameParts[0] || "Famio";
                     const lastName = nameParts.slice(1).join(' ') || "Member";
 
-                    await syncUserToDb(
-                        firebaseUser.uid,
-                        firebaseUser.email || "",
-                        firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
-                        firstName,
-                        lastName,
-                        firebaseUser.emailVerified
-                    );
-                    console.log("[AuthProvider] User synced.");
-                    // Then create session
-                    await createSession(firebaseUser.uid)
+                    // Sync to DB — but don't let a DB error block session creation
+                    try {
+                        await syncUserToDb(
+                            freshUser.uid,
+                            freshUser.email || "",
+                            freshUser.displayName || freshUser.email?.split('@')[0] || "User",
+                            firstName,
+                            lastName,
+                            freshUser.emailVerified
+                        );
+                        console.log("[AuthProvider] User synced.");
+                    } catch (syncError) {
+                        console.error("[AuthProvider] DB sync failed (non-fatal):", syncError);
+                        // Continue — session creation is more important
+                    }
 
-                    // Listen to profile
+                    // Create server-side session cookie
+                    await createSession(freshUser.uid);
+
+                    // Listen to Firestore profile in realtime
                     const { db } = await import("@/lib/firebase");
                     const { doc, onSnapshot } = await import("firebase/firestore");
-                    profileUnsubscribe = onSnapshot(doc(db, "users", firebaseUser.uid), (doc) => {
-                        if (doc.exists()) {
-                            setProfile({ ...doc.data(), id: doc.id });
+                    profileUnsubscribe = onSnapshot(doc(db, "users", freshUser.uid), (snap) => {
+                        if (snap.exists()) {
+                            setProfile({ ...snap.data(), id: snap.id });
                         }
                     });
 
-                    // Refresh to ensure Server Components reflect the session
                     router.refresh();
 
                 } catch (error) {
-                    console.error("Auth sync failed:", error);
+                    console.error("[AuthProvider] Critical auth setup failed:", error);
                 }
             } else {
                 setUser(null)
                 setProfile(null)
                 if (profileUnsubscribe) profileUnsubscribe();
-                // Clear session on server
                 await deleteSession()
             }
             setLoading(false)

@@ -4,23 +4,19 @@ import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 
 export async function createSession(uid: string) {
-    // In Next.js 15/16, cookies() is async
     const cookieStore = await cookies()
 
     console.log(`[createSession] Setting session_uid for ${uid}`);
 
     cookieStore.set("session_uid", uid, {
         httpOnly: true,
-        // Force secure false locally if needed, but standardizing on NODE_ENV is best.
-        // If users have issues locally with production builds, this might be the cause.
-        // Forcing secure: false to resolve login issues on localhost/http environments.
-        // Revert this only when deploying to strict HTTPS production.
-        secure: false, // process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
         path: "/",
         maxAge: 60 * 60 * 24 * 30, // 30 days
-        sameSite: 'lax' // Add explicit SameSite
+        sameSite: 'lax'
     })
 }
+
 
 
 export async function deleteSession() {

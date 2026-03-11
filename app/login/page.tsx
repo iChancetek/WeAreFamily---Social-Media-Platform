@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -10,16 +10,19 @@ import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
 import Link from "next/link"
 import { Label } from "@/components/ui/label"
-import { Loader2, Heart } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import "@/lib/firebase"
 
 import { createSession, syncUserToDb } from "@/app/actions/auth";
+
 
 export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get("redirect") || "/"
 
     const [needsVerification, setNeedsVerification] = useState(false)
     const [unverifiedUser, setUnverifiedUser] = useState<any>(null)
@@ -131,7 +134,7 @@ export default function LoginPage() {
             await createSession(user.uid)
 
             toast.success("Welcome back!")
-            router.push("/")
+            router.push(redirectTo)
             router.refresh()
         } catch (error: any) {
             console.error(error)
