@@ -3,6 +3,7 @@
 import { Workbox } from "workbox-window";
 
 let wb: Workbox | undefined;
+let updateApplied = false;
 
 export function registerServiceWorker() {
     if (
@@ -13,20 +14,25 @@ export function registerServiceWorker() {
         wb = new Workbox("/sw.js");
 
         wb.addEventListener("installed", (event) => {
-            if (event.isUpdate) {
-                console.log("[PWA] New version available");
-                // Show update notification
-                if (confirm("A new version of Famio is available. Reload to update?")) {
-                    wb?.addEventListener("controlling", () => {
-                        window.location.reload();
-                    });
-                    wb?.messageSkipWaiting();
-                }
+            if (event.isUpdate && !updateApplied) {
+                updateApplied = true;
+                console.log("[PWA] New version available — will apply silently on next page load.");
+
+                // Do NOT prompt the user. Instead, silently activate the new
+                // service worker immediately in the background. The next time
+                // they navigate or refresh naturally, they will get the new version.
+                wb?.messageSkipWaiting();
             }
         });
 
+        wb.addEventListener("controlling", () => {
+            // The new SW has taken control. Nothing to do — the user's
+            // next natural navigation will load the updated assets.
+            console.log("[PWA] New service worker is now controlling the page.");
+        });
+
         wb.addEventListener("activated", () => {
-            console.log("[PWA] Service worker activated");
+            console.log("[PWA] Service worker activated.");
         });
 
         wb.register().catch((err) => {

@@ -3,14 +3,16 @@ importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.5.4/workbox
 if (workbox) {
     console.log(`[PWA] Workbox is loaded`);
 
-    // Skip waiting to activate immediately
-    workbox.core.skipWaiting();
-    workbox.core.clientsClaim();
+    // NOTE: Do NOT call skipWaiting() here.
+    // Doing so causes the SW to activate immediately on every update,
+    // which triggers the 'installed' isUpdate event every time and creates
+    // an infinite update-prompt loop. The update is handled silently in
+    // service-worker-manager.ts after a 24-hour delay.
 
     // Cache names
-    const CACHE_NAME_ASSETS = 'famio-assets-v1';
-    const CACHE_NAME_API = 'famio-api-v1';
-    const CACHE_NAME_MEDIA = 'famio-media-v1';
+    const CACHE_NAME_ASSETS = 'famio-assets-v2';
+    const CACHE_NAME_API = 'famio-api-v2';
+    const CACHE_NAME_MEDIA = 'famio-media-v2';
 
     // 1. Cache Pages & Statics (StaleWhileRevalidate)
     // This covers JS, CSS, and the main HTML document
