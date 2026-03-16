@@ -26,9 +26,11 @@ export function registerServiceWorker() {
         });
 
         wb.addEventListener("controlling", () => {
-            // The new SW has taken control. Nothing to do — the user's
-            // next natural navigation will load the updated assets.
             console.log("[PWA] New service worker is now controlling the page.");
+            if (updateApplied) {
+                console.log("[PWA] Reloading to apply update immediately...");
+                window.location.reload();
+            }
         });
 
         wb.addEventListener("activated", () => {
