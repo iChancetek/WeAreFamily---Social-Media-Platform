@@ -36,7 +36,7 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
         toggleAutoScroll,
         containerRef,
     } = useAutoScroll({
-        pauseOnHover: true,
+        pauseOnHover: false,
         pauseOnInteraction: true,
     });
 
