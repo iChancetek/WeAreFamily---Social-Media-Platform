@@ -93,14 +93,10 @@ export function useSpeechRecognition({
     useEffect(() => {
         if (!useWhisper || typeof window === 'undefined') return;
 
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(() => {
-                setIsSupported(true);
-            })
-            .catch((err) => {
-                console.error('Microphone access denied:', err);
-                setIsSupported(false);
-            });
+        const hasGetUserMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        const hasMediaRecorder = typeof MediaRecorder !== 'undefined';
+
+        setIsSupported(hasGetUserMedia && hasMediaRecorder);
     }, [useWhisper]);
 
     // Whisper transcription
