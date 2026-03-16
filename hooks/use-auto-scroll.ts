@@ -191,7 +191,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
   const handleInteraction = useCallback(() => {
     // Ignore residual echoes from our own programmatic scroll updates
     const timeSinceAuto = performance.now() - lastAutoScrollTimeRef.current;
-    if (timeSinceAuto < 50) {
+    if (timeSinceAuto < 150) {
       return;
     }
 
