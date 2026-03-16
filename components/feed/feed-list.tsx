@@ -165,7 +165,7 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
             {/* Added standard vh fallback and dvh for mobile browsers */}
             <div
                 ref={containerRef}
-                className="max-h-[calc(100vh-200px)] max-h-[calc(100dvh-200px)] md:max-h-[calc(100vh-150px)] md:max-h-[calc(100dvh-150px)] overflow-y-auto scroll-smooth overscroll-contain"
+                className="max-h-[calc(100vh-200px)] max-h-[calc(100dvh-200px)] md:max-h-[calc(100vh-150px)] md:max-h-[calc(100dvh-150px)] overflow-y-auto overscroll-contain"
                 style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
             >
                 <MasonryFeed posts={posts} currentUserId={profile?.id} variant={variant} />
