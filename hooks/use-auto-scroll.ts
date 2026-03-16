@@ -37,6 +37,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
   // Flag to distinguish internal vs external scroll events
   // This is critical to prevent "fighting" on mobile
   const isAutoScrolling = useRef(false);
+  const lastAutoScrollTimeRef = useRef<number>(0);
 
   // Initialize state lazily
   const [isEnabled, setIsEnabled] = useState(() => {
@@ -165,11 +166,13 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
       // Reset to top
       isAutoScrolling.current = true; // Mark as internal
       container.scrollTo({ top: 0 });
+      lastAutoScrollTimeRef.current = performance.now();
       lastTimestampRef.current = undefined;
     } else {
       // Perform Scroll
       isAutoScrolling.current = true; // Mark as internal
       container.scrollTop += pixelsToScroll;
+      lastAutoScrollTimeRef.current = performance.now();
     }
 
     lastTimestampRef.current = timestamp;
@@ -186,10 +189,15 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
 
   // Interaction Handler
   const handleInteraction = useCallback(() => {
-    // Ignore if this event was triggered by our own scroll
+    // Ignore residual echoes from our own programmatic scroll updates
+    const timeSinceAuto = performance.now() - lastAutoScrollTimeRef.current;
+    if (timeSinceAuto < 50) {
+      return;
+    }
+
+    // Mark as consumed for other states
     if (isAutoScrolling.current) {
       isAutoScrolling.current = false;
-      return;
     }
 
     // User Interaction detected
