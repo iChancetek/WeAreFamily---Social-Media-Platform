@@ -175,7 +175,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                 const { createPost, incrementRepostCount } = await import("@/app/actions/posts");
                 await createPost(`🔄 ${t("feed.repost")}: ${post.content.substring(0, 100)}...`, post.media || []);
                 await incrementRepostCount(post.id, contextType, contextId);
-                setRepostCount(prev => prev + 1); // Increment local counter
+                setRepostCount((prev: number) => prev + 1); // Increment local counter
                 toast.success(t("feed.repost.success"));
             } catch { toast.error("Repost failed"); }
         }
