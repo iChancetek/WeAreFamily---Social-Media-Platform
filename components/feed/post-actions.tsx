@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Heart, MessageCircle, Share2, Send, Loader2, ChevronDown } from "lucide-react";
+import { Heart, MessageCircle, RefreshCw, Send, Loader2, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { REACTIONS, getReactionIcon } from "./reaction-selector";
@@ -87,7 +87,7 @@ export function PostActions({
                     </Button>
 
                     <Button variant="ghost" size="sm" onClick={() => onShare('native')} className="h-8 w-8 rounded-full text-muted-foreground hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 p-0">
-                        <Share2 className="w-4 h-4" />
+                        <RefreshCw className="w-4 h-4" />
                     </Button>
                 </div>
             </div>
