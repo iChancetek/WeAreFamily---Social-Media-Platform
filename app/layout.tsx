@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://famio.us/icons/icon-512x512.png",
+        url: "https://famio.us/icons/icon-512x512.png?v=2",
         width: 512,
         height: 512,
         alt: "Famio Logo",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Famio - We Are One",
     description: "A private, AI-powered social platform. We Are One.",
-    images: ["https://famio.us/icons/icon-512x512.png"],
+    images: ["https://famio.us/icons/icon-512x512.png?v=2"],
     site: "@Famio",
   },
 
@@ -66,11 +66,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icons/icon-192x192.png?v=2", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png?v=2", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/icons/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" },
     ],
   },
 };
