@@ -59,6 +59,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     );
     const [reactionCount, setReactionCount] = useState(post?.reactions ? Object.keys(post.reactions).length : 0);
     const [comments, setComments] = useState<any[]>(post?.comments || []);
+    const [repostCount, setRepostCount] = useState(post?.repostCount || 0);
     const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
     const [commentMediaUrl, setCommentMediaUrl] = useState<string | null>(null);
     const [isUploadingComment, setIsUploadingComment] = useState(false);
@@ -171,8 +172,10 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
         else if (mode === 'native' && navigator.share) navigator.share({ title: `Post by ${name}`, text: post.content, url }).catch(() => { });
         else if (mode === 'repost') {
             try {
-                const { createPost } = await import("@/app/actions/posts");
+                const { createPost, incrementRepostCount } = await import("@/app/actions/posts");
                 await createPost(`🔄 ${t("feed.repost")}: ${post.content.substring(0, 100)}...`, post.media || []);
+                await incrementRepostCount(post.id, contextType, contextId);
+                setRepostCount(prev => prev + 1); // Increment local counter
                 toast.success(t("feed.repost.success"));
             } catch { toast.error("Repost failed"); }
         }
@@ -289,6 +292,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                     contextType={contextType}
                     contextId={contextId}
                     postAuthorId={post.authorId}
+                    repostCount={repostCount}
                 />
 
                 <ReportDialog open={reportDialogOpen} onOpenChange={setReportDialogOpen} targetType="post" targetId={post.id} context={{ contextType, contextId, authorId: post.authorId }} />

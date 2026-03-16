@@ -4,7 +4,9 @@ import { useState } from "react";
 import { CreateStoryDialog } from "./create-story-dialog";
 import { StoryViewer } from "./story-viewer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus } from "lucide-react";
+import { Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Story {
     id: string;
@@ -42,6 +44,7 @@ export function StoriesTrayClient({
     const { t } = useLanguage();
     const [viewerOpen, setViewerOpen] = useState(false);
     const [selectedUserIndex, setSelectedUserIndex] = useState(0);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     // Enable for all users
     const canAddStory = true;
@@ -53,9 +56,31 @@ export function StoriesTrayClient({
 
     return (
         <div className="relative mb-6">
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                {/* Active Stories */}
-                {activeStories.map((storyGroup, idx) => {
+            <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-bold text-foreground/75 tracking-wide">MY LIFE</h3>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setIsCollapsed(!isCollapsed)} 
+                    className="h-6 w-6 p-0 rounded-full hover:bg-muted/50"
+                >
+                    {isCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+                </Button>
+            </div>
+
+            <AnimatePresence initial={false}>
+                {!isCollapsed && (
+                    <motion.div
+                        key="stories-tray-content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.23, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+                            {/* Active Stories */}
+                            {activeStories.map((storyGroup, idx) => {
                     // Check if *this* story group belongs to the current user (if so, we could merge it with the "Add Story" card visually, but Facebook separates them: "Your Story" vs "Add". For v1 let's just list them.)
                     // Actually, standard UI is usually: My Story (Add) | Friend 1 | Friend 2. 
                     // If "My Story" exists, clicking it usually shows my story. The "Add" button is often separate or a sub-action.
@@ -94,6 +119,10 @@ export function StoriesTrayClient({
                     );
                 })}
             </div>
+
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Viewer Overlay */}
             <StoryViewer

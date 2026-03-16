@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Heart, MessageCircle, RefreshCw, Send, Loader2, ChevronDown } from "lucide-react";
+import { Heart, MessageCircle, RefreshCw, Share2, Send, Loader2, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { REACTIONS, getReactionIcon } from "./reaction-selector";
@@ -18,7 +18,7 @@ interface PostActionsProps {
     onCommentClick: () => void;
     showComments: boolean;
     comments: any[];
-    onShare: (mode: 'native') => void;
+    onShare: (mode: 'native' | 'repost') => void;
     commentText: string;
     onCommentTextChange: (val: string) => void;
     onCommentSubmit: () => void;
@@ -29,6 +29,7 @@ interface PostActionsProps {
     contextType?: string;
     contextId?: string;
     postAuthorId: string;
+    repostCount?: number;
 }
 
 export function PostActions({
@@ -49,7 +50,8 @@ export function PostActions({
     currentUserId,
     contextType,
     contextId,
-    postAuthorId
+    postAuthorId,
+    repostCount
 }: PostActionsProps) {
     return (
         <div className={cn(
@@ -86,8 +88,15 @@ export function PostActions({
                         <span className="text-xs font-medium">{comments.length > 0 ? comments.length : ""}</span>
                     </Button>
 
-                    <Button variant="ghost" size="sm" onClick={() => onShare('native')} className="h-8 w-8 rounded-full text-muted-foreground hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 p-0">
+                    {/* Internal Reshare */}
+                    <Button variant="ghost" size="sm" onClick={() => onShare('repost')} className="h-8 px-2 gap-1.5 rounded-full text-muted-foreground hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 flex items-center" title="Reshare on platform">
                         <RefreshCw className="w-4 h-4" />
+                        <span className="text-xs font-medium">{repostCount && repostCount > 0 ? repostCount : ""}</span>
+                    </Button>
+
+                    {/* External Share */}
+                    <Button variant="ghost" size="sm" onClick={() => onShare('native')} className="h-8 w-8 rounded-full text-muted-foreground hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 p-0 flex items-center justify-center" title="Share outside">
+                        <Share2 className="w-4 h-4" />
                     </Button>
                 </div>
             </div>

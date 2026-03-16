@@ -104,6 +104,14 @@ export async function createPost(
     revalidatePath('/profile');
 }
 
+export async function incrementRepostCount(postId: string, contextType?: string, contextId?: string) {
+    await requireVerifiedAction(); // Ensure user is auth'd
+    const postRef = getPostRef(postId, contextType, contextId);
+    await postRef.update({
+        repostCount: FieldValue.increment(1)
+    });
+}
+
 export type PostFilters = {
     timeRange: 'day' | 'week' | 'month' | 'year' | 'all';
     contentType: 'text' | 'photo' | 'video' | 'all';
