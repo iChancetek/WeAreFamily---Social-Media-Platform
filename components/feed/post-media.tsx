@@ -1,12 +1,64 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSubContent, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Heart, Share2, MoreHorizontal, Globe, Sparkles, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, Share2, MoreHorizontal, Globe, Sparkles, Play, ChevronLeft, ChevronRight, Minimize2, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MediaEmbed } from "./media-embed";
 import { ReactionType } from "@/types/posts";
+
+interface FeedVideoProps {
+    src: string;
+    poster?: string;
+    isEnlarged: boolean;
+    className?: string;
+    videoRef?: React.RefObject<HTMLVideoElement | null>;
+}
+
+function FeedVideo({ src, poster, isEnlarged, className, videoRef }: FeedVideoProps) {
+    const localRef = useRef<HTMLVideoElement>(null);
+    const ref = videoRef || localRef;
+
+    useEffect(() => {
+        if (isEnlarged) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                const vid = ref.current;
+                if (!vid) return;
+                if (entry.isIntersecting) {
+                    vid.play().catch(() => {});
+                } else {
+                    vid.pause();
+                }
+            },
+            { threshold: 0.5 }
+        );
+
+        const currentVid = ref.current;
+        if (currentVid) observer.observe(currentVid);
+
+        return () => {
+            if (currentVid) observer.unobserve(currentVid);
+            observer.disconnect();
+        };
+    }, [isEnlarged, ref]);
+
+    return (
+        <video
+            ref={ref}
+            src={src}
+            poster={poster}
+            className={className}
+            controls={isEnlarged}
+            autoPlay={isEnlarged}
+            muted={!isEnlarged}
+            preload="metadata"
+            playsInline
+        />
+    );
+}
 
 interface PostMediaProps {
     post: any;
@@ -63,6 +115,7 @@ export function PostMedia({
 }: PostMediaProps) {
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     if (!hasMedia) return null;
 
@@ -93,15 +146,39 @@ export function PostMedia({
 
     return (
         <div className="w-full relative">
-            {post.audioUrl && (
-                <div className="w-full p-3 bg-muted/30 rounded-xl flex flex-col gap-1.5 border border-border/40 shadow-sm mb-2" onClick={e => e.stopPropagation()}>
-                    <div className="flex items-center gap-1.5">
-                        <Play className="w-3.5 h-3.5 text-pink-600 fill-current" />
-                        <span className="text-xs font-bold text-foreground/80">Podcast Episode</span>
+            <div className="absolute top-2 left-2 z-30 pointer-events-auto" onClick={e => e.stopPropagation()}>
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white border-none shadow-sm flex items-center justify-center p-0"
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                >
+                    {isCollapsed ? <Maximize2 className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
+                </Button>
+            </div>
+
+            <div className={cn("w-full relative transition-all duration-300", isCollapsed ? "max-h-[44px] overflow-hidden rounded-xl border border-border/30 shadow-none mb-1" : "")}>
+                {isCollapsed && (
+                    <div className="absolute inset-0 bg-muted/60 hover:bg-muted/70 backdrop-blur-md flex items-center px-3 gap-2 z-10 cursor-pointer" onClick={() => setIsCollapsed(false)}>
+                        <div className="w-6 h-6 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center">
+                            <Play className="w-3 h-3 text-pink-600 fill-current" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[11px] font-bold text-foreground/85">{isVideoFile ? 'Video' : 'Media'} Hidden</span>
+                            <span className="text-[9px] text-muted-foreground/90 leading-none">Tap to expand</span>
+                        </div>
                     </div>
-                    <audio src={post.audioUrl} controls className="w-full h-8" />
-                </div>
-            )}
+                )}
+
+                {post.audioUrl && (
+                    <div className="w-full p-3 bg-muted/30 rounded-xl flex flex-col gap-1.5 border border-border/40 shadow-sm mb-2" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-1.5">
+                            <Play className="w-3.5 h-3.5 text-pink-600 fill-current" />
+                            <span className="text-xs font-bold text-foreground/80">Podcast Episode</span>
+                        </div>
+                        <audio src={post.audioUrl} controls className="w-full h-8" />
+                    </div>
+                )}
 
             {mainMedia && (isEmbeddable && mediaUrl ? (
                 <div className="w-full">
@@ -140,15 +217,10 @@ export function PostMedia({
                                             if (!isEnlarged) { e.stopPropagation(); onEnlarge(); }
                                         }}
                                     >
-                                        <video
-                                            // ref={idx === 0 ? videoRef : undefined} // Not mapping refs perfectly, maybe just rely on standard video HTML tag
+                                        <FeedVideo
                                             src={`${mediaItem.url}#t=0.001`}
                                             className="w-full h-auto object-contain max-h-[60vh] md:max-h-[70vh]"
-                                            controls={isEnlarged}
-                                            autoPlay={isEnlarged}
-                                            muted={!isEnlarged}
-                                            preload="metadata"
-                                            playsInline
+                                            isEnlarged={isEnlarged}
                                         />
                                         {!isEnlarged && (
                                             <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors pointer-events-none">
@@ -208,8 +280,6 @@ export function PostMedia({
             ) : isVideoFile ? (
                 <div
                     className="w-full bg-black rounded-lg overflow-hidden relative cursor-pointer"
-                    onMouseEnter={() => { if (!isEnlarged && videoRef.current) videoRef.current.play().catch(() => { }); }}
-                    onMouseLeave={() => { if (!isEnlarged && videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; } }}
                     onClick={(e) => {
                         if (!isEnlarged) {
                             e.stopPropagation();
@@ -217,16 +287,12 @@ export function PostMedia({
                         }
                     }}
                 >
-                    <video
-                        ref={videoRef}
+                    <FeedVideo
+                        videoRef={videoRef}
                         src={`${mainMedia}#t=0.001`}
                         poster={post.thumbnailUrl || undefined}
                         className="w-full h-auto object-contain max-h-[60vh] md:max-h-[70vh]"
-                        controls={isEnlarged} // Only controls if enlarged
-                        autoPlay={isEnlarged}
-                        muted={!isEnlarged}
-                        preload="metadata"
-                        playsInline
+                        isEnlarged={isEnlarged}
                     />
                     {!isEnlarged && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors pointer-events-none">
@@ -344,6 +410,7 @@ export function PostMedia({
                     </span>
                 </div>
             )}
+            </div> {/* End Collapse Wrapper */}
         </div>
     );
 }
