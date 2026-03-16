@@ -47,7 +47,11 @@ export async function createPost(
     engagementSettings?: { allowLikes?: boolean; allowComments?: boolean; privacy?: 'public' | 'friends' | 'private' | 'companions' | 'specific' },
     thumbnailUrl?: string | null,
     allowedViewerIds?: string[],
-    location?: { lat: number, lng: number, name?: string } | null
+    location?: { lat: number, lng: number, name?: string } | null,
+    type: 'note' | 'article' | 'podcast' = 'note',
+    title?: string,
+    audioUrl?: string,
+    subscriptionTier: 'public' | 'free' | 'paid' = 'public'
 ) {
     const user = await requireVerifiedAction();
 
@@ -78,6 +82,10 @@ export async function createPost(
             reactions: {}, // Map of userId -> reactionType
             engagementSettings: settings,
             allowedViewerIds: allowedViewerIds || [], // Store specific viewers if any
+            type: type || 'note',
+            title: title || null,
+            audioUrl: audioUrl || null,
+            subscriptionTier: subscriptionTier || 'public',
             createdAt: FieldValue.serverTimestamp(),
         });
     } catch (e) {
@@ -116,9 +124,19 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
 
         // Fetch family IDs once
         let userFamilyIds: string[] = [];
+        let activeSubscriptions: { [creatorId: string]: string } = {};
         if (user) {
             const { getCompanionIds } = await import("./companions");
             userFamilyIds = await getCompanionIds(user.id);
+
+            const subsSnap = await adminDb.collection("subscriptions")
+                .where("subscriberId", "==", user.id)
+                .where("status", "==", "active")
+                .get();
+            subsSnap.docs.forEach((doc: any) => {
+                const d = doc.data();
+                activeSubscriptions[d.creatorId] = d.tier;
+            });
         }
 
         while (validPosts.length < limit && safetyCounter < MAX_LOOPS) {
@@ -175,8 +193,20 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
             const batchPosts = await Promise.all(rawDocs.map(async (doc) => {
                 const data = doc.data();
 
-                // VISIBILITY CHECK
+                // Substack model gate
+                const subscriptionTier = data.subscriptionTier || 'public';
+                const creatorTier = activeSubscriptions[data.authorId];
+                let isLocked = false;
+
                 const isAuthor = user?.id === data.authorId;
+
+                if (subscriptionTier === 'paid' && !isAuthor && creatorTier !== 'paid') {
+                    isLocked = true;
+                } else if (subscriptionTier === 'free' && !isAuthor && !creatorTier) {
+                    isLocked = true;
+                }
+
+                // VISIBILITY CHECK
                 const privacy = data.engagementSettings?.privacy || 'public';
 
                 // BYPASS VISIBILITY CHECK PER USER REQUEST: Show all posts regardless of privacy
@@ -236,12 +266,17 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
                     }));
                 }
 
+                if (isLocked) {
+                    data.content = "🔒 This content is for " + (subscriptionTier === 'paid' ? "paid" : "free") + " subscribers only. Subscribe to unlock.";
+                }
+
                 return sanitizeData({
                     id: doc.id,
                     ...data,
-                    media: normalizedMedia,
+                    media: isLocked ? [] : normalizedMedia,
                     author,
-                    comments: comments || [],
+                    isLocked,
+                    comments: isLocked ? [] : (comments || []),
                     createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date()
                 });
             }));
@@ -758,6 +793,19 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
 
     try {
         let allDocs: any[] = [];
+        const currentUser = await getUserProfile();
+        let activeSubscriptions: { [creatorId: string]: string } = {};
+
+        if (currentUser) {
+            const subsSnap = await adminDb.collection("subscriptions")
+                .where("subscriberId", "==", currentUser.id)
+                .where("status", "==", "active")
+                .get();
+            subsSnap.docs.forEach((doc: any) => {
+                const d = doc.data();
+                activeSubscriptions[d.creatorId] = d.tier;
+            });
+        }
 
         // 1. Fetch by authorId (Standard)
         // NOTE: We do not use orderBy("createdAt", "desc") here to avoid needing a Composite Index.
@@ -852,10 +900,21 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
         // 5. Hydrate & Sanitize
         const finalPosts = await Promise.all(slicedDocs.map(async (doc: any) => {
             const post = doc.data();
-            const currentUser = await getUserProfile();
+
+            // Substack model gate
+            const subscriptionTier = post.subscriptionTier || 'public';
+            const creatorTier = activeSubscriptions[post.authorId];
+            let isLocked = false;
+
+            const isAuthor = currentUser?.id === post.authorId;
+
+            if (subscriptionTier === 'paid' && !isAuthor && creatorTier !== 'paid') {
+                isLocked = true;
+            } else if (subscriptionTier === 'free' && !isAuthor && !creatorTier) {
+                isLocked = true;
+            }
 
             // VISIBILITY CHECK
-            const isAuthor = currentUser?.id === post.authorId;
             const privacy = post.engagementSettings?.privacy || 'public';
 
             if (!isAuthor && privacy !== 'public') {
@@ -923,12 +982,17 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
                 }));
             }
 
+            if (isLocked) {
+                post.content = "🔒 This content is for " + (subscriptionTier === 'paid' ? "paid" : "free") + " subscribers only. Subscribe to unlock.";
+            }
+
             return sanitizeData({
                 id: doc.id,
                 ...post,
-                media: normalizedMedia,
+                media: isLocked ? [] : normalizedMedia,
                 author,
-                comments: comments || [],
+                isLocked,
+                comments: isLocked ? [] : (comments || []),
                 createdAt: post.createdAt?.toDate ? post.createdAt.toDate() : new Date()
             });
         }));

@@ -17,6 +17,7 @@ interface PostContentProps {
     translatedContent: string | null;
     postContent: string;
     mediaUrl: string | null;
+    title?: string;
 }
 
 export function PostContent({
@@ -30,7 +31,8 @@ export function PostContent({
     hasMedia,
     translatedContent,
     postContent,
-    mediaUrl
+    mediaUrl,
+    title
 }: PostContentProps) {
     return (
         <div onClick={e => !isEditing && isEnlarged ? e.stopPropagation() : undefined}>
@@ -43,13 +45,22 @@ export function PostContent({
                     </div>
                 </div>
             ) : (
-                // If in feed (!isEnlarged), clicking text bubbles to Card onClick -> handleEnlarge
-                <div className={cn(
-                    "text-sm leading-relaxed whitespace-pre-wrap",
-                    isPinterest ? "text-foreground/95 font-medium line-clamp-2" : "text-foreground/90",
-                    !isPinterest && (!isEnlarged && hasMedia ? "line-clamp-3" : "line-clamp-6")
-                )}>
+                <div className="flex flex-col gap-1">
+                    {title && (
+                        <h3 className={cn(
+                            "font-bold text-base text-foreground/90 leading-snug",
+                            isPinterest && "line-clamp-1"
+                        )}>
+                            {title}
+                        </h3>
+                    )}
+                    <div className={cn(
+                        "text-sm leading-relaxed whitespace-pre-wrap",
+                        isPinterest ? "text-foreground/95 font-medium line-clamp-2" : "text-foreground/90",
+                        !isPinterest && (!isEnlarged && hasMedia ? "line-clamp-3" : "line-clamp-6")
+                    )}>
                     <Linkify text={translatedContent || postContent} hideUrls={mediaUrl ? [mediaUrl] : []} onMediaFound={() => { }} />
+                    </div>
                 </div>
             )}
         </div>

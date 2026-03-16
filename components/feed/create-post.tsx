@@ -14,6 +14,7 @@ import { useAuth } from "@/components/auth-provider";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useLanguage } from "@/components/language-context";
 import { VisibilitySelector, PrivacyType } from "./visibility-selector";
+import { SubscriptionTierSelector, SubscriptionTier } from "./tier-selector";
 import { useMagicAI } from "@/hooks/use-magic-ai";
 import { MagicAIButton } from "@/components/magic-ai/magic-ai-button";
 import { AIPreviewPanel } from "@/components/magic-ai/ai-preview-panel";
@@ -39,6 +40,12 @@ export function CreatePost({ onClose }: CreatePostProps) {
     const [allowedViewers, setAllowedViewers] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [lastUploadError, setLastUploadError] = useState<string | null>(null);
+
+    // Substack Model State
+    const [postType, setPostType] = useState<'note' | 'article' | 'podcast'>('note');
+    const [title, setTitle] = useState("");
+    const [audioUrl, setAudioUrl] = useState<string | null>(null);
+    const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>('public');
 
     // Location State
     const [location, setLocation] = useState<{ lat: number; lng: number; name?: string } | null>(null);
@@ -103,7 +110,11 @@ export function CreatePost({ onClose }: CreatePostProps) {
                 { privacy },
                 thumbnailUrl,
                 allowedViewers.length > 0 ? allowedViewers : undefined,
-                location
+                location,
+                postType,
+                title.trim() ? title : undefined,
+                audioUrl || undefined,
+                subscriptionTier
             );
             setContent("");
             setMediaData([]);
@@ -170,6 +181,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
                 for (let i = 0; i < e.target.files.length; i++) {
                     const file = e.target.files[i];
                     const isVideo = file.type.startsWith('video/');
+                    const isAudio = file.type.startsWith('audio/');
 
                     // --- THUMBNAIL GENERATION FOR VIDEOS ---
                     if (isVideo && !thumbnailUrl && i === 0) { // Only generate for first video arbitrarily to save time
@@ -201,11 +213,18 @@ export function CreatePost({ onClose }: CreatePostProps) {
                     const snapshot = await uploadBytes(storageRef, file, metadata);
                     const url = await getDownloadURL(snapshot.ref);
 
-                    newMedia.push({ type: isVideo ? 'video' : 'photo', url });
+                    if (isAudio) {
+                        setAudioUrl(url);
+                        toast.success("Podcast audio uploaded! 🎙️");
+                    } else {
+                        newMedia.push({ type: isVideo ? 'video' : 'photo', url });
+                    }
                 }
 
-                setMediaData(prev => [...prev, ...newMedia]);
-                toast.success(newMedia.length > 1 ? "Media uploaded successfully! 📸🎥" : (newMedia[0].type === 'video' ? "Video uploaded! 🎥" : "Photo uploaded! 📸"));
+                if (newMedia.length > 0) {
+                    setMediaData(prev => [...prev, ...newMedia]);
+                    toast.success(newMedia.length > 1 ? "Media uploaded successfully! 📸🎥" : (newMedia[0].type === 'video' ? "Video uploaded! 🎥" : "Photo uploaded! 📸"));
+                }
             } catch (error: any) {
                 console.error("Upload failed", error);
                 const debugObj = {
@@ -244,6 +263,23 @@ export function CreatePost({ onClose }: CreatePostProps) {
                         <AvatarFallback>{user?.displayName?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-3">
+                        {/* Substack Type Selector */}
+                        <div className="flex gap-2 text-xs font-medium">
+                            <Button size="sm" variant={postType === 'note' ? 'outline' : 'ghost'} onClick={() => setPostType('note')} className="h-7 text-foreground/75">📝 Note</Button>
+                            <Button size="sm" variant={postType === 'article' ? 'outline' : 'ghost'} onClick={() => setPostType('article')} className="h-7 text-foreground/75">📰 Article</Button>
+                            <Button size="sm" variant={postType === 'podcast' ? 'outline' : 'ghost'} onClick={() => setPostType('podcast')} className="h-7 text-foreground/75">🎙️ Podcast</Button>
+                        </div>
+
+                        {/* Substack Title Input */}
+                        {(postType === 'article' || postType === 'podcast') && (
+                            <input
+                                type="text"
+                                placeholder="Add a title..."
+                                className="w-full bg-gray-100 dark:bg-black p-2 rounded-xl text-sm font-bold border-none focus:ring-0"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                            />
+                        )}
 
                         <Textarea
                             disabled={!isVerified}
@@ -333,7 +369,7 @@ export function CreatePost({ onClose }: CreatePostProps) {
                                     hidden
                                     multiple
                                     ref={fileInputRef}
-                                    accept="image/*,video/*"
+                                    accept="image/*,video/*,audio/*"
                                     onChange={handleFileSelect}
                                     disabled={!isVerified}
                                 />
@@ -372,12 +408,18 @@ export function CreatePost({ onClose }: CreatePostProps) {
                                 />
                             </div>
 
-                            <VisibilitySelector
-                                value={privacy}
-                                onChange={setPrivacy}
-                                allowedViewerIds={allowedViewers}
-                                onAllowedViewersChange={setAllowedViewers}
-                            />
+                            <div className="flex gap-2">
+                                <SubscriptionTierSelector
+                                    value={subscriptionTier}
+                                    onChange={setSubscriptionTier}
+                                />
+                                <VisibilitySelector
+                                    value={privacy}
+                                    onChange={setPrivacy}
+                                    allowedViewerIds={allowedViewers}
+                                    onAllowedViewersChange={setAllowedViewers}
+                                />
+                            </div>
                         </div>
 
                         <div className="flex flex-col-reverse gap-3 pt-2 md:flex-row md:justify-end md:items-center">

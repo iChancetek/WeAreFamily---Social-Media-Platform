@@ -53,7 +53,31 @@ export function PostHeader({
                     </Avatar>
                 </Link>
                 <div className="flex flex-col">
-                    <Link href={`/u/${post.authorId}`} className="text-xs font-semibold hover:underline line-clamp-1">{name}</Link>
+                    <div className="flex items-center gap-1.5">
+                        <Link href={`/u/${post.authorId}`} className="text-xs font-semibold hover:underline line-clamp-1">{name}</Link>
+                        {post.isLocked && !isAuthor && (
+                            <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-5 px-2 text-[9px] bg-pink-50 text-pink-600 hover:bg-pink-100 border-pink-100 gap-1 rounded-full font-bold"
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                        const { subscribeToCreator } = await import("@/app/actions/subscriptions");
+                                        await subscribeToCreator(post.authorId, post.subscriptionTier === 'paid' ? 'paid' : 'free');
+                                        const { toast } = await import("sonner");
+                                        toast.success("Subscribed successfully! 🎉");
+                                        window.location.reload();
+                                    } catch (err: any) {
+                                        const { toast } = await import("sonner");
+                                        toast.error(err.message || "Failed to subscribe");
+                                    }
+                                }}
+                            >
+                                Subscribe
+                            </Button>
+                        )}
+                    </div>
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                         <SafeDate date={post.createdAt} />
                         {post.context?.name && <span>{t("post.posted_in")} {post.context.name}</span>}

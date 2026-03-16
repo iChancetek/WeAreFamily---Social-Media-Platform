@@ -93,7 +93,17 @@ export function PostMedia({
 
     return (
         <div className="w-full relative">
-            {isEmbeddable && mediaUrl ? (
+            {post.audioUrl && (
+                <div className="w-full p-3 bg-muted/30 rounded-xl flex flex-col gap-1.5 border border-border/40 shadow-sm mb-2" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-1.5">
+                        <Play className="w-3.5 h-3.5 text-pink-600 fill-current" />
+                        <span className="text-xs font-bold text-foreground/80">Podcast Episode</span>
+                    </div>
+                    <audio src={post.audioUrl} controls className="w-full h-8" />
+                </div>
+            )}
+
+            {mainMedia && (isEmbeddable && mediaUrl ? (
                 <div className="w-full">
                     <MediaEmbed
                         url={mediaUrl}
@@ -239,7 +249,7 @@ export function PostMedia({
                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
                 </div>
-            )}
+            ))}
 
             {/* Pinterest Overlay Actions (Mobile Only) */}
             {isPinterest && hasMedia && (

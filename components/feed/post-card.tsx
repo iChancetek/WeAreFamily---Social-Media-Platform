@@ -183,7 +183,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const hasUploadedMedia = post.media && post.media.length > 0;
     const hasLinkPreview = !!pinterestPreview?.image;
     let mainMedia = hasUploadedMedia ? post.media[0].url : (hasLinkPreview ? pinterestPreview.image : mediaUrl);
-    const hasMedia = !!mainMedia;
+    const hasMedia = !!mainMedia || !!post.audioUrl;
     const isEmbeddable = !hasUploadedMedia && !hasLinkPreview && (mainMedia === mediaUrl);
     const isVideoFile = hasUploadedMedia ? post.media[0].type === 'video' : isUrlVideo(mainMedia);
     const isPinterestLinkPreview = hasLinkPreview && !hasUploadedMedia;
@@ -265,6 +265,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                         translatedContent={translatedContent}
                         postContent={post.content}
                         mediaUrl={mediaUrl}
+                        title={post.title}
                     />
                 </div>
 
