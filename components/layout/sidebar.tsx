@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Sun, Moon, HelpCircle, Music, ShoppingBag, type LucideIcon } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Sun, Moon, HelpCircle, Music, ShoppingBag, Heart, type LucideIcon } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -60,9 +60,8 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
         {
             title: t("nav.section.discover"),
             items: [
-                { href: "/companions", label: t("nav.family"), icon: Users },
-                { href: "/groups", label: t("nav.groups"), icon: Tent },
-                { href: "/groups", label: t("nav.groups"), icon: Tent },
+                { href: "/companions", label: "Family", icon: Heart },
+                { href: "/groups", label: "Groups", icon: Users },
                 { href: "#", label: t("nav.social.live"), icon: Video, onClick: () => setShowLiveSetup(true) }, // Trigger dialog
                 { href: "/events", label: t("nav.events"), icon: Ticket },
                 { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },

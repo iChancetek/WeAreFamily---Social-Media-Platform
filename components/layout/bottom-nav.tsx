@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Users, Bell, User, Menu, ChevronDown, ChevronUp, MessageSquare, Plus } from "lucide-react";
+import { Home, Users, Bell, User, Menu, ChevronDown, ChevronUp, MessageSquare, Plus, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -44,7 +44,7 @@ export function BottomNav() {
 
     const links = [
         { href: "/", label: t('nav.home'), icon: Home },
-        { href: "/companions", label: t('nav.family'), icon: Users },
+        { href: "/companions", label: "Family", icon: Heart },
         { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
     ];
 

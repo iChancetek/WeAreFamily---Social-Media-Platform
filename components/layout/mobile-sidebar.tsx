@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Newspaper, Sun, Moon, Laptop, HelpCircle, ShoppingBag } from "lucide-react";
+import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Newspaper, Sun, Moon, Laptop, HelpCircle, ShoppingBag, Heart } from "lucide-react";
 import { LiveSetupDialog } from "@/components/live/live-setup-dialog";
 import { useState } from "react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
@@ -72,8 +72,8 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
             items: [
                 { href: "/", label: t("nav.home"), icon: Home },
                 { href: "/profile", label: profile?.displayName || t("nav.profile"), icon: User },
-                { href: "/companions", label: t("nav.family"), icon: Users },
-                { href: "/groups", label: t("nav.groups"), icon: Tent },
+                { href: "/companions", label: "Family", icon: Heart },
+                { href: "/groups", label: "Groups", icon: Users },
                 { href: "/chat", label: t("nav.ai"), icon: Bot },
             ]
         },
