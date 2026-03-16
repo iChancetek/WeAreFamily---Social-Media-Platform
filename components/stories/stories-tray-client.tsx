@@ -54,33 +54,6 @@ export function StoriesTrayClient({
     return (
         <div className="relative mb-6">
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                {/* Add Story Card */}
-                {canAddStory && (
-                    <div className="flex-shrink-0 snap-start">
-                        <CreateStoryDialog>
-                            <div className="relative w-28 h-48 rounded-xl overflow-hidden cursor-pointer group shadow-sm transition-transform hover:scale-[1.02]">
-                                <div className="absolute inset-0 bg-gray-100 dark:bg-muted">
-                                    {currentUserImage ? (
-                                        <img src={currentUserImage} alt="Me" className="w-full h-2/3 object-cover opacity-80" />
-                                    ) : (
-                                        <div className="w-full h-2/3 bg-gray-200 dark:bg-muted/80 flex items-center justify-center">
-                                            <span className="text-2xl font-bold text-gray-400">{currentUserDisplayName?.charAt(0)}</span>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="absolute bottom-0 inset-x-0 h-1/3 bg-white dark:bg-card flex flex-col items-center justify-center pt-4 z-10">
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-card transition-colors group-hover:bg-accent/50">
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
-                                            <Plus className="w-6 h-6 text-primary" />
-                                        </div>
-                                        <span className="text-xs font-semibold text-foreground">{t("stories.add")}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </CreateStoryDialog>
-                    </div>
-                )}
-
                 {/* Active Stories */}
                 {activeStories.map((storyGroup, idx) => {
                     // Check if *this* story group belongs to the current user (if so, we could merge it with the "Add Story" card visually, but Facebook separates them: "Your Story" vs "Add". For v1 let's just list them.)

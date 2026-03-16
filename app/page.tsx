@@ -32,7 +32,6 @@ export default async function Home() {
     return (
         <MainLayout>
             <div className="pb-8">
-                <WelcomeHeader displayName={displayName} />
 
                 {/* Live Now Section */}
                 <LiveNowSection />

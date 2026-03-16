@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Users, Bell, User, Menu, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
+import { Home, Users, Bell, User, Menu, ChevronDown, ChevronUp, MessageSquare, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { useScrollDirection } from "@/hooks/use-scroll-direction";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/components/language-context";
+import { CreateStoryDialog } from "../stories/create-story-dialog";
 
 export function BottomNav() {
     const { t } = useLanguage();
@@ -45,8 +46,6 @@ export function BottomNav() {
         { href: "/", label: t('nav.home'), icon: Home },
         { href: "/companions", label: t('nav.family'), icon: Users },
         { href: "/messages", label: t("nav.messages"), icon: MessageSquare },
-        { href: "/notifications", label: t("nav.notifications"), icon: Bell },
-        { href: "/profile", label: t("nav.profile"), icon: User },
     ];
 
     const handleNavigation = (href: string, label: string) => {
@@ -97,7 +96,65 @@ export function BottomNav() {
                         <ChevronDown className="h-3 w-3" />
                     </button>
 
-                    {links.map((link) => {
+                    {/* Split Navbar Links and Insert CreateStoryDialog */}
+                    {links.slice(0, 2).map((link) => {
+                        const isActive = pathname === link.href;
+                        return (
+                            <button
+                                key={link.href}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleNavigation(link.href, link.label);
+                                }}
+                                className={cn(
+                                    "relative flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-300 w-16 group",
+                                    isActive ? "text-primary" : "text-zinc-400 hover:text-white"
+                                )}
+                                type="button"
+                            >
+                                {/* Active Background Glow */}
+                                {isActive && (
+                                    <div className="absolute inset-0 bg-primary/10 blur-md rounded-full transform scale-75" />
+                                )}
+
+                                <link.icon
+                                    className={cn(
+                                        "w-6 h-6 transition-all duration-300 relative z-10",
+                                        isActive ? "-translate-y-1 scale-110 drop-shadow-[0_0_8px_rgba(111,76,255,0.6)]" : "scale-100"
+                                    )}
+                                    strokeWidth={isActive ? 2.5 : 2}
+                                />
+
+                                {/* Animated Label */}
+                                <span className={cn(
+                                    "text-[10px] font-medium mt-1 transition-all duration-300 relative z-10",
+                                    isActive ? "text-white opacity-100 translate-y-0" : "opacity-0 -translate-y-2 absolute"
+                                )}>
+                                    {link.label}
+                                </span>
+
+                                {/* Active Dot */}
+                                {isActive && (
+                                    <div className="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-[0_0_5px_currentColor]" />
+                                )}
+                            </button>
+                        );
+                    })}
+
+                    {/* Central Plus Button for My Life */}
+                    <CreateStoryDialog>
+                        <button
+                            type="button"
+                            className="relative flex flex-col items-center justify-center p-2 rounded-xl text-zinc-400 hover:text-white transition-all w-16 group"
+                        >
+                            <div className="absolute inset-0 bg-primary/10 blur-md rounded-full transform scale-75 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Plus className="w-6 h-6 transition-all duration-300 relative z-10 scale-100 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(111,76,255,0.6)] text-primary" strokeWidth={2.5} />
+                            <span className="text-[10px] font-medium mt-1 text-white opacity-100">My Life</span>
+                        </button>
+                    </CreateStoryDialog>
+
+                    {links.slice(2).map((link) => {
                         const isActive = pathname === link.href;
                         return (
                             <button

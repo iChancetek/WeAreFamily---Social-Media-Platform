@@ -17,7 +17,7 @@ export function MainLayout({ children, className }: { children: React.ReactNode,
     const isAdmin = profile?.role === 'admin';
 
     // Default to max-w-2xl if no class provided, but allow override
-    const containerClass = className ? cn("mx-auto", className) : "mx-auto max-w-2xl";
+    const containerClass = className ? cn("mx-auto", className) : "mx-auto max-w-2xl md:max-w-5xl";
 
     return (
         <VoiceProvider>
