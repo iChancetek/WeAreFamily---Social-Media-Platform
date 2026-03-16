@@ -311,13 +311,94 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                     <div className="w-full max-w-3xl max-h-[95vh] flex flex-col items-center justify-center pointer-events-none">
                         {/* Prevent clicks on the card itself from closing the modal */}
                         <div className="w-full pointer-events-auto" onClick={e => e.stopPropagation()}>
-                            <PostCard
-                                post={post}
-                                currentUserId={currentUserId}
-                                isEnlarged={true}
-                                initialTranslatedContent={translatedContent}
-                                initialLanguage={targetLanguage}
-                            />
+                            <Card className="w-full max-w-3xl bg-card rounded-[1.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar ring-1 ring-black/5 relative">
+                                {/* Inside Modal Close button */}
+                                <button onClick={() => setEnlargedViewOpen(false)} className="absolute top-4 right-4 p-2 text-foreground/70 hover:text-foreground rounded-full bg-muted/50 hover:bg-muted transition-colors z-30">
+                                    <X className="w-5 h-5" />
+                                </button>
+
+                                <PostMedia
+                                    post={post}
+                                    isEnlarged={true}
+                                    isPinterest={false}
+                                    hasMedia={hasMedia}
+                                    mainMedia={mainMedia}
+                                    isEmbeddable={isEmbeddable}
+                                    isVideoFile={isVideoFile}
+                                    videoRef={videoRef}
+                                    mediaUrl={mediaUrl}
+                                    pinterestPreview={pinterestPreview}
+                                    isPinterestLinkPreview={isPinterestLinkPreview}
+                                    currentReaction={currentReaction}
+                                    isAuthor={isAuthor}
+                                    t={t}
+                                    translatedContent={translatedContent}
+                                    onEnlarge={() => {}}
+                                    onReaction={handleReaction}
+                                    onShare={handleShare}
+                                    onTranslate={handleTranslate}
+                                    onClearTranslation={() => setTranslatedContent(null)}
+                                    onAskAI={() => setAskAIDialogOpen(true)}
+                                    onEdit={() => setIsEditing(true)}
+                                    onDelete={handleDeletePost}
+                                    onReport={() => setReportDialogOpen(true)}
+                                />
+
+                                <div className="px-4 pt-3 pb-2 flex flex-col gap-2">
+                                    <PostHeader
+                                        post={post}
+                                        isPinterest={false}
+                                        name={name}
+                                        profilePic={profilePic}
+                                        t={t}
+                                        isAuthor={isAuthor}
+                                        engagementSettings={engagementSettings}
+                                        privacyIcon={getPrivacyIcon()}
+                                        translatedContent={translatedContent}
+                                        onTranslate={handleTranslate}
+                                        onClearTranslation={() => setTranslatedContent(null)}
+                                        onAskAI={() => setAskAIDialogOpen(true)}
+                                        onEdit={() => setIsEditing(true)}
+                                        onDelete={handleDeletePost}
+                                        onReport={() => setReportDialogOpen(true)}
+                                    />
+
+                                    <PostContent
+                                        isEditing={isEditing}
+                                        editContent={editContent}
+                                        onEditContentChange={setEditContent}
+                                        onEditCancel={() => setIsEditing(false)}
+                                        onEditSave={handleEditSave}
+                                        isEnlarged={true}
+                                        isPinterest={false}
+                                        hasMedia={hasMedia}
+                                        translatedContent={translatedContent}
+                                        postContent={post.content}
+                                        mediaUrl={mediaUrl}
+                                    />
+                                </div>
+
+                                <PostActions
+                                    isPinterest={false}
+                                    currentReaction={currentReaction}
+                                    reactionCount={reactionCount}
+                                    onReaction={handleReaction}
+                                    onCommentClick={() => setShowComments(!showComments)}
+                                    showComments={showComments}
+                                    comments={comments}
+                                    onShare={handleShare}
+                                    commentText={commentText}
+                                    onCommentTextChange={setCommentText}
+                                    onCommentSubmit={handleCommentSubmit}
+                                    isSubmitting={isSubmitting}
+                                    isEnlarged={true}
+                                    postId={post.id}
+                                    currentUserId={currentUserId}
+                                    contextType={contextType}
+                                    contextId={contextId}
+                                    postAuthorId={post.authorId}
+                                />
+                            </Card>
                         </div>
                     </div>
                 </div>
