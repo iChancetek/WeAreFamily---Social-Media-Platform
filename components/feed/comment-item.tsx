@@ -31,6 +31,7 @@ import { Linkify } from '@/components/shared/linkify';
 import { Reply, EnhancedComment } from '@/types/engagement';
 import { REACTIONS, getReactionIcon } from './reaction-selector';
 import { ReactionType } from '@/types/posts';
+import { EmojiPicker } from "./emoji-picker";
 
 interface CommentItemProps {
     comment: EnhancedComment;
@@ -395,14 +396,19 @@ export function CommentItem({
                             </div>
                         </div>
                     )}
-                    <div className="flex gap-2">
-                        <Input
-                            placeholder="Write a reply..."
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleReplySubmit()}
-                            className="flex-1"
-                        />
+                    <div className="flex gap-1.5 items-center">
+                        <div className="relative flex-1 flex items-center">
+                            <Input
+                                placeholder="Write a reply..."
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleReplySubmit()}
+                                className="h-9 pr-9 text-sm flex-1"
+                            />
+                            <div className="absolute right-1">
+                                <EmojiPicker onEmojiSelect={(emoji) => setReplyText(replyText + emoji)} align="end" />
+                            </div>
+                        </div>
                         <input
                             type="file"
                             ref={replyFileInputRef}
@@ -414,6 +420,7 @@ export function CommentItem({
                         <Button
                             size="icon"
                             variant="ghost"
+                            className="h-8 w-8 rounded-full"
                             onClick={() => replyFileInputRef.current?.click()}
                             disabled={isUploadingReply}
                             title="Add photo/video"
@@ -423,15 +430,16 @@ export function CommentItem({
                         <Button
                             size="icon"
                             variant="ghost"
+                            className="h-8 w-8 rounded-full"
                             onClick={handleReplyMagic}
                             disabled={isGeneratingReply}
-                            className="text-primary hover:bg-primary/10"
                             title="Magic AI"
                         >
                             {isGeneratingReply ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                         </Button>
                         <Button
                             size="icon"
+                            className="h-8 w-8 rounded-full"
                             onClick={handleReplySubmit}
                             disabled={isSubmittingReply || !replyText.trim()}
                         >

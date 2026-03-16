@@ -2,12 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Heart, MessageCircle, Share2, Send, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Send, Loader2, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { REACTIONS, getReactionIcon } from "./reaction-selector";
 import { ReactionType } from "@/types/posts";
 import { CommentItem } from "./comment-item";
+import { EmojiPicker } from "./emoji-picker";
 
 interface PostActionsProps {
     isPinterest: boolean;
@@ -58,17 +59,27 @@ export function PostActions({
             <div className="flex items-center justify-between">
                 {/* Reactions */}
                 <div className="flex items-center gap-1">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className={cn("h-8 px-2 gap-1.5 rounded-full hover:bg-pink-50 dark:hover:bg-pink-900/20", currentReaction && "text-pink-600 bg-pink-50 dark:bg-pink-900/10")}>
-                                {currentReaction ? <span className="text-lg">{getReactionIcon(currentReaction)}</span> : <Heart className="w-4 h-4" />}
-                                <span className="text-xs font-medium">{reactionCount > 0 ? reactionCount : ""}</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="flex p-2 gap-1">
-                            {REACTIONS.map(r => <button key={r.type} onClick={() => onReaction(r.type as ReactionType)} className="text-2xl hover:scale-125 transition-transform p-1">{r.emoji}</button>)}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center -space-x-1">
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className={cn("h-8 pl-2 pr-1.5 gap-1.5 rounded-l-full hover:bg-pink-50 dark:hover:bg-pink-900/20", currentReaction && "text-pink-600 bg-pink-50 dark:bg-pink-900/10")}
+                            onClick={() => onReaction(currentReaction || 'like')}
+                        >
+                            {currentReaction ? <span className="text-lg">{getReactionIcon(currentReaction)}</span> : <Heart className="w-4 h-4" />}
+                            <span className="text-xs font-medium">{reactionCount > 0 ? reactionCount : ""}</span>
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-4 px-1 rounded-r-full hover:bg-pink-50 dark:hover:bg-pink-900/20 text-muted-foreground">
+                                    <ChevronDown className="w-3 h-3" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="flex p-2 gap-1 bg-background/95 backdrop-blur-sm z-50">
+                                {REACTIONS.map(r => <button key={r.type} onClick={() => onReaction(r.type as ReactionType)} className="text-2xl hover:scale-125 transition-transform p-1">{r.emoji}</button>)}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
 
                     <Button variant="ghost" size="sm" onClick={onCommentClick} className="h-8 px-2 gap-1.5 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/20 text-muted-foreground hover:text-blue-600">
                         <MessageCircle className="w-4 h-4" />
@@ -85,8 +96,19 @@ export function PostActions({
             {(showComments || isEnlarged) && (
                 <div className="mt-3 pt-3 border-t border-border animate-in fade-in zoom-in-95 duration-200">
                     {/* Comment Input */}
-                    <div className="flex gap-2 items-center mb-3">
-                        <Input placeholder="Write a comment..." value={commentText} onChange={e => onCommentTextChange(e.target.value)} onKeyDown={e => e.key === 'Enter' && onCommentSubmit()} className="h-9 text-sm rounded-full bg-muted/50 border-none focus-visible:ring-1" />
+                    <div className="flex gap-1.5 items-center mb-3">
+                        <div className="relative flex-1 flex items-center">
+                            <Input 
+                                placeholder="Write a comment..." 
+                                value={commentText} 
+                                onChange={e => onCommentTextChange(e.target.value)} 
+                                onKeyDown={e => e.key === 'Enter' && onCommentSubmit()} 
+                                className="h-9 pr-9 text-sm rounded-full bg-muted/50 border-none focus-visible:ring-1 flex-1" 
+                            />
+                            <div className="absolute right-1">
+                                <EmojiPicker onEmojiSelect={(emoji) => onCommentTextChange(commentText + emoji)} align="end" />
+                            </div>
+                        </div>
                         <Button size="icon" className="h-9 w-9 rounded-full shrink-0" onClick={onCommentSubmit} disabled={!commentText.trim() || isSubmitting}>
                             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         </Button>
