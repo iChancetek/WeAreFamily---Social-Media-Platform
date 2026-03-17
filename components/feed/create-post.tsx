@@ -24,10 +24,13 @@ import { generateVideoThumbnail } from "@/lib/video-utils";
 
 interface CreatePostProps {
     onClose?: () => void;
+    contextType?: 'group' | 'branding';
+    contextId?: string;
 }
 
-export function CreatePost({ onClose }: CreatePostProps) {
+export function CreatePost({ onClose, contextType, contextId }: CreatePostProps) {
     const { user, profile } = useAuth();
+
     const { t } = useLanguage();
     // Admin or Verified
     const isVerified = profile?.role === 'admin' || profile?.emailVerified;
@@ -114,9 +117,12 @@ export function CreatePost({ onClose }: CreatePostProps) {
                 postType,
                 title.trim() ? title : undefined,
                 audioUrl || undefined,
-                subscriptionTier
+                subscriptionTier,
+                contextType,
+                contextId
             );
             setContent("");
+
             setMediaData([]);
             setThumbnailUrl(null);
             setLocation(null);

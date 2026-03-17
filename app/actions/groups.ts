@@ -310,7 +310,13 @@ export async function getGroupPosts(groupId: string, limit = 50, filters: PostFi
         return sanitizeData({
             id: postDoc.id,
             content: postData.content || "",
-            mediaUrls: postData.mediaUrls || [],
+            media: postData.media || [], // New rich media
+            mediaUrls: postData.mediaUrls || [], // Legacy
+            type: postData.type || 'note',
+            title: postData.title || null,
+            audioUrl: postData.audioUrl || null,
+            subscriptionTier: postData.subscriptionTier || 'public',
+            thumbnailUrl: postData.thumbnailUrl || null,
             createdAt: postData.createdAt,
             likes: postData.likes || [],
             reactions: postData.reactions || {},
@@ -319,6 +325,7 @@ export async function getGroupPosts(groupId: string, limit = 50, filters: PostFi
             context: { type: 'group', id: groupId, name: groupName },
             comments: []
         });
+
     }));
 
     return allPosts;
@@ -348,7 +355,13 @@ export async function getGroupPost(groupId: string, postId: string) {
         return sanitizeData({
             id: doc.id,
             content: data.content || "",
-            mediaUrls: data.mediaUrls || [],
+            media: data.media || [], // New rich media
+            mediaUrls: data.mediaUrls || [], // Legacy
+            type: data.type || 'note',
+            title: data.title || null,
+            audioUrl: data.audioUrl || null,
+            subscriptionTier: data.subscriptionTier || 'public',
+            thumbnailUrl: data.thumbnailUrl || null,
             createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
             likes: data.likes || [],
             reactions: data.reactions || {},
@@ -357,6 +370,7 @@ export async function getGroupPost(groupId: string, postId: string) {
             context: { type: 'group', id: groupId, name: groupName },
             comments: []
         });
+
     } catch (error) {
         console.error("Error fetching group post:", error);
         return null;

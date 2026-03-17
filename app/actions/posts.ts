@@ -51,7 +51,9 @@ export async function createPost(
     type: 'note' | 'article' | 'podcast' = 'note',
     title?: string,
     audioUrl?: string,
-    subscriptionTier: 'public' | 'free' | 'paid' = 'public'
+    subscriptionTier: 'public' | 'free' | 'paid' = 'public',
+    contextType?: 'group' | 'branding',
+    contextId?: string
 ) {
     const user = await requireVerifiedAction();
 
@@ -73,7 +75,7 @@ export async function createPost(
     }
 
     try {
-        await adminDb.collection("posts").add({
+        const postData = {
             authorId: user.id,
             content,
             media: safeMedia,
@@ -87,8 +89,15 @@ export async function createPost(
             audioUrl: audioUrl || null,
             subscriptionTier: subscriptionTier || 'public',
             createdAt: FieldValue.serverTimestamp(),
-        });
+        };
+
+        if (contextType === 'group' && contextId) {
+            await adminDb.collection("groups").doc(contextId).collection("posts").add(postData);
+        } else {
+            await adminDb.collection("posts").add(postData);
+        }
     } catch (e) {
+
         const err = e as Error;
         console.error("Create Post Failed:", err);
         throw new Error(err.message || "Database write failed");

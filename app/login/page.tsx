@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, Suspense } from "react"
-import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
+import { useState, Suspense, useEffect } from "react"
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,6 +23,45 @@ function LoginContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const redirectTo = searchParams.get("redirect") || "/"
+
+    useEffect(() => {
+        const checkRedirect = async () => {
+            const auth = getAuth();
+            try {
+                const result = await getRedirectResult(auth);
+                if (result) {
+                    setIsLoading(true);
+                    const user = result.user;
+                    
+                    const nameParts = (user.displayName || "").split(' ');
+                    const firstName = nameParts[0] || "";
+                    const lastName = nameParts.slice(1).join(' ') || "";
+
+                    await syncUserToDb(
+                        user.uid,
+                        user.email!,
+                        user.displayName || user.email!.split('@')[0],
+                        firstName,
+                        lastName,
+                        user.emailVerified
+                    );
+                    await createSession(user.uid);
+
+                    toast.success("Welcome back!");
+                    router.push(redirectTo);
+                }
+            } catch (error: any) {
+                console.error("Redirect Login Error:", error);
+                // Don't show toast for "no redirect result" which is normal on load
+                if (error.code !== 'auth/redirect-cancelled-by-user' && error.code !== 'auth/unknown') {
+                    toast.error(error.message || "Failed to login with Google");
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        checkRedirect();
+    }, [router, redirectTo]);
 
     const [needsVerification, setNeedsVerification] = useState(false)
     const [unverifiedUser, setUnverifiedUser] = useState<any>(null)
@@ -114,32 +153,12 @@ function LoginContent() {
             const { setPersistence, browserLocalPersistence } = await import("firebase/auth");
             await setPersistence(auth, browserLocalPersistence);
             const provider = new GoogleAuthProvider()
-            const userCredential = await signInWithPopup(auth, provider)
-            const user = userCredential.user
-
-            // Split display name into first/last
-            const nameParts = (user.displayName || "").split(' ');
-            const firstName = nameParts[0] || "";
-            const lastName = nameParts.slice(1).join(' ') || "";
-
-            // Ensure user exists in database
-            await syncUserToDb(
-                user.uid,
-                user.email!,
-                user.displayName || user.email!.split('@')[0],
-                firstName,
-                lastName,
-                user.emailVerified
-            )
-            await createSession(user.uid)
-
-            toast.success("Welcome back!")
-            router.push(redirectTo)
-            router.refresh()
+            
+            // Use Redirect for better PWA support
+            await signInWithRedirect(auth, provider)
         } catch (error: any) {
             console.error(error)
             toast.error(error.message || "Failed to login with Google")
-        } finally {
             setIsLoading(false)
         }
     }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { GroupPostCreator } from "@/components/groups/group-post-creator";
+import { CreatePost } from "@/components/feed/create-post";
 import { FeedList } from "@/components/feed/feed-list";
 import { getGroupPosts } from "@/app/actions/groups";
 import { User } from "firebase/auth";
@@ -29,14 +29,15 @@ export function GroupFeed({ groupId, currentUser }: GroupFeedProps) {
                         transition={{ duration: 0.25, ease: "easeOut" }}
                         className="overflow-hidden mb-6"
                     >
-                        <GroupPostCreator
-                            groupId={groupId}
-                            user={currentUser}
+                        <CreatePost
+                            contextType="group"
+                            contextId={groupId}
                             onClose={() => setIsComposeOpen(false)}
                         />
                     </motion.div>
                 )}
             </AnimatePresence>
+
 
             <FeedList
                 variant="pinterest-mobile"
