@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import { adminDb } from "@/lib/firebase-admin";
 import { revalidatePath } from "next/cache";
@@ -379,13 +379,13 @@ export async function getAdminReports() {
 
     if (reportsSnapshot.empty) return [];
 
-    const reports = reportsSnapshot.docs.map(doc => ({
+    const reports = reportsSnapshot.docs.map((doc: QueryDocumentSnapshot) => ({
         id: doc.id,
         ...doc.data(),
     }));
 
     // Fetch reporter details
-    const reporterIds = [...new Set(reports.map(r => r.reporterId).filter(Boolean))];
+    const reporterIds = [...new Set(reports.map((r: any) => r.reporterId).filter(Boolean))];
     const usersMap: Record<string, any> = {};
 
     if (reporterIds.length > 0) {
@@ -403,7 +403,7 @@ export async function getAdminReports() {
         }
     }
 
-    const populatedReports = reports.map(report => ({
+    const populatedReports = reports.map((report: any) => ({
         ...report,
         reporter: usersMap[report.reporterId as string] || { displayName: "Unknown", email: "Unknown" }
     }));
