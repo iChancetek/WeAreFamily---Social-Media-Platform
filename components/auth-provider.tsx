@@ -1,29 +1,14 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { getAuth, onAuthStateChanged, User, signOut as firebaseSignOut } from "firebase/auth"
 import { createSession, deleteSession, syncUserToDb } from "@/app/actions/auth"
 import { useRouter } from "next/navigation"
 
 import "@/lib/firebase"; // Ensure firebase is initialized
+import { AuthContext, useAuth } from "./auth-context"
 
-type AuthContextType = {
-    user: User | null
-    profile: any | null
-    loading: boolean
-    signOut: () => Promise<void>
-    refreshUser: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextType>({
-    user: null,
-    profile: null,
-    loading: true,
-    signOut: async () => { },
-    refreshUser: async () => { },
-})
-
-export const useAuth = () => useContext(AuthContext)
+export { useAuth };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null)

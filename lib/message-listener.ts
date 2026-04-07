@@ -20,7 +20,7 @@ export function listenForNewMessages(
 
     // Listen to all chat sessions where user is a participant
     const sessionsQuery = query(
-        collection(db, "chatSessions"),
+        collection(db, "chats"),
         where("participants", "array-contains", userId)
     )
 
@@ -30,7 +30,7 @@ export function listenForNewMessages(
 
             // Listen to messages in this session
             const messagesQuery = query(
-                collection(db, `chatSessions/${sessionDoc.id}/messages`),
+                collection(db, `chats/${sessionDoc.id}/messages`),
                 where("createdAt", ">", lastCheckedAt),
                 orderBy("createdAt", "desc")
             )

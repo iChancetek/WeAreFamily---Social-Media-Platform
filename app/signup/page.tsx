@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth"
+import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, setPersistence, browserLocalPersistence } from "firebase/auth"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -83,7 +83,6 @@ export default function SignupPage() {
         setIsLoading(true)
         try {
             const auth = getAuth()
-            const { setPersistence, browserLocalPersistence } = await import("firebase/auth");
             await setPersistence(auth, browserLocalPersistence);
             const userCredential = await createUserWithEmailAndPassword(auth, email, password)
             const user = userCredential.user
@@ -127,7 +126,7 @@ export default function SignupPage() {
             <Card className="w-full max-w-md shadow-lg">
                 <CardHeader className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                        <img src="/icons/icon-96x96.png" alt="Famio" className="w-8 h-8 rounded-xl" />
+                        <img src="/icons/PWAIcon.jpg" alt="Famio" className="w-8 h-8 rounded-xl object-cover" />
                         <span className="text-2xl font-bold text-blue-600">Famio</span>
                     </div>
                     <CardTitle className="text-2xl font-bold">Create Your Account</CardTitle>
@@ -237,7 +236,7 @@ export default function SignupPage() {
             </Card>
 
             <div className="absolute bottom-4 left-0 right-0 text-center space-y-2 z-[50]">
-                <Link href="/landing" className="block text-sm text-blue-600 hover:underline font-medium">
+                <Link href="/" className="block text-sm text-blue-600 hover:underline font-medium">
                     Return to Landing Page
                 </Link>
             </div>

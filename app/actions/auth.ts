@@ -76,13 +76,14 @@ export async function syncUserToDb(
     emailVerified: boolean = false
 ) {
     try {
-        if (!uid || !email || !displayName || !firstName || !lastName) {
-            console.error("Missing required fields for user creation:", { uid, email, displayName, firstName, lastName });
-            throw new Error("Missing required fields: First Name, Last Name, and Display Name are mandatory.");
-        }
+        // Ensure we have at least SOME name for the user
+        const finalFirstName = (firstName || displayName?.split(/\s+/)[0] || "Famio").trim() || "Famio";
+        const finalLastName = (lastName || displayName?.split(/\s+/).slice(1).join(' ') || "Member").trim() || "Member";
+        const finalDisplayName = (displayName || `${finalFirstName} ${finalLastName}`).trim() || "Family Member";
 
-        if (displayName.trim() === "Unnamed User" || displayName.trim().length < 2) {
-            throw new Error("Invalid Display Name. Please provide a valid name.");
+        if (!uid || !email) {
+            console.error("Missing critical fields for user creation:", { uid, email });
+            throw new Error("Missing critical identity fields: UID and Email are mandatory.");
         }
 
         if (!adminDb || !adminDb.collection) {
@@ -99,10 +100,10 @@ export async function syncUserToDb(
 
             await userRef.set({
                 email: email,
-                displayName: displayName,
+                displayName: finalDisplayName,
                 profileData: {
-                    firstName: firstName.trim(),
-                    lastName: lastName.trim(),
+                    firstName: finalFirstName,
+                    lastName: finalLastName,
                 },
                 role: role,
                 isActive: true,
@@ -111,12 +112,12 @@ export async function syncUserToDb(
             });
 
             // Send Automated Welcome Message
-            await sendWelcomeMessageInternal(uid, displayName).catch(err => {
+            await sendWelcomeMessageInternal(uid, finalDisplayName).catch(err => {
                 console.error("Failed to send welcome message:", err);
             });
 
             // Notify Admins
-            await notifyAdminNewUser(uid, email, displayName, firstName, lastName).catch(err => {
+            await notifyAdminNewUser(uid, email, finalDisplayName, finalFirstName, finalLastName).catch(err => {
                 console.error("Failed to notify admins:", err);
             });
         } else {

@@ -9,7 +9,7 @@ import { createPost } from "@/app/actions/posts";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
-import { ImageIcon, Loader2, Send, X, Mic, MicOff, MapPin } from "lucide-react";
+import { ImageIcon, Loader2, Send, X, Mic, MicOff, MapPin, Link2 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useLanguage } from "@/components/language-context";
@@ -43,6 +43,10 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
     const [allowedViewers, setAllowedViewers] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [lastUploadError, setLastUploadError] = useState<string | null>(null);
+
+    // Article/Link state
+    const [articleMode, setArticleMode] = useState(false);
+    const [articleUrl, setArticleUrl] = useState("");
 
     // Substack Model State
     const [postType, setPostType] = useState<'note' | 'article' | 'podcast'>('note');
@@ -102,13 +106,14 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
     });
 
     const handleSubmit = async () => {
-        if (!content.trim() && mediaData.length === 0) return;
+        const finalContent = content.trim() + (articleUrl.trim() ? `\n\n${articleUrl.trim()}` : "");
+        if (!finalContent && mediaData.length === 0) return;
 
         setIsSubmitting(true);
         try {
             // Pass thumbnailUrl (undefined for engagement settings to use default)
             await createPost(
-                content,
+                finalContent,
                 mediaData,
                 { privacy },
                 thumbnailUrl,
@@ -128,6 +133,8 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
             setLocation(null);
             setPrivacy('public');
             setAllowedViewers([]);
+            setArticleMode(false);
+            setArticleUrl("");
             toast.success("Moment shared successfully! ❤️");
 
             // If we have an onClose handler (e.g. valid submission in modal mode), close it
@@ -368,6 +375,18 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                             </div>
                         )}
 
+                        {articleMode && (
+                            <div className="mb-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <input
+                                    type="url"
+                                    placeholder="Paste article or web link here..."
+                                    className="w-full bg-gray-100/80 dark:bg-zinc-900/50 p-3 flex rounded-xl text-sm border border-border/50 focus:ring-1 focus:ring-primary/50 transition-all text-foreground"
+                                    value={articleUrl}
+                                    onChange={(e) => setArticleUrl(e.target.value)}
+                                />
+                            </div>
+                        )}
+
                         <div className="flex flex-col-reverse gap-3 pt-2 border-t border-gray-100 md:flex-row md:justify-between md:items-center">
                             <div className="flex gap-2 w-full justify-between md:justify-start md:w-auto">
                                 <input
@@ -388,6 +407,18 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-6 h-6 text-primary" />}
                                     <span className="text-[15px] font-semibold text-foreground">{t("create.photo_video")}</span>
+                                </Button>
+                                {/* Share Link Button */}
+                                <Button
+                                    variant={articleMode ? "secondary" : "ghost"}
+                                    size="sm"
+                                    onClick={() => setArticleMode(!articleMode)}
+                                    disabled={isUploading || !isVerified}
+                                    className={articleMode ? "text-primary bg-primary/10 gap-2 flex-1 md:flex-none" : "text-muted-foreground hover:text-foreground gap-2 flex-1 md:flex-none"}
+                                    type="button"
+                                >
+                                    <Link2 className="w-5 h-5" />
+                                    <span className="text-[15px] font-semibold">Share Link</span>
                                 </Button>
                                 {/* Location Button */}
                                 <Button

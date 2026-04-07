@@ -52,10 +52,11 @@ export function NotificationsList() {
         switch (notification.type) {
             case 'like':
             case 'comment':
-                // Ideally scroll to post? For now just go to feed maybe or we have a single post view?
-                // We don't have a single post view yet (except group/branding feeds). 
-                // Let's assume we go home for now.
-                router.push('/');
+                if (notification.referenceId) {
+                    router.push(`/post/${notification.referenceId}`);
+                } else {
+                    router.push('/');
+                }
                 break;
             case 'message':
                 router.push(notification.referenceId ? `/messages?chatId=${notification.referenceId}` : '/messages');

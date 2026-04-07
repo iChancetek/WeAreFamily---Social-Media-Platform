@@ -36,7 +36,7 @@ export function EmojiPicker({ onEmojiSelect, align = "end" }: { onEmojiSelect: (
                     <Smile className="w-5 h-5" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align={align} className="w-[280px] p-2 bg-background/95 backdrop-blur-sm z-50 shadow-xl border border-border/50">
+            <DropdownMenuContent align={align} className="w-[280px] p-2 bg-background/95 backdrop-blur-sm z-[10000] shadow-xl border border-border/50">
                 <Tabs defaultValue="Smileys" className="w-full">
                     <TabsList className="grid grid-cols-4 h-8 p-0.5 bg-muted/50 rounded-lg">
                         {EMOJI_CATEGORIES.map(cat => (

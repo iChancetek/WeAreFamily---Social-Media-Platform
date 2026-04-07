@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react"
 import { getActiveBroadcasts } from "@/app/actions/rtc"
 import { collection, onSnapshot, query, where } from "firebase/firestore"
 import { db } from "@/lib/firebase"
+import { useAuth } from "@/components/auth-context"
 
 interface BroadcastData {
     id: string;
@@ -24,14 +25,18 @@ interface LivePresenceContextType {
 const LivePresenceContext = createContext<LivePresenceContextType | undefined>(undefined)
 
 export function LivePresenceProvider({ children }: { children: React.ReactNode }) {
+    const { user } = useAuth()
     const [liveUsers, setLiveUsers] = useState<Set<string>>(new Set())
     const [activeBroadcasts, setActiveBroadcasts] = useState<BroadcastData[]>([])
     const [userBroadcastMap, setUserBroadcastMap] = useState<Map<string, string>>(new Map()) // userId -> broadcastId
 
     useEffect(() => {
-        // Poll for active broadcasts every 10 seconds (or use snapshot if feasible)
-        // Using polling for "active_sessions" collection to reduce reads if frequent updates aren't needed,
-        // BUT user wanted "Real-time everywhere". A snapshot on "active_sessions" where type=='broadcast' and status=='active' is best.
+        if (!user) {
+            setLiveUsers(new Set())
+            setActiveBroadcasts([])
+            setUserBroadcastMap(new Map())
+            return
+        }
 
         const q = query(
             collection(db, "active_sessions"),
@@ -67,7 +72,7 @@ export function LivePresenceProvider({ children }: { children: React.ReactNode }
         })
 
         return () => unsubscribe()
-    }, [])
+    }, [user])
 
     const checkIsLive = (userId: string) => liveUsers.has(userId)
     const getBroadcastId = (userId: string) => userBroadcastMap.get(userId)

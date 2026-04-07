@@ -6,14 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, FileText, AlertTriangle, Activity } from "lucide-react";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getAllUsers } from "@/app/actions/admin";
+import { getAllUsers, getAdminReports } from "@/app/actions/admin";
 import { AdminCharts } from "@/components/admin/admin-charts";
 import { UserList } from "@/components/admin/user-list";
+import { ReportList } from "@/components/admin/report-list";
 import { sanitizeForClient } from "@/lib/serialization";
+
+import { RepostAnalytics } from "@/components/admin/repost-analytics";
 
 export default function AdminDashboardPage() {
     const { profile, loading } = useAuth();
     const [users, setUsers] = useState<any[]>([]);
+    const [reports, setReports] = useState<any[]>([]);
     const [stats, setStats] = useState({
         totalUsers: 0,
         activeToday: 0,
@@ -31,6 +35,9 @@ export default function AdminDashboardPage() {
                     const allUsers = await getAllUsers();
                     console.log("Users fetched:", allUsers.length);
                     setUsers(allUsers);
+
+                    const fetchedReports = await getAdminReports();
+                    setReports(fetchedReports);
 
                     // Calculate stats
                     const now = new Date();
@@ -84,7 +91,7 @@ export default function AdminDashboardPage() {
                     <StatsCard title="Total Users" value={stats.totalUsers.toLocaleString()} icon={<Users className="w-4 h-4" />} trend={`+${stats.newThisMonth} this month`} />
                     <StatsCard title="Active Today" value={stats.activeToday.toLocaleString()} icon={<Activity className="w-4 h-4 text-green-500" />} trend="Daily Active" />
                     {/* Placeholders for now */}
-                    <StatsCard title="Reports" value="0" icon={<AlertTriangle className="w-4 h-4 text-red-500" />} trend="No pending" />
+                    <StatsCard title="Reports" value={reports.length.toString()} icon={<AlertTriangle className="w-4 h-4 text-red-500" />} trend={reports.length > 0 ? `${reports.filter(r => r.status === 'pending').length} pending` : "No pending"} />
                     <StatsCard title="Server Health" value="100%" icon={<Activity className="w-4 h-4 text-green-500" />} trend="Stable" />
                 </div>
 
@@ -92,6 +99,19 @@ export default function AdminDashboardPage() {
                     registrationData={registrationData}
                     roleData={roleData}
                 />
+
+                <RepostAnalytics />
+
+                <Card>
+                    <CardHeader><CardTitle>Flagged Content</CardTitle></CardHeader>
+                    <CardContent>
+                        {isLoadingData ? (
+                            <div>Loading reports...</div>
+                        ) : (
+                            <ReportList reports={reports} />
+                        )}
+                    </CardContent>
+                </Card>
 
                 <Card>
                     <CardHeader><CardTitle>User Management</CardTitle></CardHeader>

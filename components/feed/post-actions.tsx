@@ -77,8 +77,8 @@ export function PostActions({
                                     <ChevronDown className="w-3 h-3" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="flex p-2 gap-1 bg-background/95 backdrop-blur-sm z-50">
-                                {REACTIONS.map(r => <button key={r.type} onClick={() => onReaction(r.type as ReactionType)} className="text-2xl hover:scale-125 transition-transform p-1">{r.emoji}</button>)}
+                            <DropdownMenuContent align="start" className="flex p-2 gap-1 bg-background/95 backdrop-blur-sm z-[10000]">
+                                {REACTIONS.map(r => <button key={r.type} onClick={() => onReaction(r.type as ReactionType)} title={r.label} className="text-2xl hover:scale-125 transition-transform p-1 cursor-pointer">{r.emoji}</button>)}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -89,9 +89,9 @@ export function PostActions({
                     </Button>
 
                     {/* Internal Reshare */}
-                    <Button variant="ghost" size="sm" onClick={() => onShare('repost')} className="h-8 px-2 gap-1.5 rounded-full text-muted-foreground hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 flex items-center" title="Reshare on platform">
+                    <Button variant="ghost" size="sm" onClick={() => onShare('repost')} className="h-8 px-2 gap-1.5 rounded-full text-muted-foreground hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 flex items-center">
                         <RefreshCw className="w-4 h-4" />
-                        <span className="text-xs font-medium">{repostCount && repostCount > 0 ? repostCount : ""}</span>
+                        <span className="text-xs font-medium">{repostCount !== undefined ? repostCount : 0}</span>
                     </Button>
 
                     {/* External Share */}

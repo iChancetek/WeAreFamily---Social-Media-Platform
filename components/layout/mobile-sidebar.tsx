@@ -3,7 +3,7 @@
 import { useAuth } from "@/components/auth-provider";
 import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Newspaper, Sun, Moon, Laptop, HelpCircle, ShoppingBag, Heart } from "lucide-react";
 import { LiveSetupDialog } from "@/components/live/live-setup-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,11 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
 
     const { theme, setTheme } = useTheme();
     const [showLiveSetup, setShowLiveSetup] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleNavigation = (href: string, label: string) => {
         console.log('🔵 MOBILE NAV CLICK:', label, href);
@@ -129,7 +134,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                         type="button"
                     >
                         <div className="relative flex items-center justify-center w-10 h-10">
-                            <img src="/icons/icon-72x72.png" alt="Famio" className="w-6 h-6 rounded-lg" />
+                            <img src="/icons/PWAIcon.jpg" className="w-6 h-6 rounded-lg object-cover" alt="Famio" className="w-6 h-6 rounded-lg" />
                         </div>
                         <span className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">
                             Famio
@@ -213,25 +218,29 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                 {/* Footer Actions */}
                 <div className="px-4 mt-8 pb-8 space-y-6">
                     {/* Theme Toggle */}
-                    <div className="p-1.5 bg-zinc-100 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/5 flex gap-1">
-                        {['light', 'dark', 'system'].map((tMode) => (
-                            <button
-                                key={tMode}
-                                onClick={() => setTheme(tMode)}
-                                className={cn(
-                                    "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-2",
-                                    theme === tMode
-                                        ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-white"
-                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
-                                )}
-                            >
-                                {tMode === 'light' && <Sun className="w-4 h-4" />}
-                                {tMode === 'dark' && <Moon className="w-4 h-4" />}
-                                {tMode === 'system' && <Laptop className="w-4 h-4" />}
-                                <span className="capitalize">{getThemeLabel(tMode)}</span>
-                            </button>
-                        ))}
-                    </div>
+                    {mounted ? (
+                        <div className="p-1.5 bg-zinc-100 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/5 flex gap-1">
+                            {['light', 'dark', 'system'].map((tMode) => (
+                                <button
+                                    key={tMode}
+                                    onClick={() => setTheme(tMode)}
+                                    className={cn(
+                                        "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-2",
+                                        theme === tMode
+                                            ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-white"
+                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                    )}
+                                >
+                                    {tMode === 'light' && <Sun className="w-4 h-4" />}
+                                    {tMode === 'dark' && <Moon className="w-4 h-4" />}
+                                    {tMode === 'system' && <Laptop className="w-4 h-4" />}
+                                    <span className="capitalize">{getThemeLabel(tMode)}</span>
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="h-[46px] w-full" />
+                    )}
 
                     <Button
                         variant="ghost"

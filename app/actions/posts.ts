@@ -67,11 +67,11 @@ export async function createPost(
         privacy: engagementSettings?.privacy ?? 'public' // Changed default to public
     };
 
-    // Detect and unfurl Pinterest links
+    // Detect and unfurl general links and articles
     let linkPreview = null;
-    const pinterestMatch = content.match(/(https?:\/\/(?:www\.)?(?:pinterest\.com\/pin\/|pin\.it\/)[^\s]+)/);
-    if (pinterestMatch) {
-        linkPreview = await fetchLinkPreview(pinterestMatch[0]);
+    const urlMatch = content.match(/(https?:\/\/[^\s]+)/); // Matches any valid URL
+    if (urlMatch) {
+        linkPreview = await fetchLinkPreview(urlMatch[0]);
     }
 
     try {
@@ -114,11 +114,34 @@ export async function createPost(
 }
 
 export async function incrementRepostCount(postId: string, contextType?: string, contextId?: string) {
-    await requireVerifiedAction(); // Ensure user is auth'd
+    const user = await requireVerifiedAction(); // Ensure user is auth'd
     const postRef = getPostRef(postId, contextType, contextId);
-    await postRef.update({
-        repostCount: FieldValue.increment(1)
+    
+    // Idempotency: users can only repost a post once
+    const repostRef = adminDb.collection("reposts").doc(`${postId}_${user.id}`);
+    const repostDoc = await repostRef.get();
+    
+    if (repostDoc.exists) {
+        throw new Error("You have already reposted this.");
+    }
+    
+    await adminDb.runTransaction(async (transaction: any) => {
+        const postDoc = await transaction.get(postRef);
+        if (!postDoc.exists) throw new Error("Post not found");
+
+        transaction.update(postRef, {
+            repostCount: FieldValue.increment(1)
+        });
+
+        transaction.set(repostRef, {
+            postId,
+            userId: user.id,
+            timestamp: FieldValue.serverTimestamp()
+        });
     });
+
+    // Recalculate ranking score async
+    await recalculateRankScore(postId, contextType, contextId);
 }
 
 export type PostFilters = {
@@ -311,7 +334,6 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
     }
 }
 
-// Helper to get correct collection based on context
 function getPostRef(postId: string, contextType?: string, contextId?: string) {
     if (contextType === 'group' && contextId) {
         return adminDb.collection("groups").doc(contextId).collection("posts").doc(postId);
@@ -320,6 +342,29 @@ function getPostRef(postId: string, contextType?: string, contextId?: string) {
         return adminDb.collection("pages").doc(contextId).collection("posts").doc(postId);
     }
     return adminDb.collection("posts").doc(postId);
+}
+
+export async function recalculateRankScore(postId: string, contextType?: string, contextId?: string) {
+    const postRef = getPostRef(postId, contextType, contextId);
+    
+    // We run this inside a transaction to ensure no concurrent overwrites, but for just ranking a simple fetch-update is usually fine.
+    // However, to be perfectly safe, we'll just read and update.
+    const postDoc = await postRef.get();
+    if (!postDoc.exists) return;
+    
+    const data = postDoc.data()!;
+    const repostCount = data.repostCount || 0;
+    const likesCount = data.reactions ? Object.keys(data.reactions).length : 0;
+    
+    // Count comments
+    const commentsSnapshot = await postRef.collection("comments").count().get();
+    const commentCount = commentsSnapshot.data().count;
+    
+    // Algorithm: rankScore = (repostCount * 0.6) + (likes * 0.25) + (comments * 0.15)
+    // We multiply by 10 or 100 to keep it integer if preferred, but float is fine for sorting in Firestore.
+    const rankScore = (repostCount * 0.6) + (likesCount * 0.25) + (commentCount * 0.15);
+    
+    await postRef.update({ rankScore });
 }
 
 export async function toggleReaction(postId: string, reactionType: ReactionType, contextType?: string, contextId?: string) {
@@ -342,7 +387,8 @@ export async function toggleReaction(postId: string, reactionType: ReactionType,
 
     await postRef.update({ reactions: currentReactions });
 
-    // Notification Logic
+
+    // Notify Logic
     if (!hasReaction && postDoc.data()?.authorId !== user.id) {
         const { createNotification } = await import("./notifications");
         await createNotification(
@@ -352,8 +398,12 @@ export async function toggleReaction(postId: string, reactionType: ReactionType,
             { type: reactionType, message: `${user.displayName || user.email || 'Someone'} reacted to your post` }
         );
     }
+    
+    // Recalculate rank
+    await recalculateRankScore(postId, contextType, contextId);
 
     revalidatePath('/');
+
     if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);
     if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
 }
@@ -426,6 +476,9 @@ export async function addComment(postId: string, content: string, contextType?: 
             { commentSnippet: content.substring(0, 50), message: `${user.displayName || user.email || 'Someone'} commented on your post` }
         );
     }
+    
+    // Recalculate rank
+    await recalculateRankScore(postId, contextType, contextId);
 
     revalidatePath('/');
     if (contextType === 'group' && contextId) revalidatePath(`/groups/${contextId}`);

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { LogOut, Home, Users, MessageSquare, Ticket, Image as ImageIcon, Settings, Shield, Tent, Briefcase, Bell, User, Video, Bot, Sun, Moon, HelpCircle, Music, ShoppingBag, Heart, type LucideIcon } from "lucide-react";
 import { NotificationBadge } from "@/components/notifications/notification-badge";
@@ -43,6 +43,11 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     const { theme, setTheme } = useTheme();
     const [isHovered, setIsHovered] = useState(false);
     const [showLiveSetup, setShowLiveSetup] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Global Voice State
     const { state: aiState, toggleContinuous } = useVoice();
@@ -115,10 +120,10 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                         <div className="relative flex items-center justify-center w-10 h-10">
                             {/* Animated Logo Mark */}
                             <img
-                                src="/icons/icon-72x72.png"
+                                src="/icons/PWAIcon.jpg"
                                 alt="Famio"
                                 className={cn(
-                                    "w-6 h-6 rounded-lg transition-transform duration-200",
+                                    "w-6 h-6 rounded-lg object-cover transition-transform duration-200",
                                     isHovered ? "scale-100" : "scale-90"
                                 )}
                             />
@@ -181,37 +186,41 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
             {/* 3. Footer: User & Settings */}
             <div className="p-3 bg-gradient-to-t from-zinc-100/80 to-transparent dark:from-black/50 dark:to-transparent">
                 {/* Theme Toggles (Simplified) */}
-                {isHovered ? (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex gap-1 p-1 mb-2 bg-zinc-100 dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/5"
-                    >
-                        {['light', 'dark', 'system'].map((tMode) => (
-                            <button
-                                key={tMode}
-                                onClick={() => setTheme(tMode)}
-                                className={cn(
-                                    "flex-1 p-1.5 rounded-lg text-xs font-medium transition-all",
-                                    theme === tMode
-                                        ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-white"
-                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
-                                )}
-                            >
-                                {tMode === 'light' && <p>☀</p>}
-                                {tMode === 'dark' && <p>☾</p>}
-                                {tMode === 'system' && <p>💻</p>}
-                            </button>
-                        ))}
-                    </motion.div>
+                {mounted ? (
+                    isHovered ? (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex gap-1 p-1 mb-2 bg-zinc-100 dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/5"
+                        >
+                            {['light', 'dark', 'system'].map((tMode) => (
+                                <button
+                                    key={tMode}
+                                    onClick={() => setTheme(tMode)}
+                                    className={cn(
+                                        "flex-1 p-1.5 rounded-lg text-xs font-medium transition-all",
+                                        theme === tMode
+                                            ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-white"
+                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                    )}
+                                >
+                                    {tMode === 'light' && <p>☀</p>}
+                                    {tMode === 'dark' && <p>☾</p>}
+                                    {tMode === 'system' && <p>💻</p>}
+                                </button>
+                            ))}
+                        </motion.div>
+                    ) : (
+                        // Collapsed Theme Toggle (Cycle)
+                        <button
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                            className="w-full flex items-center justify-center h-10 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors mb-2"
+                        >
+                            {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                        </button>
+                    )
                 ) : (
-                    // Collapsed Theme Toggle (Cycle)
-                    <button
-                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        className="w-full flex items-center justify-center h-10 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors mb-2"
-                    >
-                        {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                    </button>
+                    <div className="w-full h-10 mb-2" />
                 )}
 
                 <div className="border-t border-zinc-200 dark:border-white/10 pt-3 mt-1">

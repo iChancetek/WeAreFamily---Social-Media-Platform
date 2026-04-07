@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { adminDb } from "@/lib/firebase-admin";
 import { revalidatePath } from "next/cache";
@@ -305,4 +305,108 @@ export async function getAllUsers() {
         // We prefix it so we know it's ours.
         throw new Error(`[AdminFetchError] ${error.message}`);
     }
+}
+
+export async function getRepostAnalytics() {
+    try {
+        const adminUser = await getUserProfile();
+        if (!adminUser || adminUser.role !== 'admin') {
+            throw new Error("Unauthorized");
+        }
+
+        const snapshot = await adminDb.collection("posts")
+            .where("repostCount", ">", 0)
+            .orderBy("repostCount", "desc")
+            .limit(50) // Top 50 for analytics
+            .get();
+
+        const posts = snapshot.docs.map((doc: any) => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                title: data.title || data.content?.substring(0, 30) || "Untitled Post",
+                repostCount: data.repostCount || 0,
+                rankScore: data.rankScore || 0,
+            };
+        });
+
+        let high = 0;
+        let medium = 0;
+        let low = 0;
+
+        const maxReposts = posts.length > 0 ? posts[0].repostCount : 1;
+
+        posts.forEach((p: any) => {
+            if (p.repostCount >= maxReposts * 0.8) high++;
+            else if (p.repostCount >= maxReposts * 0.4) medium++;
+            else low++;
+        });
+
+        // Add users who have repost count 0 as low engagement
+        const allSnapshot = await adminDb.collection("posts").count().get();
+        const totalPosts = allSnapshot.data().count;
+        const zeroRepostPosts = totalPosts - snapshot.size;
+        low += zeroRepostPosts;
+
+        return {
+            topPosts: posts.slice(0, 10), // Return top 10 for bar chart
+            allTop: posts, // Top 50 for table
+            distribution: [
+                { name: 'High Engagement', value: high },
+                { name: 'Medium Engagement', value: medium },
+                { name: 'Low Engagement', value: low }
+            ]
+        };
+
+    } catch (e: any) {
+        console.error("Error fetching repost analytics:", e);
+        throw new Error("Failed to fetch analytics");
+    }
+}
+
+export async function getAdminReports() {
+    const admin = await getUserProfile();
+    if (admin?.role !== 'admin') {
+        throw new Error("Unauthorized");
+    }
+
+    if (!adminDb) return [];
+
+    const reportsSnapshot = await adminDb.collection("reports")
+        .orderBy("createdAt", "desc")
+        .limit(100)
+        .get();
+
+    if (reportsSnapshot.empty) return [];
+
+    const reports = reportsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+    }));
+
+    // Fetch reporter details
+    const reporterIds = [...new Set(reports.map(r => r.reporterId).filter(Boolean))];
+    const usersMap: Record<string, any> = {};
+
+    if (reporterIds.length > 0) {
+        // Firestore 'in' queries are limited to 10 at a time, but for admin scale we can do simple singular batches or fetch all users and map in memory if small enough.
+        // Let's do a simple loop for safety given it's an admin dashboard
+        for (const rId of reporterIds) {
+            const userDoc = await adminDb.collection('users').doc(rId as string).get();
+            if (userDoc.exists) {
+                const data = userDoc.data();
+                usersMap[rId as string] = {
+                    displayName: data?.displayName || "Unknown",
+                    email: data?.email || "Unknown"
+                };
+            }
+        }
+    }
+
+    const populatedReports = reports.map(report => ({
+        ...report,
+        reporter: usersMap[report.reporterId as string] || { displayName: "Unknown", email: "Unknown" }
+    }));
+
+    return sanitizeData(populatedReports);
 }
