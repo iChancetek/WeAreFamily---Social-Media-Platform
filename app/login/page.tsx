@@ -157,6 +157,9 @@ function LoginContent() {
             const auth = getAuth()
             await setPersistence(auth, browserLocalPersistence);
             const provider = new GoogleAuthProvider()
+            provider.setCustomParameters({
+                prompt: 'consent select_account'
+            });
             
             // Switched to Popup to prevent silent failures on Localhost / third-party cookie restrictions
             const result = await signInWithPopup(auth, provider);
