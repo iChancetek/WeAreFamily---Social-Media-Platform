@@ -24,7 +24,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useLanguage } from "@/components/language-context"
 import { ArrowLeft } from "lucide-react"
 import { storage } from "@/lib/firebase"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage"
 
 
 const profileFormSchema = z.object({
@@ -61,6 +61,7 @@ export function ProfileContent({ user, onClose }: ProfileContentProps) {
     const [coverUrl, setCoverUrl] = useState<string | undefined>(user.coverUrl || undefined)
     const [coverType, setCoverType] = useState<'image' | 'video' | undefined>(user.coverType as 'image' | 'video' || undefined)
     const [showExitDialog, setShowExitDialog] = useState(false)
+    const [uploadProgress, setUploadProgress] = useState<number | null>(null)
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
@@ -179,6 +180,7 @@ export function ProfileContent({ user, onClose }: ProfileContentProps) {
                                         <Input
                                             type="file"
                                             accept="image/*"
+                                            disabled={uploadProgress !== null}
                                             onChange={async (e) => {
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
@@ -191,21 +193,45 @@ export function ProfileContent({ user, onClose }: ProfileContentProps) {
                                                         return;
                                                     }
 
-                                                    toast.info("Uploading...");
+                                                    toast.info("Uploading profile picture...");
+                                                    setUploadProgress(0);
 
                                                     const storageRef = ref(storage, `users/${user.id}/profile/${file.name}`);
-                                                    await uploadBytes(storageRef, file);
-                                                    const url = await getDownloadURL(storageRef);
+                                                    const uploadTask = uploadBytesResumable(storageRef, file);
 
-                                                    setImageUrl(url);
-                                                    form.setValue('imageUrl', url, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
-                                                    toast.success("Upload complete");
+                                                    uploadTask.on('state_changed',
+                                                        (snapshot) => {
+                                                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                                            setUploadProgress(progress);
+                                                        },
+                                                        (error) => {
+                                                            console.error("Upload failed", error);
+                                                            toast.error(`Error uploading: ${error.message || "Unknown error"}`);
+                                                            setUploadProgress(null);
+                                                        },
+                                                        async () => {
+                                                            const url = await getDownloadURL(uploadTask.snapshot.ref);
+                                                            setImageUrl(url);
+                                                            form.setValue('imageUrl', url, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+                                                            toast.success("Profile picture updated");
+                                                            setUploadProgress(null);
+                                                        }
+                                                    );
                                                 } catch (error: any) {
-                                                    console.error("Upload failed", error);
+                                                    console.error("Upload invocation failed", error);
                                                     toast.error(`Error uploading: ${error.message || "Unknown error"}`);
+                                                    setUploadProgress(null);
                                                 }
                                             }}
                                         />
+                                        {uploadProgress !== null && (
+                                            <div className="w-full bg-secondary h-2.5 mt-2 rounded flex overflow-hidden">
+                                                <div 
+                                                    className="bg-blue-600 h-2.5 rounded transition-all duration-300 ease-out" 
+                                                    style={{ width: `${uploadProgress}%` }} 
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -232,33 +258,58 @@ export function ProfileContent({ user, onClose }: ProfileContentProps) {
                                 <Input
                                     type="file"
                                     accept="image/*,video/*"
+                                    disabled={uploadProgress !== null}
                                     onChange={async (e) => {
                                         const file = e.target.files?.[0];
                                         if (!file) return;
 
                                         try {
                                             toast.info("Uploading cover...");
+                                            setUploadProgress(0);
 
                                             const storageRef = ref(storage, `users/${user.id}/cover/${file.name}`);
-                                            await uploadBytes(storageRef, file);
-                                            const url = await getDownloadURL(storageRef);
+                                            const uploadTask = uploadBytesResumable(storageRef, file);
 
-                                            setCoverUrl(url);
-                                            // Enhanced video detection: Check MIME type OR file extension
-                                            const isVideo = file.type.startsWith('video') || file.name.toLowerCase().endsWith('.mov') || file.name.toLowerCase().endsWith('.mp4');
-                                            const type = isVideo ? 'video' : 'image';
-                                            setCoverType(type);
+                                            uploadTask.on('state_changed',
+                                                (snapshot) => {
+                                                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                                    setUploadProgress(progress);
+                                                },
+                                                (error) => {
+                                                    console.error("Upload failed", error);
+                                                    toast.error(`Error uploading: ${error.message || "Unknown error"}`);
+                                                    setUploadProgress(null);
+                                                },
+                                                async () => {
+                                                    const url = await getDownloadURL(uploadTask.snapshot.ref);
 
-                                            form.setValue('coverUrl', url, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
-                                            form.setValue('coverType', type, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+                                                    setCoverUrl(url);
+                                                    const isVideo = file.type.startsWith('video') || file.name.toLowerCase().endsWith('.mov') || file.name.toLowerCase().endsWith('.mp4');
+                                                    const type = isVideo ? 'video' : 'image';
+                                                    setCoverType(type);
 
-                                            toast.success("Cover uploaded");
+                                                    form.setValue('coverUrl', url, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+                                                    form.setValue('coverType', type, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+
+                                                    toast.success("Cover uploaded");
+                                                    setUploadProgress(null);
+                                                }
+                                            );
                                         } catch (error: any) {
-                                            console.error("Upload failed", error);
+                                            console.error("Upload invocation failed", error);
                                             toast.error(`Error uploading: ${error.message || "Unknown error"}`);
+                                            setUploadProgress(null);
                                         }
                                     }}
                                 />
+                                {uploadProgress !== null && (
+                                    <div className="w-full bg-secondary h-2.5 mt-2 rounded flex overflow-hidden">
+                                        <div 
+                                            className="bg-blue-600 h-2.5 rounded transition-all duration-300 ease-out" 
+                                            style={{ width: `${uploadProgress}%` }} 
+                                        />
+                                    </div>
+                                )}
                             </div>
 
                             <FormField
