@@ -16,7 +16,17 @@ const COLORS = [
     '#f59e0b', // amber-500
 ];
 
+import { useState, useEffect } from "react";
+
 export function AdminCharts({ registrationData, roleData }: AdminChartsProps) {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return <div className="h-96 w-full animate-pulse bg-muted rounded-xl" />;
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <Card>
