@@ -183,7 +183,7 @@ export function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center space-y-6">
                         <div className="flex items-center gap-2">
-                            <img src="/icons/PWAIcon.jpg" className="w-8 h-8 rounded-xl object-cover" alt="Famio" className="w-6 h-6 rounded-lg" />
+                            <img src="/icons/PWAIcon.jpg" className="w-8 h-8 rounded-xl object-cover" alt="Famio" />
                             <div>
                                 <span className="font-bold text-gray-900 text-lg">Famio</span>
                                 <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>
