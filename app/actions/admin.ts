@@ -1,6 +1,7 @@
 'use server'
 
 import { adminDb } from "@/lib/firebase-admin";
+import { QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
 import { getUserProfile } from "@/lib/auth";
 import { logAuditEvent } from "@/app/actions/audit";
