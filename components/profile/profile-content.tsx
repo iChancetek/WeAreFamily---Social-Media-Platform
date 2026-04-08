@@ -30,8 +30,6 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 const profileFormSchema = z.object({
     displayName: z.string().min(2, {
         message: "Display name must be at least 2 characters.",
-    }).refine((val) => val.trim().split(/\s+/).length >= 2, {
-        message: "Please enter your First and Last Name",
     }),
     bio: z.string().max(160).optional(),
     imageUrl: z.string().optional(),
@@ -217,7 +215,7 @@ export function ProfileContent({ user, onClose }: ProfileContentProps) {
                                 <FormLabel>{t("settings.cover")}</FormLabel>
                                 {coverUrl && (
                                     <div className="relative w-full h-32 rounded-md overflow-hidden bg-muted mb-2">
-                                        {coverUrl.includes("mp4") || coverUrl.includes("webm") ? (
+                                        {coverType === "video" ? (
                                             <video
                                                 src={coverUrl}
                                                 className="w-full h-full object-cover"
