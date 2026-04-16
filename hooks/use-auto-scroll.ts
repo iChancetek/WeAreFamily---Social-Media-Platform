@@ -39,31 +39,33 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
   const isAutoScrolling = useRef(false);
   const lastAutoScrollTimeRef = useRef<number>(0);
 
-  // Initialize state lazily
-  const [isEnabled, setIsEnabled] = useState(() => {
-    if (typeof window === 'undefined') return false;
+  // Initialize state (Fixed values for hydration safety)
+  const [isEnabled, setIsEnabled] = useState(false);
+  const [speed, setSpeed] = useState(initialSpeed);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Sync state from localStorage on mount (Client-only)
+  useEffect(() => {
+    // 1. Check Preferences
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return false;
+    
+    // 2. Load Enabled State
+    let initialEnabled = !prefersReducedMotion;
     try {
       const savedPreference = localStorage.getItem('famio-auto-scroll-enabled');
-      if (savedPreference !== null) return savedPreference === 'true';
+      if (savedPreference !== null) initialEnabled = savedPreference === 'true';
     } catch { }
-    return true; // Default enabled
-  });
+    setIsEnabled(initialEnabled);
 
-  const [speed, setSpeed] = useState(() => {
-    if (typeof window === 'undefined') return initialSpeed;
+    // 3. Load Speed
     try {
       const savedSpeed = localStorage.getItem('famio-auto-scroll-speed');
       if (savedSpeed !== null) {
         const parsedSpeed = parseInt(savedSpeed, 10);
-        return isNaN(parsedSpeed) ? initialSpeed : parsedSpeed;
+        if (!isNaN(parsedSpeed)) setSpeed(parsedSpeed);
       }
     } catch { }
-    return initialSpeed;
-  });
-
-  const [isPaused, setIsPaused] = useState(false);
+  }, []);
 
   // Refs for synchronous loop control (Zero Latency)
   const isPausedRef = useRef(false);

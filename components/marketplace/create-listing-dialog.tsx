@@ -51,7 +51,7 @@ export function CreateListingDialog({ children, onListingCreated }: { children: 
         setLoading(true);
 
         try {
-            await createListing({
+            const newListing = await createListing({
                 title: formData.title,
                 price: parseFloat(formData.price) || 0,
                 description: formData.description,
@@ -63,7 +63,7 @@ export function CreateListingDialog({ children, onListingCreated }: { children: 
             setOpen(false);
             setFormData({ title: "", price: "", description: "", category: "general" });
             setImages([]);
-            if (onListingCreated) onListingCreated();
+            if (onListingCreated) onListingCreated(newListing);
         } catch (error) {
             toast.error("Failed to create listing");
         } finally {

@@ -303,7 +303,9 @@ export async function getBrandingPosts(brandingId: string, limit = 50, filters: 
             author,
             postedAsBranding: postData.postedAsBranding,
             context: { type: 'branding', id: brandingId },
-            comments: []
+            comments: [],
+            reportCount: postData.reportCount || 0,
+            repostCount: postData.repostCount || 0
         });
     }));
 
@@ -338,7 +340,9 @@ export async function getBrandingPost(brandingId: string, postId: string) {
             author,
             postedAsBranding: data.postedAsBranding,
             context: { type: 'branding', id: brandingId },
-            comments: []
+            comments: [],
+            reportCount: data.reportCount || 0,
+            repostCount: data.repostCount || 0
         });
     } catch (error) {
         console.error("Error fetching branding post:", error);

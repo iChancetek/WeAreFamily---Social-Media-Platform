@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 
 interface PostHeaderProps {
     post: any;
-    isPinterest: boolean;
+    isLocked?: boolean;
+    isPinterest?: boolean;
     name: string;
     profilePic: string | null;
     t: (key: any) => string;
@@ -24,11 +25,13 @@ interface PostHeaderProps {
     onEdit: () => void;
     onDelete: () => void;
     onReport: () => void;
+    onSubscribeSuccess?: () => void;
 }
 
 export function PostHeader({
     post,
-    isPinterest,
+    isLocked: isLockedProp,
+    isPinterest = false,
     name,
     profilePic,
     t,
@@ -39,10 +42,12 @@ export function PostHeader({
     onTranslate,
     onClearTranslation,
     onAskAI,
-    onEdit,
     onDelete,
-    onReport
+    onReport,
+    onSubscribeSuccess
 }: PostHeaderProps) {
+    const isLocked = isLockedProp !== undefined ? isLockedProp : post.isLocked;
+
     return (
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
@@ -55,7 +60,7 @@ export function PostHeader({
                 <div className="flex flex-col">
                     <div className="flex items-center gap-1.5">
                         <Link href={`/u/${post.authorId}`} className="text-xs font-semibold hover:underline line-clamp-1">{name}</Link>
-                        {post.isLocked && !isAuthor && (
+                        {isLocked && !isAuthor && (
                             <Button 
                                 size="sm" 
                                 variant="outline" 
@@ -67,7 +72,7 @@ export function PostHeader({
                                         await subscribeToCreator(post.authorId, post.subscriptionTier === 'paid' ? 'paid' : 'free');
                                         const { toast } = await import("sonner");
                                         toast.success("Subscribed successfully! 🎉");
-                                        window.location.reload();
+                                        if (onSubscribeSuccess) onSubscribeSuccess();
                                     } catch (err: any) {
                                         const { toast } = await import("sonner");
                                         toast.error(err.message || "Failed to subscribe");

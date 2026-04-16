@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SafeDate } from '@/components/shared/safe-date';
-import { Heart, MessageCircle, Send, Loader2, MoreHorizontal, Trash2, Edit2, Image as ImageIcon, Video, X, Sparkles } from 'lucide-react';
+import { Edit2, MessageCircle, MoreHorizontal, Send, Trash2, Video, X, Loader2, Sparkles, Flag, Image as ImageIcon, Heart } from "lucide-react";
+import { ReportDialog } from "@/components/reporting/report-dialog";
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { chatWithAgent } from '@/app/actions/ai-agents';
@@ -64,6 +65,7 @@ export function CommentItem({
     const [isEditingComment, setIsEditingComment] = useState(false);
     const [editContent, setEditContent] = useState(comment.content || '');
     const [isSaving, setIsSaving] = useState(false);
+    const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
     const [likesState, setLikesState] = useState(comment.reactions || {});
     const [replies, setReplies] = useState<Reply[]>(comment.replies || []);
@@ -291,6 +293,24 @@ export function CommentItem({
                                                 <Trash2 className="w-4 h-4 mr-2" /> Delete
                                             </DropdownMenuItem>
                                         )}
+                                        <DropdownMenuItem onClick={() => setIsReportDialogOpen(true)} className="text-orange-500">
+                                            <Flag className="w-4 h-4 mr-2" /> Report
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
+
+                            {!(canEdit || canDelete) && (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                                            <MoreHorizontal className="w-4 h-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => setIsReportDialogOpen(true)} className="text-orange-500">
+                                            <Flag className="w-4 h-4 mr-2" /> Report
+                                        </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             )}
@@ -370,8 +390,19 @@ export function CommentItem({
                             )}
                         </div>
                     </div>
-                </div>
             </div>
+
+            {/* Reporting Dialog for Comment */}
+            <ReportDialog
+                isOpen={isReportDialogOpen}
+                onClose={() => setIsReportDialogOpen(false)}
+                onSuccess={() => {
+                    setIsReportDialogOpen(false);
+                    toast.success("Comment reported");
+                }}
+                targetId={comment.id}
+                targetType="comment"
+            />
 
             {/* Reply Input */}
             {showReplyInput && (
@@ -500,6 +531,7 @@ function ReplyItem({
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(reply.content || '');
     const [isSaving, setIsSaving] = useState(false);
+    const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
     const [likesState, setLikesState] = useState(reply.reactions || {});
 
     const isAuthor = currentUserId === reply.authorId;
@@ -611,6 +643,24 @@ function ReplyItem({
                                             <Trash2 className="w-3 h-3 mr-2" /> Delete
                                         </DropdownMenuItem>
                                     )}
+                                    <DropdownMenuItem onClick={() => setIsReportDialogOpen(true)} className="text-orange-500">
+                                        <Flag className="w-3 h-3 mr-2" /> Report
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+
+                        {!(canEdit || canDelete) && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-5 w-5">
+                                        <MoreHorizontal className="w-3 h-3" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => setIsReportDialogOpen(true)} className="text-orange-500">
+                                        <Flag className="w-3 h-3 mr-2" /> Report
+                                    </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         )}
@@ -669,6 +719,18 @@ function ReplyItem({
                     </div>
                 </div>
             </div>
+
+            {/* Reporting Dialog for Reply */}
+            <ReportDialog
+                isOpen={isReportDialogOpen}
+                onClose={() => setIsReportDialogOpen(false)}
+                onSuccess={() => {
+                    setIsReportDialogOpen(false);
+                    toast.success("Reply reported");
+                }}
+                targetId={reply.id}
+                targetType="comment" // Replies are usually just comments on comments
+            />
         </div>
     );
 }

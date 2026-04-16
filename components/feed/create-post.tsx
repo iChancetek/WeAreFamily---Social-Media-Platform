@@ -140,7 +140,8 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
             // If we have an onClose handler (e.g. valid submission in modal mode), close it
             if (onClose) onClose();
 
-            window.location.reload();
+            // Notify feed to update without refresh
+            window.dispatchEvent(new CustomEvent('app:post-created'));
         } catch (err: any) {
             console.error("Post creation error:", err);
             toast.error(err.message || "Failed to share moment. Please try again.");

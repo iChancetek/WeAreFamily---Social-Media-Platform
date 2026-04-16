@@ -323,7 +323,9 @@ export async function getGroupPosts(groupId: string, limit = 50, filters: PostFi
             authorId: postData.authorId,
             author,
             context: { type: 'group', id: groupId, name: groupName },
-            comments: []
+            comments: [],
+            reportCount: postData.reportCount || 0,
+            repostCount: postData.repostCount || 0
         });
 
     }));
@@ -368,7 +370,9 @@ export async function getGroupPost(groupId: string, postId: string) {
             authorId: data.authorId,
             author,
             context: { type: 'group', id: groupId, name: groupName },
-            comments: []
+            comments: [],
+            reportCount: data.reportCount || 0,
+            repostCount: data.repostCount || 0
         });
 
     } catch (error) {

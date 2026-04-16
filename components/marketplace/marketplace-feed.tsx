@@ -3,16 +3,19 @@
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Tag } from "lucide-react";
+import { Search, Plus, Tag, RefreshCw, Flag } from "lucide-react";
+import { toast } from "sonner";
 import { CreateListingDialog } from "@/components/marketplace/create-listing-dialog";
-import { getListings } from "@/app/actions/marketplace";
+import { getListings, incrementRepostCount, incrementReportCount } from "@/app/actions/marketplace";
 import { useEffect, useState } from "react";
 import { MarketplaceListing } from "@/types/marketplace";
+import { ReportDialog } from "@/components/reporting/report-dialog";
 
 export function MarketplaceFeed() {
     const [listings, setListings] = useState<MarketplaceListing[]>([]);
     const [loading, setLoading] = useState(true);
     const [category, setCategory] = useState("all");
+    const [reportTarget, setReportTarget] = useState<MarketplaceListing | null>(null);
 
     const fetchListings = async () => {
         setLoading(true);
@@ -24,6 +27,21 @@ export function MarketplaceFeed() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRepost = async (listing: MarketplaceListing) => {
+        try {
+            await incrementRepostCount(listing.id);
+            setListings(prev => prev.map(l => l.id === listing.id ? { ...l, repostCount: (l.repostCount || 0) + 1 } : l));
+            toast.success("Listing reposted to your feed!");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to repost");
+        }
+    };
+
+    const handleReportSuccess = (listingId: string) => {
+        setListings(prev => prev.map(l => l.id === listingId ? { ...l, reportCount: (l.reportCount || 0) + 1 } : l));
+        setReportTarget(null);
     };
 
     useEffect(() => {
@@ -38,7 +56,9 @@ export function MarketplaceFeed() {
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">Marketplace</h1>
                     <p className="text-muted-foreground">Buy, sell, and share with your companions.</p>
                 </div>
-                <CreateListingDialog onListingCreated={fetchListings}>
+                <CreateListingDialog onListingCreated={(newListing: MarketplaceListing) => {
+                    setListings(prev => [newListing, ...prev]);
+                }}>
                     <Button className="bg-primary hover:bg-primary/90 text-white rounded-full">
                         <Plus className="w-4 h-4 mr-2" />
                         Create Listing
@@ -100,15 +120,47 @@ export function MarketplaceFeed() {
                                     <span className="font-bold text-primary">${item.price}</span>
                                 </div>
                                 <p className="text-sm text-muted-foreground line-clamp-2 mt-1 h-10">{item.description}</p>
-                                <div className="mt-3 pt-3 border-t border-dashed flex justify-between items-center text-xs text-muted-foreground">
+                                <div className="mt-3 pt-3 border-t border-dashed flex justify-between items-center text-xs text-muted-foreground mb-3">
                                     <span>{(item as any).sellerName || 'Unknown Seller'}</span>
                                     <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                
+                                <div className="flex items-center gap-3">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={(e) => { e.stopPropagation(); handleRepost(item); }}
+                                        className="h-8 px-2 gap-1.5 rounded-full hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 transition-colors"
+                                    >
+                                        <RefreshCw className="w-4 h-4" />
+                                        <span>{item.repostCount || 0}</span>
+                                    </Button>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={(e) => { e.stopPropagation(); setReportTarget(item); }}
+                                        className="h-8 px-2 gap-1.5 rounded-full hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 transition-colors"
+                                    >
+                                        <Flag className="w-4 h-4" />
+                                        <span>{item.reportCount || 0}</span>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
                     ))
                 )}
             </div>
+
+            {/* Reporting Dialog */}
+            {reportTarget && (
+                <ReportDialog
+                    isOpen={!!reportTarget}
+                    onClose={() => setReportTarget(null)}
+                    onSuccess={() => handleReportSuccess(reportTarget.id)}
+                    targetId={reportTarget.id}
+                    targetType="marketplace_listing"
+                />
+            )}
         </div>
     );
 }

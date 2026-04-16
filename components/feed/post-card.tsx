@@ -59,7 +59,9 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     );
     const [reactionCount, setReactionCount] = useState(post?.reactions ? Object.keys(post.reactions).length : 0);
     const [comments, setComments] = useState<any[]>(post?.comments || []);
-    const [repostCount, setRepostCount] = useState(post?.repostCount || 0);
+    const [isLocked, setIsLocked] = useState(post.isLocked);
+    const [reportCount, setReportCount] = useState(post?.reportCount || 0);
+    const [engagementSettings, setEngagementSettings] = useState(post.engagementSettings || { allowLikes: true, allowComments: true, privacy: 'friends' });
     const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
     const [commentMediaUrl, setCommentMediaUrl] = useState<string | null>(null);
     const [isUploadingComment, setIsUploadingComment] = useState(false);
@@ -173,11 +175,16 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
         else if (mode === 'repost') {
             try {
                 const { createPost, incrementRepostCount } = await import("@/app/actions/posts");
+                // Check if already reposted is handled server-side, but we can catch the error here
                 await createPost(`🔄 ${t("feed.repost")}: ${post.content.substring(0, 100)}...`, post.media || []);
                 await incrementRepostCount(post.id, contextType, contextId);
                 setRepostCount((prev: number) => prev + 1); // Increment local counter
                 toast.success(t("feed.repost.success"));
-            } catch { toast.error("Repost failed"); }
+            } catch (error: any) { 
+                console.error("Repost error:", error);
+                const message = error.message || "Repost failed";
+                toast.error(message === "You have already reposted this." ? t("feed.repost.already") : message); 
+            }
         }
     };
 
@@ -240,6 +247,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                 )}>
                     <PostHeader
                         post={post}
+                        isLocked={isLocked}
                         isPinterest={isPinterest}
                         name={name}
                         profilePic={profilePic}
@@ -254,6 +262,10 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                         onEdit={() => setIsEditing(true)}
                         onDelete={handleDeletePost}
                         onReport={() => setReportDialogOpen(true)}
+                        onSubscribeSuccess={() => {
+                            setIsLocked(false);
+                            router.refresh();
+                        }}
                     />
 
                     <PostContent
@@ -293,9 +305,21 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                     contextId={contextId}
                     postAuthorId={post.authorId}
                     repostCount={repostCount}
+                    reportCount={reportCount}
+                    onReport={() => setReportDialogOpen(true)}
                 />
 
-                <ReportDialog open={reportDialogOpen} onOpenChange={setReportDialogOpen} targetType="post" targetId={post.id} context={{ contextType, contextId, authorId: post.authorId }} />
+                <ReportDialog
+                    isOpen={reportDialogOpen}
+                    onClose={() => setReportDialogOpen(false)}
+                    onSuccess={() => {
+                        setReportCount(prev => prev + 1);
+                        setReportDialogOpen(false);
+                    }}
+                    targetId={post.id}
+                    targetType="post"
+                    context={{ contextType, contextId, authorId: post.authorId }}
+                />
                 {isAuthor && <EngagementSettingsDialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen} postId={post.id} currentSettings={engagementSettings} contextType={contextType} contextId={contextId} />}
                 <AskAIDialog
                     isOpen={askAIDialogOpen}
@@ -352,6 +376,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                 <div className="px-4 pt-3 pb-2 flex flex-col gap-2">
                                     <PostHeader
                                         post={post}
+                                        isLocked={isLocked}
                                         isPinterest={false}
                                         name={name}
                                         profilePic={profilePic}
@@ -366,6 +391,10 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                         onEdit={() => setIsEditing(true)}
                                         onDelete={handleDeletePost}
                                         onReport={() => setReportDialogOpen(true)}
+                                        onSubscribeSuccess={() => {
+                                            setIsLocked(false);
+                                            router.refresh();
+                                        }}
                                     />
 
                                     <PostContent
@@ -402,6 +431,9 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                     contextType={contextType}
                                     contextId={contextId}
                                     postAuthorId={post.authorId}
+                                    repostCount={repostCount}
+                                    reportCount={reportCount}
+                                    onReport={() => setReportDialogOpen(true)}
                                 />
                             </Card>
                         </div>

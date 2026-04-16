@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Heart, MessageCircle, RefreshCw, Share2, Send, Loader2, ChevronDown } from "lucide-react";
+import { Heart, MessageCircle, RefreshCw, Share2, Send, Loader2, ChevronDown, Flag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { REACTIONS, getReactionIcon } from "./reaction-selector";
@@ -30,6 +30,8 @@ interface PostActionsProps {
     contextId?: string;
     postAuthorId: string;
     repostCount?: number;
+    reportCount?: number;
+    onReport?: () => void;
 }
 
 export function PostActions({
@@ -51,7 +53,9 @@ export function PostActions({
     contextType,
     contextId,
     postAuthorId,
-    repostCount
+    repostCount,
+    reportCount,
+    onReport
 }: PostActionsProps) {
     return (
         <div className={cn(
@@ -89,13 +93,25 @@ export function PostActions({
                     </Button>
 
                     {/* Internal Reshare */}
-                    <Button variant="ghost" size="sm" onClick={() => onShare('repost')} className="h-8 px-2 gap-1.5 rounded-full text-muted-foreground hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 flex items-center">
+                    <Button variant="ghost" size="sm" onClick={() => onShare('repost')} className="h-8 px-2 gap-1.5 rounded-full text-muted-foreground hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 flex items-center" title="Repost">
                         <RefreshCw className="w-4 h-4" />
                         <span className="text-xs font-medium">{repostCount !== undefined ? repostCount : 0}</span>
                     </Button>
 
+                    {/* Report */}
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={onReport} 
+                        className="h-8 px-2 gap-1.5 rounded-full text-muted-foreground hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 flex items-center"
+                        title="Report this content"
+                    >
+                        <Flag className="w-4 h-4" />
+                        <span className="text-xs font-medium">{reportCount || 0}</span>
+                    </Button>
+
                     {/* External Share */}
-                    <Button variant="ghost" size="sm" onClick={() => onShare('native')} className="h-8 w-8 rounded-full text-muted-foreground hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 p-0 flex items-center justify-center" title="Share outside">
+                    <Button variant="ghost" size="sm" onClick={() => onShare('native')} className="h-8 w-8 rounded-full text-muted-foreground hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-green-600 p-0 flex items-center justify-center" title="Share outside">
                         <Share2 className="w-4 h-4" />
                     </Button>
                 </div>

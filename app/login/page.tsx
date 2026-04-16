@@ -181,6 +181,7 @@ function LoginContent() {
 
             toast.success("Welcome back!");
             router.push(redirectTo);
+            router.refresh();
             
         } catch (error: any) {
             console.error("Google Auth Error:", error)

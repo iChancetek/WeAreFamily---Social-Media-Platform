@@ -16,6 +16,7 @@ interface ReportDialogProps {
     targetType: 'post' | 'comment' | 'group' | 'branding' | 'user';
     targetId: string;
     context?: any;
+    onSuccess?: () => void;
 }
 
 const REASONS: { value: ReportReason; label: string }[] = [
@@ -27,7 +28,7 @@ const REASONS: { value: ReportReason; label: string }[] = [
     { value: 'other', label: "Something else" },
 ];
 
-export function ReportDialog({ open, onOpenChange, targetType, targetId, context }: ReportDialogProps) {
+export function ReportDialog({ open, onOpenChange, targetType, targetId, context, onSuccess }: ReportDialogProps) {
     const [reason, setReason] = useState<ReportReason>('spam');
     const [details, setDetails] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,6 +38,7 @@ export function ReportDialog({ open, onOpenChange, targetType, targetId, context
         try {
             await createReport(targetType, targetId, reason, details, context);
             toast.success("Report submitted. Thank you for making our community safer.");
+            if (onSuccess) onSuccess();
             onOpenChange(false);
             setDetails(""); // Reset
             setReason('spam');

@@ -44,28 +44,37 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
     const [timeRange, setTimeRange] = useState<'all' | 'day' | 'week' | 'month' | 'year'>('all');
     const [contentType, setContentType] = useState<'all' | 'text' | 'photo' | 'video'>('all');
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            setLoading(true);
-            try {
-                // Determine which fetcher to use
-                const fetchFn = fetcher || getPosts;
+    const fetchPosts = async () => {
+        setLoading(true);
+        try {
+            // Determine which fetcher to use
+            const fetchFn = fetcher || getPosts;
 
-                // Parallel fetch for speed + debug
-                const [data, debug] = await Promise.all([
-                    fetchFn(50, { timeRange, contentType }),
-                    debugEnv()
-                ]);
-                setPosts(data)
-                setDebugInfo(debug)
-            } catch (err) {
-                console.error("Error loading feed:", err)
-                setError(err instanceof Error ? err.message : "Unknown Load Error")
-            } finally {
-                setLoading(false)
-            }
+            // Parallel fetch for speed + debug
+            const [data, debug] = await Promise.all([
+                fetchFn(50, { timeRange, contentType }),
+                debugEnv()
+            ]);
+            setPosts(data)
+            setDebugInfo(debug)
+        } catch (err) {
+            console.error("Error loading feed:", err)
+            setError(err instanceof Error ? err.message : "Unknown Load Error")
+        } finally {
+            setLoading(false)
         }
+    }
+
+    useEffect(() => {
         fetchPosts()
+
+        // Zero-refresh: listen for new posts
+        const handleNewPost = () => {
+            fetchPosts();
+        };
+
+        window.addEventListener('app:post-created', handleNewPost);
+        return () => window.removeEventListener('app:post-created', handleNewPost);
     }, [timeRange, contentType, fetcher]) // Re-fetch when filters change
 
     // Filter UI Components
