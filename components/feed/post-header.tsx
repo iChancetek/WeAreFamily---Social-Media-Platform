@@ -42,6 +42,7 @@ export function PostHeader({
     onTranslate,
     onClearTranslation,
     onAskAI,
+    onEdit,
     onDelete,
     onReport,
     onSubscribeSuccess

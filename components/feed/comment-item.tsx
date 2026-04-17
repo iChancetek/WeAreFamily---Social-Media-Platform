@@ -390,12 +390,13 @@ export function CommentItem({
                             )}
                         </div>
                     </div>
+                </div>
             </div>
 
             {/* Reporting Dialog for Comment */}
             <ReportDialog
-                isOpen={isReportDialogOpen}
-                onClose={() => setIsReportDialogOpen(false)}
+                open={isReportDialogOpen}
+                onOpenChange={(open: boolean) => !open && setIsReportDialogOpen(false)}
                 onSuccess={() => {
                     setIsReportDialogOpen(false);
                     toast.success("Comment reported");
@@ -722,8 +723,8 @@ function ReplyItem({
 
             {/* Reporting Dialog for Reply */}
             <ReportDialog
-                isOpen={isReportDialogOpen}
-                onClose={() => setIsReportDialogOpen(false)}
+                open={isReportDialogOpen}
+                onOpenChange={(open: boolean) => !open && setIsReportDialogOpen(false)}
                 onSuccess={() => {
                     setIsReportDialogOpen(false);
                     toast.success("Reply reported");

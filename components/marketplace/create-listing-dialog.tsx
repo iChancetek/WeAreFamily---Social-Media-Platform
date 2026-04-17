@@ -14,7 +14,7 @@ import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "@/components/auth-provider";
 
-export function CreateListingDialog({ children, onListingCreated }: { children: React.ReactNode, onListingCreated?: () => void }) {
+export function CreateListingDialog({ children, onListingCreated }: { children: React.ReactNode, onListingCreated?: (listing: any) => void }) {
     const { user } = useAuth();
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);

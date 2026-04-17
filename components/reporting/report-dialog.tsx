@@ -13,7 +13,7 @@ import { createReport, ReportReason } from "@/app/actions/reporting";
 interface ReportDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    targetType: 'post' | 'comment' | 'group' | 'branding' | 'user';
+    targetType: 'post' | 'comment' | 'group' | 'branding' | 'user' | 'marketplace_listing';
     targetId: string;
     context?: any;
     onSuccess?: () => void;

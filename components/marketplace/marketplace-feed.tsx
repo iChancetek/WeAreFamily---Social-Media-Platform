@@ -154,8 +154,8 @@ export function MarketplaceFeed() {
             {/* Reporting Dialog */}
             {reportTarget && (
                 <ReportDialog
-                    isOpen={!!reportTarget}
-                    onClose={() => setReportTarget(null)}
+                    open={!!reportTarget}
+                    onOpenChange={(open: boolean) => !open && setReportTarget(null)}
                     onSuccess={() => handleReportSuccess(reportTarget.id)}
                     targetId={reportTarget.id}
                     targetType="marketplace_listing"

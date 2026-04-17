@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { X, Users, Lock, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { toggleReaction, addComment, editPost, deletePostWithContext } from "@/app/actions/posts";
+import { toggleReaction, addComment, editPost, deletePostWithContext, incrementRepostCount } from "@/app/actions/posts";
 import { ReactionType } from "@/types/posts";
 import { ReportDialog } from "@/components/reporting/report-dialog";
 import { EngagementSettingsDialog } from "./engagement-settings-dialog";
@@ -17,6 +17,7 @@ import { storage } from '@/lib/firebase';
 import { chatWithAgent } from '@/app/actions/ai-agents';
 import { AskAIDialog } from "./ask-ai-dialog";
 import { useLanguage } from "@/components/language-context";
+import { useRouter } from "next/navigation";
 
 // Sub Components
 import { PostHeader } from "./post-header";
@@ -41,6 +42,7 @@ interface PostCardProps {
 
 export function PostCard({ post, currentUserId, isEnlarged = false, variant = 'standard', initialTranslatedContent = null, initialLanguage }: PostCardProps) {
     const { t } = useLanguage();
+    const router = useRouter();
     const isPinterest = variant === 'pinterest' && !isEnlarged;
     // Hooks must be called unconditionally
     const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -62,6 +64,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const [isLocked, setIsLocked] = useState(post.isLocked);
     const [reportCount, setReportCount] = useState(post?.reportCount || 0);
     const [engagementSettings, setEngagementSettings] = useState(post.engagementSettings || { allowLikes: true, allowComments: true, privacy: 'friends' });
+    const [repostCount, setRepostCount] = useState(post?.repostCount || 0);
     const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
     const [commentMediaUrl, setCommentMediaUrl] = useState<string | null>(null);
     const [isUploadingComment, setIsUploadingComment] = useState(false);
@@ -79,7 +82,6 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
         if (!isEnlarged) setEnlargedViewOpen(true);
     };
 
-    const engagementSettings = post.engagementSettings || { allowLikes: true, allowComments: true, privacy: 'friends' };
     const author = post.author || { displayName: "Unknown" };
     const name = (author.displayName && author.displayName !== "Family Member") ? author.displayName : "Unknown";
     const profilePic = author.imageUrl;
@@ -183,7 +185,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
             } catch (error: any) { 
                 console.error("Repost error:", error);
                 const message = error.message || "Repost failed";
-                toast.error(message === "You have already reposted this." ? t("feed.repost.already") : message); 
+                toast.error(message === "You have already reposted this." ? "Already reposted" : message); 
             }
         }
     };
@@ -310,10 +312,10 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                 />
 
                 <ReportDialog
-                    isOpen={reportDialogOpen}
-                    onClose={() => setReportDialogOpen(false)}
+                    open={reportDialogOpen}
+                    onOpenChange={setReportDialogOpen}
                     onSuccess={() => {
-                        setReportCount(prev => prev + 1);
+                        setReportCount((prev: number) => prev + 1);
                         setReportDialogOpen(false);
                     }}
                     targetId={post.id}

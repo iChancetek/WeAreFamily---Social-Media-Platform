@@ -1,3 +1,5 @@
+'use server';
+
 import { adminDb } from "@/lib/firebase-admin";
 import { getUserProfile } from "@/lib/auth";
 import { MarketplaceListing } from "@/types/marketplace";
@@ -33,7 +35,7 @@ export async function getListings(category?: string) {
     }
 
     const snapshot = await query.get();
-    return snapshot.docs.map(doc => ({
+    return snapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data(),
         repostCount: doc.data().repostCount || 0,
@@ -57,7 +59,7 @@ export async function incrementRepostCount(listingId: string) {
     if (!listingDoc.exists) throw new Error("Listing not found");
     const listingData = listingDoc.data()!;
 
-    await adminDb.runTransaction(async (transaction) => {
+    await adminDb.runTransaction(async (transaction: any) => {
         transaction.set(repostRef, {
             userId: user.id,
             targetId: listingId,

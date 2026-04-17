@@ -14,6 +14,8 @@ export interface MarketplaceListing {
     };
     createdAt: Date;
     status: 'active' | 'sold' | 'pending';
+    repostCount?: number;
+    reportCount?: number;
 }
 
 export type MarketplaceCategory = MarketplaceListing['category'];
