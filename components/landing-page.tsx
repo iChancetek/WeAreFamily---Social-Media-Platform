@@ -22,18 +22,18 @@ export function LandingPage() {
     return (
         <div className="min-h-screen bg-white">
             {/* Navigation */}
-            <nav className="border-b border-gray-200 bg-white sticky top-0 z-[100]">
+            <nav className="absolute top-0 left-0 right-0 z-[100] bg-transparent">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-3">
                             <img src="/icons/PWAIcon.jpg" alt="Famio" className="w-6 h-6 rounded-lg object-cover" />
                             <div>
-                                <div className="font-bold text-2xl text-gray-900 tracking-tight">Famio</div>
-                                <div className="text-xs text-gray-600 font-medium -mt-1">by ChanceTEK</div>
+                                <div className="font-bold text-2xl text-white tracking-tight">Famio</div>
+                                <div className="text-xs text-white/80 font-medium -mt-1">by ChanceTEK</div>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Link href="/login" className={cn(buttonVariants({ variant: "ghost" }), "text-gray-700 hover:text-gray-900 hover:bg-gray-100 font-medium")}>
+                            <Link href="/login" className={cn(buttonVariants({ variant: "ghost" }), "text-white hover:text-white/80 hover:bg-white/10 font-medium")}>
                                 Sign In
                             </Link>
                             <Link href="/signup" className={cn(buttonVariants(), "bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm")}>
@@ -45,7 +45,7 @@ export function LandingPage() {
             </nav>
 
             {/* Hero Section */}
-            <section className="relative overflow-hidden min-h-[90vh] flex items-center bg-black">
+            <section className="relative overflow-hidden min-h-screen flex items-center bg-black">
                 {/* Background Video */}
                 <video
                     ref={videoRef}
@@ -53,11 +53,11 @@ export function LandingPage() {
                     loop
                     muted={isMuted} // React controls this property
                     playsInline
-                    className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none"
+                    className="absolute inset-0 w-full h-full object-cover opacity-80 pointer-events-none"
                 >
                     <source src="/Create_a_highquality_1080p_202601031842.mp4" type="video/mp4" />
                 </video>
-                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
 
                 {/* Audio Control */}
                 <button
