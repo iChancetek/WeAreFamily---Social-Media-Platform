@@ -1311,7 +1311,7 @@ export async function getTrendingVideos(limitCount = 10) {
                 }
                 return null;
             })
-            .filter((v): v is any => v !== null)
+            .filter((v: any): v is any => v !== null)
             .slice(0, limitCount);
 
         return trendingVideos;
@@ -1345,7 +1345,7 @@ export async function getTrendingShorts(limitCount = 10) {
                 }
                 return null;
             })
-            .filter((v): v is any => v !== null)
+            .filter((v: any): v is any => v !== null)
             .slice(0, limitCount);
 
         return shorts;
