@@ -45,7 +45,16 @@ function YouTubeMetadata({ url }: { url: string }) {
 
     useEffect(() => {
         let cancelled = false;
-        fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url)}`)
+        // Clean URL to avoid 401/403 from YouTube oEmbed due to extra params
+        let cleanUrl = url;
+        try {
+            const u = new URL(url);
+            u.searchParams.delete('si');
+            u.searchParams.delete('feature');
+            cleanUrl = u.toString();
+        } catch {}
+
+        fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(cleanUrl)}`)
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (!cancelled && data) setMetadata(data);

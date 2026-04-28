@@ -1350,15 +1350,17 @@ export async function permanentDeletePost(postId: string) {
 export async function getTrendingVideos(limitCount = 10) {
     try {
         // Query top posts by rankScore
+        // Note: Removed .where("isDeleted", "==", false) to avoid needing a composite index
         const snapshot = await adminDb.collection("posts")
-            .where("isDeleted", "==", false)
             .orderBy("rankScore", "desc")
-            .limit(limitCount * 4) // Fetch more to filter for videos in memory
+            .limit(limitCount * 10) // Fetch more to filter for videos and non-deleted in memory
             .get();
 
         const trendingVideos = snapshot.docs
             .map((doc: any) => {
                 const data = doc.data();
+                if (data.isDeleted) return null; // Filter in memory
+
                 const media = data.media || [];
                 const videoMedia = media.find((m: any) => m.type === 'video');
                 
@@ -1389,14 +1391,15 @@ export async function getTrendingVideos(limitCount = 10) {
 export async function getTrendingShorts(limitCount = 10) {
     try {
         const snapshot = await adminDb.collection("posts")
-            .where("isDeleted", "==", false)
             .orderBy("rankScore", "desc")
-            .limit(limitCount * 6)
+            .limit(limitCount * 15)
             .get();
 
         const shorts = snapshot.docs
             .map((doc: any) => {
                 const data = doc.data();
+                if (data.isDeleted) return null; // Filter in memory
+
                 const media = data.media || [];
                 const videoMedia = media.find((m: any) => m.type === 'video');
                 

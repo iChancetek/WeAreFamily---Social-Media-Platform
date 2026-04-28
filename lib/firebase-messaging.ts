@@ -39,7 +39,7 @@ export async function getFCMToken(): Promise<string | null> {
         const messaging = getFirebaseMessaging();
         if (!messaging) return null;
 
-        const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+        const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY?.trim();
         if (!vapidKey) {
             console.error("VAPID key not configured");
             return null;
