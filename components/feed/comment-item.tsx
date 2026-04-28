@@ -73,28 +73,22 @@ export function CommentItem({
     const [replies, setReplies] = useState<Reply[]>(comment.replies || []);
     const [viewCount, setViewCount] = useState((comment as any).viewCount || 0);
 
+    /*
     // Track impressions for comments
+    // DISABLED to prevent platform crash
     useEffect(() => {
         if (comment.id && postId) {
             incrementCommentViewCount(postId, comment.id, contextType, contextId).catch(console.error);
             setViewCount((prev: number) => prev + 1);
         }
     }, [comment.id, postId, contextType, contextId]);
+    */
 
     const isAuthor = currentUserId === comment.authorId;
     const canDelete = currentUserId === comment.authorId || currentUserId === postAuthorId;
     const canEdit = currentUserId === comment.authorId;
 
-    // DEBUG LOGGING
-    if (typeof window !== 'undefined') {
-        console.log(`Comment ${comment.id} permissions:`, {
-            currentUserId,
-            commentAuthor: comment.authorId,
-            postAuthor: postAuthorId,
-            canEdit,
-            canDelete
-        });
-    }
+    // DEBUG LOGGING REMOVED - Preventing console spam
 
     const userReaction = currentUserId ? likesState[currentUserId] : null;
     const hasLiked = !!userReaction;
@@ -552,13 +546,16 @@ function ReplyItem({
     const [likesState, setLikesState] = useState(reply.reactions || {});
     const [viewCount, setViewCount] = useState((reply as any).viewCount || 0);
 
+    /*
     // Track impressions for replies
+    // DISABLED to prevent platform crash
     useEffect(() => {
         if (reply.id && postId && commentId) {
             incrementReplyViewCount(postId, commentId, reply.id, contextType, contextId).catch(console.error);
             setViewCount((prev: number) => prev + 1);
         }
     }, [reply.id, postId, commentId, contextType, contextId]);
+    */
 
     const isAuthor = currentUserId === reply.authorId;
     const canEdit = currentUserId === reply.authorId;

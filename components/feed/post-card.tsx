@@ -47,7 +47,9 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const router = useRouter();
     const isPinterest = variant === 'pinterest' && !isEnlarged;
 
+    /* 
     // Track impressions for trending algorithm
+    // DISABLED to prevent platform crash due to request overload.
     useEffect(() => {
         if (!isEnlarged && post?.id) {
             const contextType = post.context?.type;
@@ -56,6 +58,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
             setViewCount((prev: number) => prev + 1);
         }
     }, [post?.id, isEnlarged]);
+    */
 
     // Hooks must be called unconditionally
     const [reportDialogOpen, setReportDialogOpen] = useState(false);

@@ -152,14 +152,13 @@ export async function getNewsTrends(): Promise<TrendItem[]> {
 // Aggregate all trends
 export async function aggregateTrends(): Promise<TrendItem[]> {
     try {
-        const [youtube, twitter, tiktok, news] = await Promise.all([
-            getYouTubeTrends(),
+        const [twitter, tiktok, news] = await Promise.all([
             getTwitterTrends(),
             getTikTokTrends(),
             getNewsTrends()
         ]);
 
-        const allTrends = [...youtube, ...twitter, ...tiktok, ...news];
+        const allTrends = [...twitter, ...tiktok, ...news];
 
         // Sort by metric (engagement) descending
         return allTrends.sort((a, b) => (b.metric || 0) - (a.metric || 0));

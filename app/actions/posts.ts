@@ -1364,8 +1364,14 @@ export async function getTrendingVideos(limitCount = 10) {
                 const media = data.media || [];
                 const videoMedia = media.find((m: any) => m.type === 'video');
                 
-                const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
+                const videoUrlRegex = /https?:\/\/(www\.)?(facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
+                const youtubeRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/\S+/i;
+                
                 const hasVideoLink = videoUrlRegex.test(data.content || "");
+                const isYoutube = youtubeRegex.test(data.content || "");
+
+                // Skip if it's a YouTube video
+                if (isYoutube) return null;
 
                 if (videoMedia || hasVideoLink) {
                     return {
@@ -1403,7 +1409,11 @@ export async function getTrendingShorts(limitCount = 10) {
                 const media = data.media || [];
                 const videoMedia = media.find((m: any) => m.type === 'video');
                 
-                if (videoMedia) {
+                const youtubeRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/\S+/i;
+                const isYoutube = youtubeRegex.test(data.content || "");
+
+                // Only include native videos, and skip if YouTube is present
+                if (videoMedia && !isYoutube) {
                     return {
                         id: doc.id,
                         title: data.title || data.content?.substring(0, 40) || "Short Video",
