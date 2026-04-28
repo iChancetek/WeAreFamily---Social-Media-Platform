@@ -5,6 +5,7 @@ import { getActiveUsers } from "@/app/actions/users";
 import { cn } from "@/lib/utils";
 import { ContactItem } from "./contact-item";
 import { NewsFeed } from "@/components/news/news-feed";
+import { TrendingVideos } from "@/components/feed/trending-videos";
 import { useEffect, useState } from "react";
 
 import { useLanguage } from "@/components/language-context";
@@ -34,7 +35,7 @@ export function RightSidebar({ className }: RightSidebarProps) {
     }, []);
 
     return (
-        <aside className={cn("hidden lg:flex flex-col gap-4 p-4 w-80 overflow-y-auto border-l border-border/50", className)}>
+        <aside className={cn("hidden lg:flex flex-col gap-4 p-4 w-80 overflow-y-auto border-l border-border/50 custom-scrollbar", className)}>
             <div className="flex flex-col gap-2">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center justify-between">
                     {t("sidebar.members")}
@@ -51,6 +52,10 @@ export function RightSidebar({ className }: RightSidebarProps) {
                     ))
                 )}
             </div>
+
+            <div className="my-2 border-t border-border/50" />
+
+            <TrendingVideos />
 
             <div className="my-2 border-t border-border/50" />
 

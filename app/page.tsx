@@ -6,6 +6,7 @@ import { LandingPage } from "@/components/landing-page";
 import { LandingChatWidget } from "@/components/landing/landing-chat-widget";
 import { WelcomeHeader } from "@/components/feed/welcome-header";
 import { StoriesTray } from "@/components/stories/stories-tray";
+import { ShortsTray } from "@/components/feed/shorts-tray";
 import { HomeFeed } from "@/components/feed/home-feed";
 import { LiveNowSection } from "@/components/feed/live-now-section";
 import { getUserProfile, enforceVerificationAccess } from "@/lib/auth";
@@ -38,6 +39,9 @@ export default async function Home() {
 
                 {/* Server Component nested inside Client Component (MainLayout) via children prop pattern */}
                 <StoriesTray />
+
+                {/* YouTube Style Shorts Shelf */}
+                <ShortsTray />
 
                 <HomeFeed />
             </div>

@@ -407,8 +407,8 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     disabled={isUploading || !isVerified}
                                     className="gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
                                 >
-                                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-5 h-5 text-primary" />}
-                                    <span className="hidden sm:inline-block text-[14px] font-semibold text-foreground">Photo</span>
+                                    {isUploading ? <Loader2 className="w-5 h-5 shrink-0 animate-spin text-primary" /> : <ImageIcon className="w-5 h-5 shrink-0 text-primary" />}
+                                    <span className="text-[14px] font-semibold text-foreground">Photo</span>
                                 </Button>
                                 <Button
                                     variant="ghost"
@@ -417,8 +417,8 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     disabled={isUploading || !isVerified}
                                     className="gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
                                 >
-                                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <Video className="w-5 h-5 text-red-500" />}
-                                    <span className="hidden sm:inline-block text-[14px] font-semibold text-foreground">Video</span>
+                                    {isUploading ? <Loader2 className="w-5 h-5 shrink-0 animate-spin text-primary" /> : <Video className="w-5 h-5 shrink-0 text-red-500" />}
+                                    <span className="text-[14px] font-semibold text-foreground">Video</span>
                                 </Button>
                                 {/* Share Link Button */}
                                 <Button
@@ -429,8 +429,8 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     className={`gap-1.5 shrink-0 ${articleMode ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}`}
                                     type="button"
                                 >
-                                    <Link2 className="w-5 h-5" />
-                                    <span className="hidden sm:inline-block text-[14px] font-semibold">Share Link</span>
+                                    <Link2 className="w-5 h-5 shrink-0" />
+                                    <span className="text-[14px] font-semibold">Share Link</span>
                                 </Button>
                                 {/* Location Button */}
                                 <Button
@@ -441,7 +441,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     title={location ? "Location attached" : "Drop location"}
                                     type="button"
                                 >
-                                    <MapPin className="w-5 h-5" />
+                                    <MapPin className="w-5 h-5 shrink-0" />
                                 </Button>
                                 {location && (
                                     <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full truncate max-w-[150px]">
