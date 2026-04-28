@@ -243,9 +243,14 @@ export default function LearnMorePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         <FeatureCard
+                            icon={<Zap className="w-8 h-8 text-blue-600" />}
+                            title="Trending & Discovery"
+                            description="Automatically surface the most engaging content. Our sophisticated ranking algorithm factors in views, likes, comments, and reposts to ensure the best family moments always trend."
+                        />
+                        <FeatureCard
                             icon={<MessageCircle className="w-8 h-8 text-blue-600" />}
                             title="Posts & Feed"
-                            description="Share updates, photos, and moments with your family. Comment and react with custom family-friendly reactions."
+                            description="Share updates, photos, and moments. Now featuring intelligent sorting that prioritizes high-engagement content for a better discovery experience."
                         />
                         <FeatureCard
                             icon={<Calendar className="w-8 h-8 text-blue-600" />}

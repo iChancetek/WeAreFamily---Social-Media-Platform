@@ -13,11 +13,14 @@ import { ReportList } from "@/components/admin/report-list";
 import { sanitizeForClient } from "@/lib/serialization";
 
 import { RepostAnalytics } from "@/components/admin/repost-analytics";
+import { AuditLogViewer } from "@/components/admin/audit-log-viewer";
+import { getAuditLogs } from "@/app/actions/audit";
 
 export default function AdminDashboardPage() {
     const { profile, loading } = useAuth();
     const [users, setUsers] = useState<any[]>([]);
     const [reports, setReports] = useState<any[]>([]);
+    const [auditLogs, setAuditLogs] = useState<any[]>([]);
     const [stats, setStats] = useState({
         totalUsers: 0,
         activeToday: 0,
@@ -31,13 +34,15 @@ export default function AdminDashboardPage() {
         if (!loading && profile?.role === 'admin') {
             const fetchData = async () => {
                 try {
-                    console.log("Fetching all users...");
-                    const allUsers = await getAllUsers();
-                    console.log("Users fetched:", allUsers.length);
-                    setUsers(allUsers);
+                    const [allUsers, fetchedReports, fetchedLogs] = await Promise.all([
+                        getAllUsers(),
+                        getAdminReports(),
+                        getAuditLogs({ limit: 50 })
+                    ]);
 
-                    const fetchedReports = await getAdminReports();
+                    setUsers(allUsers);
                     setReports(fetchedReports);
+                    setAuditLogs(fetchedLogs);
 
                     // Calculate stats
                     const now = new Date();
@@ -101,6 +106,8 @@ export default function AdminDashboardPage() {
                 />
 
                 <RepostAnalytics />
+
+                <AuditLogViewer logs={auditLogs} isLoading={isLoadingData} />
 
                 <Card>
                     <CardHeader><CardTitle>Flagged Content</CardTitle></CardHeader>

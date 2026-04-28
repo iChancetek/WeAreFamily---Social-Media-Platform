@@ -369,16 +369,47 @@ export async function recalculateRankScore(postId: string, contextType?: string,
     const data = postDoc.data()!;
     const repostCount = data.repostCount || 0;
     const likesCount = data.reactions ? Object.keys(data.reactions).length : 0;
+    const viewCount = data.viewCount || 0;
     
     // Count comments
     const commentsSnapshot = await postRef.collection("comments").count().get();
     const commentCount = commentsSnapshot.data().count;
     
-    // Algorithm: rankScore = (repostCount * 0.6) + (likes * 0.25) + (comments * 0.15)
-    // We multiply by 10 or 100 to keep it integer if preferred, but float is fine for sorting in Firestore.
-    const rankScore = (repostCount * 0.6) + (likesCount * 0.25) + (commentCount * 0.15);
+    // Algorithm: rankScore = (repostCount * 0.6) + (likes * 0.2) + (comments * 0.15) + (viewCount * 0.05)
+    // We factor in views (impressions) as requested to ensure widely seen content trends.
+    const rankScore = (repostCount * 0.6) + (likesCount * 0.2) + (commentCount * 0.15) + (viewCount * 0.05);
     
     await postRef.update({ rankScore });
+
+    // Log the rank update for admin audit
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("post.rank_update", {
+        targetType: "post",
+        targetId: postId,
+        details: { 
+            rankScore,
+            metrics: { repostCount, likesCount, commentCount, viewCount }
+        }
+    });
+}
+
+export async function incrementViewCount(postId: string, contextType?: string, contextId?: string) {
+    const postRef = getPostRef(postId, contextType, contextId);
+    
+    // Atomically increment view count
+    await postRef.update({
+        viewCount: FieldValue.increment(1)
+    });
+
+    // Log the view event
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("post.view", {
+        targetType: "post",
+        targetId: postId,
+    });
+
+    // Recalculate rank score to reflect the new impression
+    await recalculateRankScore(postId, contextType, contextId);
 }
 
 export async function toggleReaction(postId: string, reactionType: ReactionType, contextType?: string, contextId?: string) {

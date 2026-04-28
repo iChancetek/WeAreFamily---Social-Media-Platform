@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { X, Users, Lock, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { toggleReaction, addComment, editPost, deletePostWithContext, incrementRepostCount } from "@/app/actions/posts";
+import { toggleReaction, addComment, editPost, deletePostWithContext, incrementRepostCount, incrementViewCount } from "@/app/actions/posts";
 import { ReactionType } from "@/types/posts";
 import { ReportDialog } from "@/components/reporting/report-dialog";
 import { EngagementSettingsDialog } from "./engagement-settings-dialog";
@@ -18,6 +18,7 @@ import { chatWithAgent } from '@/app/actions/ai-agents';
 import { AskAIDialog } from "./ask-ai-dialog";
 import { useLanguage } from "@/components/language-context";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 // Sub Components
 import { PostHeader } from "./post-header";
@@ -45,6 +46,16 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const { t } = useLanguage();
     const router = useRouter();
     const isPinterest = variant === 'pinterest' && !isEnlarged;
+
+    // Track impressions for trending algorithm
+    useEffect(() => {
+        if (!isEnlarged && post?.id) {
+            const contextType = post.context?.type;
+            const contextId = post.context?.id;
+            incrementViewCount(post.id, contextType, contextId).catch(console.error);
+        }
+    }, [post?.id, isEnlarged]);
+
     // Hooks must be called unconditionally
     const [reportDialogOpen, setReportDialogOpen] = useState(false);
     const [showComments, setShowComments] = useState(isEnlarged); // Auto-show comments if enlarged

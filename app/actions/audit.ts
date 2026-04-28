@@ -14,6 +14,8 @@ export type AuditAction =
     | "post.create"
     | "post.update"
     | "post.delete"
+    | "post.view"
+    | "post.rank_update"
     | "comment.create"
     | "comment.delete"
     | "comment.update"

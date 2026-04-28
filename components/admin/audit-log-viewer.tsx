@@ -1,232 +1,113 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { getAuditStats, generateTestLog } from "@/app/actions/audit"
-import { Badge } from "@/components/ui/badge"
-import { formatDistanceToNow } from "date-fns"
-import { Loader2, Shield, Activity, Clock, AlertTriangle, PlusCircle } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { toast } from "sonner"
-import { db } from "@/lib/firebase"
-import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from "date-fns";
+import { Eye, TrendingUp, User, MessageCircle, FileText, Settings, ShieldCheck } from "lucide-react";
 
-interface AuditLog {
-    id: string;
-    userId: string;
-    userName: string;
-    userEmail: string;
-    userRole: string;
-    action: string;
-    targetType?: string;
-    targetId?: string;
-    targetName?: string;
-    details?: Record<string, any>;
-    timestamp: Date;
+interface AuditLogViewerProps {
+    logs: any[];
+    isLoading: boolean;
 }
 
-export function AuditLogViewer() {
-    const [logs, setLogs] = useState<AuditLog[]>([])
-    const [stats, setStats] = useState<{ last24h: number; last7days: number; total: number } | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [filter, setFilter] = useState<string>("all")
-    const [generating, setGenerating] = useState(false)
+export function AuditLogViewer({ logs, isLoading }: AuditLogViewerProps) {
+    const getActionIcon = (action: string) => {
+        if (action.startsWith('post.view')) return <Eye className="w-3 h-3 text-blue-400" />;
+        if (action.startsWith('post.rank')) return <TrendingUp className="w-3 h-3 text-green-500" />;
+        if (action.startsWith('user.')) return <User className="w-3 h-3 text-purple-400" />;
+        if (action.startsWith('comment.')) return <MessageCircle className="w-3 h-3 text-orange-400" />;
+        if (action.startsWith('admin.')) return <ShieldCheck className="w-3 h-3 text-red-500" />;
+        if (action.startsWith('settings.')) return <Settings className="w-3 h-3 text-gray-400" />;
+        return <FileText className="w-3 h-3 text-blue-400" />;
+    };
 
-    useEffect(() => {
-        // Real-time listener for audit logs
-        const logsQuery = query(
-            collection(db, "auditLogs"),
-            orderBy("timestamp", "desc"),
-            limit(100)
-        )
-
-        const unsubscribe = onSnapshot(
-            logsQuery,
-            (snapshot) => {
-                const logsData = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    timestamp: doc.data().timestamp?.toDate() || new Date(),
-                })) as AuditLog[]
-
-                setLogs(logsData)
-                setLoading(false)
-                setError(null)
-            },
-            (error) => {
-                console.error("Audit logs listener error:", error)
-                setError(error.message || "Failed to load logs")
-                setLoading(false)
-            }
-        )
-
-        // Fetch stats (not real-time)
-        getAuditStats().then(setStats).catch(console.error)
-
-        return () => unsubscribe()
-    }, [])
-
-    const handleGenerateTestLog = async () => {
-        setGenerating(true)
-        try {
-            await generateTestLog()
-            toast.success("Test log generated!")
-            // No need to fetch - real-time listener will update automatically
-        } catch (error) {
-            toast.error("Failed to generate test log")
-        } finally {
-            setGenerating(false)
-        }
-    }
-
-    const filteredLogs = filter === "all" ? logs : logs.filter(log => {
-        if (filter === "admin") return log.action.startsWith("admin.")
-        if (filter === "security") return log.action.startsWith("security.") || log.action.includes("block")
-        if (filter === "user") return log.action.startsWith("user.")
-        if (filter === "content") return ["post", "comment", "story", "event"].some(t => log.action.includes(t))
-        return true
-    })
-
-    const getActionBadgeColor = (action: string) => {
-        if (action.startsWith("admin.")) return "destructive"
-        if (action.includes("delete") || action.includes("block") || action.includes("reject")) return "destructive"
-        if (action.includes("create") || action.includes("approve")) return "default"
-        return "secondary"
-    }
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center p-12">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        )
-    }
+    const getActionColor = (action: string) => {
+        if (action === 'post.rank_update') return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+        if (action === 'post.view') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+        if (action.startsWith('admin.')) return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+        return 'bg-secondary text-secondary-foreground';
+    };
 
     return (
-        <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Last 24 Hours</CardTitle>
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats?.last24h || 0}</div>
-                        <p className="text-xs text-muted-foreground">Actions logged</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Last 7 Days</CardTitle>
-                        <Activity className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats?.last7days || 0}</div>
-                        <p className="text-xs text-muted-foreground">Actions logged</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Logs</CardTitle>
-                        <Shield className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats?.total || 0}</div>
-                        <p className="text-xs text-muted-foreground">All time</p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Error Banner */}
-            {error && (
-                <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Error Loading Logs</AlertTitle>
-                    <AlertDescription>
-                        {error}
-                        <div className="mt-2">
-                            <span className="text-xs opacity-80">This usually means an index is missing or the collection is empty.</span>
-                        </div>
-                    </AlertDescription>
-                </Alert>
-            )}
-
-            {/* Filter & Logs */}
-            <Card>
-                <CardHeader>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <CardTitle>Activity Audit Log</CardTitle>
-                            <CardDescription>Track all user and admin actions on the platform</CardDescription>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleGenerateTestLog}
-                                disabled={generating}
-                            >
-                                {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-                                Generate Test Entry
-                            </Button>
-                            <Select value={filter} onValueChange={setFilter}>
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Filter by type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Actions</SelectItem>
-                                    <SelectItem value="admin">Admin Actions</SelectItem>
-                                    <SelectItem value="security">Security</SelectItem>
-                                    <SelectItem value="user">User Actions</SelectItem>
-                                    <SelectItem value="content">Content</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+        <Card className="shadow-md border-border/50">
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="text-xl">Platform Audit Log</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">Real-time monitoring of engagement, ranking, and discovery metrics.</p>
+                </div>
+                <Badge variant="outline" className="font-mono">
+                    {logs.length} Recent Events
+                </Badge>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? (
+                    <div className="flex justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                        {filteredLogs.map((log) => (
-                            <div
-                                key={log.id}
-                                className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                            >
-                                <div className="space-y-1 flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <Badge variant={getActionBadgeColor(log.action)}>
-                                            {log.action}
-                                        </Badge>
-                                        <span className="text-sm font-medium">{log.userName}</span>
-                                        <span className="text-xs text-muted-foreground">({log.userRole})</span>
-                                    </div>
-                                    {log.targetName && (
-                                        <p className="text-sm text-muted-foreground">
-                                            Target: {log.targetType} - {log.targetName}
-                                        </p>
-                                    )}
-                                    {log.details && Object.keys(log.details).length > 0 && (
-                                        <p className="text-xs text-muted-foreground font-mono">
-                                            {JSON.stringify(log.details)}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="text-xs text-muted-foreground text-right">
-                                    {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
-                                </div>
-                            </div>
-                        ))}
-                        {filteredLogs.length === 0 && (
-                            <div className="text-center py-12 text-muted-foreground">
-                                No audit logs found
-                            </div>
-                        )}
+                ) : logs.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                        No audit logs found.
                     </div>
-                </CardContent>
-            </Card>
-        </div>
-    )
+                ) : (
+                    <div className="rounded-md border border-border/50 overflow-hidden">
+                        <Table>
+                            <TableHeader className="bg-muted/50">
+                                <TableRow>
+                                    <TableHead className="w-[180px]">User</TableHead>
+                                    <TableHead>Action</TableHead>
+                                    <TableHead>Target / Metrics</TableHead>
+                                    <TableHead className="text-right">Time</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {logs.map((log) => (
+                                    <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold text-sm truncate max-w-[150px]">{log.userName}</span>
+                                                <span className="text-[10px] text-muted-foreground truncate max-w-[150px]">{log.userEmail}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <div className={`p-1 rounded-md ${getActionColor(log.action)}`}>
+                                                    {getActionIcon(log.action)}
+                                                </div>
+                                                <span className="text-xs font-medium capitalize">{log.action.replace(/[._]/g, ' ')}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="text-xs">
+                                                {log.action === 'post.rank_update' && log.details?.metrics ? (
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0">Score: {Number(log.details.rankScore).toFixed(2)}</Badge>
+                                                        <span className="text-muted-foreground text-[10px] flex gap-1">
+                                                            <span>👁️ {log.details.metrics.viewCount}</span>
+                                                            <span>❤️ {log.details.metrics.likesCount}</span>
+                                                            <span>💬 {log.details.metrics.commentCount}</span>
+                                                            <span>🔄 {log.details.metrics.repostCount}</span>
+                                                        </span>
+                                                    </div>
+                                                ) : log.targetType ? (
+                                                    <span className="text-muted-foreground">
+                                                        {log.targetType}: <span className="font-mono text-[10px]">{log.targetId?.substring(0, 8)}...</span>
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-muted-foreground italic">No extra details</span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right text-[10px] text-muted-foreground whitespace-nowrap">
+                                            {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
 }

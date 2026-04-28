@@ -374,6 +374,14 @@ export async function seedKnowledgeBase() {
         {
             title: "Account & Settings",
             content: "You can update your profile, change your display name, and manage privacy settings in the Settings page. Display Name is mandatory for all users."
+        },
+        {
+            title: "Trending & Discovery Algorithm",
+            content: "Famio features a sophisticated discovery algorithm that automatically surfaces engaging content. The ranking score (rankScore) is calculated based on: 1) Reposts (60% weight), 2) Likes (20% weight), 3) Comments (15% weight), and 4) Views/Impressions (5% weight). This ensures that the most meaningful and popular family moments trend in the sidebar and shorts trays."
+        },
+        {
+            title: "Audit Logging & Admin Transparency",
+            content: "For safety and accountability, Famio maintains a detailed Audit Log. Every significant action\u2014including post creations, rank updates, and even content views\u2014is logged with timestamps and user details. This allows family admins to monitor platform health and ensure a safe environment for everyone."
         }
     ];
 

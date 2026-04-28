@@ -20,14 +20,46 @@ export function ShortsTray({ shorts: initialShorts = [] }: ShortsTrayProps) {
     const [shorts, setShorts] = useState<ShortVideo[]>(initialShorts);
     const [isLoading, setIsLoading] = useState(initialShorts.length === 0);
 
+    const mockShorts: ShortVideo[] = [
+        {
+            id: "short1",
+            title: "Morning Routine in the Cloud",
+            views: "245K",
+            thumbnail: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&h=533&fit=crop",
+        },
+        {
+            id: "short2",
+            title: "10 Fast Coding Tips",
+            views: "1.1M",
+            thumbnail: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300&h=533&fit=crop",
+        },
+        {
+            id: "short3",
+            title: "Office Setup 2026",
+            views: "89K",
+            thumbnail: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=300&h=533&fit=crop",
+        },
+        {
+            id: "short4",
+            title: "Life as an AI Engineer",
+            views: "530K",
+            thumbnail: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=300&h=533&fit=crop",
+        }
+    ];
+
     useEffect(() => {
         if (initialShorts.length === 0) {
             const fetchShorts = async () => {
                 try {
                     const data = await getTrendingShorts(10);
-                    setShorts(data as ShortVideo[]);
+                    if (data && data.length > 0) {
+                        setShorts(data as ShortVideo[]);
+                    } else {
+                        setShorts(mockShorts);
+                    }
                 } catch (error) {
                     console.error("Failed to fetch shorts:", error);
+                    setShorts(mockShorts);
                 } finally {
                     setIsLoading(false);
                 }
@@ -36,31 +68,12 @@ export function ShortsTray({ shorts: initialShorts = [] }: ShortsTrayProps) {
         }
     }, [initialShorts]);
 
-    if (isLoading) {
-        return (
-            <div className="mb-6 flex flex-col gap-3">
-                <h2 className="text-lg font-bold text-foreground flex items-center gap-2 px-1">
-                    <Flame className="w-5 h-5 text-red-500 fill-red-500" />
-                    Shorts
-                </h2>
-                <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="shrink-0 w-[140px] md:w-[160px] aspect-[9/16] rounded-xl bg-muted animate-pulse" />
-                    ))}
-                </div>
-            </div>
-        );
-    }
-
-    if (!shorts || shorts.length === 0) {
-        return null;
-    }
-
     return (
         <div className="mb-6 flex flex-col gap-3">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2 px-1">
                 <Flame className="w-5 h-5 text-red-500 fill-red-500" />
                 Shorts
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
             </h2>
             <div 
                 ref={scrollRef}
