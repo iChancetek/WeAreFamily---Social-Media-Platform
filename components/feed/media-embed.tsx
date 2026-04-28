@@ -45,21 +45,29 @@ function YouTubeMetadata({ url }: { url: string }) {
 
     useEffect(() => {
         let cancelled = false;
-        // Clean URL to avoid 401/403 from YouTube oEmbed due to extra params
+        
         let cleanUrl = url;
         try {
             const u = new URL(url);
-            u.searchParams.delete('si');
-            u.searchParams.delete('feature');
-            cleanUrl = u.toString();
+            // Canonicalize youtu.be to youtube.com for better oEmbed compatibility
+            if (u.hostname === 'youtu.be') {
+                const videoId = u.pathname.slice(1);
+                cleanUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            } else {
+                u.searchParams.delete('si');
+                u.searchParams.delete('feature');
+                cleanUrl = u.toString();
+            }
         } catch {}
 
         fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(cleanUrl)}`)
-            .then(res => res.ok ? res.json() : null)
+            .then(res => res.ok ? res.json() : Promise.reject('Not found'))
             .then(data => {
                 if (!cancelled && data) setMetadata(data);
             })
-            .catch(() => {});
+            .catch(() => {
+                if (!cancelled) setMetadata(null);
+            });
         return () => { cancelled = true; };
     }, [url]);
 
