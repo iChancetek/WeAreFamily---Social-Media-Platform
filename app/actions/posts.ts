@@ -1292,7 +1292,7 @@ export async function getTrendingVideos(limitCount = 10) {
             .get();
 
         const trendingVideos = snapshot.docs
-            .map(doc => {
+            .map((doc: any) => {
                 const data = doc.data();
                 const media = data.media || [];
                 const videoMedia = media.find((m: any) => m.type === 'video');
@@ -1330,7 +1330,7 @@ export async function getTrendingShorts(limitCount = 10) {
             .get();
 
         const shorts = snapshot.docs
-            .map(doc => {
+            .map((doc: any) => {
                 const data = doc.data();
                 const media = data.media || [];
                 const videoMedia = media.find((m: any) => m.type === 'video');
