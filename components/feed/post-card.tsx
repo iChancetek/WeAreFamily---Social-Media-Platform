@@ -24,6 +24,7 @@ import { PostHeader } from "./post-header";
 import { PostMedia } from "./post-media";
 import { PostContent } from "./post-content";
 import { PostActions } from "./post-actions";
+import { ArticleLinkPreview } from "./article-link-preview";
 
 function isUrlVideo(url: string | null | undefined): boolean {
     if (!url) return false;
@@ -200,6 +201,11 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const isVideoFile = hasUploadedMedia ? post.media[0].type === 'video' : isUrlVideo(mainMedia);
     const isPinterestLinkPreview = hasLinkPreview && !hasUploadedMedia;
 
+    // Determine if we should show a standalone article link preview card
+    // Show when: post has linkPreview data, no uploaded media, and the link is NOT an embeddable video (YouTube etc.)
+    const isEmbeddableUrl = !!mediaUrl; // YouTube, LinkedIn, etc.
+    const showArticlePreview = pinterestPreview && pinterestPreview.title && !hasUploadedMedia && !isEmbeddableUrl;
+
     const cardClasses = isEnlarged
         ? "w-full max-w-3xl bg-card rounded-[1.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar ring-1 ring-black/5"
         : isPinterest
@@ -283,7 +289,15 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                         postContent={post.content}
                         mediaUrl={mediaUrl}
                         title={post.title}
+                        linkPreviewUrl={showArticlePreview ? pinterestPreview?.url : null}
                     />
+
+                    {/* Article Link Preview Card */}
+                    {showArticlePreview && (
+                        <div onClick={e => e.stopPropagation()}>
+                            <ArticleLinkPreview linkPreview={pinterestPreview} />
+                        </div>
+                    )}
                 </div>
 
                 {/* 3. ACTIONS & STATS (Bottom) */}
@@ -411,7 +425,15 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                         translatedContent={translatedContent}
                                         postContent={post.content}
                                         mediaUrl={mediaUrl}
+                                        linkPreviewUrl={showArticlePreview ? pinterestPreview?.url : null}
                                     />
+
+                                    {/* Article Link Preview Card (Enlarged) */}
+                                    {showArticlePreview && (
+                                        <div onClick={e => e.stopPropagation()}>
+                                            <ArticleLinkPreview linkPreview={pinterestPreview} />
+                                        </div>
+                                    )}
                                 </div>
 
                                 <PostActions

@@ -12,25 +12,39 @@ import { resolveDisplayName } from "@/lib/user-utils";
 
 // Removed local resolveDisplayName helper in favor of shared utility
 
-// Helper to unfurl Pinterest links
+// Helper to unfurl links (articles, Pinterest, etc.)
 async function fetchLinkPreview(url: string) {
     try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
         const response = await fetch(url, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
-            }
+            },
+            signal: controller.signal
         });
+        clearTimeout(timeout);
+
         const html = await response.text();
 
         const imageMatch = html.match(/<meta property="?og:image"? content="([^"]+)"/i) || html.match(/<meta name="?twitter:image"? content="([^"]+)"/i);
         const titleMatch = html.match(/<meta property="?og:title"? content="([^"]+)"/i) || html.match(/<title>([^<]+)<\/title>/i);
+        const descriptionMatch = html.match(/<meta property="?og:description"? content="([^"]+)"/i) || html.match(/<meta name="?description"? content="([^"]+)"/i);
+        const siteNameMatch = html.match(/<meta property="?og:site_name"? content="([^"]+)"/i);
 
-        if (imageMatch && imageMatch[1]) {
+        // Return preview even without an image — just needs a title
+        if (titleMatch && titleMatch[1]) {
+            let parsedDomain = '';
+            try { parsedDomain = new URL(url).hostname.replace(/^www\./, ''); } catch {}
+
             return {
                 url,
-                image: imageMatch[1],
-                title: titleMatch ? titleMatch[1] : '',
+                image: imageMatch ? imageMatch[1] : null,
+                title: titleMatch[1],
+                description: descriptionMatch ? descriptionMatch[1] : null,
+                siteName: siteNameMatch ? siteNameMatch[1] : parsedDomain,
                 source: url.includes('pinterest') || url.includes('pin.it') ? 'pinterest' : 'link'
             };
         }

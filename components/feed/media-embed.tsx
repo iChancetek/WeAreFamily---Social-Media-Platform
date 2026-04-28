@@ -39,6 +39,31 @@ function detectProvider(url: string): Provider {
     }
 }
 
+// YouTube Metadata Component — fetches title & channel via oEmbed
+function YouTubeMetadata({ url }: { url: string }) {
+    const [metadata, setMetadata] = useState<{ title: string; author_name: string } | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url)}`)
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (!cancelled && data) setMetadata(data);
+            })
+            .catch(() => {});
+        return () => { cancelled = true; };
+    }, [url]);
+
+    if (!metadata) return null;
+
+    return (
+        <div className="px-3.5 py-2.5 bg-card/80 border-t border-border/30 space-y-0.5">
+            <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug">{metadata.title}</p>
+            <p className="text-xs text-muted-foreground">{metadata.author_name}</p>
+        </div>
+    );
+}
+
 interface MediaEmbedProps {
     url: string;
     playInline?: boolean;
@@ -52,58 +77,31 @@ export function MediaEmbed({ url, playInline = true, onPlayRequest }: MediaEmbed
     const provider = detectProvider(url || '');
     const embedUrl = provider === 'youtube' && url ? parseYouTubeUrl(url) : null;
 
-    // YouTube: Custom Player Control
+    // YouTube: ALWAYS render inline iframe + metadata
     if (provider === 'youtube' && embedUrl) {
-        // If playInline is FALSE, we show a static preview that looks like a player.
-        // Clicking it should trigger the ENLARGEMENT (via parent onClick) rather than playing.
-        if (!playInline) {
-            const videoId = embedUrl.split('/').pop();
-            const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-
-            return (
-                <div
-                    className="relative w-full overflow-hidden rounded-xl bg-black border border-border mt-3 aspect-video group cursor-pointer"
-                    onClick={(e) => {
-                        // If we have a play request handler (enlarge), call it.
-                        // Otherwise, do nothing (let bubble up)
-                        if (onPlayRequest) {
-                            e.stopPropagation();
-                            onPlayRequest();
-                        }
-                    }}
-                >
-                    {/* Thumbnail */}
-                    <img src={thumbnailUrl} alt="Video Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-
-                    {/* Play Button Overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">
-                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm shadow-lg group-hover:scale-110 transition-transform">
-                            <Play className="w-6 h-6 text-white fill-current" />
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        // Inline Playback (Standard)
         return (
-            <div className="relative w-full overflow-hidden rounded-xl bg-black border border-border mt-3 aspect-video group">
-                {!isLoaded && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-muted/10 z-10 pointer-events-none">
-                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm shadow-lg">
-                            <Play className="w-6 h-6 text-white fill-current opacity-90" />
+            <div className="relative w-full overflow-hidden rounded-xl bg-black border border-border mt-3">
+                <div className="aspect-video relative">
+                    {!isLoaded && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-muted/10 z-10 pointer-events-none">
+                            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm shadow-lg">
+                                <Play className="w-6 h-6 text-white fill-current opacity-90" />
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                <iframe
-                    src={embedUrl}
-                    className={cn("w-full h-full", !isLoaded && "opacity-0 transition-opacity duration-300")}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    onLoad={() => setIsLoaded(true)}
-                    title="Embedded Video"
-                />
+                    <iframe
+                        src={embedUrl}
+                        className={cn("w-full h-full", !isLoaded && "opacity-0 transition-opacity duration-300")}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        onLoad={() => setIsLoaded(true)}
+                        title="Embedded Video"
+                    />
+                </div>
+
+                {/* YouTube Title & Channel Metadata */}
+                <YouTubeMetadata url={url} />
             </div>
         );
     }

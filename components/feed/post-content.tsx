@@ -18,6 +18,7 @@ interface PostContentProps {
     postContent: string;
     mediaUrl: string | null;
     title?: string;
+    linkPreviewUrl?: string | null;
 }
 
 export function PostContent({
@@ -32,8 +33,14 @@ export function PostContent({
     translatedContent,
     postContent,
     mediaUrl,
-    title
+    title,
+    linkPreviewUrl
 }: PostContentProps) {
+    // Collect all URLs that should be hidden from inline text
+    const hideUrls: string[] = [];
+    if (mediaUrl) hideUrls.push(mediaUrl);
+    if (linkPreviewUrl) hideUrls.push(linkPreviewUrl);
+
     return (
         <div onClick={e => !isEditing && isEnlarged ? e.stopPropagation() : undefined}>
             {isEditing ? (
@@ -59,10 +66,11 @@ export function PostContent({
                         isPinterest ? "text-foreground/95 font-medium line-clamp-2" : "text-foreground/90",
                         !isPinterest && (!isEnlarged && hasMedia ? "line-clamp-3" : "line-clamp-6")
                     )}>
-                    <Linkify text={translatedContent || postContent} hideUrls={mediaUrl ? [mediaUrl] : []} onMediaFound={() => { }} />
+                    <Linkify text={translatedContent || postContent} hideUrls={hideUrls} onMediaFound={() => { }} />
                     </div>
                 </div>
             )}
         </div>
     );
 }
+

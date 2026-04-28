@@ -9,7 +9,7 @@ import { createPost } from "@/app/actions/posts";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
-import { ImageIcon, Loader2, Send, X, Mic, MicOff, MapPin, Link2 } from "lucide-react";
+import { ImageIcon, Loader2, Send, X, Mic, MicOff, MapPin, Link2, Video } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useLanguage } from "@/components/language-context";
@@ -390,6 +390,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
 
                         <div className="flex flex-col-reverse gap-3 pt-2 border-t border-gray-100 md:flex-row md:justify-between md:items-center">
                             <div className="flex gap-2 w-full justify-between md:justify-start md:w-auto">
+                                {/* Single combined file input for max mobile compatibility */}
                                 <input
                                     type="file"
                                     hidden
@@ -404,10 +405,20 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     size="sm"
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isUploading || !isVerified}
-                                    className="gap-2 flex-1 md:flex-none text-muted-foreground hover:text-foreground"
+                                    className="gap-1.5 flex-1 md:flex-none text-muted-foreground hover:text-foreground"
                                 >
-                                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-6 h-6 text-primary" />}
-                                    <span className="text-[15px] font-semibold text-foreground">{t("create.photo_video")}</span>
+                                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-5 h-5 text-primary" />}
+                                    <span className="text-[14px] font-semibold text-foreground">Photo</span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading || !isVerified}
+                                    className="gap-1.5 flex-1 md:flex-none text-muted-foreground hover:text-foreground"
+                                >
+                                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <Video className="w-5 h-5 text-red-500" />}
+                                    <span className="text-[14px] font-semibold text-foreground">Video</span>
                                 </Button>
                                 {/* Share Link Button */}
                                 <Button

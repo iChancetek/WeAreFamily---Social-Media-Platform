@@ -184,7 +184,7 @@ export function PostMedia({
                 <div className="w-full">
                     <MediaEmbed
                         url={mediaUrl}
-                        playInline={isEnlarged}
+                        playInline={true}
                         onPlayRequest={onEnlarge}
                     />
                 </div>
