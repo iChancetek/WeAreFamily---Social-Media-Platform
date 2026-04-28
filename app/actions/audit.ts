@@ -19,6 +19,8 @@ export type AuditAction =
     | "comment.create"
     | "comment.delete"
     | "comment.update"
+    | "comment.view"
+    | "reply.view"
     | "story.create"
     | "story.delete"
     | "event.create"

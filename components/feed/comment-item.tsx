@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SafeDate } from '@/components/shared/safe-date';
-import { Edit2, MessageCircle, MoreHorizontal, Send, Trash2, Video, X, Loader2, Sparkles, Flag, Image as ImageIcon, Heart } from "lucide-react";
+import { Edit2, MessageCircle, MoreHorizontal, Send, Trash2, Video, X, Loader2, Sparkles, Flag, Image as ImageIcon, Heart, Eye } from "lucide-react";
 import { ReportDialog } from "@/components/reporting/report-dialog";
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -26,7 +26,9 @@ import {
     addReply,
     toggleReplyLike,
     deleteReply,
-    editReply
+    editReply,
+    incrementCommentViewCount,
+    incrementReplyViewCount
 } from '@/app/actions/posts';
 import { Linkify } from '@/components/shared/linkify';
 import { Reply, EnhancedComment } from '@/types/engagement';
@@ -69,6 +71,15 @@ export function CommentItem({
 
     const [likesState, setLikesState] = useState(comment.reactions || {});
     const [replies, setReplies] = useState<Reply[]>(comment.replies || []);
+    const [viewCount, setViewCount] = useState((comment as any).viewCount || 0);
+
+    // Track impressions for comments
+    useEffect(() => {
+        if (comment.id && postId) {
+            incrementCommentViewCount(postId, comment.id, contextType, contextId).catch(console.error);
+            setViewCount((prev: number) => prev + 1);
+        }
+    }, [comment.id, postId, contextType, contextId]);
 
     const isAuthor = currentUserId === comment.authorId;
     const canDelete = currentUserId === comment.authorId || currentUserId === postAuthorId;
@@ -368,7 +379,7 @@ export function CommentItem({
                                 </DropdownMenuContent>
                             </DropdownMenu>
 
-                            <Button
+                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setShowReplyInput(!showReplyInput)}
@@ -377,6 +388,11 @@ export function CommentItem({
                                 <MessageCircle className="w-3.5 h-3.5" />
                                 <span className="text-xs">Reply</span>
                             </Button>
+
+                            <div className="flex items-center gap-1 text-muted-foreground" title="Impressions">
+                                <Eye className="w-3 h-3" />
+                                <span className="text-[10px]">{viewCount}</span>
+                            </div>
 
                             {replies.length > 0 && (
                                 <Button
@@ -534,6 +550,15 @@ function ReplyItem({
     const [isSaving, setIsSaving] = useState(false);
     const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
     const [likesState, setLikesState] = useState(reply.reactions || {});
+    const [viewCount, setViewCount] = useState((reply as any).viewCount || 0);
+
+    // Track impressions for replies
+    useEffect(() => {
+        if (reply.id && postId && commentId) {
+            incrementReplyViewCount(postId, commentId, reply.id, contextType, contextId).catch(console.error);
+            setViewCount((prev: number) => prev + 1);
+        }
+    }, [reply.id, postId, commentId, contextType, contextId]);
 
     const isAuthor = currentUserId === reply.authorId;
     const canEdit = currentUserId === reply.authorId;
@@ -701,23 +726,28 @@ function ReplyItem({
                                     <span className={cn("text-sm", hasLiked && "scale-110")}>
                                         {hasLiked ? getReactionIcon(userReaction as ReactionType) : '🤍'}
                                     </span>
-                                    <span className="text-[10px]">{Object.keys(likesState).length > 0 && Object.keys(likesState).length}</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="flex gap-2 p-3 bg-background/95 backdrop-blur-sm">
-                                {REACTIONS.map(r => (
-                                    <button
-                                        key={r.type}
-                                        onClick={() => handleLike(r.type as ReactionType)}
-                                        className="text-2xl cursor-pointer hover:scale-150 transition-all duration-200 p-1 rounded-lg hover:bg-muted/50"
-                                        title={r.label}
-                                    >
-                                        {r.emoji}
-                                    </button>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                <span className="text-[10px]">{Object.keys(likesState).length > 0 && Object.keys(likesState).length}</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="flex gap-2 p-3 bg-background/95 backdrop-blur-sm">
+                            {REACTIONS.map(r => (
+                                <button
+                                    key={r.type}
+                                    onClick={() => handleLike(r.type as ReactionType)}
+                                    className="text-2xl cursor-pointer hover:scale-150 transition-all duration-200 p-1 rounded-lg hover:bg-muted/50"
+                                    title={r.label}
+                                >
+                                    {r.emoji}
+                                </button>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <div className="flex items-center gap-1 text-muted-foreground ml-2" title="Impressions">
+                        <Eye className="w-3 h-3" />
+                        <span className="text-[10px]">{viewCount}</span>
                     </div>
+                </div>
                 </div>
             </div>
 

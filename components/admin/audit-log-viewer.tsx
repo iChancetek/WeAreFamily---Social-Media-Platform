@@ -15,6 +15,8 @@ export function AuditLogViewer({ logs, isLoading }: AuditLogViewerProps) {
     const getActionIcon = (action: string) => {
         if (action.startsWith('post.view')) return <Eye className="w-3 h-3 text-blue-400" />;
         if (action.startsWith('post.rank')) return <TrendingUp className="w-3 h-3 text-green-500" />;
+        if (action.startsWith('comment.view')) return <Eye className="w-3 h-3 text-orange-400" />;
+        if (action.startsWith('reply.view')) return <Eye className="w-3 h-3 text-pink-400" />;
         if (action.startsWith('user.')) return <User className="w-3 h-3 text-purple-400" />;
         if (action.startsWith('comment.')) return <MessageCircle className="w-3 h-3 text-orange-400" />;
         if (action.startsWith('admin.')) return <ShieldCheck className="w-3 h-3 text-red-500" />;
@@ -25,6 +27,8 @@ export function AuditLogViewer({ logs, isLoading }: AuditLogViewerProps) {
     const getActionColor = (action: string) => {
         if (action === 'post.rank_update') return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
         if (action === 'post.view') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+        if (action === 'comment.view') return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+        if (action === 'reply.view') return 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400';
         if (action.startsWith('admin.')) return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
         return 'bg-secondary text-secondary-foreground';
     };

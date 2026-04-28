@@ -53,6 +53,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
             const contextType = post.context?.type;
             const contextId = post.context?.id;
             incrementViewCount(post.id, contextType, contextId).catch(console.error);
+            setViewCount(prev => prev + 1);
         }
     }, [post?.id, isEnlarged]);
 
@@ -77,6 +78,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const [reportCount, setReportCount] = useState(post?.reportCount || 0);
     const [engagementSettings, setEngagementSettings] = useState(post.engagementSettings || { allowLikes: true, allowComments: true, privacy: 'friends' });
     const [repostCount, setRepostCount] = useState(post?.repostCount || 0);
+    const [viewCount, setViewCount] = useState(post?.viewCount || 0);
     const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
     const [commentMediaUrl, setCommentMediaUrl] = useState<string | null>(null);
     const [isUploadingComment, setIsUploadingComment] = useState(false);
@@ -218,10 +220,10 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const showArticlePreview = pinterestPreview && pinterestPreview.title && !hasUploadedMedia && !isEmbeddableUrl;
 
     const cardClasses = isEnlarged
-        ? "w-full max-w-3xl bg-card rounded-[1.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar border border-border"
+        ? "w-full max-w-3xl glass-card rounded-[1.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar border-border/50"
         : isPinterest
-            ? "group relative break-inside-avoid border-none shadow-sm hover:shadow-md transition-all duration-300 bg-card rounded-2xl overflow-hidden flex flex-col cursor-pointer border border-border/50"
-            : "group relative break-inside-avoid border-none shadow-sm hover:shadow-md transition-shadow duration-300 bg-card rounded-[1.5rem] overflow-hidden flex flex-col cursor-pointer border border-border/50";
+            ? "group relative break-inside-avoid border-none shadow-sm hover:shadow-md transition-all duration-300 glass-card rounded-2xl overflow-hidden flex flex-col cursor-pointer"
+            : "group relative break-inside-avoid shadow-sm hover:shadow-md transition-shadow duration-300 glass-card rounded-[1.5rem] overflow-hidden flex flex-col cursor-pointer border-border/50";
 
     return (
         <>
@@ -332,6 +334,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                     contextId={contextId}
                     postAuthorId={post.authorId}
                     repostCount={repostCount}
+                    viewCount={viewCount}
                     reportCount={reportCount}
                     onReport={() => setReportDialogOpen(true)}
                 />
@@ -467,6 +470,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                                     contextId={contextId}
                                     postAuthorId={post.authorId}
                                     repostCount={repostCount}
+                                    viewCount={viewCount}
                                     reportCount={reportCount}
                                     onReport={() => setReportDialogOpen(true)}
                                 />

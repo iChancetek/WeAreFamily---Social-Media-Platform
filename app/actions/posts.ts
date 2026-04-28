@@ -412,6 +412,40 @@ export async function incrementViewCount(postId: string, contextType?: string, c
     await recalculateRankScore(postId, contextType, contextId);
 }
 
+export async function incrementCommentViewCount(postId: string, commentId: string, contextType?: string, contextId?: string) {
+    const postRef = getPostRef(postId, contextType, contextId);
+    const commentRef = postRef.collection("comments").doc(commentId);
+    
+    await commentRef.update({
+        viewCount: FieldValue.increment(1)
+    });
+
+    // Log view to audit system
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("comment.view", {
+        targetType: "comment",
+        targetId: commentId,
+        details: { postId }
+    });
+}
+
+export async function incrementReplyViewCount(postId: string, commentId: string, replyId: string, contextType?: string, contextId?: string) {
+    const postRef = getPostRef(postId, contextType, contextId);
+    const replyRef = postRef.collection("comments").doc(commentId).collection("replies").doc(replyId);
+    
+    await replyRef.update({
+        viewCount: FieldValue.increment(1)
+    });
+
+    // Log view to audit system
+    const { logAuditEvent } = await import("./audit");
+    await logAuditEvent("reply.view", {
+        targetType: "reply",
+        targetId: replyId,
+        details: { postId, commentId }
+    });
+}
+
 export async function toggleReaction(postId: string, reactionType: ReactionType, contextType?: string, contextId?: string) {
     const user = await getUserProfile();
     if (!user) throw new Error("Unauthorized");

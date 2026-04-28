@@ -31,8 +31,8 @@ export function SidebarItem({
             className={cn(
                 "relative flex items-center h-12 px-3 rounded-xl transition-all duration-200 group overflow-hidden",
                 isActive
-                    ? "bg-primary/10 text-primary dark:bg-gradient-to-r dark:from-primary/20 dark:to-transparent dark:text-white"
-                    : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/5"
+                    ? "text-primary dark:text-white"
+                    : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
             )}
         >
             {/* Active Indicator Bar (Neon Glow) */}
@@ -78,8 +78,6 @@ export function SidebarItem({
                 <span className="ml-auto w-2 h-2 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
             )}
 
-            {/* Hover Glow Background - Subtle Glass */}
-            <div className="absolute inset-0 bg-gradient-to-r from-zinc-100/50 to-transparent dark:from-white/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </Link>
     );
 }

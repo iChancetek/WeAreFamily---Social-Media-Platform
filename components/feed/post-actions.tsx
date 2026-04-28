@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Heart, MessageCircle, RefreshCw, Share2, Send, Loader2, ChevronDown, Flag } from "lucide-react";
+import { Heart, MessageCircle, RefreshCw, Share2, Send, Loader2, ChevronDown, Flag, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { REACTIONS, getReactionIcon } from "./reaction-selector";
@@ -30,6 +30,7 @@ interface PostActionsProps {
     contextId?: string;
     postAuthorId: string;
     repostCount?: number;
+    viewCount?: number;
     reportCount?: number;
     onReport?: () => void;
 }
@@ -54,6 +55,7 @@ export function PostActions({
     contextId,
     postAuthorId,
     repostCount,
+    viewCount,
     reportCount,
     onReport
 }: PostActionsProps) {
@@ -109,6 +111,12 @@ export function PostActions({
                         <Flag className="w-4 h-4" />
                         <span className="text-xs font-medium">{reportCount || 0}</span>
                     </Button>
+
+                    {/* View Count (Impressions) */}
+                    <div className="flex items-center gap-1.5 px-2 h-8 text-muted-foreground" title="Impressions">
+                        <Eye className="w-4 h-4" />
+                        <span className="text-xs font-medium">{viewCount || 0}</span>
+                    </div>
 
                     {/* External Share */}
                     <Button variant="ghost" size="sm" onClick={() => onShare('native')} className="h-8 w-8 rounded-full text-muted-foreground hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-green-600 p-0 flex items-center justify-center" title="Share outside">

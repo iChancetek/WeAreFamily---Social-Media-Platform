@@ -107,7 +107,11 @@
   }
 
   .dark body::before {
-    @apply opacity-0;
+    @apply opacity-[0.5];
+    background: 
+      radial-gradient(at 0% 0%, hsla(var(--primary) / 0.15) 0, transparent 40%),
+      radial-gradient(at 100% 100%, hsla(var(--primary) / 0.1) 0, transparent 40%),
+      radial-gradient(at 50% 50%, hsla(0, 0%, 10%, 0.5) 0, transparent 100%);
   }
 }
 
@@ -117,7 +121,7 @@
   }
 
   .dark .glass-panel {
-    @apply bg-black/60 backdrop-blur-md border border-white/10 shadow-xl;
+    @apply bg-zinc-950/60 backdrop-blur-2xl border-b border-white/5 shadow-2xl;
   }
 
   .glass-card {
@@ -126,8 +130,13 @@
   }
 
   .dark .glass-card {
-    @apply bg-zinc-900/80 border-slate-800 backdrop-blur-lg;
-    box-shadow: none;
+    @apply bg-zinc-900/40 border-white/10 backdrop-blur-xl transition-all duration-300;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+  }
+
+  .dark .glass-card-neon {
+    @apply bg-zinc-900/60 border-primary/20 backdrop-blur-2xl;
+    box-shadow: 0 0 20px -5px hsla(var(--primary) / 0.2);
   }
 
   .glass-card:hover {

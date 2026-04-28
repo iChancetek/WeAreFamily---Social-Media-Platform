@@ -99,7 +99,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
         <motion.div
             className={cn(
                 "hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-[24px] fixed left-0 top-0 z-50 overflow-hidden transition-colors duration-300",
-                "bg-white/70 dark:bg-[#0B0F14] backdrop-blur-xl border border-border shadow-xl",
+                "bg-transparent",
                 className
             )}
             initial={{ width: 80 }}
@@ -148,7 +148,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                 <div className="w-full">
                     <VoiceStatusIndicator
                         state={aiState}
-                        className="w-full bg-zinc-100/50 hover:bg-zinc-100 dark:bg-white/5 dark:hover:bg-white/10"
+                        className="w-full bg-transparent hover:bg-transparent"
                         onClick={toggleContinuous}
                     />
                 </div>
@@ -183,7 +183,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
             </nav>
 
             {/* 3. Footer: User & Settings */}
-            <div className="p-3 bg-gradient-to-t from-zinc-100/80 to-transparent dark:from-black/50 dark:to-transparent">
+            <div className="p-3">
                 {/* Theme Toggles (Simplified) */}
                 {mounted ? (
                     isHovered ? (
