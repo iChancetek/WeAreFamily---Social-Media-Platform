@@ -53,7 +53,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
             const contextType = post.context?.type;
             const contextId = post.context?.id;
             incrementViewCount(post.id, contextType, contextId).catch(console.error);
-            setViewCount(prev => prev + 1);
+            setViewCount((prev: number) => prev + 1);
         }
     }, [post?.id, isEnlarged]);
 
