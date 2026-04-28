@@ -388,8 +388,8 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                             </div>
                         )}
 
-                        <div className="flex flex-col-reverse gap-3 pt-2 border-t border-gray-100 md:flex-row md:justify-between md:items-center">
-                            <div className="flex gap-2 w-full justify-between md:justify-start md:w-auto">
+                        <div className="flex flex-col gap-3 pt-3 border-t border-gray-100 md:flex-row md:justify-between md:items-center">
+                            <div className="flex flex-wrap items-center gap-2 w-full justify-start md:w-auto">
                                 {/* Single combined file input for max mobile compatibility */}
                                 <input
                                     type="file"
@@ -405,20 +405,20 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     size="sm"
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isUploading || !isVerified}
-                                    className="gap-1.5 flex-1 md:flex-none text-muted-foreground hover:text-foreground"
+                                    className="gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <ImageIcon className="w-5 h-5 text-primary" />}
-                                    <span className="text-[14px] font-semibold text-foreground">Photo</span>
+                                    <span className="hidden sm:inline-block text-[14px] font-semibold text-foreground">Photo</span>
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isUploading || !isVerified}
-                                    className="gap-1.5 flex-1 md:flex-none text-muted-foreground hover:text-foreground"
+                                    className="gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <Video className="w-5 h-5 text-red-500" />}
-                                    <span className="text-[14px] font-semibold text-foreground">Video</span>
+                                    <span className="hidden sm:inline-block text-[14px] font-semibold text-foreground">Video</span>
                                 </Button>
                                 {/* Share Link Button */}
                                 <Button
@@ -426,17 +426,17 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     size="sm"
                                     onClick={() => setArticleMode(!articleMode)}
                                     disabled={isUploading || !isVerified}
-                                    className={articleMode ? "text-primary bg-primary/10 gap-2 flex-1 md:flex-none" : "text-muted-foreground hover:text-foreground gap-2 flex-1 md:flex-none"}
+                                    className={`gap-1.5 shrink-0 ${articleMode ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}`}
                                     type="button"
                                 >
                                     <Link2 className="w-5 h-5" />
-                                    <span className="text-[15px] font-semibold">Share Link</span>
+                                    <span className="hidden sm:inline-block text-[14px] font-semibold">Share Link</span>
                                 </Button>
                                 {/* Location Button */}
                                 <Button
                                     variant={location ? "secondary" : "ghost"}
                                     size="icon"
-                                    className={location ? "text-blue-500 bg-blue-50" : ""}
+                                    className={`shrink-0 ${location ? "text-blue-500 bg-blue-50" : "text-muted-foreground hover:text-foreground"}`}
                                     onClick={handleLocationClick}
                                     title={location ? "Location attached" : "Drop location"}
                                     type="button"
@@ -444,20 +444,22 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     <MapPin className="w-5 h-5" />
                                 </Button>
                                 {location && (
-                                    <span className="hidden md:inline-block text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full truncate max-w-[150px]">
+                                    <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full truncate max-w-[150px]">
                                         📍 {location.name || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
                                         <button onClick={() => setLocation(null)} className="ml-2 hover:text-red-500">×</button>
                                     </span>
                                 )}
 
-                                <MagicAIButton
-                                    onClick={handleOpenMagicAI}
-                                    disabled={!content.trim() || !isVerified}
-                                    isGenerating={magicAI.isGenerating}
-                                />
+                                <div className="ml-auto">
+                                    <MagicAIButton
+                                        onClick={handleOpenMagicAI}
+                                        disabled={!content.trim() || !isVerified}
+                                        isGenerating={magicAI.isGenerating}
+                                    />
+                                </div>
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap items-center gap-2 justify-end">
                                 <SubscriptionTierSelector
                                     value={subscriptionTier}
                                     onChange={setSubscriptionTier}
