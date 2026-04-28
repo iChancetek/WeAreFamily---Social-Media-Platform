@@ -1,40 +1,54 @@
 "use client";
 
-import { Play, TrendingUp } from "lucide-react";
+import { Play, TrendingUp, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getTrendingVideos } from "@/app/actions/posts";
 
-// Mock data for trending videos
-const TRENDING_VIDEOS = [
-    {
-        id: "v1",
-        title: "The Future of AI in Enterprise Software",
-        views: "1.2M views",
-        duration: "10:45",
-        thumbnail: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=200&h=112&fit=crop",
-    },
-    {
-        id: "v2",
-        title: "How to Build a Scalable Startup from Scratch",
-        views: "850K views",
-        duration: "15:20",
-        thumbnail: "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=200&h=112&fit=crop",
-    },
-    {
-        id: "v3",
-        title: "Top 5 Leadership Traits for 2026",
-        views: "420K views",
-        duration: "08:12",
-        thumbnail: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=200&h=112&fit=crop",
-    },
-    {
-        id: "v4",
-        title: "Remote Work: Maintaining Team Culture",
-        views: "315K views",
-        duration: "05:55",
-        thumbnail: "https://images.unsplash.com/photo-1573164713988-8665fc963095?w=200&h=112&fit=crop",
-    },
-];
+export interface TrendingVideo {
+    id: string;
+    title: string;
+    views: string;
+    duration: string;
+    thumbnail: string;
+}
 
-export function TrendingVideos() {
+interface TrendingVideosProps {
+    videos?: TrendingVideo[];
+}
+
+export function TrendingVideos({ videos: initialVideos = [] }: TrendingVideosProps) {
+    const [videos, setVideos] = useState<TrendingVideo[]>(initialVideos);
+    const [isLoading, setIsLoading] = useState(initialVideos.length === 0);
+
+    useEffect(() => {
+        if (initialVideos.length === 0) {
+            const fetchVideos = async () => {
+                try {
+                    const data = await getTrendingVideos(5);
+                    setVideos(data as TrendingVideo[]);
+                } catch (error) {
+                    console.error("Failed to fetch trending videos:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            fetchVideos();
+        }
+    }, [initialVideos]);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                <Loader2 className="w-6 h-6 animate-spin mb-2" />
+                <p className="text-xs">Loading trends...</p>
+            </div>
+        );
+    }
+
+    if (!videos || videos.length === 0) {
+        return null;
+    }
+
     return (
         <div className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
@@ -42,10 +56,14 @@ export function TrendingVideos() {
                 Trending Videos
             </h3>
             <div className="flex flex-col gap-3">
-                {TRENDING_VIDEOS.map((video) => (
+                {videos.map((video) => (
                     <div key={video.id} className="flex gap-3 group cursor-pointer hover:bg-muted/50 p-1.5 -mx-1.5 rounded-lg transition-colors">
                         <div className="relative w-20 h-14 shrink-0 rounded-md overflow-hidden bg-muted">
-                            <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                            <img 
+                                src={video.thumbnail || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=200&h=112&fit=crop"} 
+                                alt={video.title} 
+                                className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                            />
                             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                                 <Play className="w-5 h-5 text-white opacity-80 group-hover:opacity-100 drop-shadow-md" fill="currentColor" />
                             </div>

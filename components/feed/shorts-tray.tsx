@@ -1,44 +1,60 @@
 "use client";
 
-import { Play, Flame } from "lucide-react";
-import { useRef } from "react";
+import { Play, Flame, Loader2 } from "lucide-react";
+import { useRef, useEffect, useState } from "react";
+import { getTrendingShorts } from "@/app/actions/posts";
 
-// Mock data for shorts
-const SHORTS_VIDEOS = [
-    {
-        id: "s1",
-        title: "Quick Office Hacks 💡",
-        views: "1.5M",
-        thumbnail: "https://images.unsplash.com/photo-1516383740770-fbcc5ccbece0?w=300&h=533&fit=crop",
-    },
-    {
-        id: "s2",
-        title: "Morning Routine for Devs",
-        views: "900K",
-        thumbnail: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=300&h=533&fit=crop",
-    },
-    {
-        id: "s3",
-        title: "React Server Components in 60s",
-        views: "2.1M",
-        thumbnail: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300&h=533&fit=crop",
-    },
-    {
-        id: "s4",
-        title: "Setup Tour 2026 🔥",
-        views: "3.4M",
-        thumbnail: "https://images.unsplash.com/photo-1606228281437-dd22cd2d54e8?w=300&h=533&fit=crop",
-    },
-    {
-        id: "s5",
-        title: "Fixing bugs like...",
-        views: "500K",
-        thumbnail: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300&h=533&fit=crop",
-    },
-];
+export interface ShortVideo {
+    id: string;
+    title: string;
+    views: string;
+    thumbnail: string;
+}
 
-export function ShortsTray() {
+interface ShortsTrayProps {
+    shorts?: ShortVideo[];
+}
+
+export function ShortsTray({ shorts: initialShorts = [] }: ShortsTrayProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const [shorts, setShorts] = useState<ShortVideo[]>(initialShorts);
+    const [isLoading, setIsLoading] = useState(initialShorts.length === 0);
+
+    useEffect(() => {
+        if (initialShorts.length === 0) {
+            const fetchShorts = async () => {
+                try {
+                    const data = await getTrendingShorts(10);
+                    setShorts(data as ShortVideo[]);
+                } catch (error) {
+                    console.error("Failed to fetch shorts:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            fetchShorts();
+        }
+    }, [initialShorts]);
+
+    if (isLoading) {
+        return (
+            <div className="mb-6 flex flex-col gap-3">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2 px-1">
+                    <Flame className="w-5 h-5 text-red-500 fill-red-500" />
+                    Shorts
+                </h2>
+                <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="shrink-0 w-[140px] md:w-[160px] aspect-[9/16] rounded-xl bg-muted animate-pulse" />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    if (!shorts || shorts.length === 0) {
+        return null;
+    }
 
     return (
         <div className="mb-6 flex flex-col gap-3">
@@ -50,13 +66,13 @@ export function ShortsTray() {
                 ref={scrollRef}
                 className="flex gap-3 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory"
             >
-                {SHORTS_VIDEOS.map((short) => (
+                {shorts.map((short) => (
                     <div 
                         key={short.id} 
                         className="relative shrink-0 w-[140px] md:w-[160px] aspect-[9/16] rounded-xl overflow-hidden group cursor-pointer snap-start shadow-sm border border-border/50"
                     >
                         <img 
-                            src={short.thumbnail} 
+                            src={short.thumbnail || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&h=533&fit=crop"} 
                             alt={short.title} 
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                         />

@@ -1281,3 +1281,76 @@ export async function permanentDeletePost(postId: string) {
     await postRef.delete();
     revalidatePath('/profile');
 }
+
+export async function getTrendingVideos(limitCount = 10) {
+    try {
+        // Query top posts by rankScore
+        const snapshot = await adminDb.collection("posts")
+            .where("isDeleted", "==", false)
+            .orderBy("rankScore", "desc")
+            .limit(limitCount * 4) // Fetch more to filter for videos in memory
+            .get();
+
+        const trendingVideos = snapshot.docs
+            .map(doc => {
+                const data = doc.data();
+                const media = data.media || [];
+                const videoMedia = media.find((m: any) => m.type === 'video');
+                
+                const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
+                const hasVideoLink = videoUrlRegex.test(data.content || "");
+
+                if (videoMedia || hasVideoLink) {
+                    return {
+                        id: doc.id,
+                        title: data.title || data.content?.substring(0, 60) || "Untitled Video",
+                        views: `${data.viewCount || 0} views`,
+                        duration: data.duration || "0:00",
+                        thumbnail: data.thumbnailUrl || (videoMedia ? videoMedia.url : null) || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=200&h=112&fit=crop",
+                    };
+                }
+                return null;
+            })
+            .filter((v): v is any => v !== null)
+            .slice(0, limitCount);
+
+        return trendingVideos;
+    } catch (error) {
+        console.error("Error fetching trending videos:", error);
+        return [];
+    }
+}
+
+export async function getTrendingShorts(limitCount = 10) {
+    try {
+        const snapshot = await adminDb.collection("posts")
+            .where("isDeleted", "==", false)
+            .orderBy("rankScore", "desc")
+            .limit(limitCount * 6)
+            .get();
+
+        const shorts = snapshot.docs
+            .map(doc => {
+                const data = doc.data();
+                const media = data.media || [];
+                const videoMedia = media.find((m: any) => m.type === 'video');
+                
+                if (videoMedia) {
+                    return {
+                        id: doc.id,
+                        title: data.title || data.content?.substring(0, 40) || "Short Video",
+                        views: `${data.viewCount || 0}`,
+                        thumbnail: data.thumbnailUrl || videoMedia.url,
+                    };
+                }
+                return null;
+            })
+            .filter((v): v is any => v !== null)
+            .slice(0, limitCount);
+
+        return shorts;
+    } catch (error) {
+        console.error("Error fetching trending shorts:", error);
+        return [];
+    }
+}
