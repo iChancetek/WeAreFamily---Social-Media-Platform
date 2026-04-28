@@ -14,13 +14,13 @@ export function TopNav({ className }: { className?: string }) {
     const { state: aiState, toggleContinuous } = useVoice();
 
     return (
-        <header className={`flex items-center justify-between px-4 h-16 fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${className} bg-background/80 backdrop-blur-md border-b border-white/5`}>
+        <header className={`flex items-center justify-between px-4 h-16 fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${className} glass-panel`}>
             {/* Logo Area */}
             <div className="flex items-center gap-3">
                 <div className="relative flex items-center justify-center w-8 h-8">
                     <img src="/icons/PWAIcon.jpg" alt="Famio" className="w-6 h-6 rounded-lg object-cover" />
                 </div>
-                <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
+                <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
                     Famio
                 </span>
             </div>
@@ -32,17 +32,17 @@ export function TopNav({ className }: { className?: string }) {
                     <VoiceStatusIndicator
                         state={aiState}
                         onClick={toggleContinuous}
-                        className="w-10 h-10 p-1 bg-transparent hover:bg-white/10 border-none"
+                        className="w-10 h-10 p-1 bg-transparent hover:bg-accent border-none"
                     />
                 </div>
 
                 <Sheet open={open} onOpenChange={setOpen}>
                     <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon" className="hover:bg-white/10 rounded-full w-10 h-10">
-                            <Menu className="w-6 h-6 text-zinc-300" />
+                        <Button variant="ghost" size="icon" className="hover:bg-accent rounded-full w-10 h-10">
+                            <Menu className="w-6 h-6 text-foreground" />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="p-0 w-[85vw] max-w-[300px] border-r border-white/10 bg-[#0B0F14]">
+                    <SheetContent side="left" className="p-0 w-[85vw] max-w-[300px] border-r border-border bg-background">
                         <VisuallyHidden>
                             <SheetTitle>Navigation Menu</SheetTitle>
                             <SheetDescription>Main navigation links</SheetDescription>

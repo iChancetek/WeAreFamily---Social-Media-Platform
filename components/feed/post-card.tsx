@@ -207,10 +207,10 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const showArticlePreview = pinterestPreview && pinterestPreview.title && !hasUploadedMedia && !isEmbeddableUrl;
 
     const cardClasses = isEnlarged
-        ? "w-full max-w-3xl bg-card rounded-[1.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar ring-1 ring-black/5"
+        ? "w-full max-w-3xl bg-card rounded-[1.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar border border-border"
         : isPinterest
-            ? "group relative break-inside-avoid border-none shadow-sm hover:shadow-md transition-all duration-300 bg-white dark:bg-card rounded-2xl overflow-hidden flex flex-col cursor-pointer ring-1 ring-black/[0.03]"
-            : "group relative break-inside-avoid border-none shadow-sm hover:shadow-md transition-shadow duration-300 bg-card rounded-[1.5rem] overflow-hidden flex flex-col cursor-pointer ring-1 ring-black/5";
+            ? "group relative break-inside-avoid border-none shadow-sm hover:shadow-md transition-all duration-300 bg-card rounded-2xl overflow-hidden flex flex-col cursor-pointer border border-border/50"
+            : "group relative break-inside-avoid border-none shadow-sm hover:shadow-md transition-shadow duration-300 bg-card rounded-[1.5rem] overflow-hidden flex flex-col cursor-pointer border border-border/50";
 
     return (
         <>
@@ -347,7 +347,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
 
             {/* ENLARGED VIEW MODAL */}
             {enlargedViewOpen && (
-                <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setEnlargedViewOpen(false)}>
+                <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setEnlargedViewOpen(false)}>
                     {/* Close Button */}
                     <button onClick={() => setEnlargedViewOpen(false)} className="absolute top-4 right-4 p-2 text-white/70 hover:text-white rounded-full bg-white/10 hover:bg-white/20 transition-colors z-50">
                         <X className="w-6 h-6" />

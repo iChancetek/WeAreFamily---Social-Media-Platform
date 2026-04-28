@@ -98,9 +98,8 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
     return (
         <motion.div
             className={cn(
-                "hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-[24px] fixed left-0 top-0 z-50 shadow-2xl overflow-hidden",
-                // Edgy Design: Dark charcoal background in dark mode, clean white in light mode
-                "bg-white/80 dark:bg-[#0B0F14] backdrop-blur-xl border border-zinc-200 dark:border-white/5 shadow-xl dark:shadow-[0_0_40px_-10px_rgba(0,0,0,0.5)]",
+                "hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-[24px] fixed left-0 top-0 z-50 overflow-hidden transition-colors duration-300",
+                "bg-white/70 dark:bg-[#0B0F14] backdrop-blur-xl border border-border shadow-xl",
                 className
             )}
             initial={{ width: 80 }}
@@ -133,7 +132,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                         <AnimatePresence>
                             {isHovered && (
                                 <motion.span
-                                    className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white whitespace-nowrap"
+                                    className="text-xl font-bold tracking-tight text-foreground whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60"
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -10 }}
