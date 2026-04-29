@@ -105,18 +105,29 @@ export function ShortsTray({ shorts: initialShorts = [] }: ShortsTrayProps) {
                                 {playableUrl && isHovering && (
                                     <video 
                                         src={playableUrl} 
-                                        className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105" 
+                                        className="absolute inset-0 w-full h-full object-cover z-10" 
                                         muted 
                                         playsInline
                                         loop
                                         autoPlay
                                     />
                                 )}
-                                <img 
-                                    src={short.thumbnail || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&h=533&fit=crop"} 
-                                    alt={short.title} 
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                />
+                                {/* Thumbnail: use a video frame if it's an mp4, otherwise an img */}
+                                {(short.thumbnail || "").match(/\.(mp4|webm|mov)(\?|#|$)/i) ? (
+                                    <video
+                                        src={`${short.thumbnail}#t=0.5`}
+                                        className="w-full h-full object-cover"
+                                        muted
+                                        playsInline
+                                        preload="metadata"
+                                    />
+                                ) : (
+                                    <img 
+                                        src={short.thumbnail || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&h=533&fit=crop"} 
+                                        alt={short.title} 
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                    />
+                                )}
                                 
                                 {/* Hover Play Overlay */}
                                 <div className={cn("absolute inset-0 bg-black/20 flex items-center justify-center transition-opacity z-20", isHovering ? "opacity-0" : "opacity-0 group-hover:opacity-100")}>

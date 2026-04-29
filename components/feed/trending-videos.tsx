@@ -101,18 +101,29 @@ export function TrendingVideos({ videos: initialVideos = [] }: TrendingVideosPro
                             {playableUrl && isHovering && (
                                 <video 
                                     src={playableUrl} 
-                                    className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105" 
+                                    className="absolute inset-0 w-full h-full object-cover z-10" 
                                     muted 
                                     playsInline
                                     loop
                                     autoPlay
                                 />
                             )}
-                            <img 
-                                src={video.thumbnail || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&h=169&fit=crop"} 
-                                alt={video.title} 
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
+                            {/* Thumbnail: use a video frame if it's an mp4, otherwise an img */}
+                            {(video.thumbnail || "").match(/\.(mp4|webm|mov)(\?|#|$)/i) ? (
+                                <video
+                                    src={`${video.thumbnail}#t=0.5`}
+                                    className="w-full h-full object-cover"
+                                    muted
+                                    playsInline
+                                    preload="metadata"
+                                />
+                            ) : (
+                                <img 
+                                    src={video.thumbnail || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&h=169&fit=crop"} 
+                                    alt={video.title} 
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                            )}
                             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors z-20" />
                             <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/70 backdrop-blur-md rounded text-[10px] font-bold text-white z-20">
                                 {video.duration}
