@@ -1368,7 +1368,13 @@ export async function getTrendingVideos(limitCount = 10) {
                 const youtubeRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/\S+/i;
                 
                 const hasVideoLink = videoUrlRegex.test(data.content || "");
-                const isYoutube = youtubeRegex.test(data.content || "");
+                let isYoutube = youtubeRegex.test(data.content || "");
+                if (data.mediaUrls) {
+                    isYoutube = isYoutube || data.mediaUrls.some((u: string) => youtubeRegex.test(u));
+                }
+                if (data.media) {
+                    isYoutube = isYoutube || data.media.some((m: any) => youtubeRegex.test(m.url || ""));
+                }
 
                 // Skip if it's a YouTube video
                 if (isYoutube) return null;
@@ -1410,7 +1416,13 @@ export async function getTrendingShorts(limitCount = 10) {
                 const videoMedia = media.find((m: any) => m.type === 'video');
                 
                 const youtubeRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/\S+/i;
-                const isYoutube = youtubeRegex.test(data.content || "");
+                let isYoutube = youtubeRegex.test(data.content || "");
+                if (data.mediaUrls) {
+                    isYoutube = isYoutube || data.mediaUrls.some((u: string) => youtubeRegex.test(u));
+                }
+                if (data.media) {
+                    isYoutube = isYoutube || data.media.some((m: any) => youtubeRegex.test(m.url || ""));
+                }
 
                 // Only include native videos, and skip if YouTube is present
                 if (videoMedia && !isYoutube) {

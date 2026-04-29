@@ -1,8 +1,9 @@
 "use client";
 
 import { Play, TrendingUp, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getTrendingVideos } from "@/app/actions/posts";
+import { useRouter } from "next/navigation";
 
 export interface TrendingVideo {
     id: string;
@@ -17,8 +18,10 @@ interface TrendingVideosProps {
 }
 
 export function TrendingVideos({ videos: initialVideos = [] }: TrendingVideosProps) {
+    const router = useRouter();
     const [videos, setVideos] = useState<TrendingVideo[]>(initialVideos);
     const [isLoading, setIsLoading] = useState(initialVideos.length === 0);
+    const [playingId, setPlayingId] = useState<string | null>(null);
 
     const mockVideos: TrendingVideo[] = [
         {
@@ -74,25 +77,54 @@ export function TrendingVideos({ videos: initialVideos = [] }: TrendingVideosPro
             </h3>
             
             <div className="flex flex-col gap-3">
-                {videos.map((video) => (
-                    <div key={video.id} className="group cursor-pointer flex flex-col gap-2">
-                        <div className="relative aspect-video rounded-xl overflow-hidden shadow-sm border border-border/50">
-                            <img 
-                                src={video.thumbnail || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&h=169&fit=crop"} 
-                                alt={video.title} 
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                            />
-                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
-                            <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/70 backdrop-blur-md rounded text-[10px] font-bold text-white">
-                                {video.duration}
-                            </div>
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
-                                    <Play className="w-5 h-5 text-white ml-0.5" fill="currentColor" />
-                                </div>
-                            </div>
+                {videos.map((video) => {
+                    const isMp4 = video.thumbnail?.match(/\.(mp4|webm|mov)(\?.*)?$/i);
+                    const isPlaying = playingId === video.id;
+
+                    return (
+                    <div key={video.id} className="group flex flex-col gap-2">
+                        <div 
+                            className="relative aspect-video rounded-xl overflow-hidden shadow-sm border border-border/50 cursor-pointer"
+                            onClick={() => setPlayingId(isPlaying ? null : video.id)}
+                        >
+                            {isPlaying ? (
+                                <video 
+                                    src={video.thumbnail} 
+                                    className="w-full h-full object-cover" 
+                                    autoPlay 
+                                    controls 
+                                    playsInline 
+                                />
+                            ) : (
+                                <>
+                                    {isMp4 ? (
+                                        <video 
+                                            src={`${video.thumbnail}#t=0.1`} 
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                            preload="metadata"
+                                            muted 
+                                            playsInline
+                                        />
+                                    ) : (
+                                        <img 
+                                            src={video.thumbnail || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&h=169&fit=crop"} 
+                                            alt={video.title} 
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                        />
+                                    )}
+                                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
+                                    <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/70 backdrop-blur-md rounded text-[10px] font-bold text-white">
+                                        {video.duration}
+                                    </div>
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
+                                            <Play className="w-5 h-5 text-white ml-0.5" fill="currentColor" />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
-                        <div className="flex flex-col px-1">
+                        <div className="flex flex-col px-1 cursor-pointer" onClick={() => router.push(`/post/${video.id}`)}>
                             <h4 className="text-sm font-semibold leading-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors">
                                 {video.title}
                             </h4>
@@ -101,7 +133,7 @@ export function TrendingVideos({ videos: initialVideos = [] }: TrendingVideosPro
                             </p>
                         </div>
                     </div>
-                ))}
+                )})}
             </div>
             <button className="text-sm text-primary font-medium hover:underline self-start mt-2 px-1">
                 Show more
