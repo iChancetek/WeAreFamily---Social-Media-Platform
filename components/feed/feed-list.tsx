@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation"
 import { Loader2, Video } from "lucide-react"
 import { useAutoScroll } from "@/hooks/use-auto-scroll"
 import { AutoScrollToggle } from "./auto-scroll-toggle"
-import { debugEnv } from "@/app/actions/debug";
 
 import { PostFilters } from "@/app/actions/posts";
 
@@ -27,7 +26,6 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
     const [posts, setPosts] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [debugInfo, setDebugInfo] = useState<any>(null)
 
     // Auto-scroll integration
     const {
@@ -47,16 +45,9 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
     const fetchPosts = async () => {
         setLoading(true);
         try {
-            // Determine which fetcher to use
             const fetchFn = fetcher || getPosts;
-
-            // Parallel fetch for speed + debug
-            const [data, debug] = await Promise.all([
-                fetchFn(50, { timeRange, contentType }),
-                debugEnv()
-            ]);
-            setPosts(data)
-            setDebugInfo(debug)
+            const data = await fetchFn(20, { timeRange, contentType });
+            setPosts(data);
         } catch (err) {
             console.error("Error loading feed:", err)
             setError(err instanceof Error ? err.message : "Unknown Load Error")

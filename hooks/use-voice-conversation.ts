@@ -89,9 +89,14 @@ export function useVoiceConversation({ onMessage, onStateChange }: UseVoiceConve
     // -------------------------------------------------------------------------
     // VAD Logic (Simplified)
     // -------------------------------------------------------------------------
+    // Use refs inside VAD to avoid recreating the loop on every state change
+    const stateRef = useRef(state);
+    const isListeningRef = useRef(isListening);
+    useEffect(() => { stateRef.current = state; }, [state]);
+    useEffect(() => { isListeningRef.current = isListening; }, [isListening]);
+
     const startVAD = useCallback(async () => {
         try {
-            // Close existing context if any
             if (audioContextRef.current) {
                 audioContextRef.current.close();
             }
@@ -113,34 +118,21 @@ export function useVoiceConversation({ onMessage, onStateChange }: UseVoiceConve
                 if (!analyserRef.current) return;
 
                 analyserRef.current.getByteFrequencyData(dataArray);
-
-                // Calculate average volume
                 let sum = 0;
-                for (let i = 0; i < bufferLength; i++) {
-                    sum += dataArray[i];
-                }
+                for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
                 const average = sum / bufferLength;
 
-                // Threshold for "User is speaking"
-                if (average > 20) { // Slightly higher threshold to avoid background noise
+                if (average > 20) {
                     handleUserSpeechStart();
-
-                    // Clear silence timer if user is talking
                     if (silenceTimerRef.current) {
                         clearTimeout(silenceTimerRef.current);
                         silenceTimerRef.current = null;
                     }
                 } else {
-                    // Silence detected 
-                    // Only start timer if we are in listening state and have detecting 'some' previous activity?
-                    // For simplicity: if silence persists for 1.5s while listening, assume end of turn
-                    if (!silenceTimerRef.current && state === 'listening') {
+                    if (!silenceTimerRef.current && stateRef.current === 'listening') {
                         silenceTimerRef.current = setTimeout(() => {
-                            // End of turn - stop recording to trigger Whisper
-                            if (isListening) {
-                                stopRecognition();
-                            }
-                        }, 2000); // 2s of silence = end of turn
+                            if (isListeningRef.current) stopRecognition();
+                        }, 2000);
                     }
                 }
 
@@ -151,7 +143,7 @@ export function useVoiceConversation({ onMessage, onStateChange }: UseVoiceConve
         } catch (err) {
             console.error('VAD Error:', err);
         }
-    }, [state, isListening, handleUserSpeechStart, stopRecognition]); // Added state/isListening dependencies
+    }, [handleUserSpeechStart, stopRecognition]); // Stable deps only
 
     const cleanupVAD = useCallback(() => {
         if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);

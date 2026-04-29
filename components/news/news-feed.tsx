@@ -38,17 +38,7 @@ export function NewsFeed() {
 
     useEffect(() => {
         loadNews();
-    }, [loadNews]);
-
-    // Auto-refresh news every 30 minutes
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            loadNews();
-        }, 30 * 60 * 1000); // 30 minutes in milliseconds
-
-        // Cleanup interval on unmount
-        return () => clearInterval(intervalId);
-    }, [loadNews]); // Re-create interval when loadNews changes
+    }, [category]);
 
     return (
         <div className="flex flex-col gap-3">
