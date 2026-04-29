@@ -135,7 +135,6 @@ export function ShortsTray({ shorts: initialShorts = [] }: ShortsTrayProps) {
                                 </p>
                             </div>
                         </div>
-                    </div>
                 )})}
             </div>
         </div>
