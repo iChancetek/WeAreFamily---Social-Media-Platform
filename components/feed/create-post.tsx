@@ -29,11 +29,11 @@ interface CreatePostProps {
 }
 
 export function CreatePost({ onClose, contextType, contextId }: CreatePostProps) {
-    const { user, profile } = useAuth();
+    const { user, profile, refreshUser } = useAuth();
 
     const { t } = useLanguage();
     // Admin or Verified
-    const isVerified = profile?.role === 'admin' || profile?.emailVerified;
+    const isVerified = profile?.role === 'admin' || user?.emailVerified;
 
     const [content, setContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -324,6 +324,23 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     className="font-medium underline hover:text-amber-700 dark:hover:text-amber-400"
                                 >
                                     {t("create.verify.resend")}
+                                </button>
+                                <span>•</span>
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        try {
+                                            toast.info("Checking status...");
+                                            if (refreshUser) {
+                                                await refreshUser();
+                                            }
+                                        } catch (e) {
+                                            console.error(e);
+                                        }
+                                    }}
+                                    className="font-medium underline hover:text-amber-700 dark:hover:text-amber-400"
+                                >
+                                    I've verified
                                 </button>
                             </div>
                         )}

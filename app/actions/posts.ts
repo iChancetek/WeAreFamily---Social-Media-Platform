@@ -1386,6 +1386,7 @@ export async function getTrendingVideos(limitCount = 10) {
                         views: `${data.viewCount || 0} views`,
                         duration: data.duration || "0:00",
                         thumbnail: data.thumbnailUrl || (videoMedia ? videoMedia.url : null) || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=200&h=112&fit=crop",
+                        videoUrl: videoMedia ? videoMedia.url : null,
                     };
                 }
                 return null;
@@ -1431,6 +1432,7 @@ export async function getTrendingShorts(limitCount = 10) {
                         title: data.title || data.content?.substring(0, 40) || "Short Video",
                         views: `${data.viewCount || 0}`,
                         thumbnail: data.thumbnailUrl || videoMedia.url,
+                        videoUrl: videoMedia.url,
                     };
                 }
                 return null;

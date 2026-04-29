@@ -99,7 +99,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
         <motion.div
             className={cn(
                 "hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-[24px] fixed left-0 top-0 z-50 overflow-hidden transition-colors duration-300",
-                "bg-transparent",
+                "bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-lg",
                 className
             )}
             initial={{ width: 80 }}
