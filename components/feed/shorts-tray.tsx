@@ -121,10 +121,13 @@ export function ShortsTray({ shorts: initialShorts = [] }: ShortsTrayProps) {
                                     }}
                                 />
                             )}
-                            {isMp4Thumbnail && !playableUrl ? (
+                            {isMp4Thumbnail ? (
                                 <video 
                                     src={`${short.thumbnail}#t=0.1`} 
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                    className={cn(
+                                        "w-full h-full object-cover transition-transform duration-500 group-hover:scale-105",
+                                        playableUrl && isHovering ? "opacity-0" : "opacity-100"
+                                    )}
                                     preload="metadata"
                                     muted 
                                     playsInline
