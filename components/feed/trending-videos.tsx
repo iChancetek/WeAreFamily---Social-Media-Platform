@@ -84,8 +84,7 @@ export function TrendingVideos({ videos: initialVideos = [] }: TrendingVideosPro
             
             <div className="flex flex-col gap-3">
                 {videos.map((video) => {
-                    const isMp4Thumbnail = video.thumbnail?.match(/\.(mp4|webm|mov)(\?.*)?$/i);
-                    const playableUrl = video.videoUrl || (isMp4Thumbnail ? video.thumbnail : null);
+                    const playableUrl = video.videoUrl;
                     const isHovering = hoveredId === video.id;
 
                     return (
@@ -99,45 +98,21 @@ export function TrendingVideos({ videos: initialVideos = [] }: TrendingVideosPro
                             className="relative aspect-video rounded-xl overflow-hidden shadow-sm border border-border/50 cursor-pointer"
                             onClick={() => router.push(`/post/${video.id}`)}
                         >
-                            {playableUrl && (
+                            {playableUrl && isHovering && (
                                 <video 
                                     src={playableUrl} 
-                                    className={cn(
-                                        "absolute inset-0 w-full h-full object-cover transition-opacity duration-300 z-10 group-hover:scale-105",
-                                        isHovering ? "opacity-100" : "opacity-0"
-                                    )} 
+                                    className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105" 
                                     muted 
                                     playsInline
                                     loop
-                                    ref={(el) => {
-                                        if (el) {
-                                            if (isHovering) el.play().catch(() => {});
-                                            else { el.pause(); el.currentTime = 0; }
-                                        }
-                                    }}
+                                    autoPlay
                                 />
                             )}
-                            {isMp4Thumbnail ? (
-                                <video 
-                                    src={`${video.thumbnail}#t=0.1`} 
-                                    className={cn(
-                                        "w-full h-full object-cover transition-transform duration-500 group-hover:scale-105",
-                                        playableUrl && isHovering ? "opacity-0" : "opacity-100"
-                                    )}
-                                    preload="metadata"
-                                    muted 
-                                    playsInline
-                                />
-                            ) : (
-                                <img 
-                                    src={video.thumbnail || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&h=169&fit=crop"} 
-                                    alt={video.title} 
-                                    className={cn(
-                                        "w-full h-full object-cover transition-transform duration-500 group-hover:scale-105",
-                                        playableUrl && isHovering ? "opacity-0" : "opacity-100"
-                                    )}
-                                />
-                            )}
+                            <img 
+                                src={video.thumbnail || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&h=169&fit=crop"} 
+                                alt={video.title} 
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
                             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors z-20" />
                             <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/70 backdrop-blur-md rounded text-[10px] font-bold text-white z-20">
                                 {video.duration}
