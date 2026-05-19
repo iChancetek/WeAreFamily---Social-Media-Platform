@@ -55,7 +55,8 @@
             "icons": [
                 {
                     "src": "/icons/PWAIcon.jpg",
-                    "sizes": "96x96"
+                    "sizes": "96x96",
+                    "type": "image/jpeg"
                 }
             ]
         },
@@ -67,7 +68,8 @@
             "icons": [
                 {
                     "src": "/icons/PWAIcon.jpg",
-                    "sizes": "96x96"
+                    "sizes": "96x96",
+                    "type": "image/jpeg"
                 }
             ]
         },
@@ -79,7 +81,8 @@
             "icons": [
                 {
                     "src": "/icons/PWAIcon.jpg",
-                    "sizes": "96x96"
+                    "sizes": "96x96",
+                    "type": "image/jpeg"
                 }
             ]
         },
@@ -91,7 +94,8 @@
             "icons": [
                 {
                     "src": "/icons/PWAIcon.jpg",
-                    "sizes": "96x96"
+                    "sizes": "96x96",
+                    "type": "image/jpeg"
                 }
             ]
         },
@@ -103,7 +107,8 @@
             "icons": [
                 {
                     "src": "/icons/PWAIcon.jpg",
-                    "sizes": "96x96"
+                    "sizes": "96x96",
+                    "type": "image/jpeg"
                 }
             ]
         }
