@@ -35,14 +35,6 @@ export const metadata: Metadata = {
     siteName: "Famio",
     locale: "en_US",
     type: "website",
-    images: [
-      {
-        url: "https://famio.us/icons/PWAIcon.jpg",
-        width: 1024,
-        height: 1024,
-        alt: "Famio Logo",
-      }
-    ],
   },
 
   // Twitter Card
@@ -50,7 +42,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Famio - We Are One",
     description: "A private, AI-powered social platform. We Are One.",
-    images: ["https://famio.us/icons/PWAIcon.jpg"],
     site: "@Famio",
   },
 
