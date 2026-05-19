@@ -49,6 +49,6 @@ export const config = {
          * - login
          * - signup
          */
-        "/((?!api|_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|workbox-.*|offline|login|signup).*)",
+        "/((?!api|_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|workbox-.*|offline|login|signup|embed|post).*)",
     ],
 };

@@ -1155,6 +1155,52 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
 
 }
 
+// Lightweight post data for OG metadata generation — bypasses auth so social crawlers can read tags
+export async function getPostForMetadata(postId: string) {
+    try {
+        const mainDoc = await adminDb.collection("posts").doc(postId).get();
+        if (!mainDoc.exists) return null;
+        const data = mainDoc.data();
+        if (!data) return null;
+
+        // Skip deleted posts
+        if (data.isDeleted) return null;
+
+        // Hydrate author display name only (no email, no sensitive data)
+        let author = null;
+        if (data.authorId) {
+            const authorDoc = await adminDb.collection("users").doc(data.authorId).get();
+            if (authorDoc.exists) {
+                const aData = authorDoc.data();
+                author = {
+                    displayName: resolveDisplayName(aData),
+                };
+            }
+        }
+
+        // Normalise media
+        let media = data.media || [];
+        if (!media.length && data.mediaUrls && data.mediaUrls.length > 0) {
+            media = data.mediaUrls.map((url: string) => ({
+                type: url.match(/\.(mp4|mov|webm)$/i) ? 'video' : 'photo',
+                url
+            }));
+        }
+
+        return {
+            content: data.content || null,
+            media,
+            mediaUrls: data.mediaUrls || [],
+            thumbnailUrl: data.thumbnailUrl || null,
+            author,
+            engagementSettings: data.engagementSettings || {},
+        };
+    } catch (error) {
+        console.error("[getPostForMetadata] Error:", error);
+        return null;
+    }
+}
+
 // Global Post Lookup for /post/[id]
 export async function getPostGlobal(postId: string) {
     // 1. Try Main Feed
@@ -1187,7 +1233,6 @@ export async function getPostGlobal(postId: string) {
         }
 
         // Hydrate
-        let author = null;
         if (post.authorId) {
             const data = mainDoc.data()!;
 

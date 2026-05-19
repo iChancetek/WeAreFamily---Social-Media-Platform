@@ -1,4 +1,4 @@
-import { getPostGlobal } from "@/app/actions/posts";
+import { getPostGlobal, getPostForMetadata } from "@/app/actions/posts";
 import { MainLayout } from "@/components/layout/main-layout";
 import { PostCard } from "@/components/feed/post-card";
 import { getUserProfile } from "@/lib/auth";
@@ -22,7 +22,9 @@ export async function generateMetadata(
 ): Promise<Metadata> {
     const { postId } = await params;
 
-    const post = await getPostGlobal(postId);
+    // Use auth-free metadata loader so social crawlers (Facebook, Twitter, etc.)
+    // can read OG tags without a session cookie
+    const post = await getPostForMetadata(postId);
 
     if (!post || post.engagementSettings?.privacy === 'private') {
         return {
@@ -31,9 +33,7 @@ export async function generateMetadata(
         };
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-        || 'https://we-are-family-221.web.app';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://famio.us';
 
     const postUrl = `${baseUrl}/post/${postId}`;
     const embedUrl = `${baseUrl}/embed/post/${postId}`;
