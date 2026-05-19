@@ -37,3 +37,6 @@ env:
   # Firebase Cloud Messaging VAPID Key for Push Notifications
   - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
     value: BKOhVxyDQAWod-Qj-r7266byoF4uXREVSh6g7yXWmPWP87MxPgMCol1-Y1ZnKRA0QP1GhhPB8eq_WBLjYHI7uh
+  # Public Site URL for OG metadata / social share previews
+  - variable: NEXT_PUBLIC_SITE_URL
+    value: https://famio.us
