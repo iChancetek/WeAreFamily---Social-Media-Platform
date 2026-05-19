@@ -20,12 +20,12 @@ import { useLanguage } from "@/components/language-context";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-// Sub Components
 import { PostHeader } from "./post-header";
 import { PostMedia } from "./post-media";
 import { PostContent } from "./post-content";
 import { PostActions } from "./post-actions";
 import { ArticleLinkPreview } from "./article-link-preview";
+import { ShareSheet } from "./share-sheet";
 
 function isUrlVideo(url: string | null | undefined): boolean {
     if (!url) return false;
@@ -86,6 +86,7 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     const [commentMediaUrl, setCommentMediaUrl] = useState<string | null>(null);
     const [isUploadingComment, setIsUploadingComment] = useState(false);
     const [isGeneratingComment, setIsGeneratingComment] = useState(false);
+    const [shareSheetOpen, setShareSheetOpen] = useState(false);
     const commentFileInputRef = useRef<HTMLInputElement>(null);
 
     // Enlargement State (Only used if !isEnlarged)
@@ -188,21 +189,22 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
     };
 
     const handleShare = async (mode: 'copy' | 'native' | 'repost') => {
-        let url = `${window.location.origin}/post/${post.id}`;
-        if (mode === 'copy') { try { await navigator.clipboard.writeText(url); toast.success(t("feed.share.copy")); } catch { } }
-        else if (mode === 'native' && navigator.share) navigator.share({ title: `Post by ${name}`, text: post.content, url }).catch(() => { });
-        else if (mode === 'repost') {
+        if (mode === 'copy' || mode === 'native') {
+            // Open the rich share sheet instead of silently calling navigator.share
+            setShareSheetOpen(true);
+            return;
+        }
+        if (mode === 'repost') {
             try {
                 const { createPost, incrementRepostCount } = await import("@/app/actions/posts");
-                // Check if already reposted is handled server-side, but we can catch the error here
                 await createPost(`🔄 ${t("feed.repost")}: ${post.content.substring(0, 100)}...`, post.media || []);
                 await incrementRepostCount(post.id, contextType, contextId);
-                setRepostCount((prev: number) => prev + 1); // Increment local counter
+                setRepostCount((prev: number) => prev + 1);
                 toast.success(t("feed.repost.success"));
-            } catch (error: any) { 
+            } catch (error: any) {
                 console.error("Repost error:", error);
                 const message = error.message || "Repost failed";
-                toast.error(message === "You have already reposted this." ? "Already reposted" : message); 
+                toast.error(message === "You have already reposted this." ? "Already reposted" : message);
             }
         }
     };
@@ -227,6 +229,20 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
         : isPinterest
             ? "group relative break-inside-avoid border-none shadow-sm hover:shadow-md transition-all duration-300 glass-card rounded-2xl overflow-hidden flex flex-col cursor-pointer"
             : "group relative break-inside-avoid shadow-sm hover:shadow-md transition-shadow duration-300 glass-card rounded-[1.5rem] overflow-hidden flex flex-col cursor-pointer border-border/50";
+
+    // Share sheet data — resolve thumbnail with correct priority
+    const postUrl = typeof window !== 'undefined' ? `${window.location.origin}/post/${post.id}` : `/post/${post.id}`;
+    const shareTitle = post.title || (post.content ? post.content.substring(0, 80) : `Post by ${name}`);
+    const shareDescription = post.content ? post.content.substring(0, 160) : undefined;
+    // Thumbnail priority: explicit thumbnailUrl > uploaded photo > YouTube > linkPreview image
+    const rawYouTubeId = mediaUrl ? (mediaUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/) || [])[1] : null;
+    const shareThumbnail: string | null =
+        post.thumbnailUrl ||
+        (hasUploadedMedia && !isVideoFile ? post.media[0]?.url : null) ||
+        (hasUploadedMedia && isVideoFile ? post.media[0]?.thumbnailUrl || null : null) ||
+        (rawYouTubeId ? `https://img.youtube.com/vi/${rawYouTubeId}/hqdefault.jpg` : null) ||
+        pinterestPreview?.image ||
+        null;
 
     return (
         <>
@@ -482,6 +498,18 @@ export function PostCard({ post, currentUserId, isEnlarged = false, variant = 's
                     </div>
                 </div>
             )}
+
+            {/* SHARE SHEET */}
+            <ShareSheet
+                isOpen={shareSheetOpen}
+                onClose={() => setShareSheetOpen(false)}
+                postId={post.id}
+                postUrl={postUrl}
+                title={shareTitle}
+                description={shareDescription}
+                thumbnailUrl={shareThumbnail}
+                authorName={name}
+            />
         </>
     );
 }

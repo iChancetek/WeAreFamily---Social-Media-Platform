@@ -2,21 +2,31 @@
 import { Metadata } from 'next';
 import { isUrlVideo, extractYouTubeId, fetchYouTubeTitle } from '@/lib/media-utils';
 
-// Default Fallback Image (Must be generic, not user-specific)
-const OG_IMAGE_DEFAULT = "https://firebasestorage.googleapis.com/v0/b/we-are-family-221.appspot.com/o/admin%2Ffamio-og-default.png?alt=media";
-// Note: If this URL doesn't exist, we might need a placeholder. 
-// For now, I'll use a reliable placeholder or the user needs to provide one.
-// Let's use a nice generated one if the specific file isn't guaranteed.
-const OG_IMAGE_FALLBACK = "https://placehold.co/1200x630/1e293b/ffffff/png?text=Famio+Content";
+// Default Fallback Image — must be public-facing and permanently accessible
+const OG_IMAGE_FALLBACK = "https://famio.us/icons/PWAIcon.jpg";
 
 type PostData = {
     content?: string;
+    // New format: array of {type, url} objects (from getPostGlobal)
+    media?: { type: string; url: string }[];
+    // Legacy format: plain URL array
     mediaUrls?: string[];
-    thumbnailUrl?: string | null; // Added
+    thumbnailUrl?: string | null;
     author?: {
         displayName?: string;
     };
 };
+
+/** Normalise whichever media shape the post uses into a flat string[] of URLs */
+function resolveMediaUrls(post: PostData): string[] {
+    if (post.media && post.media.length > 0) {
+        return post.media.map(m => m.url).filter(Boolean);
+    }
+    if (post.mediaUrls && post.mediaUrls.length > 0) {
+        return post.mediaUrls.filter(Boolean);
+    }
+    return [];
+}
 
 export async function generateContentMetadata(
     post: PostData,
@@ -47,7 +57,8 @@ export async function generateContentMetadata(
         : (videoTitle ? `Watch "${videoTitle}" on Famio` : `View this post on Famio.`);
 
 
-    // 2. Image Selection Logic (STRICT: NO PROFILE PHOTOS)
+    // 2. Image Selection Logic — normalise media to URLs first
+    const resolvedUrls = resolveMediaUrls(post);
     let imageUrl = OG_IMAGE_FALLBACK;
     let type = 'article';
     let videoUrlForOg: string | undefined = undefined;
@@ -64,23 +75,22 @@ export async function generateContentMetadata(
     // Priority 2: Explicit Thumbnail (Uploaded Video)
     else if (post.thumbnailUrl) {
         imageUrl = post.thumbnailUrl;
-        // Check if underlying media is video to set correct OG type
-        if (post.mediaUrls && post.mediaUrls.length > 0 && isUrlVideo(post.mediaUrls[0])) {
+        if (resolvedUrls.length > 0 && isUrlVideo(resolvedUrls[0])) {
             type = 'video.other';
-            videoUrlForOg = post.mediaUrls[0];
+            videoUrlForOg = resolvedUrls[0];
         }
     }
-    // Priority 3: Uploaded Media (Photo/Video Fallback)
-    else if (post.mediaUrls && post.mediaUrls.length > 0) {
-        const firstMedia = post.mediaUrls[0];
-
+    // Priority 3: Uploaded Media (Photo/Video)
+    else if (resolvedUrls.length > 0) {
+        const firstMedia = resolvedUrls[0];
         if (isUrlVideo(firstMedia)) {
-            // Video without thumbnail -> Use better fallback with Famio branding
-            imageUrl = "https://famio.us/icons/icon-512x512.png";
+            // For video: use the thumbnail if present on the media object, else Famio logo
+            const mediaItem = post.media?.find(m => m.url === firstMedia) as any;
+            imageUrl = mediaItem?.thumbnailUrl || post.thumbnailUrl || OG_IMAGE_FALLBACK;
             type = 'video.other';
             videoUrlForOg = firstMedia;
         } else {
-            // Photo -> Use directly
+            // Photo — use directly as the OG image
             imageUrl = firstMedia;
         }
     }
@@ -142,7 +152,7 @@ export async function generateContentMetadata(
             })
         },
         // Additional tags for rich previews
-        metadataBase: new URL(canonicalUrl.split('/post/')[0]),
+        metadataBase: new URL(new URL(canonicalUrl).origin),
         alternates: {
             canonical: canonicalUrl
         },

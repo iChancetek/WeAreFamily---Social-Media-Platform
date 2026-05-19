@@ -18,9 +18,10 @@ export default async function EmbedPostPage({ params }: { params: Promise<{ post
         );
     }
 
-    const firstMedia = post.mediaUrls?.[0];
+    // Support both media shapes: new {type, url}[] and legacy mediaUrls[]
+    const firstMedia = post.media?.[0]?.url || post.mediaUrls?.[0];
     if (!firstMedia) {
-        // Text post embed?
+        // Text post embed
         return (
             <div className="flex flex-col items-center justify-center w-screen h-screen bg-white text-black p-4 text-center font-sans">
                 <div className="max-w-md">
@@ -35,6 +36,8 @@ export default async function EmbedPostPage({ params }: { params: Promise<{ post
     }
 
     const isVideo = isUrlVideo(firstMedia);
+    // Prefer stored thumbnail, then second media slot as poster fallback
+    const posterUrl = post.thumbnailUrl || post.media?.[0]?.thumbnailUrl || undefined;
 
     return (
         <div className="w-screen h-screen bg-black overflow-hidden flex items-center justify-center relative group">
@@ -47,7 +50,7 @@ export default async function EmbedPostPage({ params }: { params: Promise<{ post
                     muted
                     playsInline
                     loop
-                    poster={post.mediaUrls?.[1] || undefined} // Fallback if 2nd media is thumbnail? Unlikely.
+                    poster={posterUrl}
                 />
             ) : (
                 <img src={firstMedia} className="w-full h-full object-contain" alt="Famio Content" />
