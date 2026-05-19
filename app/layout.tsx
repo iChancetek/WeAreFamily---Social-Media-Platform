@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/icons/PWAIcon.jpg",
+        url: "https://famio.us/icons/PWAIcon.jpg",
         width: 1024,
         height: 1024,
         alt: "Famio Logo",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Famio - We Are One",
     description: "A private, AI-powered social platform. We Are One.",
-    images: ["/icons/PWAIcon.jpg"],
+    images: ["https://famio.us/icons/PWAIcon.jpg"],
     site: "@Famio",
   },
 
@@ -64,15 +64,6 @@ export const metadata: Metadata = {
   applicationName: "Famio",
   formatDetection: {
     telephone: false,
-  },
-  icons: {
-    icon: [
-      { url: "/icons/PWAIcon.jpg", sizes: "192x192", type: "image/jpeg" },
-      { url: "/icons/PWAIcon.jpg", sizes: "512x512", type: "image/jpeg" },
-    ],
-    apple: [
-      { url: "/icons/PWAIcon.jpg", sizes: "180x180", type: "image/jpeg" },
-    ],
   },
 };
 
