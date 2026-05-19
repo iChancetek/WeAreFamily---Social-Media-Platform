@@ -14,7 +14,7 @@ type PostData = {
     thumbnailUrl?: string | null;
     author?: {
         displayName?: string;
-    };
+    } | null;
 };
 
 /** Normalise whichever media shape the post uses into a flat string[] of URLs */
