@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { approveUser, rejectUser, toggleUserStatus, updateUserRole, softDeleteUser, restoreUser } from "@/app/actions/admin"
 import { toast } from "sonner"
-import { MoreHorizontal, Check, X, Shield, Pencil, Trash2, Undo2, Ban, PlayCircle } from "lucide-react"
+import { MoreHorizontal, Check, X, Shield, Pencil, Trash2, Undo2, Ban, PlayCircle, ShieldAlert, MapPin, MonitorSmartphone, Activity } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,6 +35,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 
@@ -53,6 +60,9 @@ type User = {
     totalTimeSpent?: number // milliseconds
     isOnline?: boolean
     deletedAt?: string | null
+    signupContext?: any
+    lastLoginContext?: any
+    security?: any
 }
 
 function formatDuration(ms: number) {
@@ -66,6 +76,7 @@ function formatDuration(ms: number) {
 export function UserList({ users }: { users: User[] }) {
     const [showDeleted, setShowDeleted] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [viewingSecurityUser, setViewingSecurityUser] = useState<User | null>(null);
     const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
     const filteredUsers = users.filter(user => {
@@ -253,6 +264,10 @@ export function UserList({ users }: { users: User[] }) {
                                                     <Pencil className="mr-2 h-4 w-4" /> Edit Profile
                                                 </DropdownMenuItem>
                                             )}
+                                            
+                                            <DropdownMenuItem onClick={() => setViewingSecurityUser(user)}>
+                                                <ShieldAlert className="mr-2 h-4 w-4 text-amber-600" /> Security Info
+                                            </DropdownMenuItem>
 
                                             {/* Role Management */}
                                             {!isDeleted && user.role !== 'admin' && (
@@ -332,6 +347,131 @@ export function UserList({ users }: { users: User[] }) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Security Info Dialog */}
+            {viewingSecurityUser && (
+                <Dialog open={!!viewingSecurityUser} onOpenChange={(open) => !open && setViewingSecurityUser(null)}>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <ShieldAlert className="w-5 h-5 text-amber-600" />
+                                Security Information: {viewingSecurityUser.email}
+                            </DialogTitle>
+                            <DialogDescription>Detailed context and security signals for this user.</DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-6 mt-4">
+                            {/* Security Overview */}
+                            <div className="bg-muted p-4 rounded-lg border space-y-2">
+                                <h4 className="font-semibold flex items-center gap-2">
+                                    <Activity className="w-4 h-4 text-blue-500" />
+                                    Security Status
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span className="text-muted-foreground">Risk Score: </span>
+                                        <Badge variant={
+                                            (viewingSecurityUser.security?.riskScore || 0) > 0.5 ? 'destructive' :
+                                                (viewingSecurityUser.security?.riskScore || 0) > 0.2 ? 'default' : 'outline'
+                                        }>
+                                            {(viewingSecurityUser.security?.riskScore || 0).toFixed(2)}
+                                        </Badge>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted-foreground">Disposable Email: </span>
+                                        <span className={viewingSecurityUser.security?.disposableEmail ? "text-red-500 font-medium" : ""}>
+                                            {viewingSecurityUser.security?.disposableEmail ? 'Yes' : 'No'}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted-foreground">VPN Detected: </span>
+                                        <span className={viewingSecurityUser.security?.vpnDetected ? "text-amber-500 font-medium" : ""}>
+                                            {viewingSecurityUser.security?.vpnDetected ? 'Yes' : 'No'}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted-foreground">Tor Detected: </span>
+                                        <span className={viewingSecurityUser.security?.torDetected ? "text-red-500 font-medium" : ""}>
+                                            {viewingSecurityUser.security?.torDetected ? 'Yes' : 'No'}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted-foreground">Proxy Detected: </span>
+                                        <span className={viewingSecurityUser.security?.proxyDetected ? "text-amber-500 font-medium" : ""}>
+                                            {viewingSecurityUser.security?.proxyDetected ? 'Yes' : 'No'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Signup Context */}
+                                <div className="border rounded-lg p-4 space-y-3">
+                                    <h4 className="font-semibold flex items-center gap-2">
+                                        <MapPin className="w-4 h-4 text-green-600" />
+                                        Signup Location
+                                    </h4>
+                                    {viewingSecurityUser.signupContext ? (
+                                        <div className="text-sm space-y-1">
+                                            <p><span className="text-muted-foreground">Country:</span> {viewingSecurityUser.signupContext.country || 'Unknown'}</p>
+                                            <p><span className="text-muted-foreground">State/Region:</span> {viewingSecurityUser.signupContext.state || 'Unknown'}</p>
+                                            <p><span className="text-muted-foreground">City:</span> {viewingSecurityUser.signupContext.city || 'Unknown'}</p>
+                                            <p><span className="text-muted-foreground">IP:</span> <span className="font-mono">{viewingSecurityUser.signupContext.ip || 'Unknown'}</span></p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground italic">No signup context recorded (Legacy User)</p>
+                                    )}
+                                </div>
+
+                                {/* Last Login Context */}
+                                <div className="border rounded-lg p-4 space-y-3">
+                                    <h4 className="font-semibold flex items-center gap-2">
+                                        <MapPin className="w-4 h-4 text-blue-600" />
+                                        Last Login Location
+                                    </h4>
+                                    {viewingSecurityUser.lastLoginContext ? (
+                                        <div className="text-sm space-y-1">
+                                            <p><span className="text-muted-foreground">Country:</span> {viewingSecurityUser.lastLoginContext.country || 'Unknown'}</p>
+                                            <p><span className="text-muted-foreground">State/Region:</span> {viewingSecurityUser.lastLoginContext.state || 'Unknown'}</p>
+                                            <p><span className="text-muted-foreground">City:</span> {viewingSecurityUser.lastLoginContext.city || 'Unknown'}</p>
+                                            <p><span className="text-muted-foreground">IP:</span> <span className="font-mono">{viewingSecurityUser.lastLoginContext.ip || 'Unknown'}</span></p>
+                                            {viewingSecurityUser.security?.impossibleTravelDetected && (
+                                                <Badge variant="destructive" className="mt-2">Impossible Travel Detected</Badge>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground italic">No login context recorded</p>
+                                    )}
+                                </div>
+
+                                {/* Last Login Device */}
+                                <div className="border rounded-lg p-4 space-y-3 md:col-span-2">
+                                    <h4 className="font-semibold flex items-center gap-2">
+                                        <MonitorSmartphone className="w-4 h-4 text-purple-600" />
+                                        Last Login Device
+                                    </h4>
+                                    {viewingSecurityUser.lastLoginContext?.device ? (
+                                        <div className="grid grid-cols-2 gap-2 text-sm">
+                                            <p><span className="text-muted-foreground">Browser:</span> {viewingSecurityUser.lastLoginContext.device.browser || 'Unknown'}</p>
+                                            <p><span className="text-muted-foreground">OS:</span> {viewingSecurityUser.lastLoginContext.device.os || 'Unknown'}</p>
+                                            <p><span className="text-muted-foreground">Device Type:</span> {viewingSecurityUser.lastLoginContext.device.deviceType || 'Unknown'}</p>
+                                            <p><span className="text-muted-foreground">Platform:</span> {viewingSecurityUser.lastLoginContext.device.platform || 'Unknown'}</p>
+                                            {viewingSecurityUser.lastLoginContext.device.screen && (
+                                                <p><span className="text-muted-foreground">Screen:</span> {viewingSecurityUser.lastLoginContext.device.screen.width}x{viewingSecurityUser.lastLoginContext.device.screen.height}</p>
+                                            )}
+                                            {viewingSecurityUser.lastLoginContext.device.language && (
+                                                <p><span className="text-muted-foreground">Language:</span> {viewingSecurityUser.lastLoginContext.device.language}</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground italic">No device context recorded</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
         </div>
     )
 }

@@ -2,6 +2,7 @@
 import { cookies } from "next/headers"
 import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
+import { isDisposableEmail } from "@/lib/security-checks";
 
 export async function createSession(uid: string) {
     const cookieStore = await cookies()
@@ -109,6 +110,12 @@ export async function syncUserToDb(
                 isActive: true,
                 emailVerified: isVerified,
                 createdAt: FieldValue.serverTimestamp(),
+                // Security flags
+                security: {
+                    disposableEmail: isDisposableEmail(email),
+                    riskScore: 0,
+                    vpnDetected: false,
+                },
             });
 
             // Send Automated Welcome Message

@@ -12,8 +12,24 @@ import Link from "next/link"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import "@/lib/firebase"
+import { collectClientContext, generateDeviceFingerprint } from "@/lib/auth-context"
 
 import { createSession, syncUserToDb } from "@/app/actions/auth";
+
+// Enrich auth context after login (fire-and-forget)
+async function enrichAuthContext(uid: string, email: string, event: 'login' | 'signup') {
+    try {
+        const ctx = collectClientContext();
+        const fingerprint = generateDeviceFingerprint(ctx);
+        await fetch('/api/auth/context', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid, email, event, clientContext: ctx, deviceFingerprint: fingerprint }),
+        });
+    } catch (e) {
+        console.warn('[Auth] Context enrichment failed (non-fatal):', e);
+    }
+}
 
 
 function LoginContent() {
@@ -46,6 +62,9 @@ function LoginContent() {
                         user.emailVerified
                     );
                     await createSession(user.uid);
+
+                    // Enrich with geo/device context (fire-and-forget)
+                    enrichAuthContext(user.uid, user.email!, 'login');
 
                     toast.success("Welcome back!");
                     router.push(redirectTo);
@@ -100,6 +119,9 @@ function LoginContent() {
 
             console.log("Creating session cookie...")
             await createSession(user.uid)
+
+            // Enrich with geo/device context (fire-and-forget)
+            enrichAuthContext(user.uid, user.email!, 'login');
 
             toast.success("Welcome back!")
             router.push(redirectTo)
@@ -178,6 +200,9 @@ function LoginContent() {
                 user.emailVerified
             );
             await createSession(user.uid);
+
+            // Enrich with geo/device context (fire-and-forget)
+            enrichAuthContext(user.uid, user.email!, 'login');
 
             toast.success("Welcome back!");
             router.push(redirectTo);

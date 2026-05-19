@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 
 import "@/lib/firebase"; // Ensure firebase is initialized
 import { AuthContext, useAuth } from "./auth-context"
+import { collectClientContext, generateDeviceFingerprint } from "@/lib/auth-context"
 
 export { useAuth };
 
@@ -58,6 +59,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                     // Create server-side session cookie
                     await createSession(freshUser.uid);
+
+                    // Enrich auth context with geo/device data (fire-and-forget)
+                    try {
+                        const ctx = collectClientContext();
+                        const fingerprint = generateDeviceFingerprint(ctx);
+                        fetch('/api/auth/context', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                uid: freshUser.uid,
+                                email: freshUser.email,
+                                event: 'login',
+                                clientContext: ctx,
+                                deviceFingerprint: fingerprint,
+                            }),
+                        }).catch(e => console.warn('[AuthProvider] Context enrichment failed:', e));
+                    } catch { /* non-fatal */ }
 
                     // Listen to Firestore profile in realtime
                     const { db } = await import("@/lib/firebase");

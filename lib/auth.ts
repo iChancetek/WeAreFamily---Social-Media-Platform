@@ -42,7 +42,7 @@ export async function requireUser() {
     return profile;
 }
 
-export const GRACE_PERIOD_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const GRACE_PERIOD_MS = 0; // No grace period — verification is mandatory
 
 export function isVerified(profile: any): boolean {
     if (!profile) return false;
@@ -53,8 +53,8 @@ export function isVerified(profile: any): boolean {
 
 /**
  * Enforces Access Policy:
- * - Unverified > 24h: Redirects to /verify-email (BLOCKED)
- * - Be lenient if verifying login state
+ * - Unverified users: Immediately redirected to /verify-email (BLOCKED)
+ * - No grace period — email verification is mandatory.
  */
 export async function enforceVerificationAccess() {
     const profile = await getUserProfile();
@@ -62,13 +62,8 @@ export async function enforceVerificationAccess() {
 
     if (isVerified(profile)) return;
 
-    // Unverified Logic
-    const createdAt = profile.createdAt instanceof Date ? profile.createdAt : new Date();
-    const age = Date.now() - createdAt.getTime();
-
-    if (age > GRACE_PERIOD_MS) {
-        redirect("/verify-email");
-    }
+    // Unverified — block immediately
+    redirect("/verify-email");
 }
 
 /**

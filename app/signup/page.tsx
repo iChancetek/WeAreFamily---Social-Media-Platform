@@ -11,8 +11,24 @@ import Link from "next/link"
 import { Label } from "@/components/ui/label"
 import { Loader2, Heart } from "lucide-react"
 import "@/lib/firebase"
+import { collectClientContext, generateDeviceFingerprint } from "@/lib/auth-context"
 import { createSession, syncUserToDb, notifyAdminNewUser } from "@/app/actions/auth"
 import { z } from "zod";
+
+// Enrich auth context after signup (fire-and-forget)
+async function enrichAuthContext(uid: string, email: string) {
+    try {
+        const ctx = collectClientContext();
+        const fingerprint = generateDeviceFingerprint(ctx);
+        await fetch('/api/auth/context', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid, email, event: 'signup', clientContext: ctx, deviceFingerprint: fingerprint }),
+        });
+    } catch (e) {
+        console.warn('[Auth] Signup context enrichment failed (non-fatal):', e);
+    }
+}
 
 const signupSchema = z.object({
     firstName: z.string().min(1, "First Name is required"),
@@ -102,6 +118,9 @@ export default function SignupPage() {
 
             // Do NOT create session. Enforce verification.
             await auth.signOut();
+
+            // Enrich with geo/device context (fire-and-forget, runs before redirect)
+            await enrichAuthContext(user.uid, email);
 
             toast.success("Account created! Please check your email (and Junk folder) to verify.")
             router.push("/login")
