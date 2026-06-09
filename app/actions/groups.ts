@@ -236,15 +236,15 @@ export async function editGroupPost(groupId: string, postId: string, content: st
 
 import { PostFilters } from "./posts";
 
-export async function getGroupPosts(groupId: string, limit = 50, filters: PostFilters = { timeRange: 'all', contentType: 'all' }) {
+export async function getGroupPosts(groupId: string, limit = 20, filters: PostFilters = { timeRange: 'all', contentType: 'all' }, cursor?: string) {
     const user = await getUserProfile();
-    if (!user) return [];
+    if (!user) return { posts: [], nextCursor: null };
 
     // Check privacy
     const group = await getGroup(groupId);
     if (group?.privacy === 'private') {
         const memberStatus = await getGroupMemberStatus(groupId);
-        if (!memberStatus) return [];
+        if (!memberStatus) return { posts: [], nextCursor: null };
     }
 
     const postsSnapshot = await adminDb.collection("groups").doc(groupId).collection("posts")
@@ -258,7 +258,14 @@ export async function getGroupPosts(groupId: string, limit = 50, filters: PostFi
 
     // Apply Memory Filters
     if (filters.contentType !== 'all') {
-        allDocs = allDocs.filter((doc: any) => {
+        // ... (existing filters)
+    }
+
+    // (Note: Time range filters already applied below)
+
+    let filteredDocs = allDocs;
+    if (filters.contentType !== 'all') {
+        filteredDocs = filteredDocs.filter((doc: any) => {
             const data = doc.data();
             const hasMedia = data.mediaUrls && data.mediaUrls.length > 0;
             const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
@@ -277,7 +284,7 @@ export async function getGroupPosts(groupId: string, limit = 50, filters: PostFi
     if (filters.timeRange !== 'all') {
         const now = new Date();
         const msPerDay = 24 * 60 * 60 * 1000;
-        allDocs = allDocs.filter((doc: any) => {
+        filteredDocs = filteredDocs.filter((doc: any) => {
             const data = doc.data();
             const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
             const diff = now.getTime() - createdAt.getTime();
@@ -289,7 +296,16 @@ export async function getGroupPosts(groupId: string, limit = 50, filters: PostFi
         });
     }
 
-    const slicedDocs = allDocs.slice(0, limit);
+    // Pagination using cursor
+    let startIndex = 0;
+    if (cursor) {
+        const index = filteredDocs.findIndex(d => d.id === cursor);
+        if (index !== -1) {
+            startIndex = index + 1;
+        }
+    }
+
+    const slicedDocs = filteredDocs.slice(startIndex, startIndex + limit);
 
     const allPosts = await Promise.all(slicedDocs.map(async (postDoc: any) => {
         const postData = postDoc.data();
@@ -310,8 +326,8 @@ export async function getGroupPosts(groupId: string, limit = 50, filters: PostFi
         return sanitizeData({
             id: postDoc.id,
             content: postData.content || "",
-            media: postData.media || [], // New rich media
-            mediaUrls: postData.mediaUrls || [], // Legacy
+            media: postData.media || [], 
+            mediaUrls: postData.mediaUrls || [], 
             type: postData.type || 'note',
             title: postData.title || null,
             audioUrl: postData.audioUrl || null,
@@ -330,7 +346,15 @@ export async function getGroupPosts(groupId: string, limit = 50, filters: PostFi
 
     }));
 
-    return allPosts;
+    let nextCursor = null;
+    if (allPosts.length > 0 && startIndex + allPosts.length < filteredDocs.length) {
+        nextCursor = allPosts[allPosts.length - 1].id;
+    }
+
+    return {
+        posts: allPosts,
+        nextCursor
+    };
 }
 
 export async function getGroupPost(groupId: string, postId: string) {

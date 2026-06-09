@@ -167,14 +167,23 @@ export type PostFilters = {
 
 
 
-export async function getPosts(limit = 50, filters: PostFilters = { timeRange: 'all', contentType: 'all' }) {
+export async function getPosts(limit = 20, filters: PostFilters = { timeRange: 'all', contentType: 'all' }, cursor?: string) {
     const user = await getUserProfile();
 
     try {
-        let validPosts: any[] = []; // Leaving as any[] for now as Post structure is complex, or use AuditLogEntry equivalent? Let's generic object.
+        let validPosts: any[] = [];
         let lastDoc: QueryDocumentSnapshot | null = null;
+        
+        // If cursor is provided, fetch the document to use as a starting point
+        if (cursor) {
+            const cursorDoc = await adminDb.collection("posts").doc(cursor).get();
+            if (cursorDoc.exists) {
+                lastDoc = cursorDoc as any;
+            }
+        }
+
         let safetyCounter = 0;
-        const MAX_LOOPS = 10; // Allow enough text-to-public filtering
+        const MAX_LOOPS = 25; 
 
         // Fetch family IDs once
         let userFamilyIds: string[] = [];
@@ -200,7 +209,8 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
                 query = query.startAfter(lastDoc);
             }
 
-            const fetchSize = Math.max((limit - validPosts.length) * 2, 20);
+            // Increase fetch size to account for potential filtering
+            const fetchSize = Math.max((limit - validPosts.length) * 5, 50);
             query = query.limit(fetchSize);
 
             const snapshot = await query.get();
@@ -209,15 +219,13 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
             lastDoc = snapshot.docs[snapshot.docs.length - 1];
             let rawDocs = snapshot.docs;
 
-            // ALWAYS Filter Soft Deleted
+            // 1. ALWAYS Filter Soft Deleted
             rawDocs = rawDocs.filter(doc => !doc.data().isDeleted);
 
-            // Content Type Filter
+            // 2. Content Type Filter
             if (filters.contentType !== 'all') {
                 rawDocs = rawDocs.filter(doc => {
                     const data = doc.data();
-                    // if (data.isDeleted) return false; // Already filtered above
-
                     const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
                     const hasVideoLink = videoUrlRegex.test(data.content || "");
 
@@ -242,6 +250,29 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
                     if (filters.contentType === 'text') return isText;
                     return true;
                 });
+            }
+
+            // 3. Time Range Filter
+            if (filters.timeRange !== 'all') {
+                const now = new Date();
+                const msPerDay = 24 * 60 * 60 * 1000;
+                rawDocs = rawDocs.filter(doc => {
+                    const data = doc.data();
+                    const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
+                    const diff = now.getTime() - createdAt.getTime();
+
+                    if (filters.timeRange === 'day') return diff < msPerDay;
+                    if (filters.timeRange === 'week') return diff < msPerDay * 7;
+                    if (filters.timeRange === 'month') return diff < msPerDay * 30;
+                    if (filters.timeRange === 'year') return diff < msPerDay * 365;
+                    return true;
+                });
+            }
+
+            // If we filtered everything out, continue to next batch
+            if (rawDocs.length === 0) {
+                safetyCounter++;
+                continue;
             }
 
             const batchPosts = await Promise.all(rawDocs.map(async (doc) => {
@@ -340,11 +371,20 @@ export async function getPosts(limit = 50, filters: PostFilters = { timeRange: '
             safetyCounter++;
         }
 
-        return validPosts.slice(0, limit);
+        const slicedPosts = validPosts.slice(0, limit);
+        let nextCursor = null;
+        if (slicedPosts.length > 0) {
+            nextCursor = slicedPosts[slicedPosts.length - 1].id;
+        }
+
+        return {
+            posts: slicedPosts,
+            nextCursor
+        };
 
     } catch (error) {
         console.error("Error fetching posts:", error);
-        return [];
+        return { posts: [], nextCursor: null };
     }
 }
 
@@ -933,7 +973,7 @@ export async function toggleReplyLike(
     if (contextType === 'branding' && contextId) revalidatePath(`/branding/${contextId}`);
 }
 
-export async function getUserPosts(userId: string, limit = 50, filters: PostFilters = { timeRange: 'all', contentType: 'all' }) {
+export async function getUserPosts(userId: string, limit = 20, filters: PostFilters = { timeRange: 'all', contentType: 'all' }, cursor?: string) {
     // If we're filtering, we might need to fetch more and filter in memory
     // Since this is a profile feed, we can't rely on 'adminDb' sorting if we filter by content type in memory
     // But usually profile feeds are small enough.
@@ -982,14 +1022,9 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
                 for (const doc of globalSnap.docs) {
                     const data = doc.data();
                     if (data.authorId) {
-                        // We'd need to cache authors to make this performant, 
-                        // but assuming this is a rare edge case for old data.
-                        // For now, let's skip the deep check to avoid N+1 queries in this loop 
-                        // unless absolutely necessary.
-                        // Or just rely on ID match. 
+                        // ... (Legacy logic omitted for performance safety)
                     }
                 }
-                // ... (Legacy logic omitted for performance safety in this upgrade, assuming IDs match now)
             }
         }
 
@@ -1043,8 +1078,17 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
             });
         }
 
+        // Pagination using cursor
+        let startIndex = 0;
+        if (cursor) {
+            const index = filteredDocs.findIndex(d => d.id === cursor);
+            if (index !== -1) {
+                startIndex = index + 1;
+            }
+        }
+
         // 4. Apply Limit
-        const slicedDocs = filteredDocs.slice(0, limit);
+        const slicedDocs = filteredDocs.slice(startIndex, startIndex + limit);
 
         // 5. Hydrate & Sanitize
         const finalPosts = await Promise.all(slicedDocs.map(async (doc: any) => {
@@ -1146,11 +1190,20 @@ export async function getUserPosts(userId: string, limit = 50, filters: PostFilt
             });
         }));
 
-        return finalPosts.filter(p => p !== null);
+        const posts = finalPosts.filter(p => p !== null);
+        let nextCursor = null;
+        if (posts.length > 0 && startIndex + posts.length < filteredDocs.length) {
+            nextCursor = posts[posts.length - 1].id;
+        }
+
+        return {
+            posts,
+            nextCursor
+        };
 
     } catch (error) {
         console.error("Error fetching user posts:", error);
-        return [];
+        return { posts: [], nextCursor: null };
     }
 
 }

@@ -221,7 +221,7 @@ export async function editBrandingPost(brandingId: string, postId: string, conte
 
 import { PostFilters } from "./posts";
 
-export async function getBrandingPosts(brandingId: string, limit = 50, filters: PostFilters = { timeRange: 'all', contentType: 'all' }) {
+export async function getBrandingPosts(brandingId: string, limit = 20, filters: PostFilters = { timeRange: 'all', contentType: 'all' }, cursor?: string) {
     const postsSnapshot = await adminDb.collection("pages").doc(brandingId).collection("posts")
         .orderBy("createdAt", "desc")
         .get();
@@ -264,7 +264,16 @@ export async function getBrandingPosts(brandingId: string, limit = 50, filters: 
         });
     }
 
-    const slicedDocs = allDocs.slice(0, limit);
+    // Pagination using cursor
+    let startIndex = 0;
+    if (cursor) {
+        const index = allDocs.findIndex(d => d.id === cursor);
+        if (index !== -1) {
+            startIndex = index + 1;
+        }
+    }
+
+    const slicedDocs = allDocs.slice(startIndex, startIndex + limit);
 
     const allPosts = await Promise.all(slicedDocs.map(async (postDoc: any) => {
         const postData = postDoc.data();
@@ -309,7 +318,15 @@ export async function getBrandingPosts(brandingId: string, limit = 50, filters: 
         });
     }));
 
-    return allPosts;
+    let nextCursor = null;
+    if (allPosts.length > 0 && startIndex + allPosts.length < allDocs.length) {
+        nextCursor = allPosts[allPosts.length - 1].id;
+    }
+
+    return {
+        posts: allPosts,
+        nextCursor
+    };
 }
 
 export async function getBrandingPost(brandingId: string, postId: string) {

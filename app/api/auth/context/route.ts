@@ -35,7 +35,21 @@ export async function POST(request: NextRequest) {
         geo.isProxy = vpnSignals.isProxy;
 
         // 3. Build the context object
-        const geoContext = {
+        const sanitize = (obj: any): any => {
+            if (obj === null || typeof obj !== 'object') return obj;
+            if (obj instanceof Date || obj.constructor?.name?.includes('FieldValue')) return obj;
+            
+            const newObj: any = Array.isArray(obj) ? [] : {};
+            Object.keys(obj).forEach(key => {
+                const val = obj[key];
+                if (val !== undefined) {
+                    newObj[key] = sanitize(val);
+                }
+            });
+            return newObj;
+        };
+
+        const geoContext = sanitize({
             country: geo.country,
             countryCode: geo.countryCode,
             state: geo.state,
@@ -45,9 +59,9 @@ export async function POST(request: NextRequest) {
             ip: ip,
             latitude: geo.latitude,
             longitude: geo.longitude,
-        };
+        });
 
-        const deviceContext = {
+        const deviceContext = sanitize({
             browser: clientContext?.browser || 'Unknown',
             os: clientContext?.os || 'Unknown',
             deviceType: clientContext?.deviceType || 'Unknown',
@@ -56,9 +70,9 @@ export async function POST(request: NextRequest) {
             language: clientContext?.language || 'en',
             screen: clientContext?.screen || null,
             fingerprint: deviceFingerprint || null,
-        };
+        });
 
-        const securityContext = {
+        const securityContext = sanitize({
             vpnDetected: geo.isVpn,
             proxyDetected: geo.isProxy,
             torDetected: geo.isTor,
@@ -67,7 +81,7 @@ export async function POST(request: NextRequest) {
             org: geo.org,
             disposableEmail: email ? isDisposableEmail(email) : false,
             riskScore: 0,
-        };
+        });
 
         // 4. Check for anomalies against existing data
         const userRef = adminDb.collection('users').doc(uid);
@@ -123,7 +137,7 @@ export async function POST(request: NextRequest) {
 
         if (event === 'signup') {
             // Store signup context (immutable — only set once)
-            await userRef.update({
+            await userRef.update(sanitize({
                 signupContext: {
                     ...geoContext,
                     device: deviceContext,
@@ -140,10 +154,10 @@ export async function POST(request: NextRequest) {
                 'security.proxyDetected': securityContext.proxyDetected,
                 'security.torDetected': securityContext.torDetected,
                 'security.disposableEmail': securityContext.disposableEmail,
-            });
+            }));
         } else {
             // Update login context (mutable — updated every login)
-            await userRef.update({
+            await userRef.update(sanitize({
                 lastLoginContext: {
                     ...geoContext,
                     device: deviceContext,
@@ -157,11 +171,11 @@ export async function POST(request: NextRequest) {
                 'security.lastAnomalyCheck': new Date().toISOString(),
                 ...(isNewCountry && { 'security.newCountryDetected': true }),
                 ...(impossibleTravel && { 'security.impossibleTravelDetected': true }),
-            });
+            }));
         }
 
         // 7. Record session in subcollection
-        await userRef.collection('auth').doc('sessions').collection('history').add({
+        await userRef.collection('auth').doc('sessions').collection('history').add(sanitize({
             event,
             geo: geoContext,
             device: deviceContext,
@@ -173,7 +187,7 @@ export async function POST(request: NextRequest) {
                 impossibleTravel,
             },
             createdAt: now,
-        });
+        }));
 
         // 8. Update device history
         if (deviceFingerprint) {

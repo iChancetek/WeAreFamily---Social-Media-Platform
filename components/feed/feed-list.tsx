@@ -4,7 +4,7 @@ import { useAuth } from "@/components/auth-provider"
 import { useLanguage } from "@/components/language-context"
 import { PostCard } from "./post-card"
 import { MasonryFeed } from "./masonry-feed"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { getPosts } from "@/app/actions/posts"
 import { useRouter } from "next/navigation"
 import { Loader2, Video } from "lucide-react"
@@ -16,7 +16,7 @@ import { PostFilters } from "@/app/actions/posts";
 interface FeedListProps {
     variant?: 'standard' | 'pinterest-mobile';
     headerAction?: React.ReactNode;
-    fetcher?: (limit: number, filters: PostFilters) => Promise<any[]>;
+    fetcher?: (limit: number, filters: PostFilters, cursor?: string) => Promise<any[] | { posts: any[], nextCursor: string | null }>;
 }
 
 export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedListProps) {
@@ -25,7 +25,10 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
     const { t } = useLanguage()
     const [posts, setPosts] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [loadingMore, setLoadingMore] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [nextCursor, setNextCursor] = useState<string | null>(null)
+    const [hasMore, setHasMore] = useState(true)
 
     // Auto-scroll integration
     const {
@@ -42,32 +45,76 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
     const [timeRange, setTimeRange] = useState<'all' | 'day' | 'week' | 'month' | 'year'>('all');
     const [contentType, setContentType] = useState<'all' | 'text' | 'photo' | 'video'>('all');
 
-    const fetchPosts = async () => {
-        setLoading(true);
+    const fetchPosts = async (isInitial = true) => {
+        if (isInitial) {
+            setLoading(true);
+            setNextCursor(null);
+            setHasMore(true);
+        } else {
+            setLoadingMore(true);
+        }
+
         try {
             const fetchFn = fetcher || getPosts;
-            const data = await fetchFn(20, { timeRange, contentType });
-            setPosts(data);
+            const response = await fetchFn(20, { timeRange, contentType }, isInitial ? undefined : (nextCursor || undefined));
+            
+            const newPosts = Array.isArray(response) ? response : response.posts;
+            const next = Array.isArray(response) ? null : response.nextCursor;
+
+            if (isInitial) {
+                setPosts(newPosts);
+            } else {
+                // Deduplicate just in case
+                setPosts(prev => {
+                    const existingIds = new Set(prev.map(p => p.id));
+                    const uniqueNew = newPosts.filter(p => !existingIds.has(p.id));
+                    return [...prev, ...uniqueNew];
+                });
+            }
+
+            setNextCursor(next);
+            setHasMore(!!next && newPosts.length > 0);
         } catch (err) {
             console.error("Error loading feed:", err)
             setError(err instanceof Error ? err.message : "Unknown Load Error")
         } finally {
             setLoading(false)
+            setLoadingMore(false)
         }
     }
 
     useEffect(() => {
-        fetchPosts()
+        fetchPosts(true)
 
         // Zero-refresh: listen for new posts
         const handleNewPost = () => {
-            fetchPosts();
+            fetchPosts(true);
         };
 
         window.addEventListener('app:post-created', handleNewPost);
         return () => window.removeEventListener('app:post-created', handleNewPost);
     }, [timeRange, contentType, fetcher]) // Re-fetch when filters change
 
+    // Intersection Observer for Infinite Scroll
+    const observerRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (!hasMore || loading || loadingMore) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    fetchPosts(false);
+                }
+            },
+            { threshold: 0.1, root: containerRef.current }
+        );
+
+        if (observerRef.current) {
+            observer.observe(observerRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, [hasMore, loading, loadingMore, nextCursor]);
     // Filter UI Components
     const FilterBar = () => (
         <div className="flex flex-wrap items-center gap-2 mb-4 w-full">
@@ -169,6 +216,21 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
                 style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
             >
                 <MasonryFeed posts={posts} currentUserId={profile?.id} variant={variant} />
+
+                {/* Infinite Scroll Anchor */}
+                <div ref={observerRef} className="h-10 w-full" />
+
+                {loadingMore && (
+                    <div className="flex justify-center py-4">
+                        <Loader2 className="w-6 h-6 animate-spin text-primary/50" />
+                    </div>
+                )}
+
+                {!hasMore && posts.length > 0 && (
+                    <div className="text-center py-8 text-muted-foreground text-xs italic">
+                        {t("feed.end") || "You've reached the end of the family feed."}
+                    </div>
+                )}
             </div>
         </div>
     )

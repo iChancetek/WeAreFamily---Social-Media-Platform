@@ -28,8 +28,9 @@ export function registerServiceWorker() {
         wb.addEventListener("controlling", () => {
             console.log("[PWA] New service worker is now controlling the page.");
             if (updateApplied) {
-                console.log("[PWA] Reloading to apply update immediately...");
-                window.location.reload();
+                console.log("[PWA] Update applied in background. Will be visible on next natural navigation.");
+                // Intentionally NOT reloading the page here to prevent infinite refresh loops 
+                // when Next.js revalidates paths (e.g. after a post is created).
             }
         });
 
