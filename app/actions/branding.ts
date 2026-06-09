@@ -267,7 +267,7 @@ export async function getBrandingPosts(brandingId: string, limit = 20, filters: 
     // Pagination using cursor
     let startIndex = 0;
     if (cursor) {
-        const index = allDocs.findIndex(d => d.id === cursor);
+        const index = allDocs.findIndex((d: any) => d.id === cursor);
         if (index !== -1) {
             startIndex = index + 1;
         }

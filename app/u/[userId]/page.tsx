@@ -159,8 +159,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
     console.log(`Access status: isOwn=${isOwnProfile}, companion=${companionStatus.status}, pub=${isPublicProfile}`);
     console.log(`Has Access: ${hasAccess}`);
 
-    const userPosts = hasAccess ? await getUserPosts(userId) : [];
-    console.log(`Fetched ${userPosts.length} posts for profile ${userId}`);
+    const userPosts = hasAccess ? await getUserPosts(userId) : { posts: [], nextCursor: null };
+    console.log(`Fetched ${userPosts.posts.length} posts for profile ${userId}`);
 
     const { getUserCompanions } = await import("@/app/actions/companions");
     const userCompanions = hasAccess ? await getUserCompanions(userId) : [];
@@ -168,7 +168,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
     // Check if user is blocked by current user
     const { getBlockedUsers } = await import("@/app/actions/security");
     const blockedQueue = await getBlockedUsers();
-    const isBlocked = blockedQueue.some(u => u.id === userId);
+    const isBlocked = blockedQueue.some((u: any) => u.id === userId);
 
     return (
         <MainLayout>
@@ -190,7 +190,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
                     </div>
                 ) : (
                     <ProfileTabs
-                        posts={userPosts}
+                        posts={userPosts.posts}
                         companions={userCompanions}
                         isOwnProfile={isOwnProfile}
                         currentUserId={currentUser.id}

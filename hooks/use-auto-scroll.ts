@@ -17,6 +17,7 @@ interface UseAutoScrollReturn {
   pauseAutoScroll: () => void;
   resumeAutoScroll: () => void;
   containerRef: (node: HTMLDivElement | null) => void;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
 }
 
 // Extend HTMLDivElement to safely store the observer
@@ -321,5 +322,6 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}): UseAutoScroll
     pauseAutoScroll: () => setPaused(true),
     resumeAutoScroll: () => setPaused(false),
     containerRef: callbackRef, // Use callback ref directly
+    scrollRef: containerRef,
   };
 }

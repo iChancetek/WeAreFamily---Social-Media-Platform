@@ -36,6 +36,7 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
         isPaused,
         toggleAutoScroll,
         containerRef,
+        scrollRef,
     } = useAutoScroll({
         pauseOnHover: false,
         pauseOnInteraction: true,
@@ -106,7 +107,7 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
                     fetchPosts(false);
                 }
             },
-            { threshold: 0.1, root: containerRef.current }
+            { threshold: 0.1, root: scrollRef.current }
         );
 
         if (observerRef.current) {

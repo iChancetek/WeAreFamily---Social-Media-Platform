@@ -34,7 +34,7 @@ export type DictionaryKey =
     | "nav.signout" | "nav.profile" | "nav.notifications"
     | "feed.placeholder" | "feed.post" | "feed.repost" | "feed.repost.success"
     | "feed.share.copy" | "feed.share.external" | "feed.comment.placeholder" | "feed.empty"
-    | "feed.listening"
+    | "feed.listening" | "feed.end"
     | "profile.title" | "profile.bio" | "profile.family" | "profile.edit"
     | "profile.back" | "profile.save" | "profile.update.success" | "profile.update.error"
     | "settings.profile.title" | "settings.profile.desc" | "settings.account.title"
@@ -197,6 +197,7 @@ export const dictionaries = {
         "feed.filter.type.photo": "Photo",
         "feed.filter.type.video": "Video",
         "feed.error.load": "Unable to load feed. Please pull to refresh.",
+        "feed.end": "You've reached the end of the family feed.",
         "branding.title": "Branding",
         "branding.desc": "Discover and follow brands, businesses, and public figures.",
         "branding.create": "Create Branding",
