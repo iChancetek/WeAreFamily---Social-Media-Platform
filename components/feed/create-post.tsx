@@ -265,14 +265,14 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
             {/* Close Button for Toggle Mode */}
             {onClose && (
                 <div className="absolute top-2 right-2 z-10">
-                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full opacity-50 hover:opacity-100 hover:bg-gray-100 dark:hover:bg-white/10" onClick={onClose}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full opacity-50 hover:opacity-100 hover:bg-muted dark:hover:bg-white/10" onClick={onClose}>
                         <X className="w-4 h-4" />
                     </Button>
                 </div>
             )}
             <CardContent className="p-4">
                 <div className="flex gap-3">
-                    <Avatar className="w-10 h-10 border border-gray-200">
+                    <Avatar className="w-10 h-10 border border-border">
                         <AvatarImage src={user?.photoURL || undefined} />
                         <AvatarFallback>{user?.displayName?.charAt(0)}</AvatarFallback>
                     </Avatar>
@@ -289,7 +289,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                             <input
                                 type="text"
                                 placeholder="Add a title..."
-                                className="w-full bg-gray-100 dark:bg-black p-2 rounded-xl text-sm font-bold border-none focus:ring-0"
+                                className="w-full bg-muted/50 dark:bg-black p-2 rounded-lg text-sm font-bold border-none focus:ring-0"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                             />
@@ -298,7 +298,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                         <Textarea
                             disabled={!isVerified}
                             placeholder={!isVerified ? t("create.verify.required") : (isListening ? (t("feed.listening") || "Listening...") : (t("feed.placeholder") + " 🎙️"))}
-                            className="min-h-[80px] bg-gray-100 dark:bg-black hover:bg-gray-200 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-xl resize-none text-[15px] placeholder:text-gray-500 pr-10 disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="min-h-[80px] bg-muted/50 dark:bg-black hover:bg-muted dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-card border-none rounded-lg resize-none text-[15px] placeholder:text-gray-500 pr-10 disabled:opacity-60 disabled:cursor-not-allowed"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                         />
@@ -362,7 +362,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                         {mediaData.length > 0 && (
                             <div className="grid grid-cols-3 gap-2 mb-3">
                                 {mediaData.map((media, idx) => (
-                                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group border border-border/50 shadow-sm">
+                                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group border border-border/50 shadow-sm">
                                         {media.type === 'video' ? (
                                             <div className="w-full h-full bg-black flex items-center justify-center relative">
                                                 <video src={`${media.url}#t=0.001`} className="w-full h-full object-cover" />
@@ -385,7 +385,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     </div>
                                 ))}
                                 {isUploading && (
-                                    <div className="flex flex-col items-center justify-center p-4 aspect-square rounded-xl border-2 border-dashed border-primary/20 bg-primary/5">
+                                    <div className="flex flex-col items-center justify-center p-4 aspect-square rounded-lg border-2 border-dashed border-primary/20 bg-primary/5">
                                         <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
                                         <span className="text-xs text-primary font-medium">Uploading...</span>
                                     </div>
@@ -398,14 +398,14 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                 <input
                                     type="url"
                                     placeholder="Paste article or web link here..."
-                                    className="w-full bg-gray-100/80 dark:bg-zinc-900/50 p-3 flex rounded-xl text-sm border border-border/50 focus:ring-1 focus:ring-primary/50 transition-all text-foreground"
+                                    className="w-full bg-muted/50 dark:bg-zinc-900/50 p-3 flex rounded-lg text-sm border border-border/50 focus:ring-1 focus:ring-primary/50 transition-all text-foreground"
                                     value={articleUrl}
                                     onChange={(e) => setArticleUrl(e.target.value)}
                                 />
                             </div>
                         )}
 
-                        <div className="flex flex-col gap-3 pt-3 border-t border-gray-100 md:flex-row md:justify-between md:items-center">
+                        <div className="flex flex-col gap-3 pt-3 border-t border-border md:flex-row md:justify-between md:items-center">
                             <div className="flex flex-wrap items-center gap-2 w-full justify-start md:w-auto">
                                 {/* Single combined file input for max mobile compatibility */}
                                 <input
@@ -453,7 +453,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                 <Button
                                     variant={location ? "secondary" : "ghost"}
                                     size="icon"
-                                    className={`shrink-0 ${location ? "text-blue-500 bg-blue-50" : "text-muted-foreground hover:text-foreground"}`}
+                                    className={`shrink-0 ${location ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}`}
                                     onClick={handleLocationClick}
                                     title={location ? "Location attached" : "Drop location"}
                                     type="button"
@@ -461,7 +461,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     <MapPin className="w-5 h-5 shrink-0" />
                                 </Button>
                                 {location && (
-                                    <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full truncate max-w-[150px]">
+                                    <span className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-full truncate max-w-[150px]">
                                         📍 {location.name || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
                                         <button onClick={() => setLocation(null)} className="ml-2 hover:text-red-500">×</button>
                                     </span>

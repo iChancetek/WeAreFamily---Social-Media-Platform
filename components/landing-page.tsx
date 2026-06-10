@@ -20,23 +20,23 @@ export function LandingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-background">
             {/* Navigation */}
             <nav className="absolute top-0 left-0 right-0 z-[100] bg-transparent">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
+                    <div className="flex items-center justify-between h-20">
                         <div className="flex items-center gap-3">
-                            <img src="/icons/PWAIcon.jpg" alt="Famio" className="w-6 h-6 rounded-lg object-cover" />
+                            <img src="/icons/PWAIcon.jpg" alt="Famio" className="w-8 h-8 rounded-xl object-cover shadow-premium" />
                             <div>
                                 <div className="font-bold text-2xl text-white tracking-tight">Famio</div>
-                                <div className="text-xs text-white/80 font-medium -mt-1">by ChanceTEK</div>
+                                <div className="text-xs text-white/80 font-semibold -mt-1 uppercase tracking-wider">by ChanceTEK</div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <Link href="/login" className={cn(buttonVariants({ variant: "ghost" }), "text-white hover:text-white/80 hover:bg-white/10 font-medium")}>
+                        <div className="flex items-center gap-4">
+                            <Link href="/login" className={cn(buttonVariants({ variant: "ghost" }), "text-white hover:text-white hover:bg-white/10 font-semibold px-6")}>
                                 Sign In
                             </Link>
-                            <Link href="/signup" className={cn(buttonVariants(), "bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm")}>
+                            <Link href="/signup" className={cn(buttonVariants(), "bg-primary hover:bg-primary/90 text-white font-bold shadow-glow-sm px-6 h-11 rounded-full transition-all hover:scale-105")}>
                                 Create Account
                             </Link>
                         </div>
@@ -45,7 +45,7 @@ export function LandingPage() {
             </nav>
 
             {/* Hero Section */}
-            <section className="relative overflow-hidden min-h-screen flex items-center bg-black">
+            <section className="relative overflow-hidden min-h-screen flex items-center bg-zinc-950">
                 {/* Background Video */}
                 <video
                     ref={videoRef}
@@ -53,158 +53,176 @@ export function LandingPage() {
                     loop
                     muted={isMuted} // React controls this property
                     playsInline
-                    className="absolute inset-0 w-full h-full object-cover opacity-80 pointer-events-none"
+                    className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none"
                 >
                     <source src="/Create_a_highquality_1080p_202601031842.mp4" type="video/mp4" />
                 </video>
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-zinc-950 pointer-events-none" />
 
                 {/* Audio Control */}
                 <button
                     onClick={toggleAudio}
-                    className="absolute bottom-8 right-8 z-30 p-3 rounded-full bg-black/40 hover:bg-black/60 text-white/80 hover:text-white backdrop-blur-sm border border-white/20 transition-all duration-200"
+                    className="absolute bottom-10 right-10 z-30 p-4 rounded-full bg-black/40 hover:bg-black/60 text-white/80 hover:text-white backdrop-blur-md border border-white/20 transition-all duration-300 shadow-2xl"
                     title={isMuted ? "Unmute Video" : "Mute Video"}
                 >
                     {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                 </button>
 
                 <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 w-full">
-                    <div className="text-center">
-
-                        <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-white tracking-tight mb-4 drop-shadow-lg">
-                            Famio
-                        </h1>
-                        <p className="text-2xl md:text-3xl font-semibold text-blue-100 mb-6 drop-shadow-md">
-                            We Are One — Grow Your Relationships Through Real Connection and Companionship.
-                        </p>
-
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full mb-8">
-                            <Sparkles className="w-5 h-5 text-blue-300" />
-                            <span className="text-sm font-semibold text-blue-50">Powered by OpenAI, Claude & Perplexity</span>
+                    <div className="max-w-4xl">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-full mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <Sparkles className="w-4 h-4 text-primary" />
+                            <span className="text-xs font-bold text-primary uppercase tracking-wider">Next-Gen Family Platform</span>
                         </div>
 
-                        <p className="max-w-3xl mx-auto text-xl md:text-2xl text-gray-200 mb-10 leading-relaxed font-normal shadow-black drop-shadow-sm">
-                            A private, secure platform designed exclusively for families to share moments,
-                            plan events, and stay connected with the people who matter most.
+                        <h1 className="text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter mb-6 drop-shadow-2xl animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                            Famio
+                        </h1>
+                        <p className="text-3xl md:text-4xl font-bold text-blue-50/90 mb-8 leading-tight animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+                            We Are One — Grow Your Relationships Through Real Connection.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "h-14 px-10 text-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-900/50 border-0")}>
+
+                        <p className="max-w-2xl text-xl text-gray-300 mb-12 leading-relaxed font-medium animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
+                            A private, secure sanctuary designed exclusively for families. Moment sharing, 
+                            event coordination, and AI-powered assistance for your modern life.
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-6 items-center animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500">
+                            <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "h-16 px-12 text-xl bg-primary hover:bg-primary/90 text-white font-black shadow-real rounded-full transition-all hover:scale-105 active:scale-95")}>
                                 Join Famio
                             </Link>
-                            <Link href="/learn-more" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-14 px-10 text-lg border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm font-semibold")}>
+                            <Link href="/learn-more" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-16 px-12 text-xl border-2 border-white/30 bg-white/5 text-white hover:bg-white/10 backdrop-blur-md font-bold rounded-full transition-all")}>
                                 Learn More
                             </Link>
                         </div>
 
                         {/* Trust Badge */}
-                        <div className="mt-12 flex items-center justify-center gap-2 text-sm text-gray-300">
-                            <Shield className="w-5 h-5 text-blue-400" />
-                            <span className="font-medium">Trusted by thousands of families worldwide</span>
+                        <div className="mt-16 flex items-center gap-3 text-gray-400 animate-in fade-in duration-1000 delay-700">
+                            <div className="flex -space-x-2">
+                                {[1,2,3,4].map(i => (
+                                    <div key={i} className="w-8 h-8 rounded-full border-2 border-zinc-950 bg-zinc-800" />
+                                ))}
+                            </div>
+                            <span className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-primary" />
+                                Trusted by families worldwide
+                            </span>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Features Section */}
-            <section className="py-20 bg-white">
+            <section className="py-32 bg-background relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose Famio?</h2>
-                        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                            Everything your family needs to stay connected, secure, and organized.
+                    <div className="text-center mb-24">
+                        <h2 className="text-5xl font-black text-foreground mb-6 tracking-tighter">Why Choose Famio?</h2>
+                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
+                            Everything your family needs to stay connected, secure, and organized in one polished interface.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                         <FeatureCard
-                            icon={<Shield className="w-10 h-10 text-blue-600" />}
+                            icon={<Shield className="w-8 h-8" />}
                             title="Private & Secure"
-                            description="Enterprise-grade security with end-to-end encryption. No ads, no tracking, no third-party access."
+                            description="Enterprise-grade security with end-to-end encryption. No ads, no tracking, no third-party access. Your data belongs to you."
                         />
                         <FeatureCard
-                            icon={<Users className="w-10 h-10 text-blue-600" />}
+                            icon={<Users className="w-8 h-8" />}
                             title="Built for Families"
-                            description="Share photos, plan events, coordinate schedules, and create lasting memories together."
+                            description="Share photos, plan events, coordinate schedules, and create lasting memories together in a private social feed."
                         />
                         <FeatureCard
-                            icon={<Sparkles className="w-10 h-10 text-blue-600" />}
-                            title="AI Research Assistant"
-                            description="ChatGPT-style interface for everyone—Executives, Engineers, Architects, Medical Professionals, Students, Parents, and Kids. Powered by OpenAI, Claude, and Gemini with voice input and file uploads."
+                            icon={<Sparkles className="w-8 h-8" />}
+                            title="AI Intelligence"
+                            description="Advanced AI interface for everyone. Powered by OpenAI, Claude, and Gemini with voice input and multimodal capabilities."
                         />
                         <FeatureCard
-                            icon={<Globe className="w-10 h-10 text-blue-600" />}
-                            title="Live Streaming"
-                            description="Broadcast real-time video to share announcements, celebrations, or just hang out with family."
+                            icon={<Globe className="w-8 h-8" />}
+                            title="Live Moments"
+                            description="Broadcast real-time video to share celebrations, announcements, or just hang out with family members anywhere."
                         />
                         <FeatureCard
-                            icon={<MessageCircle className="w-10 h-10 text-blue-600" />}
+                            icon={<MessageCircle className="w-8 h-8" />}
                             title="Always Connected"
-                            description="Real-time messaging, event notifications, and instant photo sharing from anywhere in the world."
+                            description="Real-time messaging, smart notifications, and instant photo sharing designed for the speed of family life."
+                        />
+                         <FeatureCard
+                            icon={<Heart className="w-8 h-8" />}
+                            title="We Are One"
+                            description="Our core philosophy is connection. We build tools that bring people together, not keep them scrolling."
                         />
                     </div>
                 </div>
             </section>
 
             {/* Benefits Section */}
-            <section className="py-20 bg-gray-50 border-y border-gray-200">
+            <section className="py-32 bg-secondary/50 border-y border-border/50 relative">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">What You'll Get</h2>
+                    <div className="text-center mb-20">
+                        <h2 className="text-4xl font-black text-foreground mb-4 tracking-tight">The Famio Experience</h2>
+                        <p className="text-lg text-muted-foreground font-medium">Curated features for a richer family life.</p>
                     </div>
 
-                    <div className="space-y-4">
-                        <BenefitItem text="Unlimited photo and video sharing" />
-                        <BenefitItem text="Private family messaging and group chats" />
-                        <BenefitItem text="Shared calendar and event planning" />
-                        <BenefitItem text="My Life updates to keep everyone close" />
-                        <BenefitItem text="Secure cloud storage for family memories" />
-                        <BenefitItem text="Mobile and desktop access" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <BenefitItem text="Unlimited high-fidelity photo and video sharing" />
+                        <BenefitItem text="Private family messaging and threaded group chats" />
+                        <BenefitItem text="Shared calendar and collaborative event planning" />
+                        <BenefitItem text="Real-time 'My Life' status updates" />
+                        <BenefitItem text="Secure, encrypted cloud storage for memories" />
+                        <BenefitItem text="Seamless mobile PWA and desktop experience" />
                     </div>
                 </div>
             </section>
 
             {/* CTA Section */}
-            <section className="py-24 bg-blue-600">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <section className="py-32 bg-primary relative overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                    <h2 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tighter">
                         Ready to bring your family closer?
                     </h2>
-                    <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+                    <p className="text-2xl text-white/80 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
                         Join thousands of families who are already sharing, connecting, and creating memories together.
                     </p>
-                    <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-lg")}>
+                    <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "h-20 px-16 text-2xl bg-white text-primary hover:bg-white/90 font-black shadow-real rounded-full transition-all hover:scale-105 active:scale-95")}>
                         Get Started Free
                     </Link>
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="bg-white border-t border-gray-200 py-12">
+            <footer className="bg-background border-t border-border/50 py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col items-center justify-center space-y-6">
-                        <div className="flex items-center gap-2">
-                            <img src="/icons/PWAIcon.jpg" className="w-8 h-8 rounded-xl object-cover" alt="Famio" />
+                    <div className="flex flex-col items-center justify-center space-y-10">
+                        <div className="flex items-center gap-3">
+                            <img src="/icons/PWAIcon.jpg" className="w-10 h-10 rounded-2xl object-cover shadow-premium" alt="Famio" />
                             <div>
-                                <span className="font-bold text-gray-900 text-lg">Famio</span>
-                                <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>
+                                <span className="font-black text-foreground text-2xl tracking-tighter">Famio</span>
+                                <span className="text-muted-foreground text-sm ml-2 font-bold uppercase tracking-widest">by ChanceTEK</span>
                             </div>
                         </div>
 
-                        {/* Privacy Link */}
-                        <div className="flex gap-6">
-                            <Link href="/privacy" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+                        {/* Links */}
+                        <div className="flex gap-10">
+                            <Link href="/privacy" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest">
                                 Privacy Policy
+                            </Link>
+                            <Link href="/help" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest">
+                                Help Center
                             </Link>
                         </div>
 
-                        <div className="text-center space-y-2">
-                            <p className="text-sm text-gray-500 font-medium">
-                                "Built with privacy and security at the core."
+                        <div className="text-center space-y-4 max-w-md">
+                            <p className="text-sm text-muted-foreground font-medium italic">
+                                "Built with privacy and security at the core, for the people who matter most."
                             </p>
-                            <p className="text-gray-600 text-sm">
+                            <div className="h-px w-20 bg-border mx-auto" />
+                            <p className="text-muted-foreground text-xs font-bold uppercase tracking-tighter">
                                 © 2026 Famio by ChanceTEK. All Rights Reserved.
                             </p>
-                            <p className="text-gray-500 text-xs">
+                            <p className="text-muted-foreground/60 text-[10px] font-medium">
                                 Developed by Chancellor Minus | ChanceTEK LLC | iChanceTEK
                             </p>
                         </div>
@@ -217,21 +235,21 @@ export function LandingPage() {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
     return (
-        <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 mb-6">
+        <div className="group p-10 rounded-[2.5rem] bg-card border border-border/50 shadow-premium transition-all duration-500 hover:shadow-real hover:-translate-y-2 hover:border-primary/20">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary/5 text-primary mb-8 transition-all duration-500 group-hover:scale-110 group-hover:bg-primary group-hover:text-white shadow-sm">
                 {icon}
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
-            <p className="text-gray-600 leading-relaxed">{description}</p>
+            <h3 className="text-2xl font-black text-foreground mb-4 tracking-tight">{title}</h3>
+            <p className="text-muted-foreground leading-relaxed font-medium">{description}</p>
         </div>
     )
 }
 
 function BenefitItem({ text }: { text: string }) {
     return (
-        <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-lg border border-gray-200">
-            <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0" />
-            <span className="text-gray-900 font-medium">{text}</span>
+        <div className="flex items-center gap-4 bg-card px-8 py-6 rounded-3xl border border-border/30 shadow-sm hover:shadow-premium transition-all duration-300">
+            <CheckCircle className="w-6 h-6 text-primary flex-shrink-0" />
+            <span className="text-foreground font-bold tracking-tight">{text}</span>
         </div>
     )
 }

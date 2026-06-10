@@ -356,7 +356,7 @@ function IndividualUserAnalysis({ timeRange }: { timeRange: string }) {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{userStats.totalPosts}</div>
-                                <p className="text-xs text-muted-foreground">All time</p>
+                                <p className="text-xs text-blue-600 font-medium">All time</p>
                             </CardContent>
                         </Card>
                         <Card>

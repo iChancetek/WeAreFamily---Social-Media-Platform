@@ -123,7 +123,7 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
             <select
                 value={timeRange}
                 onChange={(e) => setTimeRange(e.target.value as any)}
-                className="text-xs bg-muted/50 border-none rounded-full px-3 py-1.5 focus:ring-1 focus:ring-primary outline-none cursor-pointer hover:bg-muted transition-colors"
+                className="text-xs bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-3 py-1.5 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer hover:bg-blue-100 transition-colors"
                 aria-label="Filter by time"
             >
                 <option value="all">All Time</option>
@@ -134,25 +134,33 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
             </select>
 
             {/* Content Filter */}
-            <div className="flex bg-muted/50 rounded-full p-1 gap-1 overflow-x-auto scrollbar-hide max-w-[150px] md:max-w-none">
-                {(['all', 'text', 'photo', 'video'] as const).map((type) => (
-                    <button
-                        key={type}
-                        onClick={() => setContentType(type)}
-                        className={`text-xs px-3 py-1 rounded-full transition-all capitalize whitespace-nowrap ${contentType === type
-                            ? 'bg-background shadow-sm text-foreground font-medium'
-                            : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                    >
-                        {type}
-                    </button>
-                ))}
+            <div className="flex bg-blue-50/50 rounded-full p-1 gap-1 overflow-x-auto scrollbar-hide max-w-[150px] md:max-w-none">
+                {(['all', 'text', 'photo', 'video'] as const).map((type) => {
+                    const labels: Record<string, string> = {
+                        all: 'All',
+                        text: 'Texts',
+                        photo: 'Photos',
+                        video: 'Videos'
+                    };
+                    return (
+                        <button
+                            key={type}
+                            onClick={() => setContentType(type)}
+                            className={`text-xs px-3 py-1 rounded-full transition-all whitespace-nowrap ${contentType === type
+                                ? 'bg-blue-600 shadow-sm text-white font-medium'
+                                : 'text-blue-600 hover:bg-blue-100/50'
+                                }`}
+                        >
+                            {labels[type]}
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Go Live Action */}
             <button
                 onClick={() => router.push('/live/broadcast')}
-                className="text-xs px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all flex items-center gap-1.5 font-medium border border-red-200/50 dark:border-red-500/20"
+                className="text-xs px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition-all flex items-center gap-1.5 font-medium border border-blue-200/50 dark:border-blue-500/20"
             >
                 <Video className="w-3.5 h-3.5" />
                 <span className="whitespace-nowrap">Go Live</span>

@@ -77,7 +77,7 @@ export function TrendingVideos({ videos: initialVideos = [] }: TrendingVideosPro
 
     return (
         <div className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-2">
+            <h3 className="text-[13px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                 Trending Videos
                 {isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
             </h3>
@@ -135,10 +135,10 @@ export function TrendingVideos({ videos: initialVideos = [] }: TrendingVideosPro
                             </div>
                         </div>
                         <div className="flex flex-col px-1 cursor-pointer" onClick={() => router.push(`/post/${video.id}`)}>
-                            <h4 className="text-sm font-semibold leading-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+                            <h4 className="text-sm font-semibold leading-tight line-clamp-2 text-blue-600 group-hover:text-primary transition-colors">
                                 {video.title}
                             </h4>
-                            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
+                            <p className="text-[11px] text-blue-500 mt-0.5 font-medium">
                                 {video.views}
                             </p>
                         </div>

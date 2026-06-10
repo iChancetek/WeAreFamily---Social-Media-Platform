@@ -81,20 +81,20 @@ export function ContactItem({ user }: ContactItemProps) {
         <>
             <div
                 onClick={handleClick}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group"
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer group"
             >
                 <div className="relative">
-                    <Avatar className="h-10 w-10 border border-white/10" isLive={isLive}>
+                    <Avatar className="h-10 w-10 border border-black/5 dark:border-white/10" isLive={isLive}>
                         <AvatarImage src={imageUrl || ""} alt={name} />
                         <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <span
-                        className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background ${user.isOnline ? "bg-green-500" : "bg-gray-500/50"
+                        className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background ${user.isOnline ? "bg-green-500" : "bg-zinc-400 dark:bg-gray-500/50"
                             }`}
                     />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors truncate block">
+                    <span className="text-sm font-medium text-black dark:text-gray-300 group-hover:text-primary dark:group-hover:text-white transition-colors truncate block">
                         {name}
                     </span>
                 </div>

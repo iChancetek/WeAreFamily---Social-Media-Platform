@@ -43,8 +43,7 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                     user.coverType === 'video' ? (
                         <video
                             src={user.coverUrl}
-                            className="w-full h-full object-cover"
-                            style={{ objectPosition: 'center 10%' }}
+                            className="absolute inset-0 w-full h-full object-cover block"
                             autoPlay
                             loop
                             muted
@@ -121,7 +120,7 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                     </div>
                                     <Button
                                         onClick={() => setShowLiveSetup(true)}
-                                        className="w-full sm:w-auto gap-2 bg-red-600 hover:bg-red-700 text-white border-none"
+                                        className="w-full sm:w-auto gap-2 bg-blue-600 hover:bg-blue-700 text-white border-none"
                                     >
                                         <Video className="h-4 w-4" />
                                         Go Live

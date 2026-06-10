@@ -138,10 +138,10 @@ export function ShortsTray({ shorts: initialShorts = [] }: ShortsTrayProps) {
                             </div>
 
                             <div className="flex flex-col gap-1 px-1">
-                                <h3 className="text-foreground text-sm font-semibold line-clamp-2 leading-tight">
+                                <h3 className="text-blue-600 text-sm font-semibold line-clamp-2 leading-tight">
                                     {short.title}
                                 </h3>
-                                <p className="text-muted-foreground text-xs font-medium">
+                                <p className="text-blue-500 text-xs font-medium">
                                     {short.views} views
                                 </p>
                             </div>

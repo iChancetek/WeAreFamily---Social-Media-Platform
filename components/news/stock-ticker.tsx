@@ -59,20 +59,25 @@ export function StockTicker() {
                 {marqueeItems.map((stock, index) => (
                     <div
                         key={`${stock.symbol}-${index}`}
-                        className="inline-flex items-center gap-3 mx-8 text-xs"
+                        className="inline-flex items-center gap-4 mx-10 text-sm"
                     >
-                        <span className="font-bold tracking-tight text-foreground/90 dark:text-white">{stock.symbol}</span>
-                        <span className="font-mono font-medium text-foreground/80 dark:text-white/95 tracking-tighter ticker-glow-price">${stock.price.toFixed(2)}</span>
+                        <span 
+                            className="font-black tracking-tighter text-foreground uppercase border-b-2 border-primary/30"
+                            style={{ textShadow: '0 0 15px hsla(var(--primary) / 0.2)' }}
+                        >
+                            {stock.symbol}
+                        </span>
+                        <span className="font-mono font-black text-foreground tracking-tighter ticker-glow-price text-base">${stock.price.toFixed(2)}</span>
                         <div className={cn(
-                            "flex items-center gap-0.5 font-medium px-1.5 py-0.5 rounded-full bg-white/50 dark:bg-white/5 transition-colors",
+                            "flex items-center gap-1 font-black px-3 py-1 rounded-xl shadow-sm transition-all",
                             stock.change > 0
-                                ? "text-emerald-600 dark:text-emerald-300 ticker-glow-change-positive"
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200"
                                 : stock.change < 0
-                                    ? "text-rose-600 dark:text-rose-300 ticker-glow-change-negative"
-                                    : "text-gray-500 dark:text-gray-300"
+                                    ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200"
+                                    : "bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300"
                         )}>
-                            {stock.change > 0 ? <TrendingUp className="w-3 h-3 stroke-[3px]" /> : stock.change < 0 ? <TrendingDown className="w-3 h-3 stroke-[3px]" /> : <Minus className="w-3 h-3" />}
-                            <span className="tracking-tight">{stock.change > 0 ? '+' : ''}{stock.changesPercentage.toFixed(2)}%</span>
+                            {stock.change > 0 ? <TrendingUp className="w-4 h-4 stroke-[4px]" /> : stock.change < 0 ? <TrendingDown className="w-4 h-4 stroke-[4px]" /> : <Minus className="w-4 h-4 stroke-[4px]" />}
+                            <span className="tracking-tighter">{stock.change > 0 ? '+' : ''}{stock.changesPercentage.toFixed(2)}%</span>
                         </div>
                     </div>
                 ))}

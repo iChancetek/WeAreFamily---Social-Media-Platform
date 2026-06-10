@@ -28,6 +28,7 @@ interface SidebarLink {
     label: string;
     icon: LucideIcon;
     hasNotification?: boolean;
+    color?: string;
     onClick?: () => void;
 }
 
@@ -56,32 +57,32 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
         {
             title: t("nav.section.main"),
             items: [
-                { href: "/", label: t("nav.home"), icon: Home },
-                { href: "/chat", label: t("nav.ai"), icon: Bot }, // Moved up for AI-first focus
-                { href: "/profile", label: profile?.displayName || t("nav.profile"), icon: User },
-                { href: "/messages", label: t("nav.messages"), icon: MessageSquare, hasNotification: true }, // Example notif
+                { href: "/", label: t("nav.home"), icon: Home, color: "blue" },
+                { href: "/chat", label: t("nav.ai"), icon: Bot, color: "indigo" }, 
+                { href: "/profile", label: profile?.displayName || t("nav.profile"), icon: User, color: "orange" },
+                { href: "/messages", label: t("nav.messages"), icon: MessageSquare, hasNotification: true, color: "red" },
             ]
         },
         {
             title: t("nav.section.discover"),
             items: [
-                { href: "/companions", label: "Family", icon: Heart },
-                { href: "/groups", label: "Groups", icon: Users },
-                { href: "#", label: t("nav.social.live"), icon: Video, onClick: () => setShowLiveSetup(true) }, // Trigger dialog
-                { href: "/events", label: t("nav.events"), icon: Ticket },
-                { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
-                { href: "/gallery", label: t("nav.gallery"), icon: ImageIcon },
-                { href: "/music", label: "Music", icon: Music },
+                { href: "/companions", label: "Family", icon: Heart, color: "rose" },
+                { href: "/groups", label: "Groups", icon: Users, color: "emerald" },
+                { href: "#", label: t("nav.social.live"), icon: Video, color: "red", onClick: () => setShowLiveSetup(true) }, 
+                { href: "/events", label: t("nav.events"), icon: Ticket, color: "yellow" },
+                { href: "/marketplace", label: "Marketplace", icon: ShoppingBag, color: "blue" },
+                { href: "/gallery", label: t("nav.gallery"), icon: ImageIcon, color: "violet" },
+                { href: "/music", label: "Music", icon: Music, color: "emerald" },
             ]
         },
         {
             title: t("nav.section.system"),
             items: [
-                { href: "/branding", label: t("nav.branding"), icon: Briefcase },
-                { href: "/notifications", label: t("nav.notifications"), icon: Bell },
-                { href: "/privacy", label: t("nav.privacy"), icon: Shield },
-                { href: "/help", label: "Help", icon: HelpCircle },
-                { href: "/settings", label: t("nav.settings"), icon: Settings },
+                { href: "/branding", label: t("nav.branding"), icon: Briefcase, color: "slate" },
+                { href: "/notifications", label: t("nav.notifications"), icon: Bell, color: "yellow" },
+                { href: "/privacy", label: t("nav.privacy"), icon: Shield, color: "emerald" },
+                { href: "/help", label: "Help", icon: HelpCircle, color: "blue" },
+                { href: "/settings", label: t("nav.settings"), icon: Settings, color: "slate" },
             ]
         }
     ];
@@ -90,7 +91,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
         groups.push({
             title: "Admin",
             items: [
-                { href: "/admin", label: t("nav.admin"), icon: Shield }
+                { href: "/admin", label: t("nav.admin"), icon: Shield, color: "indigo" }
             ]
         });
     }
@@ -99,7 +100,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
         <motion.div
             className={cn(
                 "hidden md:flex flex-col h-[calc(100vh-2rem)] my-4 ml-4 rounded-[24px] fixed left-0 top-0 z-50 overflow-hidden transition-colors duration-300",
-                "bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-lg",
+                "glass-panel border-white/20 dark:border-white/10 shadow-lg",
                 className
             )}
             initial={{ width: 80 }}
@@ -160,7 +161,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                     <div key={group.title} className="space-y-1">
                         {/* Section Title (Only visible when expanded) */}
                         <div className={cn(
-                            "px-3 text-[10px] font-bold text-zinc-500 uppercase tracking-widest transition-opacity duration-200 h-4 mb-2 flex items-center",
+                            "px-3 text-[11px] font-black text-foreground dark:text-zinc-500 uppercase tracking-[0.2em] transition-opacity duration-200 h-4 mb-4 flex items-center",
                             isHovered ? "opacity-100" : "opacity-0"
                         )}>
                             {group.title}
@@ -174,6 +175,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                                 href={link.href}
                                 isActive={pathname === link.href}
                                 isExpanded={isHovered}
+                                color={link.color}
                                 hasNotification={link.href === '/notifications' || link.href === '/messages'} // Logic for demo
                                 onClick={link.onClick || onLinkClick}
                             />
@@ -190,7 +192,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex gap-1 p-1 mb-2 bg-zinc-100 dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/5"
+                            className="flex gap-1 p-1 mb-2 bg-muted/50 dark:bg-white/5 rounded-xl border border-border dark:border-white/5"
                         >
                             {['light', 'dark', 'system'].map((tMode) => (
                                 <button
@@ -199,8 +201,8 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                                     className={cn(
                                         "flex-1 p-1.5 rounded-lg text-xs font-medium transition-all",
                                         theme === tMode
-                                            ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-white"
-                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                            ? "bg-card text-foreground shadow-sm dark:bg-zinc-800 dark:text-white"
+                                            : "text-foreground dark:text-zinc-500 hover:text-foreground dark:hover:text-zinc-300"
                                     )}
                                 >
                                     {tMode === 'light' && <p>☀</p>}
@@ -213,7 +215,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                         // Collapsed Theme Toggle (Cycle)
                         <button
                             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                            className="w-full flex items-center justify-center h-10 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors mb-2"
+                            className="w-full flex items-center justify-center h-10 text-foreground dark:text-zinc-500 hover:text-foreground dark:hover:text-white transition-colors mb-2"
                         >
                             {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                         </button>
@@ -222,7 +224,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                     <div className="w-full h-10 mb-2" />
                 )}
 
-                <div className="border-t border-zinc-200 dark:border-white/10 pt-3 mt-1">
+                <div className="border-t border-border dark:border-white/10 pt-3 mt-1">
                     <SidebarItem
                         icon={LogOut}
                         label={t("nav.signout")}

@@ -148,7 +148,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                         <div key={group.title} className="space-y-2">
                             {/* Section Title */}
                             {group.title !== t("nav.section.main") && (
-                                <h4 className="px-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 opacity-80">
+                                <h4 className="px-4 text-[10px] font-bold text-black dark:text-zinc-400 uppercase tracking-widest mb-3 opacity-80">
                                     {group.title}
                                 </h4>
                             )}
@@ -175,7 +175,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                                             "border-none bg-transparent text-left cursor-pointer group overflow-hidden",
                                             isActive
                                                 ? "text-primary dark:text-white"
-                                                : "text-zinc-600 dark:text-zinc-400 hover:text-primary dark:hover:text-white"
+                                                : "text-black dark:text-zinc-400 hover:text-primary dark:hover:text-white"
                                         )}
                                         type="button"
                                     >
@@ -189,7 +189,7 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
 
                                         <div className={cn(
                                             "relative z-10 p-2 rounded-xl transition-all duration-300",
-                                            isActive ? "bg-primary/20 text-primary dark:bg-white/10 dark:text-white" : "bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 group-hover:scale-110"
+                                            isActive ? "bg-primary/20 text-primary dark:bg-white/10 dark:text-white" : "bg-zinc-100 dark:bg-white/5 text-black dark:text-zinc-400 group-hover:scale-110"
                                         )}>
                                             <link.icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
                                         </div>

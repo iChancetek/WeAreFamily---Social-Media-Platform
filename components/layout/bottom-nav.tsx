@@ -86,12 +86,12 @@ export function BottomNav() {
                 shouldShow ? "translate-y-0 opacity-100" : "translate-y-[150%] opacity-0"
             )}>
                 {/* Floating Glass Island */}
-                <div className="relative flex justify-around items-center px-2 py-3 bg-[rgba(11,15,20,0.85)] dark:bg-[rgba(11,15,20,0.85)] backdrop-blur-xl rounded-[24px] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+                <div className="relative flex justify-around items-center px-2 py-3 bg-white/90 dark:bg-[rgba(11,15,20,0.85)] backdrop-blur-xl rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
 
                     {/* Collapse Button (Absolute positioned on the bar) */}
                     <button
                         onClick={() => setIsManuallyCollapsed(true)}
-                        className="absolute -top-3 right-4 h-6 w-6 bg-background/50 backdrop-blur-md rounded-full border border-white/10 flex items-center justify-center text-muted-foreground hover:text-white shadow-sm"
+                        className="absolute -top-3 right-4 h-6 w-6 bg-white/50 dark:bg-background/50 backdrop-blur-md rounded-full border border-black/5 dark:border-white/10 flex items-center justify-center text-black dark:text-muted-foreground hover:text-primary dark:hover:text-white shadow-sm"
                     >
                         <ChevronDown className="h-3 w-3" />
                     </button>
@@ -109,7 +109,7 @@ export function BottomNav() {
                                 }}
                                 className={cn(
                                     "relative flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-300 w-16 group",
-                                    isActive ? "text-primary" : "text-zinc-400 hover:text-white"
+                                    isActive ? "text-primary" : "text-black dark:text-zinc-400 hover:text-primary dark:hover:text-white"
                                 )}
                                 type="button"
                             >
@@ -129,7 +129,7 @@ export function BottomNav() {
                                 {/* Animated Label */}
                                 <span className={cn(
                                     "text-[10px] font-medium mt-1 transition-all duration-300 relative z-10",
-                                    isActive ? "text-white opacity-100 translate-y-0" : "opacity-0 -translate-y-2 absolute"
+                                    isActive ? "text-primary dark:text-white opacity-100 translate-y-0" : "opacity-0 -translate-y-2 absolute"
                                 )}>
                                     {link.label}
                                 </span>
@@ -146,11 +146,11 @@ export function BottomNav() {
                     <CreateStoryDialog>
                         <button
                             type="button"
-                            className="relative flex flex-col items-center justify-center p-2 rounded-xl text-zinc-400 hover:text-white transition-all w-16 group"
+                            className="relative flex flex-col items-center justify-center p-2 rounded-xl text-black dark:text-zinc-400 hover:text-primary dark:hover:text-white transition-all w-16 group"
                         >
                             <div className="absolute inset-0 bg-primary/10 blur-md rounded-full transform scale-75 opacity-0 group-hover:opacity-100 transition-opacity" />
                             <Plus className="w-6 h-6 transition-all duration-300 relative z-10 scale-100 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(111,76,255,0.6)] text-primary" strokeWidth={2.5} />
-                            <span className="text-[10px] font-medium mt-1 text-white opacity-100">My Life</span>
+                            <span className="text-[10px] font-medium mt-1 text-black dark:text-white opacity-100">My Life</span>
                         </button>
                     </CreateStoryDialog>
 
@@ -166,7 +166,7 @@ export function BottomNav() {
                                 }}
                                 className={cn(
                                     "relative flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-300 w-16 group",
-                                    isActive ? "text-primary" : "text-zinc-400 hover:text-white"
+                                    isActive ? "text-primary" : "text-black dark:text-zinc-400 hover:text-primary dark:hover:text-white"
                                 )}
                                 type="button"
                             >
@@ -186,7 +186,7 @@ export function BottomNav() {
                                 {/* Animated Label */}
                                 <span className={cn(
                                     "text-[10px] font-medium mt-1 transition-all duration-300 relative z-10",
-                                    isActive ? "text-white opacity-100 translate-y-0" : "opacity-0 -translate-y-2 absolute"
+                                    isActive ? "text-primary dark:text-white opacity-100 translate-y-0" : "opacity-0 -translate-y-2 absolute"
                                 )}>
                                     {link.label}
                                 </span>
@@ -203,7 +203,7 @@ export function BottomNav() {
                     <Sheet open={open} onOpenChange={setOpen}>
                         <SheetTrigger asChild>
                             <button
-                                className="relative flex flex-col items-center justify-center p-2 rounded-xl text-zinc-400 hover:text-white transition-colors w-16"
+                                className="relative flex flex-col items-center justify-center p-2 rounded-xl text-black dark:text-zinc-400 hover:text-primary dark:hover:text-white transition-colors w-16"
                                 type="button"
                             >
                                 <Menu className="w-6 h-6" />

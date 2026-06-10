@@ -47,7 +47,7 @@ export function BrandingHeader({
                     isVideo ? (
                         <video
                             src={branding.coverUrl}
-                            className="w-full h-full object-cover"
+                            className="absolute inset-0 w-full h-full object-cover block"
                             autoPlay
                             loop
                             muted

@@ -55,15 +55,15 @@ export function PostContent({
                 <div className="flex flex-col gap-1">
                     {title && (
                         <h3 className={cn(
-                            "font-bold text-base text-foreground/90 leading-snug",
+                            "font-black text-lg text-blue-700 dark:text-blue-400 tracking-tighter leading-tight",
                             isPinterest && "line-clamp-1"
                         )}>
                             {title}
                         </h3>
                     )}
                     <div className={cn(
-                        "text-sm leading-relaxed whitespace-pre-wrap",
-                        isPinterest ? "text-foreground/95 font-medium line-clamp-2" : "text-foreground/90",
+                        "text-[15px] leading-relaxed whitespace-pre-wrap font-bold tracking-tight",
+                        isPinterest ? "text-blue-600/90 dark:text-blue-300 font-black line-clamp-2" : "text-blue-600/90 dark:text-blue-300",
                         !isPinterest && (!isEnlarged && hasMedia ? "line-clamp-3" : "line-clamp-6")
                     )}>
                     <Linkify text={translatedContent || postContent} hideUrls={hideUrls} onMediaFound={() => { }} />

@@ -57,11 +57,13 @@ export function AIAssistant() {
                 "mb-4 transition-all duration-300 origin-bottom-right pointer-events-auto",
                 isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 h-0 w-0 overflow-hidden"
             )}>
-                <Card className="w-[350px] md:w-[400px] h-[500px] shadow-2xl border-blue-200 flex flex-col bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm overflow-hidden">
-                    <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 flex flex-row items-center justify-between shrink-0">
-                        <div className="flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-yellow-300" />
-                            <CardTitle className="text-base">Famio Intelligence</CardTitle>
+                <Card className="w-[350px] md:w-[400px] h-[600px] shadow-real border-primary/20 flex flex-col bg-white dark:bg-zinc-950 backdrop-blur-md overflow-hidden rounded-[2.5rem]">
+                    <CardHeader className="bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 text-white p-5 flex flex-row items-center justify-between shrink-0 shadow-lg">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md border border-white/20">
+                                <Sparkles className="w-5 h-5 text-yellow-300 fill-yellow-300" />
+                            </div>
+                            <CardTitle className="text-xl font-black tracking-tighter leading-none">Famio Intelligence</CardTitle>
                         </div>
                         <div className="flex items-center gap-1">
                             <Button
@@ -95,12 +97,12 @@ export function AIAssistant() {
             <Button
                 size="lg"
                 className={cn(
-                    "h-14 w-14 rounded-full shadow-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-transform duration-300 pointer-events-auto",
+                    "h-18 w-18 rounded-[2rem] shadow-glow-lg shadow-primary/40 bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 hover:from-indigo-700 hover:via-blue-700 hover:to-violet-700 text-white transition-all duration-500 hover:scale-110 active:scale-90 border-2 border-white/30 pointer-events-auto",
                     isOpen ? "rotate-90 scale-0 opacity-0" : "scale-100 opacity-100"
                 )}
                 onClick={() => setIsOpen(true)}
             >
-                <Sparkles className="w-6 h-6 animate-pulse" />
+                <Sparkles className="w-10 h-10 animate-pulse fill-white" />
             </Button>
         </div>
     )

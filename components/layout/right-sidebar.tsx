@@ -37,13 +37,13 @@ export function RightSidebar({ className }: RightSidebarProps) {
     return (
         <aside className={cn("hidden lg:flex flex-col gap-4 p-4 w-80 overflow-y-auto border-l border-border/50 custom-scrollbar", className)}>
             <div className="flex flex-col gap-2">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                <h3 className="text-[13px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mb-4 flex items-center justify-between">
                     {t("sidebar.members")}
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{activeUsers.length}</span>
+                    <span className="text-[10px] font-black text-white bg-blue-600 px-2 py-0.5 rounded-full shadow-glow-sm">{activeUsers.length}</span>
                 </h3>
 
                 {activeUsers.length === 0 ? (
-                    <div className="text-xs text-gray-400 p-2 text-center border border-dashed border-gray-700/50 rounded-lg">
+                    <div className="text-xs text-muted-foreground p-2 text-center border border-dashed border-border rounded-lg">
                         {t("sidebar.members.empty")}
                     </div>
                 ) : (

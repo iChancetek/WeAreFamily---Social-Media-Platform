@@ -57,7 +57,7 @@ export function LiveSetupDialog({ open, onOpenChange }: LiveSetupDialogProps) {
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl">
-                        <Video className="h-6 w-6 text-red-500" />
+                        <Video className="h-6 w-6 text-blue-600" />
                         Go Live
                     </DialogTitle>
                     <DialogDescription>
@@ -121,7 +121,7 @@ export function LiveSetupDialog({ open, onOpenChange }: LiveSetupDialogProps) {
                     <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={loading}>
                         Cancel
                     </Button>
-                    <Button onClick={handleGoLive} disabled={loading} className="w-full sm:w-auto gap-2 bg-red-600 hover:bg-red-700 text-white">
+                    <Button onClick={handleGoLive} disabled={loading} className="w-full sm:w-auto gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                         {loading ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin" />

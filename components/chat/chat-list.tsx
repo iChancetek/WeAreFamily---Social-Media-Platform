@@ -37,11 +37,11 @@ export function ChatList({ chats }: ChatListProps) {
                         key={chat.id}
                         href={`/messages?chatId=${chat.id}`}
                         className={cn(
-                            "flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-white/5",
-                            isActive && "bg-blue-50 dark:bg-blue-900/20"
+                            "flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-muted dark:hover:bg-white/5",
+                            isActive && "bg-primary/10 dark:bg-blue-900/20"
                         )}
                     >
-                        <Avatar className="h-12 w-12 border border-gray-100 dark:border-white/10">
+                        <Avatar className="h-12 w-12 border border-border dark:border-white/10">
                             <AvatarImage src={otherUser?.imageUrl || undefined} />
                             <AvatarFallback>{otherUser?.displayName?.charAt(0) || "?"}</AvatarFallback>
                         </Avatar>
@@ -55,12 +55,12 @@ export function ChatList({ chats }: ChatListProps) {
                                     {otherUser?.displayName || t('messages.chat.unknown')}
                                 </span>
                                 {chat.lastMessageAt && (
-                                    <span className="text-[10px] text-gray-400 shrink-0">
+                                    <span className="text-[10px] text-muted-foreground shrink-0">
                                         {formatDistanceToNow(new Date(chat.lastMessageAt), { addSuffix: false })}
                                     </span>
                                 )}
                             </div>
-                            <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                            <p className="text-xs text-muted-foreground truncate">
                                 {chat.lastMessage}
                             </p>
                         </div>

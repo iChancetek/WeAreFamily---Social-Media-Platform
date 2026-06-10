@@ -244,11 +244,11 @@ export function ProfileContent({ user, onClose }: ProfileContentProps) {
                                         {coverType === "video" ? (
                                             <video
                                                 src={coverUrl}
-                                                className="w-full h-full object-cover"
-                                                style={{ objectPosition: 'center 10%' }}
+                                                className="absolute inset-0 w-full h-full object-cover block"
                                                 autoPlay
                                                 loop
                                                 muted
+                                                playsInline
                                             />
                                         ) : (
                                             <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />

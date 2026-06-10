@@ -109,13 +109,13 @@ export function CoverUploadDialog({ open, onOpenChange, type, id, currentCoverUr
                         <div className="relative w-full h-40 rounded-lg overflow-hidden bg-muted">
                             {previewUrl ? (
                                 selectedFile?.type.startsWith('video/') ? (
-                                    <video src={previewUrl} className="w-full h-full object-cover" autoPlay loop muted />
+                                    <video src={previewUrl} className="absolute inset-0 w-full h-full object-cover block" autoPlay loop muted playsInline />
                                 ) : (
                                     <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                                 )
                             ) : currentCoverUrl ? (
                                 currentCoverUrl.includes('mp4') || currentCoverUrl.includes('webm') ? (
-                                    <video src={currentCoverUrl} className="w-full h-full object-cover" autoPlay loop muted />
+                                    <video src={currentCoverUrl} className="absolute inset-0 w-full h-full object-cover block" autoPlay loop muted playsInline />
                                 ) : (
                                     <img src={currentCoverUrl} alt="Current cover" className="w-full h-full object-cover" />
                                 )
