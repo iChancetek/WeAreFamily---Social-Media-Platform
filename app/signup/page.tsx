@@ -145,7 +145,7 @@ export default function SignupPage() {
             <Card className="w-full max-w-md shadow-lg">
                 <CardHeader className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                        <img src="/icons/PWAIcon.jpg" alt="Famio" className="w-8 h-8 rounded-xl object-cover" />
+                        <img src="/icons/famio-logo.png" alt="Famio" className="w-8 h-8 rounded-xl object-cover" />
                         <span className="text-2xl font-bold text-blue-600">Famio</span>
                     </div>
                     <CardTitle className="text-2xl font-bold">Create Your Account</CardTitle>

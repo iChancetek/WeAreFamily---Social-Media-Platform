@@ -23,7 +23,7 @@ messaging.onBackgroundMessage((payload) => {
     const notificationTitle = payload.notification?.title || 'Famio';
     const notificationOptions = {
         body: payload.notification?.body || 'You have a new notification',
-        icon: '/icons/icon-192x192.png',
+        icon: '/icons/famio-logo.png',
         badge: '/icons/notification-badge.png',
         tag: payload.data?.tag || 'default',
         data: {

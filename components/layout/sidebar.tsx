@@ -120,7 +120,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                         <div className="relative flex items-center justify-center w-10 h-10">
                             {/* Animated Logo Mark */}
                             <img
-                                src="/icons/PWAIcon.jpg"
+                                src="/icons/famio-logo.png"
                                 alt="Famio"
                                 className={cn(
                                     "w-6 h-6 rounded-lg object-cover transition-transform duration-200",

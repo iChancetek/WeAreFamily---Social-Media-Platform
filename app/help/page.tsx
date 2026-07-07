@@ -16,7 +16,7 @@ export default function HelpPage() {
                 {/* Header */}
                 <div className="text-center space-y-4">
                     <div className="flex items-center justify-center gap-3 mb-4">
-                        <img src="/icons/icon-96x96.png" alt="Famio" className="w-16 h-16 rounded-2xl shadow-lg" />
+                        <img src="/icons/famio-logo.png" alt="Famio" className="w-16 h-16 rounded-2xl shadow-lg" />
                         <div className="text-left">
                             <h1 className="text-3xl font-bold tracking-tight">Famio.us Help Center</h1>
                             <p className="text-muted-foreground">Progressive Web App Installation Guide</p>

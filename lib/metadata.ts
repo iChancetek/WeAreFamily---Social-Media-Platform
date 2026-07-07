@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { isUrlVideo, extractYouTubeId, fetchYouTubeTitle } from '@/lib/media-utils';
 
 // Default Fallback Image — must be public-facing and permanently accessible
-const OG_IMAGE_FALLBACK = "https://famio.us/icons/PWAIcon.jpg";
+const OG_IMAGE_FALLBACK = "https://famio.us/icons/famio-logo.png";
 
 type PostData = {
     content?: string;

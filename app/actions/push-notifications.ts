@@ -140,8 +140,8 @@ export async function sendPushNotification(
             },
             webpush: {
                 notification: {
-                    icon: notification.icon || "/icons/icon-192x192.png",
-                    badge: "/icons/notification-badge.png",
+                    icon: notification.icon || "/icons/famio-logo.png",
+                    badge: "/icons/famio-logo.png",
                     // Action buttons can be added here
                 },
                 fcmOptions: {

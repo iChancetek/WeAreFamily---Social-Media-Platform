@@ -11,7 +11,7 @@ export default function LearnMorePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <Link href="/" className="flex items-center gap-3">
-                            <img src="/icons/PWAIcon.jpg" className="w-10 h-10 rounded-xl object-cover" alt="Famio" />
+                            <img src="/icons/famio-logo.png" className="w-10 h-10 rounded-xl object-cover" alt="Famio" />
                             <div>
                                 <div className="font-bold text-2xl text-gray-900 tracking-tight">Famio</div>
                                 <div className="text-xs text-gray-600 font-medium -mt-1">by ChanceTEK</div>
@@ -454,7 +454,7 @@ export default function LearnMorePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center space-y-4">
                         <div className="flex items-center gap-2">
-                            <img src="/icons/PWAIcon.jpg" className="w-10 h-10 rounded-xl object-cover" alt="Famio" />
+                            <img src="/icons/famio-logo.png" className="w-10 h-10 rounded-xl object-cover" alt="Famio" />
                             <div>
                                 <span className="font-bold text-gray-900 text-lg">Famio</span>
                                 <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>

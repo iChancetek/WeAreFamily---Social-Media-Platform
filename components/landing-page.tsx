@@ -26,7 +26,7 @@ export function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         <div className="flex items-center gap-3">
-                            <img src="/icons/PWAIcon.jpg" alt="Famio" className="w-8 h-8 rounded-xl object-cover shadow-premium" />
+                            <img src="/icons/famio-logo.png" alt="Famio" className="w-8 h-8 rounded-xl object-cover shadow-premium" />
                             <div>
                                 <div className="font-bold text-2xl text-white tracking-tight">Famio</div>
                                 <div className="text-xs text-white/80 font-semibold -mt-1 uppercase tracking-wider">by ChanceTEK</div>
@@ -55,7 +55,7 @@ export function LandingPage() {
                     playsInline
                     className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none"
                 >
-                    <source src="/Create_a_highquality_1080p_202601031842.mp4" type="video/mp4" />
+                    <source src="/famio.us2.mp4" type="video/mp4" />
                 </video>
                 <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-zinc-950 pointer-events-none" />
 
@@ -197,7 +197,7 @@ export function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center space-y-10">
                         <div className="flex items-center gap-3">
-                            <img src="/icons/PWAIcon.jpg" className="w-10 h-10 rounded-2xl object-cover shadow-premium" alt="Famio" />
+                            <img src="/icons/famio-logo.png" className="w-10 h-10 rounded-2xl object-cover shadow-premium" alt="Famio" />
                             <div>
                                 <span className="font-black text-foreground text-2xl tracking-tighter">Famio</span>
                                 <span className="text-muted-foreground text-sm ml-2 font-bold uppercase tracking-widest">by ChanceTEK</span>
