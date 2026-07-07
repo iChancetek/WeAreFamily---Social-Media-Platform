@@ -121,7 +121,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                             {/* Animated Logo Mark */}
                             <img
                                 src="/icons/famio-logo.png"
-                                alt="Famio"
+                                alt="famio"
                                 className={cn(
                                     "w-14 h-14 rounded-2xl object-cover transition-transform duration-200",
                                     isHovered ? "scale-100" : "scale-90"
@@ -138,7 +138,7 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -10 }}
                                 >
-                                    Famio
+                                    famio
                                 </motion.span>
                             )}
                         </AnimatePresence>

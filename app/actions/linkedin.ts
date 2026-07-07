@@ -40,7 +40,7 @@ Generate a JSON response with:
 3. "whyItMatters": One sentence explaining relevance (max 25 words)
 4. "discussionPrompts": Array of 2 engaging questions to spark conversation
 
-Be neutral, professional, and insightful. Focus on value to Famio users.
+Be neutral, professional, and insightful. Focus on value to famio users.
 
 Format:
 {

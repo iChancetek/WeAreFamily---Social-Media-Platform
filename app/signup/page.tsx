@@ -146,12 +146,12 @@ export default function SignupPage() {
                 <CardHeader className="text-center space-y-2">
                     <div className="text-center mb-10">
                         <div className="flex flex-col items-center justify-center gap-4 mb-4">
-                            <img src="/icons/famio-logo.png" alt="Famio" className="w-24 h-24 rounded-[32px] object-cover shadow-lg" />
+                            <img src="/icons/famio-logo.png" alt="famio" className="w-24 h-24 rounded-[32px] object-cover shadow-lg" />
                             <span className="font-bold text-4xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
-                                Famio
+                                famio
                             </span>
                         </div>
-                        <p className="text-base text-muted-foreground">Join your family network on Famio</p>
+                        <p className="text-base text-muted-foreground">Join your family network on famio</p>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -192,7 +192,7 @@ export default function SignupPage() {
                                 required
                                 minLength={2}
                             />
-                            <p className="text-xs text-muted-foreground">This will be your public name on Famio</p>
+                            <p className="text-xs text-muted-foreground">This will be your public name on famio</p>
                         </div>
 
                         <div className="space-y-2">

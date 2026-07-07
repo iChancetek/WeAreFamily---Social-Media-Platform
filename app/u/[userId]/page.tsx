@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
         if (!userDoc.exists) {
             return {
-                title: 'Profile Not Found | Famio',
+                title: 'Profile Not Found | famio',
                 description: 'This profile does not exist.'
             };
         }
@@ -39,13 +39,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         // Privacy: Only hide metadata for explicitly private profiles
         if (isExplicitlyPrivate) {
             return {
-                title: 'Famio Profile',
+                title: 'famio Profile',
                 description: 'This profile is private.',
                 openGraph: {
                     type: 'website',
-                    title: 'Famio Profile',
+                    title: 'famio Profile',
                     description: 'This profile is private.',
-                    siteName: 'Famio'
+                    siteName: 'famio'
                 }
             };
         }
@@ -57,9 +57,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             || (userData.profileData?.firstName
                 ? `${userData.profileData.firstName} ${userData.profileData.lastName || ''}`.trim()
                 : null)
-            || "Famio Member";
+            || "famio Member";
 
-        const bio = userData.bio || "Member on Famio. View profile and activity.";
+        const bio = userData.bio || "Member on famio. View profile and activity.";
 
         // Use actual image URL from Firebase Storage or fallback to a placeholder
         // Firebase Storage URLs are publicly accessible if the bucket has public read rules
@@ -74,14 +74,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         const profileUrl = `${baseUrl}/u/${userId}`;
 
         return {
-            title: `${displayName} | Famio`,
+            title: `${displayName} | famio`,
             description: bio,
             openGraph: {
                 type: 'profile',
                 title: displayName,
                 description: bio,
                 url: profileUrl,
-                siteName: 'Famio',
+                siteName: 'famio',
                 images: [
                     {
                         url: imageUrl,
@@ -93,7 +93,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             },
             twitter: {
                 card: 'summary_large_image',
-                title: `${displayName} | Famio`,
+                title: `${displayName} | famio`,
                 description: bio,
                 images: [imageUrl]
             }
@@ -101,8 +101,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     } catch (error) {
         console.error('Error generating profile metadata:', error);
         return {
-            title: 'Famio Profile',
-            description: 'Member profile on Famio'
+            title: 'famio Profile',
+            description: 'Member profile on famio'
         };
     }
 }

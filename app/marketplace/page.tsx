@@ -3,7 +3,7 @@ import { MarketplaceFeed } from "@/components/marketplace/marketplace-feed";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Marketplace | Famio",
+    title: "Marketplace | famio",
     description: "Buy, sell, and share items with your family and companions.",
 };
 

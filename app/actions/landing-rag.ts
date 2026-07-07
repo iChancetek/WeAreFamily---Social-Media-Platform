@@ -18,15 +18,15 @@ const COLLECTION_NAME = "knowledge_base";
 const STATIC_CONTENT = [
     {
         category: "General",
-        text: "Famio is a private, secure social platform built exclusively for families. Share moments, plan events, and stay connected with the people who matter most. It is powered by ChanceTEK."
+        text: "famio is a private, secure social platform built exclusively for families. Share moments, plan events, and stay connected with the people who matter most. It is powered by ChanceTEK."
     },
     {
         category: "Features",
-        text: "AI Content Generation: Famio's AI helps you craft meaningful posts, comments, and birthday messages. It assists with writer's block by providing smart suggestions."
+        text: "AI Content Generation: famio's AI helps you craft meaningful posts, comments, and birthday messages. It assists with writer's block by providing smart suggestions."
     },
     {
         category: "Features",
-        text: "Automated Celebrations: Famio automatically celebrates family birthdays and milestones with personalized posts and festive messages. It ensures you never miss a special moment."
+        text: "Automated Celebrations: famio automatically celebrates family birthdays and milestones with personalized posts and festive messages. It ensures you never miss a special moment."
     },
     {
         category: "Features",
@@ -34,11 +34,11 @@ const STATIC_CONTENT = [
     },
     {
         category: "Security",
-        text: "Security & Privacy: Famio uses Enterprise-grade security. All data is encrypted. Privacy controls restrict visibility to members only. Admin controls allow moderation."
+        text: "Security & Privacy: famio uses Enterprise-grade security. All data is encrypted. Privacy controls restrict visibility to members only. Admin controls allow moderation."
     },
     {
         category: "Target Audience: Executives",
-        text: "For Executives: Famio provides a noise-free environment to stay connected with family without the distractions of public social media. Efficient summaries and automated updates respect your busy schedule."
+        text: "For Executives: famio provides a noise-free environment to stay connected with family without the distractions of public social media. Efficient summaries and automated updates respect your busy schedule."
     },
     {
         category: "Target Audience: Students",
@@ -50,7 +50,7 @@ const STATIC_CONTENT = [
     },
     {
         category: "Platform Structure",
-        text: "Famio is organized into: 1) Family (Your private network), 2) Groups (Micro-communities for cousins, planning, etc), 3) Social (Feed, Stories, Messages), 4) Workspace (Events, Calendar)."
+        text: "famio is organized into: 1) Family (Your private network), 2) Groups (Micro-communities for cousins, planning, etc), 3) Social (Feed, Stories, Messages), 4) Workspace (Events, Calendar)."
     },
     {
         category: "Roles",
@@ -62,7 +62,7 @@ const STATIC_CONTENT = [
     },
     {
         category: "Feature: Live",
-        text: "Famio Live: Start real-time video broadcasts to share announcements, talent shows, or just hang out. Viewers can chat and react in real-time."
+        text: "famio Live: Start real-time video broadcasts to share announcements, talent shows, or just hang out. Viewers can chat and react in real-time."
     },
     {
         category: "Feature: Messages",
@@ -86,7 +86,7 @@ const STATIC_CONTENT = [
     },
     {
         category: "Target Audience: Researchers",
-        text: "For Researchers & Tech Enthusiasts: Built on modern tech stacks (Next.js, Firebase, AI), Famio verifies that privacy-first social networking is possible."
+        text: "For Researchers & Tech Enthusiasts: Built on modern tech stacks (Next.js, Firebase, AI), famio verifies that privacy-first social networking is possible."
     }
 ];
 
@@ -181,8 +181,8 @@ export async function chatWithLandingAgent(userQuery: string, model: AIModel = '
         const context = await retrieveRelevantContext(userQuery);
 
         // 2. Construct Prompt
-        const systemPrompt = `You are the Famio Assistant, a helpful guide on the Famio landing page.
-Your goal is to explain Famio's features, benefits, and target audiences (Executives, Students, etc.) based strictly on the provided context.
+        const systemPrompt = `You are the famio Assistant, a helpful guide on the famio landing page.
+Your goal is to explain famio's features, benefits, and target audiences (Executives, Students, etc.) based strictly on the provided context.
 If the answer is not in the context, politely say you don't have that information but suggest signing up to explore.
 Keep answers concise, welcoming, and professional.
 

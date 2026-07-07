@@ -53,12 +53,12 @@ export default async function EmbedPostPage({ params }: { params: Promise<{ post
                     poster={posterUrl}
                 />
             ) : (
-                <img src={firstMedia} className="w-full h-full object-contain" alt="Famio Content" />
+                <img src={firstMedia} className="w-full h-full object-contain" alt="famio Content" />
             )}
 
             {/* Overlay branding */}
             <a href="https://famio.us" target="_blank" rel="noopener noreferrer" className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-xs font-bold hover:bg-black/70 transition-colors z-10">
-                Famio
+                famio
             </a>
         </div>
     );

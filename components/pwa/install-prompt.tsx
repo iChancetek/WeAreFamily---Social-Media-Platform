@@ -78,7 +78,7 @@ export function InstallPrompt() {
                                 <Download className="w-5 h-5 text-blue-600 dark:text-blue-300" />
                             </div>
                             <div>
-                                <CardTitle className="text-lg">Install Famio</CardTitle>
+                                <CardTitle className="text-lg">Install famio</CardTitle>
                                 <CardDescription className="text-sm mt-1">
                                     Get the app experience
                                 </CardDescription>

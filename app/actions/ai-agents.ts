@@ -324,12 +324,12 @@ export async function chatWithAgent(
 export async function seedKnowledgeBase() {
     const knowledgeData = [
         {
-            title: "About Famio",
-            content: "Famio is a private, secure social platform built exclusively for families. It allows you to share moments, plan events, and stay connected with the people who matter most. It is powered by ChanceTEK."
+            title: "About famio",
+            content: "famio is a private, secure social platform built exclusively for families. It allows you to share moments, plan events, and stay connected with the people who matter most. It is powered by ChanceTEK."
         },
         {
             title: "Multi-Modal AI Agents",
-            content: "Famio Universal Intelligence offers specialized AI modes: 1) General (Helpful Assistant), 2) Tutor (Explains simply for kids/students), 3) Executive (Concise summaries for busy pros), 4) Biographer (Interviews you to save memories), 5) Architect (Technical details)."
+            content: "famio Universal Intelligence offers specialized AI modes: 1) General (Helpful Assistant), 2) Tutor (Explains simply for kids/students), 3) Executive (Concise summaries for busy pros), 4) Biographer (Interviews you to save memories), 5) Architect (Technical details)."
         },
         {
             title: "Magic Draft",
@@ -349,11 +349,11 @@ export async function seedKnowledgeBase() {
         },
         {
             title: "Live Broadcasts",
-            content: "Famio Live allows you to stream video in real-time to your family. You can start a broadcast from the 'Live' tab. Viewers can chat in real-time. You can control privacy (Family Only vs Public) before starting."
+            content: "famio Live allows you to stream video in real-time to your family. You can start a broadcast from the 'Live' tab. Viewers can chat in real-time. You can control privacy (Family Only vs Public) before starting."
         },
         {
             title: "Privacy & Security",
-            content: "Famio uses End-to-End Encryption to keep data safe. Only members you approve can see your content. Features include 'Public Profile' toggle (default off) and strict owner-only deletion rights for gallery photos."
+            content: "famio uses End-to-End Encryption to keep data safe. Only members you approve can see your content. Features include 'Public Profile' toggle (default off) and strict owner-only deletion rights for gallery photos."
         },
         {
             title: "Stories",
@@ -377,11 +377,11 @@ export async function seedKnowledgeBase() {
         },
         {
             title: "Trending & Discovery Algorithm",
-            content: "Famio features a sophisticated discovery algorithm that automatically surfaces engaging content. The ranking score (rankScore) is calculated based on: 1) Reposts (60% weight), 2) Likes (20% weight), 3) Comments (15% weight), and 4) Views/Impressions (5% weight). This ensures that the most meaningful and popular family moments trend in the sidebar and shorts trays."
+            content: "famio features a sophisticated discovery algorithm that automatically surfaces engaging content. The ranking score (rankScore) is calculated based on: 1) Reposts (60% weight), 2) Likes (20% weight), 3) Comments (15% weight), and 4) Views/Impressions (5% weight). This ensures that the most meaningful and popular family moments trend in the sidebar and shorts trays."
         },
         {
             title: "Audit Logging & Admin Transparency",
-            content: "For safety and accountability, Famio maintains a detailed Audit Log. Every significant action\u2014including post creations, rank updates, and even content views\u2014is logged with timestamps and user details. This allows family admins to monitor platform health and ensure a safe environment for everyone."
+            content: "For safety and accountability, famio maintains a detailed Audit Log. Every significant action\u2014including post creations, rank updates, and even content views\u2014is logged with timestamps and user details. This allows family admins to monitor platform health and ensure a safe environment for everyone."
         }
     ];
 
@@ -417,7 +417,7 @@ export async function seedKnowledgeBase() {
 import type { EmotionalTone, MagicAIRequest, MagicAIResponse } from "@/types/magic-ai";
 
 const TONE_PROMPTS: Record<EmotionalTone, string> = {
-    default: `You are helping a user write a warm, engaging social media post for the Famio \u2014 We Are One platform.
+    default: `You are helping a user write a warm, engaging social media post for the famio \u2014 We Are One platform.
     
 Guidelines:
 - Keep it natural and conversational

@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                 try {
                     const nameParts = (freshUser.displayName || "").split(' ');
-                    const firstName = nameParts[0] || "Famio";
+                    const firstName = nameParts[0] || "famio";
                     const lastName = nameParts.slice(1).join(' ') || "Member";
 
                     // Sync to DB — but don't let a DB error block session creation
@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             await user.reload();
             // Re-sync to DB to update verification status there too
             const nameParts = (user.displayName || "").split(' ');
-            const firstName = nameParts[0] || "Famio";
+            const firstName = nameParts[0] || "famio";
             const lastName = nameParts.slice(1).join(' ') || "Member";
 
             await syncUserToDb(

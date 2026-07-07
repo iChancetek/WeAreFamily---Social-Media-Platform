@@ -3,7 +3,7 @@ import { EventsFeed } from "@/components/events/events-feed";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Events | Famio",
+    title: "Events | famio",
     description: "Discover and RSVP to upcoming family events and gatherings.",
 };
 

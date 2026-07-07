@@ -36,5 +36,5 @@ export function resolveDisplayName(data: any): string {
     }
 
     // 4. Final Fallback
-    return "Famio Member";
+    return "famio Member";
 }

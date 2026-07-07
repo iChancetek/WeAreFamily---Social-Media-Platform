@@ -12,7 +12,7 @@ export default function OfflinePage() {
                 <h1 className="text-3xl font-bold mb-4">You're Offline</h1>
 
                 <p className="text-muted-foreground mb-8">
-                    Famio works best with an internet connection. Check your network settings and try again.
+                    famio works best with an internet connection. Check your network settings and try again.
                 </p>
 
                 <Button

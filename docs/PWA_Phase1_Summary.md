@@ -1,4 +1,4 @@
-# Famio.us PWA Conversion — Phase 1 Implementation Summary
+# famio.us PWA Conversion — Phase 1 Implementation Summary
 
 ## ✅ Completed Tasks
 
@@ -20,7 +20,7 @@
   - Screenshots metadata for app store listings
 
 #### PWA Icons
-- ✅ Generated premium Famio app icon with:
+- ✅ Generated premium famio app icon with:
   - Modern blue gradient (#3b82f6 to #60a5fa)
   - Stylized "F" lettermark design
   - Clean, minimalist aesthetic
@@ -35,7 +35,7 @@
   - `icon-512x512.png`
   - `apple-touch-icon.png` (for iOS)
 
-![Famio PWA Icon](file:///C:/Users/chanc/.gemini/antigravity/brain/31cf40a7-d303-4416-aebf-1a361de4e020/famio_pwa_icon_1769279736117.png)
+![famio PWA Icon](file:///C:/Users/chanc/.gemini/antigravity/brain/31cf40a7-d303-4416-aebf-1a361de4e020/famio_pwa_icon_1769279736117.png)
 
 #### Metadata Updates
 - ✅ Updated [`app/layout.tsx`](file:///c:/Users/chanc/Documents/WeAreFamily/app/layout.tsx#L17-L52) with:

@@ -18,10 +18,10 @@ export function TopNav({ className }: { className?: string }) {
             {/* Logo Area */}
             <div className="flex items-center gap-4">
                 <div className="relative flex items-center justify-center w-14 h-14">
-                    <img src="/icons/famio-logo.png" alt="Famio" className="w-14 h-14 rounded-2xl object-cover" />
+                    <img src="/icons/famio-logo.png" alt="famio" className="w-14 h-14 rounded-2xl object-cover" />
                 </div>
                 <span className="font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
-                    Famio
+                    famio
                 </span>
             </div>
 

@@ -114,7 +114,7 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                     <div className="w-full sm:w-auto">
                                         <ProfileShareButton
                                             userId={user.id}
-                                            displayName={user.displayName || "Famio Member"}
+                                            displayName={user.displayName || "famio Member"}
                                             isPublic={user.isPublicProfile || false}
                                         />
                                     </div>
@@ -143,7 +143,7 @@ export function ProfileHeader({ user, isCurrentUser, isBlocked }: ProfileHeaderP
                                     <div className="w-full sm:w-auto">
                                         <ProfileShareButton
                                             userId={user.id}
-                                            displayName={user.displayName || "Famio Member"}
+                                            displayName={user.displayName || "famio Member"}
                                             isPublic={user.isPublicProfile || false}
                                         />
                                     </div>

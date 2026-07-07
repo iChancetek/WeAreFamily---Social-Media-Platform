@@ -48,7 +48,7 @@ export function VerificationBlock({ email }: { email: string }) {
                         // Re-establish session now that user is verified
                         const { createSession, syncUserToDb } = await import("@/app/actions/auth");
                         const nameParts = (user.displayName || "").split(' ');
-                        const firstName = nameParts[0] || "Famio";
+                        const firstName = nameParts[0] || "famio";
                         const lastName = nameParts.slice(1).join(' ') || "Member";
 
                         try {
@@ -63,7 +63,7 @@ export function VerificationBlock({ email }: { email: string }) {
                         } catch { /* non-fatal */ }
                         await createSession(user.uid);
 
-                        toast.success("Email verified! Welcome to Famio!");
+                        toast.success("Email verified! Welcome to famio!");
                         router.push('/');
                     }
                 }
@@ -115,7 +115,7 @@ export function VerificationBlock({ email }: { email: string }) {
 
             if (currentUser && currentUser.emailVerified) {
                 const nameParts = (currentUser.displayName || "").split(' ');
-                const firstName = nameParts[0] || "Famio";
+                const firstName = nameParts[0] || "famio";
                 const lastName = nameParts.slice(1).join(' ') || "Member";
                 try {
                     await syncUserToDb(

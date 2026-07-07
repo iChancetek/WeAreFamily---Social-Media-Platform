@@ -26,7 +26,7 @@ export async function generatePostContent(prompt: string) {
             messages: [
                 {
                     role: "system",
-                    content: "You are a helpful assistant for the Famio \u2014 We Are One social platform. Write a warm, engaging, and family-friendly post caption based on the user's input. Keep it under 280 characters if possible, but prioritize natural tone. Add emojis where appropriate."
+                    content: "You are a helpful assistant for the famio \u2014 We Are One social platform. Write a warm, engaging, and family-friendly post caption based on the user's input. Keep it under 280 characters if possible, but prioritize natural tone. Add emojis where appropriate."
                 },
                 {
                     role: "user",
@@ -51,7 +51,7 @@ export async function generateCommentSuggestion(postContext: string) {
             messages: [
                 {
                     role: "system",
-                    content: "You are a helpful assistant for the Famio \u2014 We Are One social platform. Write a short, positive, and supportive comment in response to a post. Keep it casual and friendly. Max 1-2 sentences. Add an emoji."
+                    content: "You are a helpful assistant for the famio \u2014 We Are One social platform. Write a short, positive, and supportive comment in response to a post. Keep it casual and friendly. Max 1-2 sentences. Add an emoji."
                 },
                 {
                     role: "user",
@@ -162,7 +162,7 @@ export async function chatWithAI(userMessage: string) {
         // 4. Generate Answer
         const contextText = topDocs.map((d: any) => `[${d.metadata.title}]: ${d.content}`).join("\n\n");
 
-        const systemPrompt = `You are the Famio AI Assistant, a helpful guide for the Famio \u2014 We Are One Platform.
+        const systemPrompt = `You are the famio AI Assistant, a helpful guide for the famio \u2014 We Are One Platform.
         
         Use the following context to answer the user's question. 
         If the answer is not in the context, use your general knowledge but mention you are not 100% sure about specific platform details.
@@ -192,12 +192,12 @@ export async function chatWithAI(userMessage: string) {
 export async function seedKnowledgeBase() {
     const knowledgeData = [
         {
-            title: "About Famio",
-            content: "Famio is a private, secure social platform built exclusively for families. It allows you to share moments, plan events, and stay connected with the people who matter most. It is powered by ChanceTEK."
+            title: "About famio",
+            content: "famio is a private, secure social platform built exclusively for families. It allows you to share moments, plan events, and stay connected with the people who matter most. It is powered by ChanceTEK."
         },
         {
             title: "Privacy & Security",
-            content: "Famio uses End-to-End Encryption to keep data safe. Only members you approve can see your content. Features include 'Public Profile' toggle (default off) and strict owner-only deletion rights for gallery photos."
+            content: "famio uses End-to-End Encryption to keep data safe. Only members you approve can see your content. Features include 'Public Profile' toggle (default off) and strict owner-only deletion rights for gallery photos."
         },
         {
             title: "Stories",
@@ -217,7 +217,7 @@ export async function seedKnowledgeBase() {
         },
         {
             title: "AI Features",
-            content: "Famio includes AI features like: 1) Content Generation (helping write posts/comments), 2) Automated Birthday Wishes, 3) This AI Assistant (RAG) to answer questions."
+            content: "famio includes AI features like: 1) Content Generation (helping write posts/comments), 2) Automated Birthday Wishes, 3) This AI Assistant (RAG) to answer questions."
         },
         {
             title: "Account & Settings",

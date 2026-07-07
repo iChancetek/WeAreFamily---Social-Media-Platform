@@ -63,7 +63,7 @@ export function AIAssistant() {
                             <div className="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md border border-white/20">
                                 <Sparkles className="w-5 h-5 text-yellow-300 fill-yellow-300" />
                             </div>
-                            <CardTitle className="text-xl font-black tracking-tighter leading-none">Famio Intelligence</CardTitle>
+                            <CardTitle className="text-xl font-black tracking-tighter leading-none">famio Intelligence</CardTitle>
                         </div>
                         <div className="flex items-center gap-1">
                             <Button

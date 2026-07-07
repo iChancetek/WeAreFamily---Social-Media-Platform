@@ -50,13 +50,13 @@ function LoginContent() {
                     const user = result.user;
                     
                     const nameParts = (user.displayName || "").trim().split(/\s+/);
-                    const firstName = nameParts[0] || (user.email ? user.email.split('@')[0] : "Famio");
+                    const firstName = nameParts[0] || (user.email ? user.email.split('@')[0] : "famio");
                     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : "Member";
 
                     await syncUserToDb(
                         user.uid,
                         user.email!,
-                        user.displayName || user.email!.split('@')[0] || "Famio Member",
+                        user.displayName || user.email!.split('@')[0] || "famio Member",
                         firstName,
                         lastName,
                         user.emailVerified
@@ -105,13 +105,13 @@ function LoginContent() {
             // Sync user (existing users might have empty profileData, that's fine)
             // Split display name into first/last for fallback
             const nameParts = (user.displayName || "").trim().split(/\s+/);
-            const firstName = nameParts[0] || (user.email ? user.email.split('@')[0] : "Famio");
+            const firstName = nameParts[0] || (user.email ? user.email.split('@')[0] : "famio");
             const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : "Member";
 
             await syncUserToDb(
                 user.uid, 
                 user.email!, 
-                user.displayName || user.email!.split('@')[0] || "Famio Member", 
+                user.displayName || user.email!.split('@')[0] || "famio Member", 
                 firstName, 
                 lastName, 
                 user.emailVerified
@@ -188,13 +188,13 @@ function LoginContent() {
             const user = result.user;
             
             const nameParts = (user.displayName || "").trim().split(/\s+/);
-            const firstName = nameParts[0] || (user.email ? user.email.split('@')[0] : "Famio");
+            const firstName = nameParts[0] || (user.email ? user.email.split('@')[0] : "famio");
             const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : "Member";
 
             await syncUserToDb(
                 user.uid,
                 user.email!,
-                user.displayName || user.email!.split('@')[0] || "Famio Member",
+                user.displayName || user.email!.split('@')[0] || "famio Member",
                 firstName,
                 lastName,
                 user.emailVerified
@@ -226,9 +226,9 @@ function LoginContent() {
                     <CardHeader className="text-center space-y-2">
                         <div className="flex flex-col items-center mb-10">
                             <div className="flex flex-col items-center gap-4">
-                                <img src="/icons/famio-logo.png" alt="Famio" className="w-24 h-24 rounded-[32px] object-cover shadow-lg" />
+                                <img src="/icons/famio-logo.png" alt="famio" className="w-24 h-24 rounded-[32px] object-cover shadow-lg" />
                                 <span className="font-bold text-4xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
-                                    Famio
+                                    famio
                                 </span>
                             </div>
                             <p className="text-muted-foreground mt-4 text-lg">Welcome back to your family space</p>
@@ -278,8 +278,8 @@ function LoginContent() {
             <Card className="w-full max-w-md shadow-lg border-blue-100 relative z-[50]">
                 <CardHeader className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                        <img src="/icons/famio-logo.png" alt="Famio" className="w-8 h-8 rounded-xl object-cover" />
-                        <span className="text-2xl font-bold text-blue-600">Famio</span>
+                        <img src="/icons/famio-logo.png" alt="famio" className="w-8 h-8 rounded-xl object-cover" />
+                        <span className="text-2xl font-bold text-blue-600">famio</span>
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
                     <CardDescription>Sign in to your account</CardDescription>

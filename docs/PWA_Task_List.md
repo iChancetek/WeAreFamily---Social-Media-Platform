@@ -1,4 +1,4 @@
-# Famio.us PWA Conversion Task List
+# famio.us PWA Conversion Task List
 
 ## Phase 1: PWA Core Infrastructure
 - [ ] Install and configure PWA dependencies

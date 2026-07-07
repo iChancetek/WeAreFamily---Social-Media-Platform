@@ -7,8 +7,8 @@ export function isUrlVideo(url: string | null | undefined): boolean {
     if (url.includes("/o/") && (url.includes(".mp4") || url.includes(".webm") || url.includes(".mov"))) return true;
 
     // Check for YouTube/Vimeo/etc links explicitly if we consider those "Video Content" in terms of OG Tags?
-    // User prompt implies "Famio content (videos, photos...)" which usually means uploaded media.
-    // YouTube links embedded in posts are "links", not necessarily "Famio Videos".
+    // User prompt implies "famio content (videos, photos...)" which usually means uploaded media.
+    // YouTube links embedded in posts are "links", not necessarily "famio Videos".
     // But if the post content IS a YouTube link, we might treat it as video?
     // For now, focusing on uploaded files.
     return false;

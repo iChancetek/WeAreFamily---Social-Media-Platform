@@ -304,18 +304,18 @@ export async function sendWelcomeMessage(targetUserId: string, targetUserDisplay
     }
 
     // 3. Send Message
-    const welcomeText = `Welcome to Famio \u2014 We Are One!
+    const welcomeText = `Welcome to famio \u2014 We Are One!
 
-Thank you for joining us — we’re excited to have you here. We hope you enjoy a wonderful experience on the Famio platform as you connect, share, and grow with the community.
+Thank you for joining us — we’re excited to have you here. We hope you enjoy a wonderful experience on the famio platform as you connect, share, and grow with the community.
 
-These are exciting times at Famio! We’re rolling out new enhancements and updates every week to make your experience even better.
+These are exciting times at famio! We’re rolling out new enhancements and updates every week to make your experience even better.
 
-We truly appreciate you being part of Famio \u2014 We Are One.
+We truly appreciate you being part of famio \u2014 We Are One.
 
 Best regards,
 Chancellor Minus
 Founder & CEO
-ChanceTEK | Famio`;
+ChanceTEK | famio`;
 
     await adminDb.collection("chats").doc(chatId).collection("messages").add({
         senderId: adminId,

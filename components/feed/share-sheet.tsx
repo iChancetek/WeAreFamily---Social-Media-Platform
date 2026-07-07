@@ -64,7 +64,7 @@ const platforms = [
         color: "bg-neutral-600 hover:bg-neutral-500",
         icon: <Mail className="w-5 h-5" />,
         getUrl: (url: string, text: string) =>
-            `mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(`Check this out on Famio:\n\n${url}`)}`,
+            `mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(`Check this out on famio:\n\n${url}`)}`,
     },
 ];
 
@@ -92,7 +92,7 @@ export function ShareSheet({ isOpen, onClose, postId, postUrl, title, descriptio
     }, [postUrl]);
 
     const handlePlatformShare = useCallback((platform: typeof platforms[number]) => {
-        const shareText = title ? `${title} — via Famio` : "Check this out on Famio!";
+        const shareText = title ? `${title} — via famio` : "Check this out on famio!";
         const shareUrl = platform.getUrl(postUrl, shareText);
         window.open(shareUrl, "_blank", "noopener,noreferrer,width=600,height=500");
     }, [postUrl, title]);
@@ -101,8 +101,8 @@ export function ShareSheet({ isOpen, onClose, postId, postUrl, title, descriptio
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: title || "Famio Post",
-                    text: description || title || "Check this out on Famio!",
+                    title: title || "famio Post",
+                    text: description || title || "Check this out on famio!",
                     url: postUrl,
                 });
             } catch (err: any) {
@@ -166,7 +166,7 @@ export function ShareSheet({ isOpen, onClose, postId, postUrl, title, descriptio
                         )}
                         <div className="flex-1 min-w-0">
                             {authorName && (
-                                <p className="text-xs text-muted-foreground mb-0.5 truncate">{authorName} · Famio</p>
+                                <p className="text-xs text-muted-foreground mb-0.5 truncate">{authorName} · famio</p>
                             )}
                             {title && (
                                 <p className="text-sm font-medium leading-snug line-clamp-2">{title}</p>

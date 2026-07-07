@@ -36,7 +36,7 @@ export async function generateMetadata(
 
     if (!post) {
         return {
-            title: 'Post Unavailable | Famio',
+            title: 'Post Unavailable | famio',
             description: 'This content is private or does not exist.'
         };
     }

@@ -1,8 +1,8 @@
-# Famio.us Progressive Web App (PWA) Conversion — Implementation Plan
+# famio.us Progressive Web App (PWA) Conversion — Implementation Plan
 
 ## Executive Summary
 
-This plan transforms **Famio.us** into a production-ready Progressive Web App (PWA) while maintaining:
+This plan transforms **famio.us** into a production-ready Progressive Web App (PWA) while maintaining:
 - **Zero changes** to Firebase Authentication, Firestore, Storage, or Functions
 - **100% data preservation** — no user migrations, schema changes, or re-indexing
 - **Design freeze** — no layout, spacing, typography, or component modifications
@@ -192,8 +192,8 @@ export default pwaConfig(nextConfig);
 
 ```json
 {
-  "name": "Famio - Family Social Network",
-  "short_name": "Famio",
+  "name": "famio - Family Social Network",
+  "short_name": "famio",
   "description": "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
   "start_url": "/",
   "scope": "/",
@@ -308,7 +308,7 @@ export default pwaConfig(nextConfig);
 **Key Features:**
 - `purpose: "any maskable"` — Icons work on all platforms including Android adaptive icons
 - `shortcuts` — Quick actions from home screen
-- `share_target` — Enables "Share to Famio" from other apps (Android only)
+- `share_target` — Enables "Share to famio" from other apps (Android only)
 
 ---
 
@@ -318,7 +318,7 @@ export default pwaConfig(nextConfig);
 
 ```tsx
 export const metadata: Metadata = {
-  title: "Famio - Connect with Your Family and Friends",
+  title: "famio - Connect with Your Family and Friends",
   description: "A private, AI-powered social platform for families. Share moments, plan events, and stay connected.",
   
   // PWA Configuration
@@ -330,9 +330,9 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Famio",
+    title: "famio",
   },
-  applicationName: "Famio",
+  applicationName: "famio",
   formatDetection: {
     telephone: false,
   },
@@ -448,7 +448,7 @@ export default function OfflinePage() {
         <h1 className="text-3xl font-bold mb-4">You're Offline</h1>
         
         <p className="text-muted-foreground mb-8">
-          Famio works best with an internet connection. Check your network settings and try again.
+          famio works best with an internet connection. Check your network settings and try again.
         </p>
         
         <Button
@@ -496,7 +496,7 @@ export function registerServiceWorker() {
       if (event.isUpdate) {
         console.log("[PWA] New version available");
         // Show update notification
-        if (confirm("A new version of Famio is available. Reload to update?")) {
+        if (confirm("A new version of famio is available. Reload to update?")) {
           wb?.messageSkipWaiting();
           window.location.reload();
         }
@@ -657,7 +657,7 @@ export function InstallPrompt() {
           <div className="flex items-start gap-4">
             <Share className="w-6 h-6 text-blue-500 flex-shrink-0 mt-1" />
             <div className="flex-1">
-              <h3 className="font-semibold mb-2">Install Famio on iOS</h3>
+              <h3 className="font-semibold mb-2">Install famio on iOS</h3>
               <ol className="text-sm text-muted-foreground space-y-1">
                 <li>1. Tap the <Share className="inline w-4 h-4" /> Share button in Safari</li>
                 <li>2. Scroll down and tap "Add to Home Screen"</li>
@@ -681,7 +681,7 @@ export function InstallPrompt() {
         <div className="flex items-start gap-4">
           <Download className="w-6 h-6 text-blue-500 flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold mb-1">Install Famio</h3>
+            <h3 className="font-semibold mb-1">Install famio</h3>
             <p className="text-sm text-muted-foreground mb-3">
               Get quick access and a better experience with our app
             </p>
@@ -755,7 +755,7 @@ export const config = {
 | Install Banner | ✅ Automatic | `beforeinstallprompt` event |
 | Service Worker | ✅ Full support | All caching strategies available |
 | Shortcuts | ✅ Supported | Home screen shortcuts in manifest |
-| Share Target | ✅ Supported | "Share to Famio" from other apps |
+| Share Target | ✅ Supported | "Share to famio" from other apps |
 
 ---
 
@@ -1185,7 +1185,7 @@ test("PWA install prompt appears", async ({ page }) => {
 ## Questions for Review
 
 1. **Rollout preference:** Gradual (10% → 50% → 100%) or full deployment?
-2. **Icon design:** Use existing Famio branding or create new PWA-specific icons?
+2. **Icon design:** Use existing famio branding or create new PWA-specific icons?
 3. **Push notifications:** Should we prepare FCM integration for Android even though iOS won't support it?
 4. **Analytics:** Track PWA install events in Firebase Analytics or separate tool?
 

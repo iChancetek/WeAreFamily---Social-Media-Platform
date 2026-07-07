@@ -57,7 +57,7 @@ export async function createNotification(
     try {
         let url = '/';
         let body = 'You have a new notification';
-        const title = 'Famio';
+        const title = 'famio';
 
         // Construct URL and Body based on type
         switch (type) {

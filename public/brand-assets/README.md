@@ -1,6 +1,6 @@
-# Famio Brand Assets
+# famio Brand Assets
 
-This folder contains official Famio branding assets for download and distribution.
+This folder contains official famio branding assets for download and distribution.
 
 ## Available Assets
 
@@ -35,4 +35,4 @@ Right-click any PNG file → "Save As" to download to your desktop.
 
 ---
 
-© 2026 Famio by ChanceTEK. All Rights Reserved.
+© 2026 famio by ChanceTEK. All Rights Reserved.

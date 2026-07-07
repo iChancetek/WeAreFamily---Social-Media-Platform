@@ -26,9 +26,9 @@ export function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         <div className="flex items-center gap-3">
-                            <img src="/icons/famio-symbol.png" alt="Famio" className="w-8 h-8 rounded-xl object-cover shadow-premium" />
+                            <img src="/icons/famio-symbol.png" alt="famio" className="w-8 h-8 rounded-xl object-cover shadow-premium" />
                             <div>
-                                <div className="font-bold text-2xl text-white tracking-tight">Famio</div>
+                                <div className="font-bold text-2xl text-white tracking-tight">famio</div>
                                 <div className="text-xs text-white/80 font-semibold -mt-1 uppercase tracking-wider">by ChanceTEK</div>
                             </div>
                         </div>
@@ -72,24 +72,24 @@ export function LandingPage() {
                     <div className="max-w-4xl">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-full mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <Sparkles className="w-4 h-4 text-primary" />
-                            <span className="text-xs font-bold text-primary uppercase tracking-wider">Next-Gen Family Platform</span>
+                            <span className="text-xs font-bold text-primary uppercase tracking-wider">The AI-Native Platform for Your Inner Circle</span>
                         </div>
 
                         <h1 className="text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter mb-6 drop-shadow-2xl animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                            Famio
+                            famio
                         </h1>
                         <p className="text-3xl md:text-4xl font-bold text-blue-50/90 mb-8 leading-tight animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
                             We Are One — Grow Your Relationships Through Real Connection.
                         </p>
 
                         <p className="max-w-2xl text-xl text-gray-300 mb-12 leading-relaxed font-medium animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
-                            A private, secure sanctuary designed exclusively for families. Moment sharing, 
-                            event coordination, and AI-powered assistance for your modern life.
+                            A private, secure social experience for the people who matter most. Share moments, 
+                            plan together, and let intelligent AI help you stay connected, organized, and effortlessly in sync.
                         </p>
                         
                         <div className="flex flex-col sm:flex-row gap-6 items-center animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500">
                             <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "h-16 px-12 text-xl bg-primary hover:bg-primary/90 text-white font-black shadow-real rounded-full transition-all hover:scale-105 active:scale-95")}>
-                                Join Famio
+                                Join famio
                             </Link>
                             <Link href="/learn-more" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-16 px-12 text-xl border-2 border-white/30 bg-white/5 text-white hover:bg-white/10 backdrop-blur-md font-bold rounded-full transition-all")}>
                                 Learn More
@@ -116,7 +116,7 @@ export function LandingPage() {
             <section className="py-32 bg-background relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-24">
-                        <h2 className="text-5xl font-black text-foreground mb-6 tracking-tighter">Why Choose Famio?</h2>
+                        <h2 className="text-5xl font-black text-foreground mb-6 tracking-tighter">Why Choose famio?</h2>
                         <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
                             Everything your family needs to stay connected, secure, and organized in one polished interface.
                         </p>
@@ -161,7 +161,7 @@ export function LandingPage() {
             <section className="py-32 bg-secondary/50 border-y border-border/50 relative">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-20">
-                        <h2 className="text-4xl font-black text-foreground mb-4 tracking-tight">The Famio Experience</h2>
+                        <h2 className="text-4xl font-black text-foreground mb-4 tracking-tight">The famio Experience</h2>
                         <p className="text-lg text-muted-foreground font-medium">Curated features for a richer family life.</p>
                     </div>
 
@@ -197,9 +197,9 @@ export function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center space-y-10">
                         <div className="flex items-center gap-3">
-                            <img src="/icons/famio-symbol.png" className="w-10 h-10 rounded-2xl object-cover shadow-premium" alt="Famio" />
+                            <img src="/icons/famio-symbol.png" className="w-10 h-10 rounded-2xl object-cover shadow-premium" alt="famio" />
                             <div>
-                                <span className="font-black text-foreground text-2xl tracking-tighter">Famio</span>
+                                <span className="font-black text-foreground text-2xl tracking-tighter">famio</span>
                                 <span className="text-muted-foreground text-sm ml-2 font-bold uppercase tracking-widest">by ChanceTEK</span>
                             </div>
                         </div>
@@ -220,7 +220,7 @@ export function LandingPage() {
                             </p>
                             <div className="h-px w-20 bg-border mx-auto" />
                             <p className="text-muted-foreground text-xs font-bold uppercase tracking-tighter">
-                                © 2026 Famio by ChanceTEK. All Rights Reserved.
+                                © 2026 famio by ChanceTEK. All Rights Reserved.
                             </p>
                             <p className="text-muted-foreground/60 text-[10px] font-medium">
                                 Developed by Chancellor Minus | ChanceTEK LLC | iChanceTEK

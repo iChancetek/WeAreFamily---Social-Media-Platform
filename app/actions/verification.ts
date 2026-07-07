@@ -66,12 +66,12 @@ export async function sendVerificationEmail() {
         await adminDb.collection("mail").add({
             to: user.email,
             message: {
-                subject: "Verify your Famio email",
-                text: `Please verify your email for Famio by clicking here: ${link}`,
+                subject: "Verify your famio email",
+                text: `Please verify your email for famio by clicking here: ${link}`,
                 html: `
                 <div style="font-family: sans-serif; padding: 20px; text-align: center;">
                     <h1>Verify your email</h1>
-                    <p>Click the button below to verify your email address and unlock full access to Famio.</p>
+                    <p>Click the button below to verify your email address and unlock full access to famio.</p>
                     <a href="${link}" style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Verify Email</a>
                     <p style="margin-top: 20px; font-size: 12px; color: #666;">If you didn't create an account, you can ignore this email.</p>
                 </div>

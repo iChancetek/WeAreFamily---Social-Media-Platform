@@ -78,7 +78,7 @@ export async function syncUserToDb(
 ) {
     try {
         // Ensure we have at least SOME name for the user
-        const finalFirstName = (firstName || displayName?.split(/\s+/)[0] || "Famio").trim() || "Famio";
+        const finalFirstName = (firstName || displayName?.split(/\s+/)[0] || "famio").trim() || "famio";
         const finalLastName = (lastName || displayName?.split(/\s+/).slice(1).join(' ') || "Member").trim() || "Member";
         const finalDisplayName = (displayName || `${finalFirstName} ${finalLastName}`).trim() || "Family Member";
 
@@ -169,9 +169,9 @@ export async function notifyAdminNewUser(uid: string, email: string, displayName
         await adminDb.collection("mail").add({
             to: "chancellor@ichancetek.com",
             message: {
-                subject: `New Famio Member: ${displayInfo}`,
-                text: `A new user has joined Famio!\n\nDisplay Name: ${displayName}\nFull Name: ${fullName}\nEmail: ${email}\nUID: ${uid}\n\nThey have been auto-approved as a Member.`,
-                html: `<p>A new user has joined <strong>Famio</strong>!</p><ul><li><strong>Display Name:</strong> ${displayName}</li><li><strong>Full Name:</strong> ${fullName}</li><li><strong>Email:</strong> ${email}</li><li><strong>UID:</strong> ${uid}</li></ul><p>They have been auto-approved as a Member.</p>`,
+                subject: `New famio Member: ${displayInfo}`,
+                text: `A new user has joined famio!\n\nDisplay Name: ${displayName}\nFull Name: ${fullName}\nEmail: ${email}\nUID: ${uid}\n\nThey have been auto-approved as a Member.`,
+                html: `<p>A new user has joined <strong>famio</strong>!</p><ul><li><strong>Display Name:</strong> ${displayName}</li><li><strong>Full Name:</strong> ${fullName}</li><li><strong>Email:</strong> ${email}</li><li><strong>UID:</strong> ${uid}</li></ul><p>They have been auto-approved as a Member.</p>`,
             },
         });
 
@@ -196,7 +196,7 @@ export async function notifyAdminNewUser(uid: string, email: string, displayName
                     action: 'new_user_registration',
                     userName: displayName,
                     userEmail: email,
-                    message: `New User: ${displayInfo} has joined Famio.`
+                    message: `New User: ${displayInfo} has joined famio.`
                 }
             })
         );
@@ -254,18 +254,18 @@ async function sendWelcomeMessageInternal(targetUserId: string, targetUserDispla
     }
 
     // 3. Send Message
-    const welcomeText = `Welcome to Famio \u2014 We Are One!
+    const welcomeText = `Welcome to famio \u2014 We Are One!
 
-Thank you for joining us — we’re excited to have you here. We hope you enjoy a wonderful experience on the Famio platform as you connect, share, and grow with the community.
+Thank you for joining us — we’re excited to have you here. We hope you enjoy a wonderful experience on the famio platform as you connect, share, and grow with the community.
 
-These are exciting times at Famio! We’re rolling out new enhancements and updates every week to make your experience even better.
+These are exciting times at famio! We’re rolling out new enhancements and updates every week to make your experience even better.
 
-We truly appreciate you being part of Famio \u2014 We Are One.
+We truly appreciate you being part of famio \u2014 We Are One.
 
 Best regards,
 Chancellor Minus
 Founder & CEO
-ChanceTEK | Famio`;
+ChanceTEK | famio`;
 
     await adminDb.collection("chats").doc(chatId).collection("messages").add({
         senderId: adminId,

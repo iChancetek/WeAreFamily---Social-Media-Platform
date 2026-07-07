@@ -333,7 +333,7 @@ export function ChatInterface({ isCompact = false, externalContext, initialMode,
                         </div>
                     </form>
                     <p className="text-center text-[10px] text-muted-foreground mt-2">
-                        Famio Intelligence can make mistakes. Consider checking important information.
+                        famio Intelligence can make mistakes. Consider checking important information.
                     </p>
                 </div>
             </Card>

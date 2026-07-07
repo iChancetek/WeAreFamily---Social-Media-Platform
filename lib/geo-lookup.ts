@@ -91,7 +91,7 @@ async function lookupViaIpApi(ip: string): Promise<GeoLookupResult> {
     try {
         const response = await fetch(`https://ipapi.co/${ip}/json/`, {
             signal: controller.signal,
-            headers: { 'User-Agent': 'Famio/1.0' },
+            headers: { 'User-Agent': 'famio/1.0' },
         });
         clearTimeout(timeout);
 
@@ -132,7 +132,7 @@ async function lookupViaIpInfo(ip: string): Promise<GeoLookupResult> {
     try {
         const response = await fetch(`https://ipinfo.io/${ip}/json`, {
             signal: controller.signal,
-            headers: { 'User-Agent': 'Famio/1.0' },
+            headers: { 'User-Agent': 'famio/1.0' },
         });
         clearTimeout(timeout);
 

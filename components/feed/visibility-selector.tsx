@@ -116,7 +116,7 @@ export function VisibilitySelector({ value, onChange, onAllowedViewersChange, al
                             <Globe className="w-4 h-4 mr-2" />
                             <div className="flex flex-col">
                                 <span>Public</span>
-                                <span className="text-[10px] text-muted-foreground">Anyone on Famio</span>
+                                <span className="text-[10px] text-muted-foreground">Anyone on famio</span>
                             </div>
                         </DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="companions" className="cursor-pointer">

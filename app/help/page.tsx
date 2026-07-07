@@ -5,8 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-    title: "Help - PWA Installation Guide | Famio",
-    description: "Learn how to install Famio as a Progressive Web App on iPhone, Android, and Desktop",
+    title: "Help - PWA Installation Guide | famio",
+    description: "Learn how to install famio as a Progressive Web App on iPhone, Android, and Desktop",
 };
 
 export default function HelpPage() {
@@ -16,9 +16,9 @@ export default function HelpPage() {
                 {/* Header */}
                 <div className="text-center space-y-4">
                     <div className="flex items-center justify-center gap-3 mb-4">
-                        <img src="/icons/famio-logo.png" alt="Famio" className="w-16 h-16 rounded-2xl shadow-lg" />
+                        <img src="/icons/famio-logo.png" alt="famio" className="w-16 h-16 rounded-2xl shadow-lg" />
                         <div className="text-left">
-                            <h1 className="text-3xl font-bold tracking-tight">Famio.us Help Center</h1>
+                            <h1 className="text-3xl font-bold tracking-tight">famio.us Help Center</h1>
                             <p className="text-muted-foreground">Progressive Web App Installation Guide</p>
                         </div>
                     </div>
@@ -30,10 +30,10 @@ export default function HelpPage() {
                             </div>
                             <div className="text-left">
                                 <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-2">
-                                    Famio.us Is Now a Progressive Web App (PWA)!
+                                    famio.us Is Now a Progressive Web App (PWA)!
                                 </h2>
                                 <p className="text-blue-800 dark:text-blue-200">
-                                    We're excited to share that <strong>Famio.us</strong> has officially been converted into a Progressive Web App 🎉
+                                    We're excited to share that <strong>famio.us</strong> has officially been converted into a Progressive Web App 🎉
                                 </p>
                                 <p className="text-blue-700 dark:text-blue-300 mt-2">
                                     This means you can now enjoy a faster, smoother, and app-like experience on your mobile device or desktop—without downloading anything from an app store.
@@ -70,10 +70,10 @@ export default function HelpPage() {
                                     <div className="bg-green-100 dark:bg-green-900 p-2 rounded-full">
                                         📤
                                     </div>
-                                    <h4 className="font-semibold">Share to Famio</h4>
+                                    <h4 className="font-semibold">Share to famio</h4>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    Share photos, links, and text directly to Famio from any app on your device.
+                                    Share photos, links, and text directly to famio from any app on your device.
                                 </p>
                             </div>
 
@@ -140,7 +140,7 @@ export default function HelpPage() {
 
                 {/* Installation Instructions */}
                 <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-center">📱 How to Add Famio.us to Your Device</h2>
+                    <h2 className="text-2xl font-bold text-center">📱 How to Add famio.us to Your Device</h2>
 
                     {/* iPhone */}
                     <Card className="border-blue-200 dark:border-blue-800">
@@ -149,12 +149,12 @@ export default function HelpPage() {
                                 <Apple className="w-6 h-6" />
                                 On iPhone (Safari)
                             </CardTitle>
-                            <CardDescription>Install Famio on your iOS device</CardDescription>
+                            <CardDescription>Install famio on your iOS device</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6">
                             <ol className="space-y-3 list-decimal list-inside">
                                 <li className="pl-2">
-                                    Open Safari and go to 👉 <Link href="https://Famio.us" className="text-blue-600 hover:underline font-semibold">https://Famio.us</Link>
+                                    Open Safari and go to 👉 <Link href="https://famio.us" className="text-blue-600 hover:underline font-semibold">https://famio.us</Link>
                                 </li>
                                 <li className="pl-2">
                                     Tap the <strong>Share</strong> icon (square with an arrow ↑) at the bottom of the screen
@@ -163,7 +163,7 @@ export default function HelpPage() {
                                     Scroll down and tap <strong>"Add to Home Screen"</strong>
                                 </li>
                                 <li className="pl-2">
-                                    Name it <strong>Famio</strong> (or keep the default)
+                                    Name it <strong>famio</strong> (or keep the default)
                                 </li>
                                 <li className="pl-2">
                                     Tap <strong>Add</strong>
@@ -171,7 +171,7 @@ export default function HelpPage() {
                             </ol>
                             <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
                                 <p className="text-green-800 dark:text-green-200 font-medium">
-                                    ✅ Famio.us will now appear on your home screen like a native app.
+                                    ✅ famio.us will now appear on your home screen like a native app.
                                 </p>
                             </div>
                         </CardContent>
@@ -184,12 +184,12 @@ export default function HelpPage() {
                                 <Chrome className="w-6 h-6" />
                                 On Android (Chrome)
                             </CardTitle>
-                            <CardDescription>Install Famio on your Android device</CardDescription>
+                            <CardDescription>Install famio on your Android device</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6">
                             <ol className="space-y-3 list-decimal list-inside">
                                 <li className="pl-2">
-                                    Open Chrome and visit 👉 <Link href="https://Famio.us" className="text-blue-600 hover:underline font-semibold">https://Famio.us</Link>
+                                    Open Chrome and visit 👉 <Link href="https://famio.us" className="text-blue-600 hover:underline font-semibold">https://famio.us</Link>
                                 </li>
                                 <li className="pl-2">
                                     Tap the <strong>three-dot menu (⋮)</strong> in the top-right corner
@@ -203,7 +203,7 @@ export default function HelpPage() {
                             </ol>
                             <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
                                 <p className="text-green-800 dark:text-green-200 font-medium">
-                                    ✅ Famio.us is now installed and ready to use like a mobile app.
+                                    ✅ famio.us is now installed and ready to use like a mobile app.
                                 </p>
                             </div>
                         </CardContent>
@@ -216,13 +216,13 @@ export default function HelpPage() {
                                 <Monitor className="w-6 h-6" />
                                 On Desktop (Chrome, Edge, or Safari)
                             </CardTitle>
-                            <CardDescription>Install Famio on your computer</CardDescription>
+                            <CardDescription>Install famio on your computer</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-6">
                             <div className="space-y-4">
                                 <div>
                                     <p className="mb-2">
-                                        Visit 👉 <Link href="https://Famio.us" className="text-blue-600 hover:underline font-semibold">https://Famio.us</Link>
+                                        Visit 👉 <Link href="https://famio.us" className="text-blue-600 hover:underline font-semibold">https://famio.us</Link>
                                     </p>
                                 </div>
 
@@ -235,7 +235,7 @@ export default function HelpPage() {
                                         </li>
                                         <li className="flex items-start gap-2">
                                             <span className="text-purple-600 mt-1">•</span>
-                                            <span>Or go to the <strong>three-dot menu → Install Famio</strong></span>
+                                            <span>Or go to the <strong>three-dot menu → Install famio</strong></span>
                                         </li>
                                     </ul>
                                 </div>
@@ -256,7 +256,7 @@ export default function HelpPage() {
                             </div>
                             <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
                                 <p className="text-green-800 dark:text-green-200 font-medium">
-                                    ✅ Famio.us will launch in its own window for a clean, app-style experience.
+                                    ✅ famio.us will launch in its own window for a clean, app-style experience.
                                 </p>
                             </div>
                         </CardContent>
@@ -275,8 +275,8 @@ export default function HelpPage() {
                                     iChanceTEK.com
                                 </Link>
                                 <span className="text-muted-foreground">•</span>
-                                <Link href="https://Famio.us" className="text-blue-600 hover:underline text-sm">
-                                    Famio.us
+                                <Link href="https://famio.us" className="text-blue-600 hover:underline text-sm">
+                                    famio.us
                                 </Link>
                             </div>
                         </div>

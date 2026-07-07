@@ -180,7 +180,7 @@ export function UserList({ users }: { users: User[] }) {
                         const profileName = (profile?.firstName && profile?.lastName) ? `${profile.firstName} ${profile.lastName}`.trim() : null;
                         const emailName = user.email.split('@')[0];
 
-                        const name = displayName || profileName || emailName || "Famio Member";
+                        const name = displayName || profileName || emailName || "famio Member";
                         const initials = name.slice(0, 2).toUpperCase();
                         const isDeleted = !!user.deletedAt;
 

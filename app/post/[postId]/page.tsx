@@ -28,7 +28,7 @@ export async function generateMetadata(
 
     if (!post || post.engagementSettings?.privacy === 'private') {
         return {
-            title: 'Post Unavailable | Famio',
+            title: 'Post Unavailable | famio',
             description: 'This content is private or does not exist.'
         };
     }

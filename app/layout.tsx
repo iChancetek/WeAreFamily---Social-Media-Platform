@@ -24,15 +24,15 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://famio.us"),
-  title: "Famio - We Are One",
+  title: "famio - We Are One",
   description: "A private, AI-powered social platform. We Are One.",
 
   // Open Graph for Social Sharing
   openGraph: {
-    title: "Famio - We Are One",
+    title: "famio - We Are One",
     description: "A private, AI-powered social platform. We Are One.",
     url: "https://famio.us",
-    siteName: "Famio",
+    siteName: "famio",
     locale: "en_US",
     type: "website",
   },
@@ -40,9 +40,9 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: "Famio - We Are One",
+    title: "famio - We Are One",
     description: "A private, AI-powered social platform. We Are One.",
-    site: "@Famio",
+    site: "@famio",
   },
 
   // PWA Configuration
@@ -50,9 +50,9 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Famio",
+    title: "famio",
   },
-  applicationName: "Famio",
+  applicationName: "famio",
   formatDetection: {
     telephone: false,
   },

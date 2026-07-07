@@ -17,7 +17,7 @@ type Message = {
 export function LandingChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: "Hi! I'm the Famio Assistant. Ask me anything about our features, security, or how Famio fits your lifestyle!" }
+        { role: 'assistant', content: "Hi! I'm the famio Assistant. Ask me anything about our features, security, or how famio fits your lifestyle!" }
     ]);
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -90,7 +90,7 @@ export function LandingChatWidget() {
                         <Bot className="w-5 h-5" />
                     </div>
                     <div>
-                        <h3 className="font-bold text-sm">Famio Assistant</h3>
+                        <h3 className="font-bold text-sm">famio Assistant</h3>
                         <p className="text-[10px] text-blue-100 flex items-center gap-1">
                             <Sparkles className="w-3 h-3" /> Powered by AI
                         </p>

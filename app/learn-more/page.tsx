@@ -11,9 +11,9 @@ export default function LearnMorePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <Link href="/" className="flex items-center gap-4">
-                            <img src="/icons/famio-logo.png" className="w-16 h-16 rounded-2xl object-cover shadow-sm" alt="Famio" />
+                            <img src="/icons/famio-logo.png" className="w-16 h-16 rounded-2xl object-cover shadow-sm" alt="famio" />
                             <div>
-                                <div className="font-bold text-3xl text-gray-900 tracking-tight">Famio</div>
+                                <div className="font-bold text-3xl text-gray-900 tracking-tight">famio</div>
                                 <div className="text-sm text-gray-600 font-medium -mt-1">by ChanceTEK</div>
                             </div>
                         </Link>
@@ -44,7 +44,7 @@ export default function LearnMorePage() {
                         Everything Your Family Needs to Stay Connected
                     </h1>
                     <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                        Famio is a private, secure social platform built exclusively for families. Share moments, plan events, and stay connected with the people who matter most.
+                        famio is a private, secure social platform built exclusively for families. Share moments, plan events, and stay connected with the people who matter most.
                     </p>
                 </div>
             </section>
@@ -59,10 +59,10 @@ export default function LearnMorePage() {
                             <span className="text-sm font-semibold text-white">New Update</span>
                         </div>
                         <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
-                            🚀 Famio is Now a Progressive Web App (PWA)!
+                            🚀 famio is Now a Progressive Web App (PWA)!
                         </h2>
                         <p className="text-xl text-indigo-100 max-w-3xl mx-auto leading-relaxed">
-                            We’re excited to share that Famio has officially been converted into a PWA 🎉
+                            We’re excited to share that famio has officially been converted into a PWA 🎉
                             <br />
                             Enjoy a faster, smoother, and app-like experience on your mobile device or desktop—without downloading anything from an app store.
                         </p>
@@ -94,7 +94,7 @@ export default function LearnMorePage() {
 
                     {/* How to Install */}
                     <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 md:p-12 border border-white/10">
-                        <h3 className="text-3xl font-bold text-center mb-12">📱 How to Add Famio to Your Device</h3>
+                        <h3 className="text-3xl font-bold text-center mb-12">📱 How to Add famio to Your Device</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
                             {/* iPhone */}
                             <div className="space-y-4">
@@ -108,7 +108,7 @@ export default function LearnMorePage() {
                                     <li>Open Safari and go to <span className="text-white font-mono bg-white/20 px-1 rounded">https://famio.us</span></li>
                                     <li>Tap the <strong className="text-white">Share icon</strong> (square with an arrow ↑)</li>
                                     <li>Scroll down and tap <strong className="text-white">“Add to Home Screen”</strong></li>
-                                    <li>Name it <strong>Famio</strong> and tap Add</li>
+                                    <li>Name it <strong>famio</strong> and tap Add</li>
                                 </ol>
                                 <p className="text-sm text-green-300 flex items-center gap-2 mt-4">
                                     <CheckCircle2 className="w-4 h-4" /> Appears on home screen
@@ -149,7 +149,7 @@ export default function LearnMorePage() {
                                         <p className="font-semibold text-white mb-1">Chrome / Edge:</p>
                                         <ul className="text-indigo-100 list-disc pl-5 space-y-1">
                                             <li>Click the <strong className="text-white">Install (➕)</strong> icon in address bar</li>
-                                            <li>OR: Menu (⋮) → Install Famio</li>
+                                            <li>OR: Menu (⋮) → Install famio</li>
                                         </ul>
                                     </div>
                                     <div>
@@ -342,7 +342,7 @@ export default function LearnMorePage() {
                         <Globe className="w-16 h-16 text-blue-300 mx-auto mb-6" />
                         <h2 className="text-4xl md:text-5xl font-extrabold mb-6">We Are One.</h2>
                         <p className="text-xl text-indigo-100 max-w-3xl mx-auto leading-relaxed">
-                            Famio is built on the belief that family extends beyond bloodlines.
+                            famio is built on the belief that family extends beyond bloodlines.
                             It&apos;s a sanctuary to grow meaningful connections with your chosen family—friends, companions, colleagues, and partners.
                         </p>
                     </div>
@@ -361,7 +361,7 @@ export default function LearnMorePage() {
                                 </div>
                                 <h2 className="text-4xl font-bold text-gray-900 mb-4">Location Sharing on Your Terms</h2>
                                 <p className="text-lg text-gray-600 leading-relaxed">
-                                    We believe location data is sensitive. That&apos;s why on Famio, <strong>Location Sharing is OFF by default.</strong>
+                                    We believe location data is sensitive. That&apos;s why on famio, <strong>Location Sharing is OFF by default.</strong>
                                 </p>
                             </div>
 
@@ -439,7 +439,7 @@ export default function LearnMorePage() {
                         Ready to Bring Your Family Together?
                     </h2>
                     <p className="text-xl mb-8 text-blue-100">
-                        Join thousands of families already connected on Famio.
+                        Join thousands of families already connected on famio.
                     </p>
                     <Link href="/signup">
                         <Button size="lg" className="h-16 px-12 text-lg bg-white text-blue-600 hover:bg-gray-100 font-bold shadow-xl">
@@ -454,16 +454,16 @@ export default function LearnMorePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <Link href="/" className="flex items-center">
                         <div className="flex items-center gap-4">
-                            <img src="/icons/famio-logo.png" className="w-20 h-20 rounded-[28px] object-cover shadow-sm" alt="Famio" />
+                            <img src="/icons/famio-logo.png" className="w-20 h-20 rounded-[28px] object-cover shadow-sm" alt="famio" />
                             <span className="font-bold text-3xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
-                                Famio
+                                famio
                             </span>
                         </div>
                     </Link>
                     <div className="flex flex-col items-center justify-center space-y-4">
                         <div className="text-center space-y-2">
                             <p className="text-gray-600 text-sm">
-                                © 2026 Famio by ChanceTEK. All Rights Reserved.
+                                © 2026 famio by ChanceTEK. All Rights Reserved.
                             </p>
                             <p className="text-gray-500 text-xs">
                                 Developed by Chancellor Minus | ChanceTEK LLC | iChanceTEK

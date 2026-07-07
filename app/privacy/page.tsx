@@ -32,10 +32,10 @@ export default function PrivacyPage() {
                                 At <span className="font-bold text-primary">ChanceTEK</span>, we believe trust is the foundation of every meaningful digital experience.
                             </p>
                             <p>
-                                <span className="font-bold">Famio.us</span> is an AI-powered social media platform built to bring people closer—securely, intelligently, and responsibly. We take the privacy, security, and protection of our users’ data extremely seriously, and we design every layer of Famio with that responsibility in mind.
+                                <span className="font-bold">famio.us</span> is an AI-powered social media platform built to bring people closer—securely, intelligently, and responsibly. We take the privacy, security, and protection of our users’ data extremely seriously, and we design every layer of famio with that responsibility in mind.
                             </p>
                             <p>
-                                Famio.us is built on top of <span className="font-semibold">Google’s secure cloud infrastructure</span>, leveraging enterprise-grade security, reliability, and compliance standards trusted by organizations around the world. From data encryption to access controls, our systems are engineered to safeguard your information while delivering a powerful, intelligent, and seamless social experience.
+                                famio.us is built on top of <span className="font-semibold">Google’s secure cloud infrastructure</span>, leveraging enterprise-grade security, reliability, and compliance standards trusted by organizations around the world. From data encryption to access controls, our systems are engineered to safeguard your information while delivering a powerful, intelligent, and seamless social experience.
                             </p>
                             <p className="text-xl font-medium italic text-primary/90 mt-4">
                                 "Your data belongs to you. Our role is to protect it, respect it, and use it only to improve your experience—never to compromise it."
@@ -50,8 +50,8 @@ export default function PrivacyPage() {
                                     </Link>
                                 </div>
                                 <div className="text-right">
-                                    <Link href="https://Famio.us" className="text-sm font-semibold hover:text-primary transition-colors">
-                                        Famio.us
+                                    <Link href="https://famio.us" className="text-sm font-semibold hover:text-primary transition-colors">
+                                        famio.us
                                     </Link>
                                 </div>
                             </div>
@@ -93,7 +93,7 @@ export default function PrivacyPage() {
                         </h3>
                         <div className="bg-slate-950 text-slate-100 p-6 rounded-xl border border-slate-800">
                             <p className="mb-4">
-                                Famio.us is essentially built on <span className="text-blue-400 font-semibold">Google Cloud Platform (GCP)</span>.
+                                famio.us is essentially built on <span className="text-blue-400 font-semibold">Google Cloud Platform (GCP)</span>.
                             </p>
                             <div className="grid gap-3 sm:grid-cols-2">
                                 {[
@@ -135,7 +135,7 @@ export default function PrivacyPage() {
                         </h3>
                         <div className="bg-teal-500/10 border border-teal-500/20 p-6 rounded-xl">
                             <p className="mb-4 font-medium text-teal-700 dark:text-teal-300">
-                                All AI systems on Famio are Privacy-aware, Secure-by-design, and Purpose-driven.
+                                All AI systems on famio are Privacy-aware, Secure-by-design, and Purpose-driven.
                             </p>
                             <ul className="space-y-3">
                                 <li className="flex gap-3">
@@ -157,7 +157,7 @@ export default function PrivacyPage() {
                     {/* 5. User Control */}
                     <section>
                         <h3 className="text-2xl font-bold mb-4">5. User Control & Transparency</h3>
-                        <p className="mb-4">You have full control over your digital footprint on Famio.</p>
+                        <p className="mb-4">You have full control over your digital footprint on famio.</p>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {["Control what you share", "Edit or delete content", "Manage privacy settings", "Request account deletion", "Request data access", "Request data removal"].map((action, i) => (
                                 <div key={i} className="p-3 bg-secondary/30 rounded text-center text-sm font-medium hover:bg-secondary/50 transition-colors cursor-default">
@@ -173,7 +173,7 @@ export default function PrivacyPage() {
                             <Globe className="w-6 h-6 text-indigo-500" />
                             6. GDPR Compliance (EU / EEA)
                         </h3>
-                        <p className="mb-4">Famio.us explicitly complies with the General Data Protection Regulation (GDPR).</p>
+                        <p className="mb-4">famio.us explicitly complies with the General Data Protection Regulation (GDPR).</p>
                         <div className="space-y-2 text-sm text-muted-foreground">
                             <p><strong>Lawful Basis:</strong> We process data based on consent, contract necessity, and legitimate interests.</p>
                             <p><strong>Your Rights:</strong> Access, Rectification, Erasure (&quot;Right to be Forgotten&quot;), Portability, Restriction, and Objection.</p>
@@ -207,7 +207,7 @@ export default function PrivacyPage() {
                         <h3 className="text-2xl font-bold mb-4">9. Children’s Privacy</h3>
                         <div className="p-4 border-l-4 border-red-500 bg-red-50 dark:bg-red-950/10">
                             <p className="font-medium">
-                                Famio.us is not intended for children under 13.
+                                famio.us is not intended for children under 13.
                             </p>
                             <p className="text-sm mt-1 text-muted-foreground">
                                 We do not intentionally collect data from children. If discovered, such data will be promptly removed.

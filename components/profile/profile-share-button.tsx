@@ -54,7 +54,7 @@ export function ProfileShareButton({ userId, displayName, isPublic }: ProfileSha
     };
 
     const handleShareTwitter = () => {
-        const text = `Check out ${displayName}'s profile on Famio`;
+        const text = `Check out ${displayName}'s profile on famio`;
         const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(profileUrl)}`;
         window.open(twitterUrl, '_blank', 'width=600,height=400');
         setOpen(false);

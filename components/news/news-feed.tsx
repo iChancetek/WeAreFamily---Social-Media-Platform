@@ -111,7 +111,7 @@ export function NewsFeed() {
             </div>
 
             <div className="text-[10px] text-center text-muted-foreground mt-2 border-t border-border pt-2 mx-4">
-                Powered by Public RSS & Famio
+                Powered by Public RSS & famio
             </div>
         </div>
     );

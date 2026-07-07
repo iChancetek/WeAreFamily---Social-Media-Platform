@@ -134,10 +134,10 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                         type="button"
                     >
                         <div className="relative flex items-center justify-center w-16 h-16">
-                            <img src="/icons/famio-logo.png" className="w-16 h-16 rounded-2xl object-cover" alt="Famio" />
+                            <img src="/icons/famio-logo.png" className="w-16 h-16 rounded-2xl object-cover" alt="famio" />
                         </div>
                         <span className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">
-                            Famio
+                            famio
                         </span>
                     </button>
                 </div>

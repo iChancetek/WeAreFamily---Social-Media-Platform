@@ -1,4 +1,4 @@
-# Famio - Family Social Network
+# famio - Family Social Network
 
 Version: 2.0.0 - Progressive Web App Edition
 

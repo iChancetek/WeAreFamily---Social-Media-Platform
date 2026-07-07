@@ -47,14 +47,14 @@ export async function generateContentMetadata(
     }
 
     // Title Logic
-    const authorName = post.author?.displayName || "Famio User";
-    const title = videoTitle || (post.content ? truncate(post.content, 60) : `${authorName} on Famio`);
+    const authorName = post.author?.displayName || "famio User";
+    const title = videoTitle || (post.content ? truncate(post.content, 60) : `${authorName} on famio`);
 
     // Description Logic: Strip URLs to avoid ugly links in preview
     const cleanContent = post.content ? post.content.replace(/(?:https?|ftp):\/\/[\n\S]+/g, '').trim() : '';
     const description = cleanContent
         ? truncate(cleanContent, 160)
-        : (videoTitle ? `Watch "${videoTitle}" on Famio` : `View this post on Famio.`);
+        : (videoTitle ? `Watch "${videoTitle}" on famio` : `View this post on famio.`);
 
 
     // 2. Image Selection Logic — normalise media to URLs first
@@ -84,7 +84,7 @@ export async function generateContentMetadata(
     else if (resolvedUrls.length > 0) {
         const firstMedia = resolvedUrls[0];
         if (isUrlVideo(firstMedia)) {
-            // For video: use the thumbnail if present on the media object, else Famio logo
+            // For video: use the thumbnail if present on the media object, else famio logo
             const mediaItem = post.media?.find(m => m.url === firstMedia) as any;
             imageUrl = mediaItem?.thumbnailUrl || post.thumbnailUrl || OG_IMAGE_FALLBACK;
             type = 'video.other';
@@ -103,7 +103,7 @@ export async function generateContentMetadata(
             description,
             type: type as any,
             url: canonicalUrl,
-            siteName: 'Famio',
+            siteName: 'famio',
             locale: 'en_US',
             images: [
                 {
@@ -139,8 +139,8 @@ export async function generateContentMetadata(
             title,
             description,
             images: [imageUrl],
-            site: '@Famio',
-            creator: post.author?.displayName ? `@${post.author.displayName.replace(/\s+/g, '')}` : '@Famio',
+            site: '@famio',
+            creator: post.author?.displayName ? `@${post.author.displayName.replace(/\s+/g, '')}` : '@famio',
             // Twitter player for videos
             ...(videoUrlForOg && {
                 players: [{
