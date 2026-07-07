@@ -133,10 +133,10 @@ export function MobileSidebar({ isAdmin, className, onLinkClick }: MobileSidebar
                         onClick={() => handleNavigation("/", "Logo")}
                         type="button"
                     >
-                        <div className="relative flex items-center justify-center w-10 h-10">
-                            <img src="/icons/famio-logo.png" className="w-6 h-6 rounded-lg object-cover" alt="Famio" />
+                        <div className="relative flex items-center justify-center w-16 h-16">
+                            <img src="/icons/famio-logo.png" className="w-16 h-16 rounded-2xl object-cover" alt="Famio" />
                         </div>
-                        <span className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">
+                        <span className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">
                             Famio
                         </span>
                     </button>

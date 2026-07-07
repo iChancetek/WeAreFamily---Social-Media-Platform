@@ -10,11 +10,11 @@ export default function LearnMorePage() {
             <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
-                        <Link href="/" className="flex items-center gap-3">
-                            <img src="/icons/famio-logo.png" className="w-10 h-10 rounded-xl object-cover" alt="Famio" />
+                        <Link href="/" className="flex items-center gap-4">
+                            <img src="/icons/famio-logo.png" className="w-16 h-16 rounded-2xl object-cover shadow-sm" alt="Famio" />
                             <div>
-                                <div className="font-bold text-2xl text-gray-900 tracking-tight">Famio</div>
-                                <div className="text-xs text-gray-600 font-medium -mt-1">by ChanceTEK</div>
+                                <div className="font-bold text-3xl text-gray-900 tracking-tight">Famio</div>
+                                <div className="text-sm text-gray-600 font-medium -mt-1">by ChanceTEK</div>
                             </div>
                         </Link>
                         <div className="flex items-center gap-3">
@@ -452,14 +452,15 @@ export default function LearnMorePage() {
             {/* Footer */}
             <footer className="bg-white border-t border-gray-200 py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col items-center justify-center space-y-4">
-                        <div className="flex items-center gap-2">
-                            <img src="/icons/famio-logo.png" className="w-10 h-10 rounded-xl object-cover" alt="Famio" />
-                            <div>
-                                <span className="font-bold text-gray-900 text-lg">Famio</span>
-                                <span className="text-gray-500 text-sm ml-2">by ChanceTEK</span>
-                            </div>
+                    <Link href="/" className="flex items-center">
+                        <div className="flex items-center gap-4">
+                            <img src="/icons/famio-logo.png" className="w-20 h-20 rounded-[28px] object-cover shadow-sm" alt="Famio" />
+                            <span className="font-bold text-3xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
+                                Famio
+                            </span>
                         </div>
+                    </Link>
+                    <div className="flex flex-col items-center justify-center space-y-4">
                         <div className="text-center space-y-2">
                             <p className="text-gray-600 text-sm">
                                 © 2026 Famio by ChanceTEK. All Rights Reserved.

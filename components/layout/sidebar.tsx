@@ -117,13 +117,13 @@ export function Sidebar({ isAdmin, className, onLinkClick }: SidebarProps) {
                         className="flex items-center gap-3 group"
                         onClick={onLinkClick}
                     >
-                        <div className="relative flex items-center justify-center w-10 h-10">
+                        <div className="relative flex items-center justify-center w-16 h-16">
                             {/* Animated Logo Mark */}
                             <img
                                 src="/icons/famio-logo.png"
                                 alt="Famio"
                                 className={cn(
-                                    "w-6 h-6 rounded-lg object-cover transition-transform duration-200",
+                                    "w-14 h-14 rounded-2xl object-cover transition-transform duration-200",
                                     isHovered ? "scale-100" : "scale-90"
                                 )}
                             />

@@ -144,12 +144,15 @@ export default function SignupPage() {
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white py-12">
             <Card className="w-full max-w-md shadow-lg">
                 <CardHeader className="text-center space-y-2">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                        <img src="/icons/famio-logo.png" alt="Famio" className="w-8 h-8 rounded-xl object-cover" />
-                        <span className="text-2xl font-bold text-blue-600">Famio</span>
+                    <div className="text-center mb-10">
+                        <div className="flex flex-col items-center justify-center gap-4 mb-4">
+                            <img src="/icons/famio-logo.png" alt="Famio" className="w-24 h-24 rounded-[32px] object-cover shadow-lg" />
+                            <span className="font-bold text-4xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
+                                Famio
+                            </span>
+                        </div>
+                        <p className="text-base text-muted-foreground">Join your family network on Famio</p>
                     </div>
-                    <CardTitle className="text-2xl font-bold">Create Your Account</CardTitle>
-                    <CardDescription>Join your family network on Famio</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSignup} className="space-y-4">

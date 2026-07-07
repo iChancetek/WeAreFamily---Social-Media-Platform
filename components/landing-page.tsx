@@ -26,7 +26,7 @@ export function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         <div className="flex items-center gap-3">
-                            <img src="/icons/famio-logo.png" alt="Famio" className="w-8 h-8 rounded-xl object-cover shadow-premium" />
+                            <img src="/icons/famio-symbol.png" alt="Famio" className="w-8 h-8 rounded-xl object-cover shadow-premium" />
                             <div>
                                 <div className="font-bold text-2xl text-white tracking-tight">Famio</div>
                                 <div className="text-xs text-white/80 font-semibold -mt-1 uppercase tracking-wider">by ChanceTEK</div>
@@ -197,7 +197,7 @@ export function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center space-y-10">
                         <div className="flex items-center gap-3">
-                            <img src="/icons/famio-logo.png" className="w-10 h-10 rounded-2xl object-cover shadow-premium" alt="Famio" />
+                            <img src="/icons/famio-symbol.png" className="w-10 h-10 rounded-2xl object-cover shadow-premium" alt="Famio" />
                             <div>
                                 <span className="font-black text-foreground text-2xl tracking-tighter">Famio</span>
                                 <span className="text-muted-foreground text-sm ml-2 font-bold uppercase tracking-widest">by ChanceTEK</span>

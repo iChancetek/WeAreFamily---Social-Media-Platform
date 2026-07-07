@@ -209,13 +209,13 @@ export function BottomNav() {
                                 <Menu className="w-6 h-6" />
                             </button>
                         </SheetTrigger>
-                        <SheetContent side="bottom" className="p-0 h-[80vh] rounded-t-[32px] border-t border-white/10 bg-[#0B0F14]/95 backdrop-blur-xl">
+                        <SheetContent side="bottom" className="p-0 h-[80vh] rounded-t-[32px] border-t border-black/10 dark:border-white/10 bg-white/95 dark:bg-[#0B0F14]/95 backdrop-blur-xl">
                             <VisuallyHidden>
                                 <SheetTitle>Navigation Menu</SheetTitle>
                                 <SheetDescription>Main navigation links</SheetDescription>
                             </VisuallyHidden>
                             <div className="p-6 h-full overflow-y-auto">
-                                <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-8" /> {/* Drag Handle */}
+                                <div className="w-12 h-1 bg-black/10 dark:bg-white/10 rounded-full mx-auto mb-8" /> {/* Drag Handle */}
                                 <MobileSidebar className="w-full h-full bg-transparent shadow-none border-none p-0" onLinkClick={() => setOpen(false)} />
                             </div>
                         </SheetContent>

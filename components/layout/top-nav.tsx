@@ -16,11 +16,11 @@ export function TopNav({ className }: { className?: string }) {
     return (
         <header className={`flex items-center justify-between px-4 h-16 fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${className} glass-panel`}>
             {/* Logo Area */}
-            <div className="flex items-center gap-3">
-                <div className="relative flex items-center justify-center w-8 h-8">
-                    <img src="/icons/famio-logo.png" alt="Famio" className="w-6 h-6 rounded-lg object-cover" />
+            <div className="flex items-center gap-4">
+                <div className="relative flex items-center justify-center w-14 h-14">
+                    <img src="/icons/famio-logo.png" alt="Famio" className="w-14 h-14 rounded-2xl object-cover" />
                 </div>
-                <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
+                <span className="font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
                     Famio
                 </span>
             </div>
