@@ -254,13 +254,13 @@ async function sendWelcomeMessageInternal(targetUserId: string, targetUserDispla
     }
 
     // 3. Send Message
-    const welcomeText = `Welcome to famio \u2014 We Are One!
+    const welcomeText = `Welcome to famio \u2014 The Future of Human Connection!
 
 Thank you for joining us — we’re excited to have you here. We hope you enjoy a wonderful experience on the famio platform as you connect, share, and grow with the community.
 
 These are exciting times at famio! We’re rolling out new enhancements and updates every week to make your experience even better.
 
-We truly appreciate you being part of famio \u2014 We Are One.
+We truly appreciate you being part of famio \u2014 The Future of Human Connection.
 
 Best regards,
 Chancellor Minus

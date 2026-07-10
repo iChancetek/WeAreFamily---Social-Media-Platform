@@ -417,7 +417,7 @@ export async function seedKnowledgeBase() {
 import type { EmotionalTone, MagicAIRequest, MagicAIResponse } from "@/types/magic-ai";
 
 const TONE_PROMPTS: Record<EmotionalTone, string> = {
-    default: `You are helping a user write a warm, engaging social media post for the famio \u2014 We Are One platform.
+    default: `You are helping a user write a warm, engaging social media post for the famio \u2014 The Future of Human Connection platform.
     
 Guidelines:
 - Keep it natural and conversational

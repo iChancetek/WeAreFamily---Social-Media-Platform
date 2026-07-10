@@ -79,7 +79,7 @@ export function LandingPage() {
                             famio
                         </h1>
                         <p className="text-3xl md:text-4xl font-bold text-blue-50/90 mb-8 leading-tight animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-                            We Are One — Grow Your Relationships Through Real Connection.
+                            The Future of Human Connection — Grow Your Relationships Through Real Connection.
                         </p>
 
                         <p className="max-w-2xl text-xl text-gray-300 mb-12 leading-relaxed font-medium animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
@@ -150,7 +150,7 @@ export function LandingPage() {
                         />
                          <FeatureCard
                             icon={<Heart className="w-8 h-8" />}
-                            title="We Are One"
+                            title="The Future of Human Connection"
                             description="Our core philosophy is connection. We build tools that bring people together, not keep them scrolling."
                         />
                     </div>

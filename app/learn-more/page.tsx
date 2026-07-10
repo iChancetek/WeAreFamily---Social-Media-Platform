@@ -340,7 +340,7 @@ export default function LearnMorePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center mb-16">
                         <Globe className="w-16 h-16 text-blue-300 mx-auto mb-6" />
-                        <h2 className="text-4xl md:text-5xl font-extrabold mb-6">We Are One.</h2>
+                        <h2 className="text-4xl md:text-5xl font-extrabold mb-6">The Future of Human Connection.</h2>
                         <p className="text-xl text-indigo-100 max-w-3xl mx-auto leading-relaxed">
                             famio is built on the belief that family extends beyond bloodlines.
                             It&apos;s a sanctuary to grow meaningful connections with your chosen family—friends, companions, colleagues, and partners.

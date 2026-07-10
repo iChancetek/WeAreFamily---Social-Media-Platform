@@ -24,13 +24,13 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://famio.us"),
-  title: "famio - We Are One",
-  description: "A private, AI-powered social platform. We Are One.",
+  title: "famio - The Future of Human Connection",
+  description: "A private, AI-powered social platform. The Future of Human Connection.",
 
   // Open Graph for Social Sharing
   openGraph: {
-    title: "famio - We Are One",
-    description: "A private, AI-powered social platform. We Are One.",
+    title: "famio - The Future of Human Connection",
+    description: "A private, AI-powered social platform. The Future of Human Connection.",
     url: "https://famio.us",
     siteName: "famio",
     locale: "en_US",
@@ -40,8 +40,8 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: "famio - We Are One",
-    description: "A private, AI-powered social platform. We Are One.",
+    title: "famio - The Future of Human Connection",
+    description: "A private, AI-powered social platform. The Future of Human Connection.",
     site: "@famio",
   },
 
