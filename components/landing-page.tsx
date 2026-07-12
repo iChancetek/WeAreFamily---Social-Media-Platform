@@ -55,7 +55,7 @@ export function LandingPage() {
                     playsInline
                     className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none"
                 >
-                    <source src="/famio.us2.mp4" type="video/mp4" />
+                    <source src="/Famio_symbol_Video.mp4" type="video/mp4" />
                 </video>
                 <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-zinc-950 pointer-events-none" />
 
