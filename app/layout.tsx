@@ -16,6 +16,7 @@ import { NotificationPermissionPrompt } from "@/components/notifications/notific
 import { SyncStatusIndicator } from "@/components/pwa/sync-status-indicator";
 import { ActivityTracker } from "@/components/layout/activity-tracker";
 import { LivePresenceProvider } from "@/components/live/live-presence-context";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -105,6 +106,9 @@ export default function RootLayout({
                   <Toaster />
                   {/* <CallOverlay /> */}
                   <AIAssistant />
+                  <div className="fixed top-4 right-4 z-50">
+                    <ModeToggle />
+                  </div>
                 </MessageNotificationProvider>
               </LivePresenceProvider>
             </LanguageProvider>
