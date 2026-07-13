@@ -21,6 +21,11 @@ famio integrates a sophisticated multi-modal AI Agent system designed to enhance
 - **Model Context Protocol (MCP)**: The system is designed to be MCP-ready, allowing tools to be structured and modular so the agents can dynamically access external data sources and capabilities via MCP servers.
 - **RAG & Pinecone Vector DB**: Provides agents with context-awareness and knowledge retrieval across the platform's data.
 
+### Supervisor & Worker Agents (LangGraph Architecture)
+The autonomous loops in the platform follow a Supervisor-Worker pattern:
+- **The Supervisor Agent (LLM Reasoning Core)**: Responsible for analyzing the user's prompt, maintaining the conversation state (memory), and deciding which tools or actions are necessary. It acts as the intelligent orchestrator, delegating sub-tasks to the appropriate tools or worker nodes.
+- **The Worker Agents (Tool Nodes)**: Responsible for executing the specific tasks delegated by the Supervisor (e.g., querying Tavily for internet search, fetching RAG context from Pinecone). They return their execution results back to the Supervisor, allowing it to synthesize a final response or take further action.
+
 ### Multi-Modal AI Agents
 The platform features specialized agent personas tailored for different tasks:
 - **General Assistant**: A helpful, everyday AI for answering questions and assisting with general platform tasks.
