@@ -69,4 +69,5 @@ Every user request is analyzed by the **Master Planner Agent** and routed to one
 - **Cache DB**: Redis Database
 - **Styling & PWA**: Tailwind CSS, Workbox PWA
 
+Developed by Chancellor Minus @ ChanceTEK | Founder & CEO
 Last updated: July 2026
