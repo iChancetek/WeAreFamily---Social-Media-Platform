@@ -256,9 +256,12 @@ export async function chatWithAgent(
             });
             messages.push({ role: "user", content: userContent });
 
+            // Model Routing Layer: Map gpt-5.6-terra to primary reasoning model (gpt-4o)
+            const targetModel = (model === "gpt-5.6-terra" || model.startsWith("o1")) ? "gpt-4o" : model;
+
             // 1st Call to OpenAI
             const response = await openai.chat.completions.create({
-                model: model.startsWith("o1") ? "gpt-4o" : model, // o1 preview doesn't support tools yet properly in some tiers, safe fallback or specific handling
+                model: targetModel,
                 messages: messages,
                 temperature: mode === "executive" ? 0.3 : 0.7,
                 tools: tools,

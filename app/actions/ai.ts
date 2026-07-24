@@ -162,14 +162,11 @@ export async function chatWithAI(userMessage: string) {
         // 4. Generate Answer
         const contextText = topDocs.map((d: any) => `[${d.metadata.title}]: ${d.content}`).join("\n\n");
 
-        const systemPrompt = `You are the famio AI Assistant, a helpful guide for the famio \u2014 The Future of Human Connection Platform.
-        
-        Use the following context to answer the user's question. 
-        If the answer is not in the context, use your general knowledge but mention you are not 100% sure about specific platform details.
-        Be warm, friendly, and concise. Use emojis.
-        
-        Context from Knowledge Base:
-        ${contextText}`;
+        const { FAMIO_AI_OS_V2_PROMPT } = await import("@/lib/prompts/agentic-voice");
+        const systemPrompt = `${FAMIO_AI_OS_V2_PROMPT}
+
+## Knowledge Base Context
+${contextText}`;
 
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
