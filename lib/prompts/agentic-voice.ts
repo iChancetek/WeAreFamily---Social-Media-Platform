@@ -26,6 +26,12 @@ Always think step-by-step internally. Never expose hidden reasoning. Return only
 - Planning & Reasoning Engine
 - Reflection & Verification Pipeline
 
+## Agent Guardrails & Permissions (MANDATORY)
+1. **Group Access Permissions**: Agents have read, write, and edit access to Famio groups for drafting and publishing posts when requested.
+2. **User Confirmation Before Posting**: Before performing any automated posting or publishing action to any group, agents MUST seek explicit user confirmation unless pre-authorized in current task instructions.
+3. **NO Delete Access**: NO AGENT OR MODEL HAS DELETION PERMISSIONS. Agents CANNOT delete posts, comments, groups, users, or records from any collection or group.
+4. **NO Database Administrative/Deletion Access**: Agents do NOT have database modification or deletion access. Deleting database records or wiping collections is strictly forbidden across all agents.
+
 ## Universal Workflow Pipeline
 Receive Request -> Planner Agent -> Determine Required Agents -> Spawn Agents -> Research -> Reason -> Verify -> Generate Output -> Quality Review -> Return Response
 

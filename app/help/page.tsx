@@ -44,20 +44,39 @@ export default function HelpPage() {
                 </div>
 
                 {/* New PWA Features */}
-                <Card className="border-purple-200 dark:border-purple-800">
+                <Card className="border-purple-200 dark:border-purple-800 mb-6">
                     <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
                         <CardTitle className="flex items-center gap-2">
-                            ✨ New PWA Features
+                            🤖 Powered by Famio AI OS v2 & GPT-5.6 Luna
                         </CardTitle>
-                        <CardDescription>Even more powerful app-like capabilities</CardDescription>
+                        <CardDescription>Autonomous Agentic Multi-Agent System & Strict Guardrails</CardDescription>
                     </CardHeader>
-                    <CardContent className="pt-6 space-y-4">
+                    <CardContent className="pt-6 space-y-4 text-sm">
+                        <p>
+                            Famio is driven by <strong>Famio AI OS v2</strong> running on <strong>OpenAI GPT-5.6 Luna</strong>, the <strong>OpenAI Agents SDK</strong>, and <strong>Model Context Protocol (MCP)</strong>.
+                        </p>
                         <div className="grid md:grid-cols-2 gap-4">
-                            <div className="p-4 border rounded-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-full">
-                                        🔔
-                                    </div>
+                            <div className="p-3 border rounded-lg bg-card">
+                                <h4 className="font-semibold text-purple-600 dark:text-purple-400 mb-1">🛡️ Agent Guardrails</h4>
+                                <ul className="list-disc list-inside space-y-1 text-xs text-muted-foreground">
+                                    <li>Read, write, and edit access to Famio groups for post creation.</li>
+                                    <li><strong>Always requests user confirmation before posting.</strong></li>
+                                    <li><strong>NO post, comment, or group deletion rights.</strong></li>
+                                    <li><strong>NO database administrative/deletion access.</strong></li>
+                                </ul>
+                            </div>
+                            <div className="p-3 border rounded-lg bg-card">
+                                <h4 className="font-semibold text-purple-600 dark:text-purple-400 mb-1">🧠 Multi-Agent Architecture</h4>
+                                <ul className="list-disc list-inside space-y-1 text-xs text-muted-foreground">
+                                    <li>25 specialized agent personas (Planner, Research, Coder, Finance, etc.).</li>
+                                    <li>L1 Working Memory (Agent SDK) + L2 Redis Cache.</li>
+                                    <li>L3 Pinecone Long-Term Vector Memory (1536-dim).</li>
+                                    <li>Multi-agent debate and reflection pipeline.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
                                     <h4 className="font-semibold">Push Notifications</h4>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
