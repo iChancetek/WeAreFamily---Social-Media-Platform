@@ -326,7 +326,7 @@ export async function chatWithAgent(
                         try {
                             const { getGroups } = await import("./groups");
                             const groups = await getGroups();
-                            const groupsList = groups.map(g => ({ id: g.id, name: g.name, description: g.description }));
+                            const groupsList = groups.map((g: any) => ({ id: g.id, name: g.name, description: g.description }));
                             messages.push({
                                 tool_call_id: toolCall.id,
                                 role: "tool",
