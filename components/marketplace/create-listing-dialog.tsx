@@ -159,7 +159,7 @@ export function CreateListingDialog({ children, onListingCreated }: { children: 
                                 type="file"
                                 hidden
                                 ref={fileInputRef}
-                                accept="image/*"
+                                accept="image/*,audio/*,.mp3"
                                 onChange={handleFileSelect}
                             />
                         </div>

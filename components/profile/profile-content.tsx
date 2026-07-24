@@ -257,7 +257,7 @@ export function ProfileContent({ user, onClose }: ProfileContentProps) {
                                 )}
                                 <Input
                                     type="file"
-                                    accept="image/*,video/*"
+                                    accept="image/*,video/*,audio/*,.mp3"
                                     disabled={uploadProgress !== null}
                                     onChange={async (e) => {
                                         const file = e.target.files?.[0];

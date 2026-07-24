@@ -44,7 +44,7 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
 
     // Filters
     const [timeRange, setTimeRange] = useState<'all' | 'day' | 'week' | 'month' | 'year'>('all');
-    const [contentType, setContentType] = useState<'all' | 'text' | 'photo' | 'video'>('all');
+    const [contentType, setContentType] = useState<'all' | 'text' | 'photo' | 'video' | 'audio'>('all');
 
     const fetchPosts = async (isInitial = true) => {
         if (isInitial) {
@@ -134,13 +134,14 @@ export function FeedList({ variant = 'standard', headerAction, fetcher }: FeedLi
             </select>
 
             {/* Content Filter */}
-            <div className="flex bg-blue-50/50 rounded-full p-1 gap-1 overflow-x-auto scrollbar-hide max-w-[150px] md:max-w-none">
-                {(['all', 'text', 'photo', 'video'] as const).map((type) => {
+            <div className="flex bg-blue-50/50 rounded-full p-1 gap-1 overflow-x-auto scrollbar-hide max-w-full">
+                {(['all', 'text', 'photo', 'video', 'audio'] as const).map((type) => {
                     const labels: Record<string, string> = {
                         all: 'All',
                         text: 'Texts',
                         photo: 'Photos',
-                        video: 'Videos'
+                        video: 'Videos',
+                        audio: 'Audio'
                     };
                     return (
                         <button

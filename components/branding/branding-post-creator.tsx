@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { createBrandingPost } from "@/app/actions/branding"
 import { toast } from "sonner"
-import { Image as ImageIcon, Send, Loader2, X, Video, Mic, MicOff } from "lucide-react"
+import { Image as ImageIcon, Send, Loader2, X, Video, Mic, MicOff, Music, Link2 } from "lucide-react"
 import { storage } from "@/lib/firebase"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition"
@@ -154,6 +154,11 @@ export function BrandingPostCreator({ brandingId, branding, currentUser, role, o
                                             <div className="w-full h-full bg-black flex items-center justify-center">
                                                 <Video className="w-8 h-8 text-white/70" />
                                             </div>
+                                        ) : url.match(/\.(mp3|wav|ogg|m4a|aac|flac)$/i) || url.includes('audio') ? (
+                                            <div className="w-full h-full bg-purple-100 dark:bg-purple-950 flex flex-col items-center justify-center p-1">
+                                                <Music className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                                                <span className="text-[10px] text-purple-700 dark:text-purple-300 font-semibold truncate w-full text-center">Audio</span>
+                                            </div>
                                         ) : (
                                             <img
                                                 src={url}
@@ -178,23 +183,56 @@ export function BrandingPostCreator({ brandingId, branding, currentUser, role, o
                                     type="file"
                                     ref={fileInputRef}
                                     className="hidden"
-                                    accept="image/*,video/*"
+                                    accept="image/*,video/*,audio/*,.mp3"
                                     onChange={handleFileSelect}
                                     disabled={isUploading}
                                 />
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-muted-foreground hover:text-primary gap-2"
+                                    className="gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isUploading}
+                                    type="button"
                                 >
-                                    {isUploading ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <ImageIcon className="w-5 h-5" />
-                                    )}
-                                    <span className="hidden sm:inline">Photo/Video</span>
+                                    {isUploading ? <Loader2 className="w-5 h-5 shrink-0 animate-spin text-primary" /> : <ImageIcon className="w-5 h-5 shrink-0 text-primary" />}
+                                    <span className="text-[14px] font-semibold text-foreground">Photo</span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading}
+                                    type="button"
+                                >
+                                    {isUploading ? <Loader2 className="w-5 h-5 shrink-0 animate-spin text-primary" /> : <Video className="w-5 h-5 shrink-0 text-red-500" />}
+                                    <span className="text-[14px] font-semibold text-foreground">Video</span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading}
+                                    type="button"
+                                >
+                                    {isUploading ? <Loader2 className="w-5 h-5 shrink-0 animate-spin text-primary" /> : <Music className="w-5 h-5 shrink-0 text-purple-500" />}
+                                    <span className="text-[14px] font-semibold text-foreground">Audio</span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
+                                    onClick={() => {
+                                        const url = prompt("Enter link URL:");
+                                        if (url) setContent(prev => prev ? `${prev}\n${url}` : url);
+                                    }}
+                                    disabled={isUploading}
+                                    type="button"
+                                >
+                                    <Link2 className="w-5 h-5 shrink-0" />
+                                    <span className="text-[14px] font-semibold">Share Link</span>
                                 </Button>
                                 <MagicAIButton
                                     onClick={handleOpenMagicAI}

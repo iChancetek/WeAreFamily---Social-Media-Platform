@@ -160,12 +160,8 @@ export async function incrementRepostCount(postId: string, contextType?: string,
 
 export type PostFilters = {
     timeRange: 'day' | 'week' | 'month' | 'year' | 'all';
-    contentType: 'text' | 'photo' | 'video' | 'all';
+    contentType: 'text' | 'photo' | 'video' | 'audio' | 'all';
 };
-
-
-
-
 
 export async function getPosts(limit = 20, filters: PostFilters = { timeRange: 'all', contentType: 'all' }, cursor?: string) {
     const user = await getUserProfile();
@@ -227,26 +223,36 @@ export async function getPosts(limit = 20, filters: PostFilters = { timeRange: '
                 rawDocs = rawDocs.filter(doc => {
                     const data = doc.data();
                     const videoUrlRegex = /https?:\/\/(www\.)?(youtube\.com|youtu\.be|facebook\.com|linkedin\.com|vimeo\.com|ds1\.chancetek.com)\/\S+/i;
+                    const audioUrlRegex = /https?:\/\/\S+\.(mp3|wav|ogg|m4a|aac|flac)/i;
                     const hasVideoLink = videoUrlRegex.test(data.content || "");
+                    const hasAudioLink = audioUrlRegex.test(data.content || "");
 
                     let isVideo = false;
                     let isPhoto = false;
+                    let isAudio = !!data.audioUrl || data.type === 'podcast' || hasAudioLink;
 
                     if (data.media && data.media.length > 0) {
                         isVideo = data.media.some((m: any) => m.type === 'video') || hasVideoLink;
                         isPhoto = data.media.some((m: any) => m.type === 'photo');
+                        if (!isAudio) {
+                            isAudio = data.media.some((m: any) => m.type === 'audio' || (m.url && m.url.match(/\.(mp3|wav|ogg|m4a|aac|flac)/i)));
+                        }
                     } else if (data.mediaUrls && data.mediaUrls.length > 0) {
                         isVideo = data.mediaUrls.some((u: string) => u.match(/\.(mp4|mov|webm)$/i)) || hasVideoLink;
-                        isPhoto = data.mediaUrls.some((u: string) => !u.match(/\.(mp4|mov|webm)$/i));
+                        if (!isAudio) {
+                            isAudio = data.mediaUrls.some((u: string) => u.match(/\.(mp3|wav|ogg|m4a|aac|flac)/i));
+                        }
+                        isPhoto = data.mediaUrls.some((u: string) => !u.match(/\.(mp4|mov|webm|mp3|wav|ogg|m4a|aac|flac)$/i));
                     } else {
                         isVideo = hasVideoLink;
                     }
 
-                    const hasAnyMedia = (data.media && data.media.length > 0) || (data.mediaUrls && data.mediaUrls.length > 0);
-                    const isText = !hasAnyMedia && !hasVideoLink;
+                    const hasAnyMedia = (data.media && data.media.length > 0) || (data.mediaUrls && data.mediaUrls.length > 0) || !!data.audioUrl;
+                    const isText = !hasAnyMedia && !hasVideoLink && !hasAudioLink;
 
                     if (filters.contentType === 'video') return isVideo;
                     if (filters.contentType === 'photo') return isPhoto;
+                    if (filters.contentType === 'audio') return isAudio;
                     if (filters.contentType === 'text') return isText;
                     return true;
                 });
@@ -346,7 +352,7 @@ export async function getPosts(limit = 20, filters: PostFilters = { timeRange: '
                 let normalizedMedia = data.media || [];
                 if (!normalizedMedia.length && data.mediaUrls && data.mediaUrls.length > 0) {
                     normalizedMedia = data.mediaUrls.map((url: string) => ({
-                        type: url.match(/\.(mp4|mov|webm)$/i) ? 'video' : 'photo',
+                        type: url.match(/\.(mp4|mov|webm)$/i) ? 'video' : url.match(/\.(mp3|wav|ogg|m4a)$/i) ? 'audio' : 'photo',
                         url
                     }));
                 }

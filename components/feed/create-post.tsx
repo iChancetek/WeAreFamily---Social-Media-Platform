@@ -9,7 +9,7 @@ import { createPost } from "@/app/actions/posts";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
-import { ImageIcon, Loader2, Send, X, Mic, MicOff, MapPin, Link2, Video } from "lucide-react";
+import { ImageIcon, Loader2, Send, X, Mic, MicOff, MapPin, Link2, Video, Music } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useLanguage } from "@/components/language-context";
@@ -130,6 +130,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
 
             setMediaData([]);
             setThumbnailUrl(null);
+            setAudioUrl(null);
             setLocation(null);
             setPrivacy('public');
             setAllowedViewers([]);
@@ -195,7 +196,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                 for (let i = 0; i < e.target.files.length; i++) {
                     const file = e.target.files[i];
                     const isVideo = file.type.startsWith('video/');
-                    const isAudio = file.type.startsWith('audio/');
+                    const isAudio = file.type.startsWith('audio/') || /\.(mp3|m4a|wav|aac|flac|ogg)$/i.test(file.name);
 
                     // --- THUMBNAIL GENERATION FOR VIDEOS ---
                     if (isVideo && !thumbnailUrl && i === 0) { // Only generate for first video arbitrarily to save time
@@ -217,7 +218,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
 
                     const storageRef = ref(storage, `users/${userId}/posts/${Date.now()}-${file.name}`);
                     const metadata = {
-                        contentType: file.type || 'application/octet-stream',
+                        contentType: file.type || (isAudio ? 'audio/mpeg' : 'application/octet-stream'),
                         customMetadata: {
                             originalName: file.name,
                             uploadedBy: userId
@@ -229,6 +230,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
 
                     if (isAudio) {
                         setAudioUrl(url);
+                        setPostType('podcast');
                         toast.success("Podcast audio uploaded! 🎙️");
                     } else {
                         newMedia.push({ type: isVideo ? 'video' : 'photo', url });
@@ -359,6 +361,28 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                             </div>
                         )}
 
+                        {audioUrl && (
+                            <div className="relative mb-3 p-3 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-lg flex flex-col gap-2 shadow-sm">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Music className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
+                                        <span className="text-xs font-bold text-purple-900 dark:text-purple-200">
+                                            Audio Track Uploaded
+                                        </span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAudioUrl(null)}
+                                        className="text-muted-foreground hover:text-red-500 transition-colors p-1"
+                                        title="Remove audio"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                                <audio src={audioUrl} controls className="w-full h-8" />
+                            </div>
+                        )}
+
                         {mediaData.length > 0 && (
                             <div className="grid grid-cols-3 gap-2 mb-3">
                                 {mediaData.map((media, idx) => (
@@ -413,7 +437,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                     hidden
                                     multiple
                                     ref={fileInputRef}
-                                    accept="image/*,video/*,audio/*"
+                                    accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg"
                                     onChange={handleFileSelect}
                                     disabled={!isVerified}
                                 />
@@ -436,6 +460,16 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 shrink-0 animate-spin text-primary" /> : <Video className="w-5 h-5 shrink-0 text-red-500" />}
                                     <span className="text-[14px] font-semibold text-foreground">Video</span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading || !isVerified}
+                                    className="gap-1.5 text-muted-foreground hover:text-foreground shrink-0"
+                                >
+                                    {isUploading ? <Loader2 className="w-5 h-5 shrink-0 animate-spin text-primary" /> : <Music className="w-5 h-5 shrink-0 text-purple-500" />}
+                                    <span className="text-[14px] font-semibold text-foreground">Audio</span>
                                 </Button>
                                 {/* Share Link Button */}
                                 <Button
@@ -501,7 +535,7 @@ export function CreatePost({ onClose, contextType, contextId }: CreatePostProps)
 
                             <Button
                                 onClick={handleSubmit}
-                                disabled={(!content.trim() && mediaData.length === 0) || isSubmitting || isUploading || !isVerified}
+                                disabled={(!content.trim() && mediaData.length === 0 && !audioUrl) || isSubmitting || isUploading || !isVerified}
                                 className="bg-primary hover:bg-primary/90 text-white font-semibold w-full md:w-auto px-8"
                             >
                                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}

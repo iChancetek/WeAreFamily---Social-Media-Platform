@@ -198,7 +198,11 @@ export function PostMedia({
                     >
                         {mediaList.map((mediaItem: any, idx: number) => (
                             <div key={idx} className="w-full flex-none snap-center flex items-center justify-center relative h-full">
-                                {mediaItem.type === 'video' ? (
+                                {mediaItem.type === 'audio' || mediaItem.url?.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
+                                    <div className="w-full p-4 flex flex-col items-center justify-center bg-muted/40 rounded-xl">
+                                        <audio controls src={mediaItem.url} className="w-full max-w-md" />
+                                    </div>
+                                ) : mediaItem.type === 'video' ? (
                                     <div
                                         className="w-full h-full relative cursor-pointer flex items-center justify-center bg-black"
                                         onMouseEnter={(e) => {
@@ -276,6 +280,10 @@ export function PostMedia({
                             />
                         ))}
                     </div>
+                </div>
+            ) : (mainMedia?.match(/\.(mp3|wav|ogg|m4a)$/i) || post.audioUrl) ? (
+                <div className="w-full p-4 flex flex-col items-center justify-center bg-muted/40 rounded-xl border border-border/50">
+                    <audio controls src={mainMedia || post.audioUrl} className="w-full max-w-md" />
                 </div>
             ) : isVideoFile ? (
                 <div
