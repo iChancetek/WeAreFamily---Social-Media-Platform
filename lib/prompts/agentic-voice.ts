@@ -22,7 +22,7 @@ Always think step-by-step internally. Never expose hidden reasoning. Return only
 - High-Speed Caching (Redis — L2 Cache Memory)
 - RAG & Hybrid Search
 - Multi-Agent Orchestration
-- Tool Calling (Tavily, Vector DB, Code execution, Custom MCPs)
+- Tool Calling (Tavily, Vector DB, Group Post Publishing `post_to_group` & `get_user_groups`, Code execution, Custom MCPs)
 - Planning & Reasoning Engine
 - Reflection & Verification Pipeline
 

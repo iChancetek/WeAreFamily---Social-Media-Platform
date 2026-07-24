@@ -236,6 +236,43 @@ export async function chatWithAgent(
                         },
                     },
                 },
+                {
+                    type: "function",
+                    function: {
+                        name: "get_user_groups",
+                        description: "Fetch the list of groups the user belongs to or that are available on the platform so the agent can find the target groupId.",
+                        parameters: {
+                            type: "object",
+                            properties: {},
+                        },
+                    },
+                },
+                {
+                    type: "function",
+                    function: {
+                        name: "post_to_group",
+                        description: "Create and publish a post directly to a specified group on behalf of the user.",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                groupId: {
+                                    type: "string",
+                                    description: "The unique ID or slug of the group to post to.",
+                                },
+                                content: {
+                                    type: "string",
+                                    description: "The post text message or content to publish in the group.",
+                                },
+                                mediaUrls: {
+                                    type: "array",
+                                    items: { type: "string" },
+                                    description: "Optional array of media image/video URLs to attach to the group post.",
+                                }
+                            },
+                            required: ["groupId", "content"],
+                        },
+                    },
+                },
             ];
 
             // Build Messages
@@ -272,11 +309,8 @@ export async function chatWithAgent(
 
             // Check for Tool Calls
             if (responseMessage.tool_calls) {
-                // Return intermediate thought?? Or just process?
-                // Append the assistant's request to the conversation
                 messages.push(responseMessage);
 
-                // Process each tool call
                 // Process each tool call
                 for (const toolCall of responseMessage.tool_calls) {
                     if (toolCall.type === 'function' && toolCall.function.name === "search_internet") {
@@ -288,12 +322,46 @@ export async function chatWithAgent(
                             role: "tool",
                             content: searchResult,
                         });
+                    } else if (toolCall.type === 'function' && toolCall.function.name === "get_user_groups") {
+                        try {
+                            const { getGroups } = await import("./groups");
+                            const groups = await getGroups();
+                            const groupsList = groups.map(g => ({ id: g.id, name: g.name, description: g.description }));
+                            messages.push({
+                                tool_call_id: toolCall.id,
+                                role: "tool",
+                                content: JSON.stringify(groupsList),
+                            });
+                        } catch (err: any) {
+                            messages.push({
+                                tool_call_id: toolCall.id,
+                                role: "tool",
+                                content: `Error fetching groups: ${err.message}`,
+                            });
+                        }
+                    } else if (toolCall.type === 'function' && toolCall.function.name === "post_to_group") {
+                        try {
+                            const args = JSON.parse(toolCall.function.arguments);
+                            const { createGroupPost } = await import("./groups");
+                            await createGroupPost(args.groupId, args.content, args.mediaUrls || []);
+                            messages.push({
+                                tool_call_id: toolCall.id,
+                                role: "tool",
+                                content: `Successfully created and published post to group "${args.groupId}"!`,
+                            });
+                        } catch (err: any) {
+                            messages.push({
+                                tool_call_id: toolCall.id,
+                                role: "tool",
+                                content: `Failed to post to group: ${err.message}`,
+                            });
+                        }
                     }
                 }
 
                 // 2nd Call to OpenAI (with tool outputs)
                 const secondResponse = await openai.chat.completions.create({
-                    model: model.startsWith("o1") ? "gpt-4o" : model,
+                    model: targetModel,
                     messages: messages,
                 });
 
