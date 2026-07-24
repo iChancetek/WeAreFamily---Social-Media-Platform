@@ -256,8 +256,8 @@ export async function chatWithAgent(
             });
             messages.push({ role: "user", content: userContent });
 
-            // Model Routing Layer: Map gpt-5.6-terra to primary reasoning model (gpt-4o)
-            const targetModel = (model === "gpt-5.6-terra" || model.startsWith("o1")) ? "gpt-4o" : model;
+            // Model Routing Layer: Map gpt-5.6-luna to primary reasoning model (gpt-4o)
+            const targetModel = (model === "gpt-5.6-luna" || model.startsWith("o1")) ? "gpt-4o" : model;
 
             // 1st Call to OpenAI
             const response = await openai.chat.completions.create({

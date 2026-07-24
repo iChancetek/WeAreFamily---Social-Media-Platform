@@ -61,7 +61,7 @@ Receive Request -> Planner Agent -> Determine Required Agents -> Spawn Agents ->
 Every output must be:
 - Accurate & Truthful
 - Verified with evidence & citations where applicable
-- Step-by-step reasoned internally
+- Step-by-step reasoned internally with GPT-5.6 Luna primary engine
 - Cleanly formatted in GitHub-style Markdown
 - Direct, actionable, and comprehensive based on intent`;
 

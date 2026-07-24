@@ -73,7 +73,7 @@ export function FullScreenChat({ initialChatId }: FullScreenChatProps) {
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [selectedMode, setSelectedMode] = useState<AgentMode>('general');
-    const [selectedModel, setSelectedModel] = useState<AIModel>('gpt-4o');
+    const [selectedModel, setSelectedModel] = useState<AIModel>('gpt-5.6-luna');
 
     // Persistence State
     const [conversations, setConversations] = useState<AIConversation[]>([]);
@@ -427,11 +427,15 @@ export function FullScreenChat({ initialChatId }: FullScreenChatProps) {
                                     <Cpu className="w-3.5 h-3.5" />
                                     <span className="md:hidden">Model</span>
                                     <span className="hidden md:inline">
-                                        {selectedModel === 'gpt-4o' ? 'GPT-4o' : (selectedModel === 'claude-3-5-sonnet-20240620' ? 'Claude 3.5' : (selectedModel || 'Select Model'))}
+                                        {selectedModel === 'gpt-5.6-luna' ? 'GPT-5.6 Luna' : (selectedModel === 'gpt-4o' ? 'GPT-4o' : (selectedModel === 'claude-3-5-sonnet-20240620' ? 'Claude 3.5' : (selectedModel || 'Select Model')))}
                                     </span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                                <DropdownMenuItem key="gpt-5.6-luna" onClick={() => setSelectedModel('gpt-5.6-luna')} className="gap-2 font-bold text-purple-600 dark:text-purple-400">
+                                    <span>GPT-5.6 Luna (Primary)</span>
+                                    {selectedModel === 'gpt-5.6-luna' && <span className="opacity-50 text-xs">(Active)</span>}
+                                </DropdownMenuItem>
                                 <DropdownMenuItem key="gpt-4o" onClick={() => setSelectedModel('gpt-4o')} className="gap-2">
                                     <span>GPT-4o</span>
                                     {selectedModel === 'gpt-4o' && <span className="opacity-50 text-xs">(Active)</span>}

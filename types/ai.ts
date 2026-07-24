@@ -27,7 +27,7 @@ export type AgentMode =
     | "automation";
 
 export type AIModel =
-    | "gpt-5.6-terra"
+    | "gpt-5.6-luna"
     | "gpt-4o"
     | "gpt-4o-mini"
     | "o1-preview"
