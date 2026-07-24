@@ -66,7 +66,7 @@ export type DictionaryKey =
 
 export const dictionaries = {
     en: {
-        "nav.ai": "AI Assistant",
+        "nav.ai": "Famio AI OS",
         "nav.section.main": "Main",
         "nav.section.discover": "Discover",
         "nav.section.system": "System",
