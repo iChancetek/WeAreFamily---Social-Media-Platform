@@ -77,6 +77,22 @@ export default function HelpPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* PWA Capabilities Card */}
+                <Card className="border-blue-200 dark:border-blue-800 mb-6">
+                    <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+                        <CardTitle className="flex items-center gap-2">
+                            ✨ Progressive Web App Features
+                        </CardTitle>
+                        <CardDescription>Native app-like capabilities directly in your browser</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-4">
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div className="p-4 border rounded-lg">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-full">
+                                        🔔
+                                    </div>
                                     <h4 className="font-semibold">Push Notifications</h4>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
